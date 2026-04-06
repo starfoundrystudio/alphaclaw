@@ -1,8 +1,15 @@
 const { validateOnboardingInput } = require("../../lib/server/onboarding/validation");
 
-const kBaseVars = ({ includeChannel = true } = {}) => [
-  { key: "GITHUB_TOKEN", value: "ghp_test" },
-  { key: "GITHUB_WORKSPACE_REPO", value: "owner/repo" },
+const kBaseVars = ({
+  includeChannel = true,
+  includeGithub = true,
+} = {}) => [
+  ...(includeGithub
+    ? [
+        { key: "GITHUB_TOKEN", value: "ghp_test" },
+        { key: "GITHUB_WORKSPACE_REPO", value: "owner/repo" },
+      ]
+    : []),
   ...(includeChannel
     ? [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_tok" }]
     : []),
@@ -42,6 +49,51 @@ describe("onboarding/validation", () => {
       hasCodexOauthProfile: () => false,
     });
     expect(res.ok).toBe(true);
+  });
+
+  it("accepts fresh onboarding without GitHub backup configured", () => {
+    const res = validateOnboardingInput({
+      vars: [
+        ...kBaseVars({ includeChannel: false, includeGithub: false }),
+        { key: "OPENROUTER_API_KEY", value: "sk-or-test" },
+      ],
+      modelKey: "openrouter/nvidia/nemotron-3-nano",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+    });
+    expect(res.ok).toBe(true);
+  });
+
+  it("rejects partial GitHub backup input for fresh onboarding", () => {
+    const res = validateOnboardingInput({
+      vars: [
+        ...kBaseVars({ includeChannel: false, includeGithub: false }),
+        { key: "GITHUB_WORKSPACE_REPO", value: "owner/repo" },
+        { key: "OPENROUTER_API_KEY", value: "sk-or-test" },
+      ],
+      modelKey: "openrouter/nvidia/nemotron-3-nano",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+    });
+    expect(res.ok).toBe(false);
+    expect(res.error).toBe("GITHUB_TOKEN must be set to enable GitHub backup");
+  });
+
+  it("requires GitHub backup config for import onboarding", () => {
+    const res = validateOnboardingInput({
+      vars: [
+        ...kBaseVars({ includeChannel: false, includeGithub: false }),
+        { key: "OPENROUTER_API_KEY", value: "sk-or-test" },
+      ],
+      modelKey: "openrouter/nvidia/nemotron-3-nano",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+      importMode: true,
+    });
+    expect(res.ok).toBe(false);
+    expect(res.error).toBe(
+      "GitHub token and workspace repo are required to import an existing setup",
+    );
   });
 
   it("rejects openrouter model when only unrelated API keys are present", () => {

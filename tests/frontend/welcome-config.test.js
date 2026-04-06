@@ -2,6 +2,18 @@ const loadWelcomeConfig = async () =>
   import("../../lib/public/js/components/onboarding/welcome-config.js");
 
 describe("frontend/welcome-config", () => {
+  it("allows skipping GitHub entirely during a fresh setup", async () => {
+    const welcomeConfig = await loadWelcomeConfig();
+
+    expect(
+      welcomeConfig.getWelcomeGroupError("github", {
+        _GITHUB_FLOW: welcomeConfig.kGithubFlowFresh,
+        GITHUB_TOKEN: "",
+        GITHUB_WORKSPACE_REPO: "",
+      }),
+    ).toBe("");
+  });
+
   it("reports a target repo format error for invalid GitHub input", async () => {
     const welcomeConfig = await loadWelcomeConfig();
 
@@ -11,6 +23,18 @@ describe("frontend/welcome-config", () => {
         GITHUB_WORKSPACE_REPO: "owner-only",
       }),
     ).toBe('Target repo must be in "owner/repo" format.');
+  });
+
+  it("requires a token when a GitHub repo is provided for fresh setup", async () => {
+    const welcomeConfig = await loadWelcomeConfig();
+
+    expect(
+      welcomeConfig.getWelcomeGroupError("github", {
+        _GITHUB_FLOW: welcomeConfig.kGithubFlowFresh,
+        GITHUB_TOKEN: "",
+        GITHUB_WORKSPACE_REPO: "owner/repo",
+      }),
+    ).toBe("Enter a GitHub personal access token to continue.");
   });
 
   it("requires a source repo when import mode is selected", async () => {
@@ -64,8 +88,6 @@ describe("frontend/welcome-config", () => {
 
     const invalidGroup = welcomeConfig.findFirstInvalidWelcomeGroup(
       {
-        GITHUB_TOKEN: "ghp_123",
-        GITHUB_WORKSPACE_REPO: "owner/target-repo",
         MODEL_KEY: "openai-codex/gpt-5.4",
       },
       {

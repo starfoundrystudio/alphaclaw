@@ -27,7 +27,7 @@
 ## Features
 
 - **Setup UI:** Password-protected web dashboard for onboarding, configuration, and day-to-day management.
-- **Guided Onboarding:** Step-by-step setup wizard — model selection, provider credentials, GitHub repo, channel pairing.
+- **Guided Onboarding:** Step-by-step setup wizard — model selection, provider credentials, optional GitHub backup, channel pairing.
 - **Multi-Agent Management:** Sidebar-driven agent navigation with create, rename, and delete flows. Per-agent overview cards, channel bindings, and URL-driven agent selection.
 - **Gateway Manager:** Spawns, monitors, restarts, and proxies the OpenClaw gateway as a managed child process.
 - **Watchdog:** Crash detection, crash-loop recovery, auto-repair (`openclaw doctor --fix`), Telegram/Discord/Slack notifications, and a live interactive terminal for monitoring gateway output directly from the browser.
@@ -38,7 +38,7 @@
 - **Webhooks:** Named webhook endpoints with per-hook transform modules, request logging, payload inspection, editable delivery destinations, and OAuth callback support for third-party auth flows.
 - **File Explorer:** Browser-based workspace explorer with file visibility, inline edits, diff view, and Git-aware sync for quick fixes without SSH.
 - **Prompt Hardening:** Ships anti-drift bootstrap prompts (`AGENTS.md`, `TOOLS.md`) injected into your agent's system prompt on every message — enforcing safe practices, commit discipline, and change summaries out of the box.
-- **Git Sync:** Automatic hourly commits of your OpenClaw workspace to GitHub with configurable cron schedule. Combined with prompt hardening, every agent action is version-controlled and auditable.
+- **Git Sync:** Optional automatic hourly commits of your OpenClaw workspace to GitHub with configurable cron schedule. Combined with prompt hardening, every agent action can be version-controlled and auditable.
 - **Version Management:** In-place updates for both AlphaClaw and OpenClaw with in-app release notes, changelog review, and one-click apply.
 - **Codex OAuth:** Built-in PKCE flow for OpenAI Codex CLI model access.
 
@@ -146,8 +146,8 @@ The built-in watchdog monitors gateway health and recovers from failures automat
 | --------------------------------- | -------- | -------------------------------------------------- |
 | `SETUP_PASSWORD`                  | Yes      | Password for the Setup UI                          |
 | `OPENCLAW_GATEWAY_TOKEN`          | Auto     | Gateway auth token (auto-generated if unset)       |
-| `GITHUB_TOKEN`                    | Yes      | GitHub PAT for workspace repo                      |
-| `GITHUB_WORKSPACE_REPO`           | Yes      | GitHub repo for workspace sync (e.g. `owner/repo`) |
+| `GITHUB_TOKEN`                    | Optional | GitHub PAT for workspace backup repo               |
+| `GITHUB_WORKSPACE_REPO`           | Optional | GitHub repo for workspace sync (e.g. `owner/repo`) |
 | `ALPHACLAW_SETUP_URL`             | Optional | Canonical private Setup UI URL                     |
 | `ALPHACLAW_PUBLIC_BASE_URL`       | Optional | Canonical public webhook/OAuth callback URL        |
 | `ALPHACLAW_PUBLIC_EXTRA_PATH_PREFIXES` | Optional | Extra public callback path prefixes (comma-separated) |

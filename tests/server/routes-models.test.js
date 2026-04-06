@@ -183,32 +183,86 @@ describe("server/routes/models", () => {
   });
 
   it("re-syncs auth references on PUT /api/models/config", async () => {
+    const previousGithubToken = process.env.GITHUB_TOKEN;
+    const previousGithubRepo = process.env.GITHUB_WORKSPACE_REPO;
+    process.env.GITHUB_TOKEN = "ghp_test";
+    process.env.GITHUB_WORKSPACE_REPO = "owner/repo";
     const deps = createModelDeps();
     deps.shellCmd.mockResolvedValue("");
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      primary: "openai-codex/gpt-5.3-codex",
-      configuredModels: {
-        "openai-codex/gpt-5.3-codex": {},
-      },
-    });
+    try {
+      const res = await request(app).put("/api/models/config").send({
+        primary: "openai-codex/gpt-5.3-codex",
+        configuredModels: {
+          "openai-codex/gpt-5.3-codex": {},
+        },
+      });
 
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
-    expect(deps.authProfiles.setModelConfig).toHaveBeenCalledWith({
-      primary: "openai-codex/gpt-5.3-codex",
-      configuredModels: {
-        "openai-codex/gpt-5.3-codex": {},
-      },
-    });
-    expect(deps.authProfiles.syncConfigAuthReferencesForAgent).toHaveBeenCalledWith(
-      undefined,
-    );
-    expect(deps.shellCmd).toHaveBeenCalledWith(
-      'alphaclaw git-sync -m "models: update config" -f "openclaw.json"',
-      { timeout: 30000 },
-    );
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ ok: true });
+      expect(deps.authProfiles.setModelConfig).toHaveBeenCalledWith({
+        primary: "openai-codex/gpt-5.3-codex",
+        configuredModels: {
+          "openai-codex/gpt-5.3-codex": {},
+        },
+      });
+      expect(deps.authProfiles.syncConfigAuthReferencesForAgent).toHaveBeenCalledWith(
+        undefined,
+      );
+      expect(deps.shellCmd).toHaveBeenCalledWith(
+        'alphaclaw git-sync -m "models: update config" -f "openclaw.json"',
+        { timeout: 30000 },
+      );
+    } finally {
+      if (previousGithubToken === undefined) {
+        delete process.env.GITHUB_TOKEN;
+      } else {
+        process.env.GITHUB_TOKEN = previousGithubToken;
+      }
+      if (previousGithubRepo === undefined) {
+        delete process.env.GITHUB_WORKSPACE_REPO;
+      } else {
+        process.env.GITHUB_WORKSPACE_REPO = previousGithubRepo;
+      }
+    }
+  });
+
+  it("skips automatic git-sync when GitHub backup is not configured", async () => {
+    const previousGithubToken = process.env.GITHUB_TOKEN;
+    const previousGithubRepo = process.env.GITHUB_WORKSPACE_REPO;
+    delete process.env.GITHUB_TOKEN;
+    delete process.env.GITHUB_WORKSPACE_REPO;
+    const deps = createModelDeps();
+    deps.shellCmd.mockResolvedValue("");
+    const app = createApp(deps);
+
+    try {
+      const res = await request(app).put("/api/models/config").send({
+        primary: "openai-codex/gpt-5.3-codex",
+        configuredModels: {
+          "openai-codex/gpt-5.3-codex": {},
+        },
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ ok: true });
+      expect(deps.shellCmd).not.toHaveBeenCalledWith(
+        'alphaclaw git-sync -m "models: update config" -f "openclaw.json"',
+        { timeout: 30000 },
+      );
+    } finally {
+      if (previousGithubToken === undefined) {
+        delete process.env.GITHUB_TOKEN;
+      } else {
+        process.env.GITHUB_TOKEN = previousGithubToken;
+      }
+      if (previousGithubRepo === undefined) {
+        delete process.env.GITHUB_WORKSPACE_REPO;
+      } else {
+        process.env.GITHUB_WORKSPACE_REPO = previousGithubRepo;
+      }
+    }
   });
 
   it("prefills default api-key auth profiles from env vars on GET /api/models/config", async () => {

@@ -167,6 +167,41 @@ describe("server/routes/onboarding", () => {
     expect(res.body).toEqual({ ok: true });
   });
 
+  it("allows fresh onboarding without GitHub backup and leaves repo sync disabled", async () => {
+    const deps = createBaseDeps();
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      modelKey: "openai/gpt-5.1-codex",
+      vars: [
+        { key: "OPENAI_API_KEY", value: "sk-test-123456789" },
+        { key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" },
+      ],
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(global.fetch).not.toHaveBeenCalled();
+
+    const initCall = deps.shellCmd.mock.calls.find(([cmd]) =>
+      cmd.includes("git init -b main"),
+    );
+    expect(initCall?.[0]).toContain('git config user.email "agent@alphaclaw.md"');
+    expect(initCall?.[0]).not.toContain("git remote add origin");
+    expect(
+      deps.shellCmd.mock.calls.some(([cmd]) =>
+        cmd.includes('alphaclaw git-sync -m "initial setup"'),
+      ),
+    ).toBe(false);
+    expect(deps.fs.writeFileSync).toHaveBeenCalledWith(
+      "/tmp/openclaw/cron/system-sync.json",
+      JSON.stringify({ enabled: false, schedule: "0 * * * *" }, null, 2),
+    );
+    expect(deps.fs.rmSync).toHaveBeenCalledWith("/etc/cron.d/openclaw-hourly-sync", {
+      force: true,
+    });
+  });
+
   it("rejects overly large env var values before running onboarding", async () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
