@@ -187,6 +187,62 @@ describe("server/gmail-watch", () => {
     ]);
   });
 
+  it("uses the public callback base URL for Gmail push endpoints", () => {
+    const statePath = "/tmp/gogcli/state.json";
+    const configDir = "/tmp/gogcli";
+    const openclawDir = "/tmp/.openclaw";
+    const fs = createMemoryFs({
+      [statePath]: JSON.stringify({
+        version: 2,
+        accounts: [
+          {
+            id: "acct-1",
+            email: "ops@example.com",
+            client: "default",
+            services: ["gmail:read"],
+            gmailWatch: {},
+          },
+        ],
+        gmailPush: {
+          token: "push-token",
+          topics: {
+            default: "projects/my-project/topics/gog-gmail-watch",
+          },
+        },
+      }),
+    });
+    const service = createGmailWatchService({
+      fs,
+      constants: {
+        GOG_STATE_PATH: statePath,
+        GOG_CONFIG_DIR: configDir,
+        OPENCLAW_DIR: openclawDir,
+      },
+      gogCmd: async () => ({ ok: true, stdout: "", stderr: "" }),
+      getBaseUrl: () => "https://callbacks.example.com",
+      readGoogleCredentials: () => ({
+        projectId: "my-project",
+      }),
+      readEnvFile: () => [],
+      writeEnvFile: () => {},
+      reloadEnv: () => {},
+      restartRequiredState: null,
+    });
+
+    const result = service.getConfig({ req: {} });
+
+    expect(result.pushEndpoint).toBe(
+      "https://callbacks.example.com/gmail-pubsub?token=push-token",
+    );
+    expect(result.clients).toEqual([
+      expect.objectContaining({
+        client: "default",
+        pushEndpoint:
+          "https://callbacks.example.com/gmail-pubsub?token=push-token",
+      }),
+    ]);
+  });
+
   it("preserves an existing custom Gmail transform while ensuring hook wiring", () => {
     const statePath = "/tmp/gogcli/state.json";
     const configDir = "/tmp/gogcli";

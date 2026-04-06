@@ -37,14 +37,19 @@ const createMemoryFs = (initialFiles = {}) => {
   };
 };
 
-const createApp = ({ fs, constants, webhooksDb }) => {
+const createApp = ({
+  fs,
+  constants,
+  webhooksDb,
+  baseUrl = "https://alphaclaw.example.com",
+}) => {
   const app = express();
   app.use(express.json());
   registerWebhookRoutes({
     app,
     fs,
     constants,
-    getBaseUrl: () => "https://alphaclaw.example.com",
+    getBaseUrl: () => baseUrl,
     webhooksDb,
     restartRequiredState: {
       markRequired: () => {},
@@ -112,6 +117,48 @@ describe("server/routes/webhooks", () => {
     expect(transformSource).toContain("message: message || fallbackMessage");
     expect(transformSource).toContain(
       "OAuth callback received (authorization code present)",
+    );
+  });
+
+  it("uses the configured public callback base URL in webhook details", async () => {
+    const openclawDir = "/tmp/openclaw";
+    const configPath = path.join(openclawDir, "openclaw.json");
+    const fs = createMemoryFs({
+      [configPath]: JSON.stringify({
+        agents: {
+          list: [{ id: "main", default: true }],
+        },
+      }),
+    });
+    createWebhook({
+      fs,
+      constants: { OPENCLAW_DIR: openclawDir },
+      name: "gmail-alerts",
+    });
+    const app = createApp({
+      fs,
+      constants: { OPENCLAW_DIR: openclawDir },
+      baseUrl: "https://callbacks.example.com",
+      webhooksDb: {
+        getHookSummaries: () => [],
+        getRequests: () => [],
+        getRequestById: () => null,
+        deleteRequestsByHook: () => 0,
+        createOauthCallback: () => null,
+        getOauthCallbackByHook: () => null,
+        rotateOauthCallback: () => null,
+        deleteOauthCallback: () => 0,
+      },
+    });
+
+    const response = await request(app).get("/api/webhooks/gmail-alerts");
+
+    expect(response.status).toBe(200);
+    expect(response.body?.webhook?.fullUrl).toBe(
+      "https://callbacks.example.com/hooks/gmail-alerts",
+    );
+    expect(response.body?.webhook?.queryStringUrl).toMatch(
+      /^https:\/\/callbacks\.example\.com\/hooks\/gmail-alerts\?token=/,
     );
   });
 

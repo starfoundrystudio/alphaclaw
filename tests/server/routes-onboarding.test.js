@@ -325,6 +325,7 @@ describe("server/routes/onboarding", () => {
 
   it("installs deterministic hourly git sync cron during successful onboarding", async () => {
     const deps = createBaseDeps();
+    deps.getBaseUrl.mockReturnValue("https://setup.example.com");
     deps.fs.readFileSync.mockImplementation((p) => {
       if (p === "/tmp/openclaw/openclaw.json") return "{}";
       if (p === path.join(kSetupDir, "core-prompts", "TOOLS.md")) return "Setup: {{SETUP_UI_URL}}";
@@ -352,7 +353,10 @@ describe("server/routes/onboarding", () => {
       ([path]) => path === "/tmp/openclaw/workspace/hooks/bootstrap/TOOLS.md",
     );
     expect(toolsWriteCall).toBeTruthy();
-    expect(toolsWriteCall[1]).toContain("https://example.com");
+    expect(toolsWriteCall[1]).toContain("https://setup.example.com");
+    expect(deps.ensureGatewayProxyConfig).toHaveBeenCalledWith(
+      "https://setup.example.com",
+    );
 
     expect(deps.fs.writeFileSync).toHaveBeenCalledWith(
       "/tmp/openclaw/.alphaclaw/hourly-git-sync.sh",

@@ -148,6 +148,10 @@ The built-in watchdog monitors gateway health and recovers from failures automat
 | `OPENCLAW_GATEWAY_TOKEN`          | Auto     | Gateway auth token (auto-generated if unset)       |
 | `GITHUB_TOKEN`                    | Yes      | GitHub PAT for workspace repo                      |
 | `GITHUB_WORKSPACE_REPO`           | Yes      | GitHub repo for workspace sync (e.g. `owner/repo`) |
+| `ALPHACLAW_SETUP_URL`             | Optional | Canonical private Setup UI URL                     |
+| `ALPHACLAW_PUBLIC_BASE_URL`       | Optional | Canonical public webhook/OAuth callback URL        |
+| `ALPHACLAW_PUBLIC_EXTRA_PATH_PREFIXES` | Optional | Extra public callback path prefixes (comma-separated) |
+| `ALPHACLAW_BASE_URL`              | Optional | Legacy fallback for the private Setup UI URL       |
 | `TELEGRAM_BOT_TOKEN`              | Optional | Telegram bot token                                 |
 | `DISCORD_BOT_TOKEN`               | Optional | Discord bot token                                  |
 | `SLACK_BOT_TOKEN`                 | Optional | Slack bot token (Socket Mode)                      |
@@ -156,6 +160,26 @@ The built-in watchdog monitors gateway health and recovers from failures automat
 | `PORT`                            | Optional | Server port (default `3000`)                       |
 | `ALPHACLAW_ROOT_DIR`              | Optional | Data directory (default `/data`)                   |
 | `TRUST_PROXY_HOPS`                | Optional | Trust proxy hop count for correct client IP        |
+
+## Private UI + Public Callbacks
+
+If you want the AlphaClaw UI to stay private on Tailscale while still supporting public webhooks or OAuth callbacks, configure:
+
+```bash
+ALPHACLAW_SETUP_URL=https://alphaclaw.tail123.ts.net
+ALPHACLAW_PUBLIC_BASE_URL=https://callbacks.example.com
+ALPHACLAW_PUBLIC_EXTRA_PATH_PREFIXES=/googlechat,/api/messages
+```
+
+Behavior when both `ALPHACLAW_SETUP_URL` and `ALPHACLAW_PUBLIC_BASE_URL` are set:
+
+- The full Setup UI is only served on `ALPHACLAW_SETUP_URL`
+- The public host only serves callback/webhook paths:
+  `/hooks/*`, `/webhook/*`, `/oauth/*`, `/gmail-pubsub`, `/auth/google/callback`
+- Any extra public plugin or gateway paths must be explicitly added via `ALPHACLAW_PUBLIC_EXTRA_PATH_PREFIXES`
+- Any other request on the public host returns `404`
+
+Use `ALPHACLAW_BASE_URL` only as a legacy fallback if you have older deployments to preserve.
 
 ## Security Notes
 
