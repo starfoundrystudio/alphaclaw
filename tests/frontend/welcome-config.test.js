@@ -53,6 +53,12 @@ describe("frontend/welcome-config", () => {
     ).toBe("Add the Slack app token to continue with Slack.");
   });
 
+  it("allows skipping channels entirely during onboarding", async () => {
+    const welcomeConfig = await loadWelcomeConfig();
+
+    expect(welcomeConfig.getWelcomeGroupError("channels", {})).toBe("");
+  });
+
   it("finds the first invalid step in welcome order", async () => {
     const welcomeConfig = await loadWelcomeConfig();
 

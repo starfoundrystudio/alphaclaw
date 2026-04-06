@@ -1,9 +1,11 @@
 const { validateOnboardingInput } = require("../../lib/server/onboarding/validation");
 
-const kBaseVars = () => [
+const kBaseVars = ({ includeChannel = true } = {}) => [
   { key: "GITHUB_TOKEN", value: "ghp_test" },
   { key: "GITHUB_WORKSPACE_REPO", value: "owner/repo" },
-  { key: "TELEGRAM_BOT_TOKEN", value: "telegram_tok" },
+  ...(includeChannel
+    ? [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_tok" }]
+    : []),
 ];
 
 const kResolveProvider = (modelKey) => String(modelKey || "").split("/")[0] || "";
@@ -23,6 +25,19 @@ describe("onboarding/validation", () => {
     const res = validateOnboardingInput({
       vars: [...kBaseVars(), { key: "MOONSHOT_API_KEY", value: "sk-moonshot" }],
       modelKey: "moonshot/kimi-k2-5",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+    });
+    expect(res.ok).toBe(true);
+  });
+
+  it("accepts onboarding without any channel tokens", () => {
+    const res = validateOnboardingInput({
+      vars: [
+        ...kBaseVars({ includeChannel: false }),
+        { key: "OPENROUTER_API_KEY", value: "sk-or-test" },
+      ],
+      modelKey: "openrouter/nvidia/nemotron-3-nano",
       resolveModelProvider: kResolveProvider,
       hasCodexOauthProfile: () => false,
     });

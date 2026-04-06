@@ -154,6 +154,19 @@ describe("server/routes/onboarding", () => {
     expect(res.body).toEqual({ ok: false, error: "A model selection is required" });
   });
 
+  it("allows onboarding without any channel tokens", async () => {
+    const deps = createBaseDeps();
+    mockGithubVerifyAndCreate();
+    const app = createApp(deps);
+    const body = makeValidBody();
+    body.vars = body.vars.filter((entry) => entry.key !== "TELEGRAM_BOT_TOKEN");
+
+    const res = await request(app).post("/api/onboard").send(body);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+  });
+
   it("rejects overly large env var values before running onboarding", async () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
