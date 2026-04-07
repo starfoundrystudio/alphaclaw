@@ -53,6 +53,8 @@ const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
           anthropic: "ANTHROPIC_API_KEY",
           openai: "OPENAI_API_KEY",
           google: "GEMINI_API_KEY",
+          openrouter: "OPENROUTER_API_KEY",
+          "vercel-ai-gateway": "AI_GATEWAY_API_KEY",
         };
         return envKeys[provider] || "";
       }),
@@ -165,6 +167,47 @@ describe("server/routes/onboarding", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true });
+  });
+
+  it("passes OpenRouter auth-choice flags during onboarding for openrouter models", async () => {
+    const deps = createBaseDeps();
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      modelKey: "openrouter/anthropic/claude-sonnet-4-6",
+      vars: [{ key: "OPENROUTER_API_KEY", value: "sk-or-test-123456789" }],
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(
+      deps.shellCmd.mock.calls.some(([cmd]) =>
+        cmd.includes(
+          'openclaw onboard "--non-interactive" "--accept-risk"',
+        ) &&
+        cmd.includes('"--auth-choice" "openrouter-api-key"') &&
+        cmd.includes('"--openrouter-api-key" "sk-or-test-123456789"'),
+      ),
+    ).toBe(true);
+  });
+
+  it("passes Vercel AI Gateway auth-choice flags during onboarding for gateway-backed models", async () => {
+    const deps = createBaseDeps();
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      modelKey: "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
+      vars: [{ key: "AI_GATEWAY_API_KEY", value: "aigw_test_123456789" }],
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(
+      deps.shellCmd.mock.calls.some(([cmd]) =>
+        cmd.includes('"--auth-choice" "ai-gateway-api-key"') &&
+        cmd.includes('"--ai-gateway-api-key" "aigw_test_123456789"'),
+      ),
+    ).toBe(true);
   });
 
   it("allows fresh onboarding without GitHub backup and leaves repo sync disabled", async () => {

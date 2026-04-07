@@ -33,6 +33,40 @@ describe("server/onboarding/openclaw", () => {
     delete process.env.ANTHROPIC_TOKEN;
   });
 
+  it("builds OpenRouter onboarding args for openrouter models", () => {
+    const args = buildOnboardArgs({
+      varMap: {
+        OPENROUTER_API_KEY: "sk-or-fresh-key",
+        OPENCLAW_GATEWAY_TOKEN: "gw-token",
+      },
+      selectedProvider: "openrouter",
+      hasCodexOauth: false,
+      workspaceDir: "/tmp/workspace",
+    });
+
+    expect(args).toContain("--auth-choice");
+    expect(args).toContain("openrouter-api-key");
+    expect(args).toContain("--openrouter-api-key");
+    expect(args).toContain("sk-or-fresh-key");
+  });
+
+  it("builds Vercel AI Gateway onboarding args for gateway-backed models", () => {
+    const args = buildOnboardArgs({
+      varMap: {
+        AI_GATEWAY_API_KEY: "aigw_live_test",
+        OPENCLAW_GATEWAY_TOKEN: "gw-token",
+      },
+      selectedProvider: "vercel-ai-gateway",
+      hasCodexOauth: false,
+      workspaceDir: "/tmp/workspace",
+    });
+
+    expect(args).toContain("--auth-choice");
+    expect(args).toContain("ai-gateway-api-key");
+    expect(args).toContain("--ai-gateway-api-key");
+    expect(args).toContain("aigw_live_test");
+  });
+
   it("only scrubs exact secret string values in JSON", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");

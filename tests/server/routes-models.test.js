@@ -128,6 +128,14 @@ describe("server/routes/models", () => {
       refreshing: false,
       models: kFallbackOnboardingModels,
     });
+    expect(res.body.models.some((model) => model.key === "openrouter/anthropic/claude-sonnet-4-6")).toBe(
+      true,
+    );
+    expect(
+      res.body.models.some(
+        (model) => model.key === "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
+      ),
+    ).toBe(true);
   });
 
   it("returns model status payload on GET /api/models/status", async () => {
