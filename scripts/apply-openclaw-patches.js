@@ -8,28 +8,14 @@
  * This script finds the real install root (directory containing a lockfile) and
  * runs patch-package there with --patch-dir pointing at our bundled patches/.
  */
-const { spawnSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
-
-const kAlphaclawRoot = path.join(__dirname, "..");
-
-const findProjectRootFromOpenclawDir = (openclawDir) => {
-  let dir = path.resolve(openclawDir);
-  for (let i = 0; i < 30; i += 1) {
-    if (
-      fs.existsSync(path.join(dir, "package-lock.json")) ||
-      fs.existsSync(path.join(dir, "yarn.lock")) ||
-      fs.existsSync(path.join(dir, "pnpm-lock.yaml"))
-    ) {
-      return dir;
-    }
-    const parent = path.dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  return path.dirname(path.dirname(openclawDir));
-};
+const {
+  kAlphaclawRoot,
+  resolveOpenclawInstallPaths,
+  runNodeScript,
+  runOpenclawBundledPluginPostinstall,
+} = require("./openclaw-install-utils");
 
 const main = () => {
   const patchesDir = path.join(kAlphaclawRoot, "patches");
@@ -43,32 +29,11 @@ const main = () => {
     return;
   }
 
-  let openclawMainPath;
-  try {
-    openclawMainPath = require.resolve("openclaw", { paths: [kAlphaclawRoot] });
-  } catch {
+  const installPaths = resolveOpenclawInstallPaths();
+  if (!installPaths) {
     return;
   }
-
-  const openclawDir = (() => {
-    let dir = path.dirname(openclawMainPath);
-    for (let i = 0; i < 8; i += 1) {
-      const pkgPath = path.join(dir, "package.json");
-      if (fs.existsSync(pkgPath)) {
-        try {
-          const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
-          if (pkg.name === "openclaw") return dir;
-        } catch {
-          /* continue */
-        }
-      }
-      const parent = path.dirname(dir);
-      if (parent === dir) break;
-      dir = parent;
-    }
-    return path.dirname(path.dirname(openclawMainPath));
-  })();
-  const projectRoot = findProjectRootFromOpenclawDir(openclawDir);
+  const { openclawDir, projectRoot } = installPaths;
 
   let relPatchDir = path.relative(projectRoot, patchesDir);
   if (relPatchDir.startsWith("..") || path.isAbsolute(relPatchDir)) {
@@ -83,17 +48,11 @@ const main = () => {
     paths: [kAlphaclawRoot],
   });
 
-  const result = spawnSync(
-    process.execPath,
-    [patchPackageMain, "--patch-dir", relPatchDir],
-    { cwd: projectRoot, stdio: "inherit", env: process.env },
-  );
-  if (result.error) {
-    throw result.error;
-  }
-  if (result.status !== 0 && result.status !== null) {
-    process.exit(result.status);
-  }
+  runNodeScript(patchPackageMain, {
+    args: ["--patch-dir", relPatchDir],
+    cwd: projectRoot,
+  });
+  runOpenclawBundledPluginPostinstall({ openclawDir });
 };
 
 main();

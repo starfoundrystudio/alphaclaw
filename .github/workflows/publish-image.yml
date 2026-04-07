@@ -55,6 +55,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build smoke-test image
+        run: docker build -t alphaclaw-smoke:${{ github.sha }} .
+
+      - name: Smoke test OpenClaw CLI inside image
+        run: |
+          docker run --rm alphaclaw-smoke:${{ github.sha }} \
+            sh -lc 'openclaw models list --all --json >/tmp/models.json && test -s /tmp/models.json'
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6

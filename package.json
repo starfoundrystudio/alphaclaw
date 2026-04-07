@@ -21,7 +21,9 @@
     "bin/",
     "lib/",
     "patches/",
-    "scripts/apply-openclaw-patches.js"
+    "scripts/apply-openclaw-patches.js",
+    "scripts/openclaw-install-utils.js",
+    "scripts/restore-openclaw-bundled-plugin-deps.js"
   ],
   "scripts": {
     "start": "node bin/alphaclaw.js start",

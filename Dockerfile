@@ -19,7 +19,9 @@ RUN npm ci
 COPY bin ./bin
 COPY lib ./lib
 
-RUN npm run build:ui && npm prune --omit=dev
+RUN npm run build:ui \
+  && npm prune --omit=dev \
+  && node ./scripts/restore-openclaw-bundled-plugin-deps.js
 
 FROM node:22-slim
 
