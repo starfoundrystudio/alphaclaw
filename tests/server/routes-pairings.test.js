@@ -3,7 +3,13 @@ const request = require("supertest");
 
 const { registerPairingRoutes } = require("../../lib/server/routes/pairings");
 
-const createApp = ({ clawCmd, isOnboarded, fsModule }) => {
+const createApp = ({
+  clawCmd,
+  isOnboarded,
+  fsModule,
+  gatewayToken = "",
+  getGatewayPort = null,
+}) => {
   const app = express();
   app.use(express.json());
   registerPairingRoutes({
@@ -12,6 +18,8 @@ const createApp = ({ clawCmd, isOnboarded, fsModule }) => {
     isOnboarded,
     fsModule,
     openclawDir: "/tmp/openclaw",
+    gatewayToken,
+    getGatewayPort,
   });
   return app;
 };
@@ -331,7 +339,7 @@ describe("server/routes/pairings", () => {
       pending: [],
       cliAutoApproveComplete: true,
     });
-    expect(clawCmd).toHaveBeenCalledWith("devices approve req-cli-1", { quiet: true });
+    expect(clawCmd).toHaveBeenCalledWith("devices approve 'req-cli-1'", { quiet: true });
     expect(fsModule.writeFileSync).toHaveBeenCalledWith(
       "/tmp/openclaw/.alphaclaw/.cli-device-auto-approved",
       expect.stringContaining("approvedAt"),
@@ -388,6 +396,73 @@ describe("server/routes/pairings", () => {
       quiet: true,
       timeoutMs: 5000,
     });
+  });
+
+  it("uses the local loopback gateway for device list and auto-approve when token is available", async () => {
+    let cliMarkerWritten = false;
+    const clawCmd = vi.fn(async (cmd) => {
+      if (
+        cmd ===
+        "devices list --json --url 'ws://127.0.0.1:18789' --token 'gateway-token'"
+      ) {
+        return {
+          ok: true,
+          stdout: JSON.stringify({
+            pending: [
+              {
+                requestId: "req-cli-local",
+                clientId: "cli",
+                clientMode: "cli",
+                platform: "linux",
+              },
+            ],
+          }),
+          stderr: "",
+        };
+      }
+      if (
+        cmd ===
+        "devices approve 'req-cli-local' --url 'ws://127.0.0.1:18789' --token 'gateway-token'"
+      ) {
+        return { ok: true, stdout: "", stderr: "" };
+      }
+      return { ok: true, stdout: "{}", stderr: "" };
+    });
+    const fsModule = {
+      existsSync: vi.fn(() => cliMarkerWritten),
+      mkdirSync: vi.fn(),
+      writeFileSync: vi.fn((targetPath) => {
+        if (targetPath === "/tmp/openclaw/.alphaclaw/.cli-device-auto-approved") {
+          cliMarkerWritten = true;
+        }
+      }),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+      gatewayToken: "gateway-token",
+      getGatewayPort: () => 18789,
+    });
+
+    const res = await request(app).get("/api/devices");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      pending: [],
+      cliAutoApproveComplete: true,
+    });
+    expect(clawCmd).toHaveBeenCalledWith(
+      "devices list --json --url 'ws://127.0.0.1:18789' --token 'gateway-token'",
+      {
+        quiet: true,
+        timeoutMs: 5000,
+      },
+    );
+    expect(clawCmd).toHaveBeenCalledWith(
+      "devices approve 'req-cli-local' --url 'ws://127.0.0.1:18789' --token 'gateway-token'",
+      { quiet: true },
+    );
   });
 
   it("does not auto-approve when CLI marker already exists", async () => {
