@@ -9,7 +9,23 @@ This deployment path assumes:
 
 ## Inputs
 
-Export these before running the bootstrap script on the VPS:
+The script will automatically load `/root/.alphaclaw-bootstrap.env` if it exists,
+which is the easiest way to avoid re-exporting values after every SSH reconnect.
+
+Example:
+
+```bash
+cat >/root/.alphaclaw-bootstrap.env <<'EOF'
+ALPHACLAW_IMAGE=ghcr.io/your-org/alphaclaw:0.8.7-starfoundry.1
+TAILSCALE_AUTHKEY=tskey-auth-...
+SETUP_PASSWORD=choose-a-strong-password
+TAILSCALE_HOSTNAME=alphaclaw-prod
+ALPHACLAW_PUBLIC_EXTRA_PATH_PREFIXES=/googlechat,/api/messages
+EOF
+chmod 600 /root/.alphaclaw-bootstrap.env
+```
+
+You can still export values manually before running the bootstrap script on the VPS:
 
 ```bash
 export ALPHACLAW_IMAGE="ghcr.io/your-org/alphaclaw:0.8.7-starfoundry.1"
@@ -39,6 +55,12 @@ Run the script on the VPS as root from the repo checkout:
 
 ```bash
 bash deploy/bootstrap-hetzner-tailscale.sh
+```
+
+To use a different env file location:
+
+```bash
+BOOTSTRAP_ENV_FILE=/path/to/bootstrap.env bash deploy/bootstrap-hetzner-tailscale.sh
 ```
 
 It will:

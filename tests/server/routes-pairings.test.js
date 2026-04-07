@@ -394,7 +394,7 @@ describe("server/routes/pairings", () => {
     ]);
     expect(clawCmd).toHaveBeenCalledWith("devices list --json", {
       quiet: true,
-      timeoutMs: 5000,
+      timeoutMs: 15000,
     });
   });
 
@@ -456,7 +456,7 @@ describe("server/routes/pairings", () => {
       "devices list --json --url 'ws://127.0.0.1:18789' --token 'gateway-token'",
       {
         quiet: true,
-        timeoutMs: 5000,
+        timeoutMs: 15000,
       },
     );
     expect(clawCmd).toHaveBeenCalledWith(
@@ -510,5 +510,40 @@ describe("server/routes/pairings", () => {
     });
     expect(clawCmd).not.toHaveBeenCalledWith("devices approve req-cli-2", { quiet: true });
     expect(fsModule.writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it("logs device list failures even when the CLI exits without stdout or stderr", async () => {
+    const clawCmd = vi.fn(async () => ({
+      ok: false,
+      stdout: "",
+      stderr: "",
+      code: null,
+      signal: "SIGTERM",
+      killed: true,
+      message: "Command failed: openclaw devices list --json",
+    }));
+    const fsModule = {
+      existsSync: vi.fn(() => false),
+      mkdirSync: vi.fn(),
+      writeFileSync: vi.fn(),
+    };
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+    });
+
+    const res = await request(app).get("/api/devices");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      pending: [],
+      cliAutoApproveComplete: false,
+    });
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[alphaclaw] devices list failed: Command failed: openclaw devices list --json"),
+    );
+    logSpy.mockRestore();
   });
 });

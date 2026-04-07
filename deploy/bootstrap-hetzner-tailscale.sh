@@ -21,6 +21,24 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
+source_env_file() {
+  local file="$1"
+  local default_file="$2"
+
+  if [[ -f "$file" ]]; then
+    log "Loading bootstrap environment from ${file}"
+    set -a
+    # shellcheck disable=SC1090
+    . "$file"
+    set +a
+    return
+  fi
+
+  if [[ "$file" != "$default_file" ]]; then
+    die "bootstrap env file not found: ${file}"
+  fi
+}
+
 upsert_env_var() {
   local file="$1"
   local key="$2"
@@ -46,6 +64,10 @@ upsert_env_var() {
 
   mv "$tmp" "$file"
 }
+
+DEFAULT_BOOTSTRAP_ENV_FILE="/root/.alphaclaw-bootstrap.env"
+BOOTSTRAP_ENV_FILE="${BOOTSTRAP_ENV_FILE:-${DEFAULT_BOOTSTRAP_ENV_FILE}}"
+source_env_file "${BOOTSTRAP_ENV_FILE}" "${DEFAULT_BOOTSTRAP_ENV_FILE}"
 
 require_env "TAILSCALE_AUTHKEY"
 require_env "SETUP_PASSWORD"
