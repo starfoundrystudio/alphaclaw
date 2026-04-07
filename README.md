@@ -85,6 +85,46 @@ EXPOSE 3000
 CMD ["alphaclaw", "start"]
 ```
 
+## Publish A Pinned Image
+
+This repo now includes a production `Dockerfile` plus a GitHub Actions workflow
+that publishes a pinned image to GHCR on tag pushes:
+
+- Image name: `ghcr.io/<owner>/<repo>`
+- Trigger: push a tag like `v0.8.7-starfoundry.1`
+- Published tags:
+  - `ghcr.io/<owner>/<repo>:0.8.7-starfoundry.1`
+  - `ghcr.io/<owner>/<repo>:sha-<gitsha>`
+  - `ghcr.io/<owner>/<repo>:latest` for stable tags without a prerelease suffix
+
+Example release flow:
+
+```bash
+npm test
+git tag v0.8.7-starfoundry.1
+git push origin v0.8.7-starfoundry.1
+```
+
+The workflow in [publish-image.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/.github/workflows/publish-image.yml)
+builds the image, pushes it to GHCR, and records the image digest in the job
+summary.
+
+To deploy from a pinned image instead of building on the VPS, start from
+[docker-compose.ghcr.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/deploy/docker-compose.ghcr.yml)
+and replace the example image reference with your published tag or digest.
+
+For a Hetzner + Tailscale deployment, use
+[bootstrap-hetzner-tailscale.sh](/Users/billk/Development/starfoundrystudio/alphaclaw/deploy/bootstrap-hetzner-tailscale.sh)
+with the setup notes in
+[deploy/README.md](/Users/billk/Development/starfoundrystudio/alphaclaw/deploy/README.md).
+
+Example update flow on the VPS:
+
+```bash
+docker compose -f deploy/docker-compose.ghcr.yml pull
+docker compose -f deploy/docker-compose.ghcr.yml up -d
+```
+
 ## Setup UI
 
 | Tab           | What it manages                                                                                                          |
