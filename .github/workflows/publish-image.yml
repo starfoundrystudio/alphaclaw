@@ -61,7 +61,7 @@ jobs:
       - name: Smoke test OpenClaw CLI inside image
         run: |
           docker run --rm alphaclaw-smoke:${{ github.sha }} \
-            sh -lc 'openclaw models list --all --json >/tmp/models.json && test -s /tmp/models.json'
+            sh -lc '/app/node_modules/.bin/openclaw models list --all --json >/tmp/models.json && test -s /tmp/models.json'
 
       - name: Build and push image
         id: build
