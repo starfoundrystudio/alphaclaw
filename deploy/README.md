@@ -44,6 +44,9 @@ export ALPHACLAW_GHCR_TOKEN="ghp_or_pat_for_private_images"
 export TAILSCALE_ADVERTISE_TAGS="tag:openclaw-server"
 ```
 
+The managed runtime env file lives at `${APP_ROOT}/data/.env` so Docker startup
+and AlphaClaw runtime reloads use the same source of truth.
+
 The script derives these automatically unless you override them:
 
 - `ALPHACLAW_SETUP_URL=https://<node>.<tailnet>.ts.net`
@@ -67,7 +70,7 @@ It will:
 
 1. install Docker and Tailscale if needed
 2. join the VPS to the target tailnet
-3. write a managed `docker-compose.yml` and `.env`
+3. write a managed `docker-compose.yml` and `${APP_ROOT}/data/.env`
 4. pull the pinned GHCR image
 5. start AlphaClaw
 6. configure `tailscale serve` on `443` for the private UI
@@ -97,5 +100,9 @@ cd /opt/alphaclaw
 docker compose pull
 docker compose up -d
 ```
+
+If you are upgrading from an older bootstrap version that used
+`/opt/alphaclaw/.env`, the script will automatically migrate that file into
+`/opt/alphaclaw/data/.env` the first time it runs.
 
 If you want fully repeatable production upgrades, pin by digest instead of tag.

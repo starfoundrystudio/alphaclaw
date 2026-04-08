@@ -112,6 +112,8 @@ summary.
 To deploy from a pinned image instead of building on the VPS, start from
 [docker-compose.ghcr.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/deploy/docker-compose.ghcr.yml)
 and replace the example image reference with your published tag or digest.
+That compose example keeps the runtime env in `./data/.env` so AlphaClaw and
+Docker share a single env source of truth.
 
 For a Hetzner + Tailscale deployment, use
 [bootstrap-hetzner-tailscale.sh](/Users/billk/Development/starfoundrystudio/alphaclaw/deploy/bootstrap-hetzner-tailscale.sh)

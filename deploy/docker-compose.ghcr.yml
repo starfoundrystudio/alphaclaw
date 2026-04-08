@@ -6,7 +6,7 @@ services:
     container_name: alphaclaw
     restart: unless-stopped
     env_file:
-      - ./.env
+      - ./data/.env
     environment:
       ALPHACLAW_ROOT_DIR: /data
       PORT: "3000"

@@ -75,7 +75,7 @@ require_env "ALPHACLAW_IMAGE"
 
 APP_ROOT="${APP_ROOT:-/opt/alphaclaw}"
 DATA_DIR="${DATA_DIR:-${APP_ROOT}/data}"
-ENV_FILE="${ENV_FILE:-${APP_ROOT}/.env}"
+ENV_FILE="${ENV_FILE:-${DATA_DIR}/.env}"
 COMPOSE_FILE="${COMPOSE_FILE:-${APP_ROOT}/docker-compose.yml}"
 TAILSCALE_HOSTNAME="${TAILSCALE_HOSTNAME:-alphaclaw}"
 TAILSCALE_SERVE_PORT="${TAILSCALE_SERVE_PORT:-443}"
@@ -140,6 +140,12 @@ if [[ "${ALPHACLAW_SETUP_URL}" == "${ALPHACLAW_PUBLIC_BASE_URL}" ]]; then
 fi
 
 mkdir -p "${APP_ROOT}" "${DATA_DIR}"
+
+LEGACY_ENV_FILE="${APP_ROOT}/.env"
+if [[ "${ENV_FILE}" != "${LEGACY_ENV_FILE}" && -f "${LEGACY_ENV_FILE}" && ! -f "${ENV_FILE}" ]]; then
+  log "Migrating legacy env file from ${LEGACY_ENV_FILE} to ${ENV_FILE}"
+  cp "${LEGACY_ENV_FILE}" "${ENV_FILE}"
+fi
 
 if [[ -n "${ALPHACLAW_GHCR_USERNAME}" || -n "${ALPHACLAW_GHCR_TOKEN}" ]]; then
   if [[ -z "${ALPHACLAW_GHCR_USERNAME}" || -z "${ALPHACLAW_GHCR_TOKEN}" ]]; then
