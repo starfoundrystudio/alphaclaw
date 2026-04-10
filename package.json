@@ -1,18 +1,19 @@
 {
-  "name": "@chrysb/alphaclaw",
-  "version": "0.8.7",
+  "name": "@starfoundrystudio/alphaclaw",
+  "version": "0.8.7-starfoundry.1",
   "publishConfig": {
-    "access": "public"
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
   },
   "description": "Setup UI, gateway manager, and onboarding wrapper for OpenClaw",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chrysb/alphaclaw.git"
+    "url": "https://github.com/starfoundrystudio/alphaclaw.git"
   },
   "bugs": {
-    "url": "https://github.com/chrysb/alphaclaw/issues"
+    "url": "https://github.com/starfoundrystudio/alphaclaw/issues"
   },
-  "homepage": "https://github.com/chrysb/alphaclaw#readme",
+  "homepage": "https://github.com/starfoundrystudio/alphaclaw#readme",
   "license": "MIT",
   "bin": {
     "alphaclaw": "bin/alphaclaw.js"

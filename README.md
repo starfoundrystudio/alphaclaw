@@ -8,8 +8,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/chrysb/alphaclaw/actions/workflows/ci.yml"><img src="https://github.com/chrysb/alphaclaw/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-  <a href="https://www.npmjs.com/package/@chrysb/alphaclaw"><img src="https://img.shields.io/npm/v/@chrysb/alphaclaw" alt="npm version" /></a>
+  <a href="https://github.com/starfoundrystudio/alphaclaw/actions/workflows/ci.yml"><img src="https://github.com/starfoundrystudio/alphaclaw/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://www.npmjs.com/package/@starfoundrystudio/alphaclaw"><img src="https://img.shields.io/npm/v/@starfoundrystudio/alphaclaw" alt="npm version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" /></a>
 </p>
 
@@ -67,7 +67,7 @@ Set `SETUP_PASSWORD` at deploy time and visit your deployment URL. The welcome w
 ### Local / Docker
 
 ```bash
-npm install @chrysb/alphaclaw
+npm install @starfoundrystudio/alphaclaw
 npx alphaclaw start
 ```
 
@@ -108,6 +108,19 @@ git push origin v0.8.7-starfoundry.1
 The workflow in [publish-image.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/.github/workflows/publish-image.yml)
 builds the image, pushes it to GHCR, and records the image digest in the job
 summary.
+
+## Publish The GitHub Package
+
+This fork also includes [publish-npm.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/.github/workflows/publish-npm.yml)
+for publishing `@starfoundrystudio/alphaclaw` to GitHub Packages on tag pushes.
+
+Before enabling it, make sure:
+
+- `package.json` uses the final scoped package name
+- the repository package scope is `@starfoundrystudio`
+- stable tags should publish the default package version
+- prerelease tags like `v0.8.7-beta.1` should publish with the `beta` dist-tag
+- internal install environments are configured to authenticate to `npm.pkg.github.com`
 
 To deploy from a pinned image instead of building on the VPS, start from
 [docker-compose.ghcr.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/deploy/docker-compose.ghcr.yml)

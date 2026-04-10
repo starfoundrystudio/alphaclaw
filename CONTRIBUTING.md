@@ -49,7 +49,7 @@ For big changes, open an issue describing what you want to build, why, and your 
 ### Setup
 
 ```bash
-git clone https://github.com/chrysb/alphaclaw.git
+git clone https://github.com/starfoundrystudio/alphaclaw.git
 cd alphaclaw
 npm install
 ```

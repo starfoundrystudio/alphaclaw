@@ -70,7 +70,7 @@ describe("server/onboarding/openclaw", () => {
   it("only scrubs exact secret string values in JSON", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
-    const pluginPath = "/app/node_modules/@chrysb/alphaclaw/lib/plugin/usage-tracker";
+    const pluginPath = "/app/node_modules/@starfoundrystudio/alphaclaw/lib/plugin/usage-tracker";
     fs.writeFileSync(
       configPath,
       JSON.stringify(

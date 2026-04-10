@@ -38,7 +38,7 @@ const main = () => {
   let relPatchDir = path.relative(projectRoot, patchesDir);
   if (relPatchDir.startsWith("..") || path.isAbsolute(relPatchDir)) {
     console.error(
-      "[@chrysb/alphaclaw] patch-package: could not resolve patch dir relative to project root",
+      "[@starfoundrystudio/alphaclaw] patch-package: could not resolve patch dir relative to project root",
     );
     process.exit(1);
   }

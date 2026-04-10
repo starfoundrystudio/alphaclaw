@@ -87,9 +87,9 @@ Use this release flow when promoting tested beta builds to production:
    - `npm version 0.3.2`
    - `git push && git push --tags`
    - `npm publish` (publishes to `latest`)
-   - Pin both deployment templates on `main` to that release: update `~/Projects/openclaw-railway-template` and `~/Projects/openclaw-render-template` so `@chrysb/alphaclaw` and `openclaw` match AlphaClaw’s `package.json` for the release, run `npm install` in each repo, commit `package.json` and `package-lock.json`, and push. Skipping Render leaves that template on `latest` and causes drift from Railway.
+   - Pin both deployment templates on `main` to that release: update `~/Projects/openclaw-railway-template` and `~/Projects/openclaw-render-template` so `@starfoundrystudio/alphaclaw` and `openclaw` match AlphaClaw’s `package.json` for the release, run `npm install` in each repo, commit `package.json` and `package-lock.json`, and push. Skipping Render leaves that template on `latest` and causes drift from Railway.
 5. Return templates to production channel:
-   - `@chrysb/alphaclaw: "latest"`
+   - `@starfoundrystudio/alphaclaw: "latest"`
 6. Optionally keep beta branch/tag flows active for next release cycle.
 
 ### Runtime Dependency Guardrails (Express 4 vs 5)
@@ -103,14 +103,14 @@ Known root cause pattern:
 
 Preferred fix/recovery:
 
-1. Ensure template `package.json` pins the intended `@chrysb/alphaclaw` version.
+1. Ensure template `package.json` pins the intended `@starfoundrystudio/alphaclaw` version.
 2. Rebuild the `openclaw` container from scratch (no cache) and recreate it:
    - `docker compose down`
    - `docker compose build --no-cache openclaw`
    - `docker compose up -d openclaw`
 3. Verify runtime resolution inside the container:
    - `node -p "require('express/package.json').version"` should be `4.x`
-   - `npm ls express` should show `@chrysb/alphaclaw` on `express@4.x` (OpenClaw can still carry its own `express@5` subtree).
+   - `npm ls express` should show `@starfoundrystudio/alphaclaw` on `express@4.x` (OpenClaw can still carry its own `express@5` subtree).
 
 ### Telegram Notice Format (AlphaClaw)
 

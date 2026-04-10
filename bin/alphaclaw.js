@@ -161,7 +161,7 @@ console.log(`[alphaclaw] Root directory: ${rootDir}`);
 const pendingUpdateMarker = path.join(rootDir, ".alphaclaw-update-pending");
 if (fs.existsSync(pendingUpdateMarker)) {
   console.log(
-    "[alphaclaw] Pending update detected, installing @chrysb/alphaclaw@latest...",
+    "[alphaclaw] Pending update detected, installing @starfoundrystudio/alphaclaw@latest...",
   );
   const alphaPkgRoot = path.resolve(__dirname, "..");
   const nmIndex = alphaPkgRoot.lastIndexOf(
@@ -171,7 +171,7 @@ if (fs.existsSync(pendingUpdateMarker)) {
     nmIndex >= 0 ? alphaPkgRoot.slice(0, nmIndex) : alphaPkgRoot;
   try {
     execSync(
-      "npm install @chrysb/alphaclaw@latest --omit=dev --prefer-online",
+      "npm install @starfoundrystudio/alphaclaw@latest --omit=dev --prefer-online",
       {
         cwd: installDir,
         stdio: "inherit",
