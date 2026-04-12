@@ -129,6 +129,24 @@ describe("server/onboarding/openclaw", () => {
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
     expect(next.plugins.allow).toEqual(["usage-tracker"]);
     expect(next.plugins.entries["usage-tracker"]).toEqual({ enabled: true });
+    expect(next.plugins.entries["active-memory"]).toEqual({
+      enabled: true,
+      config: {
+        agents: ["main"],
+        allowedChatTypes: ["direct", "channel"],
+        modelFallbackPolicy: "default-remote",
+        queryMode: "recent",
+        promptStyle: "balanced",
+        timeoutMs: 15000,
+        maxSummaryChars: 220,
+        persistTranscripts: false,
+        logging: true,
+      },
+    });
+    expect(next.agents.defaults.heartbeat.model).toBe(
+      "vercel-ai-gateway/google/gemini-2.5-flash-lite",
+    );
+    expect(next.agents.defaults.memorySearch).toBeUndefined();
     expect(next.update.checkOnStart).toBe(false);
   });
 
@@ -164,6 +182,24 @@ describe("server/onboarding/openclaw", () => {
     expect(next.channels.discord.enabled).toBe(true);
     expect(next.channels.discord.dmPolicy).toBe("pairing");
     expect(next.channels.discord.token).toBe("${DISCORD_BOT_TOKEN}");
+    expect(next.plugins.entries["active-memory"]).toEqual({
+      enabled: true,
+      config: {
+        agents: ["main"],
+        allowedChatTypes: ["direct", "channel"],
+        modelFallbackPolicy: "default-remote",
+        queryMode: "recent",
+        promptStyle: "balanced",
+        timeoutMs: 15000,
+        maxSummaryChars: 220,
+        persistTranscripts: false,
+        logging: true,
+      },
+    });
+    expect(next.agents.defaults.heartbeat.model).toBe(
+      "vercel-ai-gateway/google/gemini-2.5-flash-lite",
+    );
+    expect(next.agents.defaults.memorySearch).toBeUndefined();
     expect(next.update.checkOnStart).toBe(false);
   });
 
@@ -199,6 +235,188 @@ describe("server/onboarding/openclaw", () => {
       channel: "beta",
       auto: { enabled: true },
       checkOnStart: false,
+    });
+  });
+
+  it("preserves unrelated heartbeat settings while forcing the managed heartbeat model", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+          agents: {
+            defaults: {
+              heartbeat: {
+                every: "45m",
+                directPolicy: "summary",
+                model: "anthropic/claude-opus-4.6",
+              },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.agents.defaults.heartbeat).toEqual({
+      every: "45m",
+      directPolicy: "summary",
+      model: "vercel-ai-gateway/google/gemini-2.5-flash-lite",
+    });
+  });
+
+  it("preserves unrelated active memory settings while forcing managed eligibility defaults", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: {
+            allow: [],
+            load: { paths: [] },
+            entries: {
+              "active-memory": {
+                enabled: false,
+                config: {
+                  agents: ["ops"],
+                  allowedChatTypes: ["direct"],
+                  promptStyle: "strict",
+                  queryMode: "full",
+                  timeoutMs: 22000,
+                  maxSummaryChars: 400,
+                  persistTranscripts: true,
+                  logging: false,
+                  model: "anthropic/claude-sonnet-4.6",
+                },
+              },
+            },
+          },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.plugins.entries["active-memory"]).toEqual({
+      enabled: true,
+      config: {
+        agents: ["main"],
+        allowedChatTypes: ["direct", "channel"],
+        modelFallbackPolicy: "default-remote",
+        promptStyle: "strict",
+        queryMode: "full",
+        timeoutMs: 22000,
+        maxSummaryChars: 400,
+        persistTranscripts: true,
+        logging: false,
+        model: "anthropic/claude-sonnet-4.6",
+      },
+    });
+  });
+
+  it("configures memory embeddings through AI Gateway when the gateway key is provided", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: { AI_GATEWAY_API_KEY: "aigw_live_test" },
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.agents.defaults.memorySearch).toEqual({
+      provider: "openai",
+      model: "text-embedding-3-small",
+      remote: {
+        baseUrl: "https://ai-gateway.vercel.sh/v1",
+        apiKey: "${AI_GATEWAY_API_KEY}",
+      },
+    });
+  });
+
+  it("preserves unrelated memory search settings while forcing AI Gateway embedding defaults", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+          agents: {
+            defaults: {
+              memorySearch: {
+                enabled: true,
+                query: { maxResults: 12 },
+                provider: "gemini",
+                model: "gemini-embedding-001",
+                remote: {
+                  baseUrl: "https://example.com/v1",
+                  apiKey: "${GEMINI_API_KEY}",
+                  headers: { "x-test": "1" },
+                },
+              },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeManagedImportOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: { AI_GATEWAY_API_KEY: "aigw_live_test" },
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.agents.defaults.memorySearch).toEqual({
+      enabled: true,
+      query: { maxResults: 12 },
+      provider: "openai",
+      model: "text-embedding-3-small",
+      remote: {
+        baseUrl: "https://ai-gateway.vercel.sh/v1",
+        apiKey: "${AI_GATEWAY_API_KEY}",
+        headers: { "x-test": "1" },
+      },
     });
   });
 });
