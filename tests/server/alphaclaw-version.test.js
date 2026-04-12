@@ -69,13 +69,26 @@ describe("server/alphaclaw-version", () => {
       });
     });
     const { service } = createService({
-      env: {},
+      env: {
+        GITHUB_TOKEN: "test-token",
+        GITHUB_ACTOR: "ci-bot",
+      },
       readOpenclawVersion: () => "2026.4.10",
       fetchMock,
       fsImpl: { ...fs, existsSync: vi.fn(() => false) },
     });
 
     const status = await service.getVersionStatus(false);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      kAlphaclawRegistryUrl,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Accept: "application/vnd.npm.install-v1+json",
+          Authorization: `Basic ${Buffer.from("ci-bot:test-token", "utf8").toString("base64")}`,
+        }),
+      }),
+    );
 
     expect(status).toEqual(
       expect.objectContaining({

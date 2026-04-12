@@ -457,25 +457,35 @@ describe("server/routes/system", () => {
     vi.useRealTimers();
   });
 
-  it("does not schedule a local restart for managed updates", async () => {
+  it("does not schedule a local restart for instruction-based deployments", async () => {
     vi.useFakeTimers();
     const deps = createSystemDeps();
     deps.alphaclawVersionService.updateAlphaclaw.mockResolvedValue({
-      status: 200,
+      status: 409,
       body: {
-        ok: true,
-        previousVersion: "0.1.5",
-        latestVersion: "0.2.0",
-        latestOpenclawVersion: "1.3.0",
-        restarting: true,
-        managedUpdate: true,
+        ok: false,
+        error: "This AlphaClaw instance is managed by TeamYou.",
+        updateStrategy: {
+          action: "instructions",
+          provider: "clawctl",
+          label: "TeamYou",
+          description: "This AlphaClaw instance is managed by TeamYou.",
+          steps: ["Contact TeamYou support to request an upgrade."],
+          primaryActionLabel: "Done",
+        },
       },
     });
     const app = createApp(deps);
 
     const res = await request(app).post("/api/alphaclaw/update");
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(409);
+    expect(res.body.updateStrategy).toEqual(
+      expect.objectContaining({
+        action: "instructions",
+        provider: "clawctl",
+      }),
+    );
     await vi.advanceTimersByTimeAsync(1000);
     expect(deps.alphaclawVersionService.restartProcess).not.toHaveBeenCalled();
     vi.useRealTimers();
