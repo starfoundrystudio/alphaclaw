@@ -129,6 +129,7 @@ describe("server/onboarding/openclaw", () => {
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
     expect(next.plugins.allow).toEqual(["usage-tracker"]);
     expect(next.plugins.entries["usage-tracker"]).toEqual({ enabled: true });
+    expect(next.update.checkOnStart).toBe(false);
   });
 
   it("resets imported allowlist dmPolicy to pairing when re-enabling discord", () => {
@@ -163,5 +164,41 @@ describe("server/onboarding/openclaw", () => {
     expect(next.channels.discord.enabled).toBe(true);
     expect(next.channels.discord.dmPolicy).toBe("pairing");
     expect(next.channels.discord.token).toBe("${DISCORD_BOT_TOKEN}");
+    expect(next.update.checkOnStart).toBe(false);
+  });
+
+  it("preserves unrelated update settings while disabling startup update checks", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+          update: {
+            channel: "beta",
+            auto: { enabled: true },
+            checkOnStart: true,
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.update).toEqual({
+      channel: "beta",
+      auto: { enabled: true },
+      checkOnStart: false,
+    });
   });
 });
