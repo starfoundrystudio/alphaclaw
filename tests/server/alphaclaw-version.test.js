@@ -2,50 +2,55 @@ const childProcess = require("child_process");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const https = require("https");
-const { EventEmitter } = require("events");
 
 const {
+  kAlphaclawRegistryUrl,
   kNpmPackageRoot,
   kOpenclawUpdateCopyTimeoutMs,
   kRootDir,
 } = require("../../lib/server/constants");
 const modulePath = require.resolve("../../lib/server/alphaclaw-version");
 const originalExec = childProcess.exec;
-const originalHttpsGet = https.get;
 
-const createMockHttpsGet = (responseJson) => {
-  return vi.fn((url, opts, callback) => {
-    const res = new EventEmitter();
-    res.statusCode = 200;
-    process.nextTick(() => {
-      res.emit("data", JSON.stringify(responseJson));
-      res.emit("end");
-    });
-    callback(res);
-    const req = new EventEmitter();
-    req.on = vi.fn().mockReturnThis();
-    return req;
-  });
-};
+const createFetchResponse = ({ ok = true, status = 200, body = {} } = {}) => ({
+  ok,
+  status,
+  text: vi.fn(async () =>
+    typeof body === "string" ? body : JSON.stringify(body),
+  ),
+});
 
-const loadVersionModule = ({ execMock, httpsGetMock } = {}) => {
+const loadVersionModule = ({ execMock } = {}) => {
   if (execMock) childProcess.exec = execMock;
-  if (httpsGetMock) https.get = httpsGetMock;
   delete require.cache[modulePath];
   return require(modulePath);
+};
+
+const createService = ({
+  env = {},
+  readOpenclawVersion = () => "2026.4.1",
+  fetchMock = vi.fn(),
+  execMock = vi.fn(),
+  fsImpl = fs,
+} = {}) => {
+  const { createAlphaclawVersionService } = loadVersionModule({ execMock });
+  const service = createAlphaclawVersionService({
+    env,
+    readOpenclawVersion,
+    fetchImpl: fetchMock,
+    fsImpl,
+  });
+  return { service, fetchMock, execMock };
 };
 
 describe("server/alphaclaw-version", () => {
   afterEach(() => {
     childProcess.exec = originalExec;
-    https.get = originalHttpsGet;
     delete require.cache[modulePath];
   });
 
   it("reads current version from package.json", () => {
-    const { createAlphaclawVersionService } = loadVersionModule();
-    const service = createAlphaclawVersionService();
+    const { service } = createService();
     const version = service.readAlphaclawVersion();
 
     const expectedPkg = JSON.parse(
@@ -54,35 +59,145 @@ describe("server/alphaclaw-version", () => {
     expect(version).toBe(expectedPkg.version);
   });
 
-  it("returns version status and caches within TTL", async () => {
-    const httpsGetMock = createMockHttpsGet({
-      "dist-tags": { latest: "99.0.0" },
+  it("returns local self-update status from npm", async () => {
+    const fetchMock = vi.fn(async (url) => {
+      expect(url).toBe(kAlphaclawRegistryUrl);
+      return createFetchResponse({
+        body: {
+          "dist-tags": { latest: "99.0.0" },
+        },
+      });
     });
-    const { createAlphaclawVersionService } = loadVersionModule({
-      httpsGetMock,
+    const { service } = createService({
+      env: {
+        GITHUB_TOKEN: "test-token",
+        GITHUB_ACTOR: "ci-bot",
+      },
+      readOpenclawVersion: () => "2026.4.10",
+      fetchMock,
+      fsImpl: { ...fs, existsSync: vi.fn(() => false) },
     });
-    const service = createAlphaclawVersionService();
 
-    const first = await service.getVersionStatus(false);
-    expect(first.ok).toBe(true);
-    expect(first.currentVersion).toBeTruthy();
-    expect(first.latestVersion).toBe("99.0.0");
-    expect(first.hasUpdate).toBe(true);
+    const status = await service.getVersionStatus(false);
 
-    const second = await service.getVersionStatus(false);
-    expect(second.currentVersion).toBe(first.currentVersion);
-    expect(second.latestVersion).toBe("99.0.0");
-    // Should use cache — only one https.get call
-    expect(httpsGetMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      kAlphaclawRegistryUrl,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Accept: "application/vnd.npm.install-v1+json",
+          Authorization: `Basic ${Buffer.from("ci-bot:test-token", "utf8").toString("base64")}`,
+        }),
+      }),
+    );
+
+    expect(status).toEqual(
+      expect.objectContaining({
+        ok: true,
+        currentVersion: expect.any(String),
+        currentOpenclawVersion: "2026.4.10",
+        latestVersion: "99.0.0",
+        hasUpdate: true,
+        updateStrategy: expect.objectContaining({
+          action: "self-update",
+          provider: "self-hosted",
+        }),
+      }),
+    );
   });
 
-  it("returns 409 while another update is in progress", async () => {
+  it("returns container instructions without attempting a registry lookup", async () => {
+    const fetchMock = vi.fn();
+    const { service } = createService({
+      fetchMock,
+      fsImpl: { ...fs, existsSync: vi.fn((target) => target === "/.dockerenv") },
+    });
+
+    const status = await service.getVersionStatus(true);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(status).toEqual(
+      expect.objectContaining({
+        ok: true,
+        latestVersion: null,
+        latestOpenclawVersion: null,
+        hasUpdate: false,
+        updateStrategy: expect.objectContaining({
+          provider: "container",
+          action: "instructions",
+          primaryActionLabel: "Done",
+        }),
+      }),
+    );
+
+    const result = await service.updateAlphaclaw();
+    expect(result.status).toBe(409);
+    expect(result.body.updateStrategy).toEqual(
+      expect.objectContaining({
+        provider: "container",
+        action: "instructions",
+      }),
+    );
+  });
+
+  it("returns TeamYou support instructions for clawctl-managed deployments", async () => {
+    const fetchMock = vi.fn(async () =>
+      createFetchResponse({
+        body: {
+          "dist-tags": { latest: "99.0.0" },
+        },
+      }),
+    );
+    const { service } = createService({
+      env: { ALPHACLAW_DEPLOYMENT_PROVIDER: "clawctl" },
+      fetchMock,
+      fsImpl: { ...fs, existsSync: vi.fn(() => false) },
+    });
+
+    const status = await service.getVersionStatus(true);
+
+    expect(status.updateStrategy).toEqual(
+      expect.objectContaining({
+        provider: "clawctl",
+        label: "TeamYou",
+        action: "instructions",
+        description: "This AlphaClaw instance is managed by TeamYou.",
+        steps: ["Contact TeamYou support to request an upgrade."],
+        primaryActionLabel: "Done",
+      }),
+    );
+
+    const result = await service.updateAlphaclaw();
+
+    expect(result.status).toBe(409);
+    expect(result.body.updateStrategy).toEqual(
+      expect.objectContaining({
+        provider: "clawctl",
+        label: "TeamYou",
+        action: "instructions",
+        description: "This AlphaClaw instance is managed by TeamYou.",
+        steps: ["Contact TeamYou support to request an upgrade."],
+        primaryActionLabel: "Done",
+      }),
+    );
+  });
+
+  it("returns 409 while another self-update is in progress", async () => {
     const callbacks = [];
     const execMock = vi.fn().mockImplementation((cmd, opts, callback) => {
       callbacks.push(callback);
     });
-    const { createAlphaclawVersionService } = loadVersionModule({ execMock });
-    const service = createAlphaclawVersionService();
+    const fetchMock = vi.fn(async () =>
+      createFetchResponse({
+        body: {
+          "dist-tags": { latest: "99.0.0" },
+        },
+      }),
+    );
+    const { service } = createService({
+      fetchMock,
+      execMock,
+      fsImpl: { ...fs, existsSync: vi.fn(() => false) },
+    });
 
     const firstPromise = service.updateAlphaclaw();
     await new Promise((resolve) => setImmediate(resolve));
@@ -102,12 +217,15 @@ describe("server/alphaclaw-version", () => {
     await firstPromise;
   });
 
-  it("returns successful update result with restarting flag", async () => {
+  it("returns successful self-update result with restarting flag", async () => {
     const execMock = vi.fn().mockImplementation((cmd, opts, callback) => {
       callback(null, "added 1 package", "");
     });
-    const { createAlphaclawVersionService } = loadVersionModule({ execMock });
-    const service = createAlphaclawVersionService();
+    const { service } = createService({
+      execMock,
+      fetchMock: vi.fn(),
+      fsImpl: { ...fs, existsSync: vi.fn(() => false) },
+    });
 
     const result = await service.updateAlphaclaw();
 
@@ -146,8 +264,10 @@ describe("server/alphaclaw-version", () => {
         "npm ERR! network timeout",
       );
     });
-    const { createAlphaclawVersionService } = loadVersionModule({ execMock });
-    const service = createAlphaclawVersionService();
+    const { service } = createService({
+      execMock,
+      fsImpl: { ...fs, existsSync: vi.fn(() => false) },
+    });
 
     const result = await service.updateAlphaclaw();
 
@@ -156,13 +276,15 @@ describe("server/alphaclaw-version", () => {
     expect(result.body.error).toContain("npm ERR!");
   });
 
-  it("writes update marker to kRootDir on successful update", async () => {
+  it("writes update marker to kRootDir on successful self-update", async () => {
     const execMock = vi.fn().mockImplementation((cmd, opts, callback) => {
       callback(null, "added 1 package", "");
     });
     const writeSpy = vi.spyOn(fs, "writeFileSync");
-    const { createAlphaclawVersionService } = loadVersionModule({ execMock });
-    const service = createAlphaclawVersionService();
+    const { service } = createService({
+      execMock,
+      fsImpl: { ...fs, existsSync: vi.fn(() => false) },
+    });
 
     const result = await service.updateAlphaclaw();
 
