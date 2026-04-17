@@ -64,6 +64,12 @@ beforeEach(() => {
     "auth-profiles.json",
   );
   if (fs.existsSync(storePath)) fs.unlinkSync(storePath);
+  const pendingStorePath = path.join(
+    tmpDir,
+    "pending-auth-profiles",
+    "main.json",
+  );
+  if (fs.existsSync(pendingStorePath)) fs.unlinkSync(pendingStorePath);
 });
 
 afterAll(() => {
@@ -302,5 +308,63 @@ describe("server/auth-profiles", () => {
     const config = readJson("openclaw.json");
     expect(config.auth?.profiles || {}).toEqual({});
     expect(config.gateway.port).toBe(18789);
+  });
+
+  it("stages pre-onboarding auth profiles outside .openclaw and migrates them later", () => {
+    const configPath = path.join(tmpDir, ".openclaw", "openclaw.json");
+    const finalStorePath = path.join(
+      tmpDir,
+      ".openclaw",
+      "agents",
+      "main",
+      "agent",
+      "auth-profiles.json",
+    );
+    const pendingStorePath = path.join(
+      tmpDir,
+      "pending-auth-profiles",
+      "main.json",
+    );
+
+    fs.unlinkSync(configPath);
+
+    ap.upsertCodexProfile({
+      access: "jwt",
+      refresh: "rt",
+      expires: 9999999999999,
+      accountId: "acct",
+    });
+
+    expect(fs.existsSync(finalStorePath)).toBe(false);
+    expect(fs.existsSync(pendingStorePath)).toBe(true);
+
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          agents: {
+            defaults: {
+              model: { primary: "openai/gpt-5.1-codex" },
+            },
+          },
+          gateway: { port: 18789 },
+        },
+        null,
+        2,
+      ),
+    );
+
+    ap.syncConfigAuthReferencesForAgent();
+
+    expect(fs.existsSync(finalStorePath)).toBe(true);
+    expect(fs.existsSync(pendingStorePath)).toBe(false);
+    const store = readJson("agents/main/agent/auth-profiles.json");
+    expect(store.profiles["openai-codex:codex-cli"]).toMatchObject({
+      type: "oauth",
+      provider: "openai-codex",
+      access: "jwt",
+      refresh: "rt",
+      accountId: "acct",
+    });
   });
 });

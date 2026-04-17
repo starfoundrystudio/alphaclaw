@@ -3,6 +3,7 @@ const os = require("os");
 const path = require("path");
 
 const {
+  promoteCloneToTarget,
   alignHookTransforms,
   applySecretExtraction,
 } = require("../../lib/server/onboarding/import/import-applier");
@@ -22,6 +23,26 @@ afterEach(() => {
 });
 
 describe("import-applier", () => {
+  it("replaces a pre-populated full-root target when replacement is allowed", () => {
+    const tempDir = createTempDir();
+    const targetDir = createTempDir();
+
+    fs.writeFileSync(path.join(tempDir, "openclaw.json"), '{"gateway":{}}', "utf8");
+    fs.mkdirSync(path.join(targetDir, "agents", "main"), { recursive: true });
+    fs.writeFileSync(path.join(targetDir, "agents", "main", "stale.json"), "{}", "utf8");
+
+    const result = promoteCloneToTarget({
+      fs,
+      tempDir,
+      targetDir,
+      replaceTarget: true,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(fs.existsSync(path.join(targetDir, "openclaw.json"))).toBe(true);
+    expect(fs.existsSync(path.join(targetDir, "agents"))).toBe(false);
+  });
+
   it("relocates mismatched hook transforms into _backup and writes a shim", () => {
     const baseDir = createTempDir();
     const legacyTransformDir = path.join(
