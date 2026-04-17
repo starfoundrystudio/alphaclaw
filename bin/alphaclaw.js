@@ -13,8 +13,12 @@ const {
 } = require("../lib/cli/git-runtime");
 const { buildSecretReplacements } = require("../lib/server/helpers");
 const {
+  buildManagedPaths,
   migrateManagedInternalFiles,
 } = require("../lib/server/internal-files-migration");
+const {
+  shouldInitializeManagedOpenclawRuntime,
+} = require("../lib/server/openclaw-runtime-state");
 
 const kUsageTrackerPluginPath = path.resolve(
   __dirname,
@@ -149,11 +153,20 @@ if (portFlag) {
 // ---------------------------------------------------------------------------
 
 const openclawDir = path.join(rootDir, ".openclaw");
-fs.mkdirSync(openclawDir, { recursive: true });
-const { hourlyGitSyncPath } = migrateManagedInternalFiles({
+const onboardingMarkerPath = path.join(rootDir, "onboarded.json");
+const shouldInitializeManagedRuntime = shouldInitializeManagedOpenclawRuntime({
   fs,
+  onboardingMarkerPath,
   openclawDir,
 });
+const { hourlyGitSyncPath } = buildManagedPaths({ openclawDir });
+if (shouldInitializeManagedRuntime) {
+  fs.mkdirSync(openclawDir, { recursive: true });
+  migrateManagedInternalFiles({
+    fs,
+    openclawDir,
+  });
+}
 console.log(`[alphaclaw] Root directory: ${rootDir}`);
 
 // Check for pending update marker (written by the update endpoint before restart).
@@ -194,7 +207,7 @@ if (fs.existsSync(pendingUpdateMarker)) {
 
 const homeOpenclawLink = path.join(os.homedir(), ".openclaw");
 try {
-  if (!fs.existsSync(homeOpenclawLink)) {
+  if (shouldInitializeManagedRuntime && !fs.existsSync(homeOpenclawLink)) {
     fs.symlinkSync(openclawDir, homeOpenclawLink);
     console.log(`[alphaclaw] Symlinked ${homeOpenclawLink} -> ${openclawDir}`);
   }
@@ -553,7 +566,7 @@ if (!gogInstalled) {
 const packagedHourlyGitSyncPath = path.join(setupDir, "hourly-git-sync.sh");
 
 try {
-  if (fs.existsSync(packagedHourlyGitSyncPath)) {
+  if (shouldInitializeManagedRuntime && fs.existsSync(packagedHourlyGitSyncPath)) {
     const packagedSyncScript = fs.readFileSync(
       packagedHourlyGitSyncPath,
       "utf8",
