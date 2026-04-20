@@ -761,6 +761,8 @@ describe("server/routes/onboarding", () => {
     expect(deps.writeEnvFile).toHaveBeenCalledWith(
       expect.arrayContaining([
         { key: "GITHUB_WORKSPACE_REPO", value: "owner/target-repo" },
+        expect.objectContaining({ key: "OPENCLAW_GATEWAY_TOKEN" }),
+        expect.objectContaining({ key: "WEBHOOK_TOKEN" }),
         { key: "SLACK_BOT_TOKEN", value: "placeholder" },
         { key: "SLACK_APP_TOKEN", value: "placeholder" },
         { key: "SLACK_USER_TOKEN", value: "placeholder" },
@@ -774,6 +776,14 @@ describe("server/routes/onboarding", () => {
         vars.some((entry) => entry.key === "GATEWAY_AUTH_TOKEN"),
       ),
     ).toBe(false);
+    const savedGatewayToken = deps.writeEnvFile.mock.calls
+      .flatMap(([vars]) => vars || [])
+      .find((entry) => entry.key === "OPENCLAW_GATEWAY_TOKEN")?.value;
+    expect(savedGatewayToken).toMatch(/^[A-Za-z0-9_-]{20,}$/);
+    const savedWebhookToken = deps.writeEnvFile.mock.calls
+      .flatMap(([vars]) => vars || [])
+      .find((entry) => entry.key === "WEBHOOK_TOKEN")?.value;
+    expect(savedWebhookToken).toMatch(/^[A-Za-z0-9_-]{20,}$/);
     expect(files.get("/tmp/openclaw/openclaw.json")).toContain(
       '"token": "${OPENCLAW_GATEWAY_TOKEN}"',
     );
@@ -1222,6 +1232,101 @@ describe("server/routes/onboarding", () => {
         { key: "SLACK_BOT_TOKEN", status: "missing" },
       ],
     });
+    expect(files.get(path.join(deps.constants.OPENCLAW_DIR, "openclaw.json"))).toContain(
+      '"token": "${OPENCLAW_GATEWAY_TOKEN}"',
+    );
+    expect(files.get(path.join(deps.constants.OPENCLAW_DIR, "openclaw.json"))).toContain(
+      '"token": "${WEBHOOK_TOKEN}"',
+    );
+  });
+
+  it("rotates gateway token and preserves webhook token before normalizing config", async () => {
+    const deps = createBaseDeps();
+    const tempDir = path.join(os.tmpdir(), "alphaclaw-import-managed-system-vars");
+    const fileEntry = (name) => ({
+      name,
+      isFile: () => true,
+      isDirectory: () => false,
+    });
+    const files = new Map([
+      [
+        path.join(tempDir, "openclaw.json"),
+        JSON.stringify({
+          gateway: {
+            auth: {
+              token: "imported-gateway-token",
+            },
+          },
+          hooks: {
+            token: "imported-webhook-token",
+          },
+        }),
+      ],
+    ]);
+    const directories = new Set([tempDir]);
+    deps.fs.existsSync.mockImplementation(
+      (targetPath) => directories.has(targetPath) || files.has(targetPath),
+    );
+    deps.fs.statSync.mockImplementation((targetPath) => {
+      if (directories.has(targetPath)) {
+        return { isFile: () => false, isDirectory: () => true };
+      }
+      if (files.has(targetPath)) {
+        return { isFile: () => true, isDirectory: () => false };
+      }
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+    deps.fs.readdirSync.mockImplementation((targetPath) => {
+      if (targetPath === tempDir) {
+        return [fileEntry("openclaw.json")];
+      }
+      if (targetPath === deps.constants.OPENCLAW_DIR) {
+        return [];
+      }
+      return [];
+    });
+    deps.fs.readFileSync.mockImplementation((targetPath) => files.get(targetPath) || "{}");
+    deps.fs.writeFileSync.mockImplementation((targetPath, contents) => {
+      files.set(targetPath, String(contents));
+    });
+    deps.fs.renameSync.mockImplementation((sourcePath, targetPath) => {
+      if (sourcePath === tempDir && targetPath === deps.constants.OPENCLAW_DIR) {
+        directories.delete(tempDir);
+        directories.add(targetPath);
+        for (const [filePath, contents] of [...files.entries()]) {
+          if (!filePath.startsWith(`${sourcePath}/`)) continue;
+          files.delete(filePath);
+          files.set(`${targetPath}${filePath.slice(sourcePath.length)}`, contents);
+        }
+        return;
+      }
+      throw new Error(`Unexpected rename from ${sourcePath} to ${targetPath}`);
+    });
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard/import/apply").send({
+      tempDir,
+      approvedSecrets: [],
+      skipSecretExtraction: true,
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.placeholderReview).toEqual({
+      found: false,
+      count: 0,
+      vars: [],
+    });
+    expect(res.body.envVarsImported).toBe(2);
+    const savedGatewayToken = deps.writeEnvFile.mock.calls
+      .flatMap(([vars]) => vars || [])
+      .find((entry) => entry.key === "OPENCLAW_GATEWAY_TOKEN")?.value;
+    expect(savedGatewayToken).toMatch(/^[A-Za-z0-9_-]{20,}$/);
+    expect(savedGatewayToken).not.toBe("imported-gateway-token");
+    expect(deps.writeEnvFile).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        { key: "WEBHOOK_TOKEN", value: "imported-webhook-token" },
+      ]),
+    );
     expect(files.get(path.join(deps.constants.OPENCLAW_DIR, "openclaw.json"))).toContain(
       '"token": "${OPENCLAW_GATEWAY_TOKEN}"',
     );

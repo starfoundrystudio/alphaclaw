@@ -1,4 +1,5 @@
 const {
+  collectManagedSystemEnvVars,
   detectSecrets,
   extractPreFillValues,
   isSensitiveKey,
@@ -309,6 +310,113 @@ describe("secret-detector", () => {
       });
       const webhook = secrets.find((s) => s.configPath === "hooks.token");
       expect(webhook).toBeUndefined();
+    });
+  });
+
+  describe("collectManagedSystemEnvVars", () => {
+    it("rotates gateway token and preserves webhook token from imported config", () => {
+      const fs = createMockFs({
+        "/base/openclaw.json": JSON.stringify({
+          gateway: {
+            auth: {
+              token: "imported-gateway-token",
+            },
+          },
+          hooks: {
+            token: "imported-webhook-token",
+          },
+        }),
+      });
+
+      const managedVars = collectManagedSystemEnvVars({
+        fs,
+        baseDir: "/base",
+        configFiles: ["openclaw.json"],
+        envFiles: [],
+      });
+
+      expect(managedVars).toHaveLength(2);
+      const gatewayVar = managedVars.find(
+        (entry) => entry.key === "OPENCLAW_GATEWAY_TOKEN",
+      );
+      const webhookVar = managedVars.find(
+        (entry) => entry.key === "WEBHOOK_TOKEN",
+      );
+      expect(gatewayVar?.value).toMatch(/^[A-Za-z0-9_-]{20,}$/);
+      expect(gatewayVar?.value).not.toBe("imported-gateway-token");
+      expect(webhookVar).toEqual({
+        key: "WEBHOOK_TOKEN",
+        value: "imported-webhook-token",
+      });
+    });
+
+    it("rotates gateway token and prefers imported env file value for webhook token", () => {
+      const fs = createMockFs({
+        "/base/openclaw.json": JSON.stringify({
+          gateway: {
+            auth: {
+              token: "config-gateway-token",
+            },
+          },
+          hooks: {
+            token: "config-webhook-token",
+          },
+        }),
+        "/base/.env": [
+          "OPENCLAW_GATEWAY_TOKEN=env-gateway-token",
+          "WEBHOOK_TOKEN=env-webhook-token",
+          "",
+        ].join("\n"),
+      });
+
+      const managedVars = collectManagedSystemEnvVars({
+        fs,
+        baseDir: "/base",
+        configFiles: ["openclaw.json"],
+        envFiles: [".env"],
+      });
+
+      expect(managedVars).toHaveLength(2);
+      const gatewayVar = managedVars.find(
+        (entry) => entry.key === "OPENCLAW_GATEWAY_TOKEN",
+      );
+      const webhookVar = managedVars.find(
+        (entry) => entry.key === "WEBHOOK_TOKEN",
+      );
+      expect(gatewayVar?.value).toMatch(/^[A-Za-z0-9_-]{20,}$/);
+      expect(gatewayVar?.value).not.toBe("env-gateway-token");
+      expect(webhookVar).toEqual({
+        key: "WEBHOOK_TOKEN",
+        value: "env-webhook-token",
+      });
+    });
+
+    it("generates missing managed runtime tokens when config requires them", () => {
+      const fs = createMockFs({
+        "/base/openclaw.json": JSON.stringify({
+          gateway: {
+            auth: {
+              token: "${OPENCLAW_GATEWAY_TOKEN}",
+            },
+          },
+          hooks: {
+            token: "${WEBHOOK_TOKEN}",
+          },
+        }),
+      });
+
+      const managedVars = collectManagedSystemEnvVars({
+        fs,
+        baseDir: "/base",
+        configFiles: ["openclaw.json"],
+        envFiles: [],
+      });
+
+      expect(managedVars).toHaveLength(2);
+      expect(managedVars[0].key).toBe("OPENCLAW_GATEWAY_TOKEN");
+      expect(managedVars[0].value).toMatch(/^[A-Za-z0-9_-]{20,}$/);
+      expect(managedVars[1].key).toBe("WEBHOOK_TOKEN");
+      expect(managedVars[1].value).toMatch(/^[A-Za-z0-9_-]{20,}$/);
     });
   });
 

@@ -50,7 +50,9 @@ AlphaClaw intentionally normalizes some imported state for safety:
 - imported `credentials/*-allowFrom.json` files are reset
 - imported Telegram account pairing state is cleared
 - imported gateway and webhook tokens are rewritten to AlphaClaw-managed env
-  refs
+  refs; import always generates a fresh `OPENCLAW_GATEWAY_TOKEN`, while
+  `WEBHOOK_TOKEN` is preserved if the source already had one and otherwise
+  generated fresh
 - managed bootstrap files are regenerated
 - imported git history is not preserved
 
