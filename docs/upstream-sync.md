@@ -105,6 +105,27 @@ At minimum:
 npm test
 ```
 
+Before cutting a release tag for a newly synced upstream version, also verify
+that `patches/` only contains patch files that still match the current
+`openclaw` version in `package.json`.
+
+Recommended check:
+
+```bash
+find patches -maxdepth 1 -type f | sort
+npm ci
+```
+
+Notes:
+
+- AlphaClaw's postinstall applies every `.patch` file in `patches/`.
+- If an old file such as `patches/openclaw+2026.4.10.patch` is left behind
+  after we move to a newer OpenClaw version such as `2026.4.15`, clean
+  installs can fail even if local incremental installs appear fine.
+- If `npm ci` fails during `patch-package` with an older patch filename,
+  delete the stale patch, regenerate `package-lock.json` from a clean install
+  if needed, and rerun `npm ci` before tagging a release.
+
 For risky onboarding/import changes, also do a manual smoke test:
 
 1. Perform a fresh onboarding.
