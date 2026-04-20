@@ -89,6 +89,7 @@ Basic usage:
 ```bash
 ./scripts/prepare-openclaw-migration.sh \
   --source-openclaw-dir ~/.openclaw \
+  --target-home /home/alphaclaw \
   --output-dir ~/alphaclaw-migration \
   --force
 ```
@@ -100,9 +101,13 @@ If the main workspace lives outside `~/.openclaw`, include it explicitly:
   --source-openclaw-dir ~/.openclaw \
   --main-workspace ~/clawd \
   --output-dir ~/alphaclaw-migration \
-  --target-home /home/exedev \
+  --target-home /home/alphaclaw \
   --force
 ```
+
+`--target-home` should be the home directory of the destination AlphaClaw
+service user on the new host, not the home directory of the old OpenClaw
+machine. In most deployments that will be `/home/alphaclaw`.
 
 What the preparation script does:
 
@@ -111,13 +116,17 @@ What the preparation script does:
   identity, and cron run history
 - removes nested `.git` and `.openclaw` state from copied workspaces
 - optionally replaces the imported `workspace/` with an external main workspace
-- rewrites agent `workspace` and `agentDir` paths to AlphaClaw conventions
+- rewrites migrated JSON path references such as agent workspaces, agent dirs,
+  and cron/job working directories to AlphaClaw conventions
 - removes legacy `agents.defaults.workspace`
+- fails if source-machine path references still remain after rewrite
 
 Important defaults:
 
 - `credentials/` is excluded by default because standard AlphaClaw import does
   not preserve trusted pairings anyway
+- `--target-home` is required so the snapshot is always prepared for the
+  destination machine explicitly
 - pass `--keep-credentials` only if you intentionally want those files in the
   snapshot for archival reasons
 
@@ -129,6 +138,16 @@ Before pushing, inspect the prepared tree:
 cd ~/alphaclaw-migration
 find . -maxdepth 2 | sort
 ```
+
+Also do one path sanity check:
+
+```bash
+cd ~/alphaclaw-migration
+rg -n '/home/exedev|/home/.+/.openclaw|/home/.+/.alphaclaw/.openclaw' . || true
+```
+
+If the snapshot was prepared correctly, you should not see lingering references
+to the old machine's home directory or old OpenClaw root.
 
 The root should usually include things like:
 
@@ -194,10 +213,12 @@ If you prefer not to use the helper script, the manual version is:
 2. Remove runtime-only folders and nested workspace git metadata.
 3. If the main workspace lives elsewhere, copy it into `workspace/` in the
    snapshot.
-4. Rewrite `openclaw.json` so agent workspaces point to AlphaClaw defaults
-   under `~/.alphaclaw/.openclaw/`.
-5. Commit the snapshot to a private GitHub repo.
-6. Import it through a new AlphaClaw installation.
+4. Rewrite migrated JSON path references so agent workspaces, agent dirs, and
+   job working directories point to AlphaClaw defaults under
+   `~/.alphaclaw/.openclaw/`.
+5. Fail the prep step if stale source-machine path references remain.
+6. Commit the snapshot to a private GitHub repo.
+7. Import it through a new AlphaClaw installation.
 
 ## Security Notes
 

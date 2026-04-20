@@ -419,4 +419,84 @@ describe("server/onboarding/openclaw", () => {
       },
     });
   });
+
+  it('stamps discovery.mdns.mode during fresh onboarding when OPENCLAW_DISCOVERY_MDNS_MODE="off"', () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    const previousMode = process.env.OPENCLAW_DISCOVERY_MDNS_MODE;
+    process.env.OPENCLAW_DISCOVERY_MDNS_MODE = "off";
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    try {
+      writeSanitizedOpenclawConfig({
+        fs,
+        openclawDir,
+        varMap: {},
+      });
+    } finally {
+      if (previousMode === undefined) {
+        delete process.env.OPENCLAW_DISCOVERY_MDNS_MODE;
+      } else {
+        process.env.OPENCLAW_DISCOVERY_MDNS_MODE = previousMode;
+      }
+    }
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.discovery).toEqual({
+      mdns: {
+        mode: "off",
+      },
+    });
+  });
+
+  it('stamps discovery.mdns.mode during import onboarding when OPENCLAW_DISCOVERY_MDNS_MODE="off"', () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    const previousMode = process.env.OPENCLAW_DISCOVERY_MDNS_MODE;
+    process.env.OPENCLAW_DISCOVERY_MDNS_MODE = "off";
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    try {
+      writeManagedImportOpenclawConfig({
+        fs,
+        openclawDir,
+        varMap: {},
+      });
+    } finally {
+      if (previousMode === undefined) {
+        delete process.env.OPENCLAW_DISCOVERY_MDNS_MODE;
+      } else {
+        process.env.OPENCLAW_DISCOVERY_MDNS_MODE = previousMode;
+      }
+    }
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.discovery).toEqual({
+      mdns: {
+        mode: "off",
+      },
+    });
+  });
 });

@@ -1,5 +1,10 @@
 const { createWatchdog } = require("../../lib/server/watchdog");
 
+const kExpectedRepairCommandArgs = {
+  quiet: true,
+  timeoutMs: 600000,
+};
+
 const flushMicrotasks = async () =>
   new Promise((resolve) => {
     setImmediate(resolve);
@@ -110,6 +115,32 @@ describe("server/watchdog", () => {
     watchdog.stop();
   });
 
+  it("keeps slow-start gateways in startup grace for the default 60s window", async () => {
+    vi.useFakeTimers();
+    const { watchdog, clawCmd } = createHarness({
+      autoRepair: true,
+      clawCmdImpl: async () => ({ ok: true, stdout: "" }),
+      fetchImpl: async () => {
+        throw new Error("gateway unavailable");
+      },
+    });
+
+    watchdog.onGatewayLaunch({ startedAt: Date.now() - 35_000 });
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(watchdog.getStatus()).toEqual(
+      expect.objectContaining({
+        lifecycle: "running",
+        health: "unknown",
+      }),
+    );
+    expect(clawCmd).not.toHaveBeenCalledWith(
+      "doctor --fix --yes",
+      kExpectedRepairCommandArgs,
+    );
+    watchdog.stop();
+  });
+
   it("retries startup health checks before marking degraded", async () => {
     vi.useFakeTimers();
     let healthChecks = 0;
@@ -137,7 +168,10 @@ describe("server/watchdog", () => {
 
     await vi.advanceTimersByTimeAsync(5_000);
 
-    expect(clawCmd).not.toHaveBeenCalledWith("doctor --fix --yes", { quiet: true });
+    expect(clawCmd).not.toHaveBeenCalledWith(
+      "doctor --fix --yes",
+      kExpectedRepairCommandArgs,
+    );
     expect(watchdog.getStatus()).toEqual(
       expect.objectContaining({
         lifecycle: "running",
@@ -215,7 +249,10 @@ describe("server/watchdog", () => {
     await flushMicrotasks();
     await flushMicrotasks();
 
-    expect(clawCmd).toHaveBeenCalledWith("doctor --fix --yes", { quiet: true });
+    expect(clawCmd).toHaveBeenCalledWith(
+      "doctor --fix --yes",
+      kExpectedRepairCommandArgs,
+    );
   });
 
   it("clears crash-loop lifecycle after a healthy check recovery", async () => {
@@ -306,7 +343,10 @@ describe("server/watchdog", () => {
     watchdog.onExpectedRestart();
     await flushMicrotasks();
 
-    expect(clawCmd).not.toHaveBeenCalledWith("doctor --fix --yes", { quiet: true });
+    expect(clawCmd).not.toHaveBeenCalledWith(
+      "doctor --fix --yes",
+      kExpectedRepairCommandArgs,
+    );
     expect(insertWatchdogEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         eventType: "health_check",
@@ -490,7 +530,10 @@ describe("server/watchdog", () => {
     await vi.advanceTimersByTimeAsync(10_000);
 
     expect(clawCmd).toHaveBeenCalledTimes(1);
-    expect(clawCmd).toHaveBeenCalledWith("doctor --fix --yes", { quiet: true });
+    expect(clawCmd).toHaveBeenCalledWith(
+      "doctor --fix --yes",
+      kExpectedRepairCommandArgs,
+    );
     expect(
       notifier.notify.mock.calls.filter((call) =>
         String(call?.[0] || "").includes("awaiting health check"),

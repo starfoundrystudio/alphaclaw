@@ -4,6 +4,11 @@ This document describes the branching and merge workflow AlphaClaw uses to
 pull new upstream releases from `chrysb/alphaclaw` into the Starfoundry fork
 while keeping fork-specific changes reviewable.
 
+Companion document:
+
+- [`docs/fork-deviations.md`](/Users/billk/Development/starfoundrystudio/alphaclaw/docs/fork-deviations.md)
+  tracks the intentional fork-only behaviors that still differ from upstream.
+
 ## Goals
 
 - Keep the fork as close to upstream as practical.
@@ -142,6 +147,15 @@ git push -u origin codex/merge-upstream-v0.9.9
 Use this branch for code review and discussion of any deliberate deviations
 from upstream.
 
+Before merging the integration branch back into `main`, update
+[`docs/fork-deviations.md`](/Users/billk/Development/starfoundrystudio/alphaclaw/docs/fork-deviations.md)
+to:
+
+- add any new intentional divergence introduced during the sync
+- mark old divergences as retired when upstream now covers them
+- note whether each remaining deviation is shipped, pending, or only local
+  evaluation
+
 ### 7. Merge back into `main`
 
 After verification:
@@ -179,5 +193,6 @@ When resolving a sync:
 - Keep merge-resolution commits small and specific where possible.
 - If upstream now covers one of our old workarounds, remove the workaround in
   the sync branch rather than carrying duplicate logic forward.
-- Document any intentional post-merge divergence in the PR description or in
-  follow-up docs if it affects future syncs.
+- Document any intentional post-merge divergence in
+  [`docs/fork-deviations.md`](/Users/billk/Development/starfoundrystudio/alphaclaw/docs/fork-deviations.md)
+  and reference it in the PR description when relevant.
