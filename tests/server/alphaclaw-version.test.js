@@ -105,6 +105,264 @@ describe("server/alphaclaw-version", () => {
     );
   });
 
+  it("returns template-managed status for railway deployments", async () => {
+    const fetchMock = vi.fn(async (url) => {
+      expect(url).toContain(
+        "https://raw.githubusercontent.com/chrysb/openclaw-railway-template/main/package.json",
+      );
+      return createFetchResponse({
+        body: {
+          dependencies: {
+            "@chrysb/alphaclaw": "0.8.10",
+            openclaw: "2026.4.10",
+          },
+        },
+      });
+    });
+    const { service } = createService({
+      env: { RAILWAY_ENVIRONMENT: "production" },
+      readOpenclawVersion: () => "2026.4.5",
+      fetchMock,
+    });
+
+    const status = await service.getVersionStatus(true);
+
+    expect(status).toEqual(
+      expect.objectContaining({
+        ok: true,
+        latestVersion: "0.8.10",
+        latestOpenclawVersion: "2026.4.10",
+        hasUpdate: true,
+        updateStrategy: expect.objectContaining({
+          action: "instructions",
+          provider: "railway",
+          templateRepoUrl:
+            "https://github.com/chrysb/openclaw-railway-template.git",
+        }),
+      }),
+    );
+  });
+
+  it("derives the OpenClaw version from the template-pinned AlphaClaw package when the template omits a direct openclaw pin", async () => {
+    const fetchMock = vi.fn(async (url) => {
+      if (
+        String(url).includes(
+          "https://raw.githubusercontent.com/chrysb/openclaw-railway-template/main/package.json",
+        )
+      ) {
+        return createFetchResponse({
+          body: {
+            dependencies: {
+              "@chrysb/alphaclaw": "0.9.2",
+            },
+          },
+        });
+      }
+
+      expect(url).toBe(kAlphaclawRegistryUrl);
+      return createFetchResponse({
+        body: {
+          "dist-tags": { latest: "0.9.6" },
+          versions: {
+            "0.9.2": {
+              dependencies: {
+                openclaw: "2026.4.11",
+              },
+            },
+            "0.9.6": {
+              dependencies: {
+                openclaw: "2026.4.14",
+              },
+            },
+          },
+        },
+      });
+    });
+    const { service } = createService({
+      env: { RAILWAY_ENVIRONMENT: "production" },
+      readOpenclawVersion: () => "2026.4.5",
+      fetchMock,
+    });
+
+    const status = await service.getVersionStatus(true);
+
+    expect(status).toEqual(
+      expect.objectContaining({
+        ok: true,
+        latestVersion: "0.9.2",
+        latestOpenclawVersion: "2026.4.11",
+      }),
+    );
+  });
+
+  it("includes a direct Railway dashboard link when project metadata is available", async () => {
+    const fetchMock = vi.fn(async () =>
+      createFetchResponse({
+        body: {
+          dependencies: {
+            "@chrysb/alphaclaw": "0.8.10",
+            openclaw: "2026.4.10",
+          },
+        },
+      }),
+    );
+    const { service } = createService({
+      env: {
+        RAILWAY_ENVIRONMENT: "production",
+        RAILWAY_PROJECT_ID: "582da512-0510-4844-9ffb-efe89b88e1e9",
+        RAILWAY_SERVICE_ID: "b3ea8fbd-9727-4b5c-adbe-8a3a8ab2dd2c",
+        RAILWAY_ENVIRONMENT_ID: "181e3f67-233a-41b9-9485-f64235eb764d",
+      },
+      fetchMock,
+    });
+
+    const status = await service.getVersionStatus(true);
+
+    expect(status.updateStrategy).toEqual(
+      expect.objectContaining({
+        provider: "railway",
+        primaryActionLabel: "Update on Railway",
+        primaryActionUrl:
+          "https://railway.com/project/582da512-0510-4844-9ffb-efe89b88e1e9/service/b3ea8fbd-9727-4b5c-adbe-8a3a8ab2dd2c?environmentId=181e3f67-233a-41b9-9485-f64235eb764d",
+      }),
+    );
+  });
+
+  it("includes a direct Render dashboard link when service metadata is available", async () => {
+    const fetchMock = vi.fn(async () =>
+      createFetchResponse({
+        body: {
+          dependencies: {
+            "@chrysb/alphaclaw": "0.8.10",
+            openclaw: "2026.4.10",
+          },
+        },
+      }),
+    );
+    const { service } = createService({
+      env: {
+        RENDER: "true",
+        RENDER_SERVICE_ID: "srv-d776lrvpm1nc73e08c9g",
+      },
+      fetchMock,
+    });
+
+    const status = await service.getVersionStatus(true);
+
+    expect(status.updateStrategy).toEqual(
+      expect.objectContaining({
+        provider: "render",
+        primaryActionLabel: "Update on Render",
+        primaryActionUrl:
+          "https://dashboard.render.com/web/srv-d776lrvpm1nc73e08c9g",
+      }),
+    );
+  });
+
+  it("triggers the managed deployment bridge for apex containers", async () => {
+    const fetchMock = vi.fn(async (url, options = {}) => {
+      if (String(url).includes("raw.githubusercontent.com")) {
+        return createFetchResponse({
+          body: {
+            dependencies: {
+              "@chrysb/alphaclaw": "0.8.7",
+              openclaw: "2026.4.10",
+            },
+          },
+        });
+      }
+      if (String(url).includes("/commits/main")) {
+        return createFetchResponse({
+          body: { sha: "aded043defd05bba6787bca75ac6ed8dffd43c6e" },
+        });
+      }
+      expect(url).toBe("http://host.docker.internal:3180/update");
+      expect(options.method).toBe("POST");
+      expect(options.headers.Authorization).toBe("Bearer bridge-token");
+      expect(JSON.parse(options.body)).toEqual({
+        repo: "https://github.com/chrysb/openclaw-apex-template.git",
+        ref: "aded043defd05bba6787bca75ac6ed8dffd43c6e",
+        alphaclawVersion: "0.8.7",
+        openclawVersion: "2026.4.10",
+      });
+      return createFetchResponse({
+        body: { ok: true, phase: "queued", noop: false },
+      });
+    });
+    const { service } = createService({
+      env: {
+        ALPHACLAW_MANAGED_UPDATE_URL: "http://host.docker.internal:3180/update",
+        ALPHACLAW_MANAGED_UPDATE_TOKEN: "bridge-token",
+        ALPHACLAW_TEMPLATE_REPO_URL:
+          "https://github.com/chrysb/openclaw-apex-template.git",
+      },
+      readOpenclawVersion: () => "2026.4.5",
+      fetchMock,
+    });
+
+    const result = await service.updateAlphaclaw();
+
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        managedUpdate: true,
+        restarting: true,
+        latestVersion: "0.8.7",
+        latestOpenclawVersion: "2026.4.10",
+      }),
+    );
+  });
+
+  it("returns Apex migration instructions when the deployment provider is apex but the bridge is missing", async () => {
+    const fetchMock = vi.fn(async (url) => {
+      if (String(url).includes("raw.githubusercontent.com")) {
+        return createFetchResponse({
+          body: {
+            dependencies: {
+              "@chrysb/alphaclaw": "0.8.7",
+              openclaw: "2026.4.10",
+            },
+          },
+        });
+      }
+      if (String(url).includes("/commits/main")) {
+        return createFetchResponse({
+          body: { sha: "aded043defd05bba6787bca75ac6ed8dffd43c6e" },
+        });
+      }
+      throw new Error(`Unexpected fetch call: ${String(url)}`);
+    });
+    const { service } = createService({
+      env: {
+        ALPHACLAW_DEPLOYMENT_PROVIDER: "apex",
+        ALPHACLAW_TEMPLATE_REPO_URL:
+          "https://github.com/chrysb/openclaw-apex-template.git",
+      },
+      fetchMock,
+    });
+
+    const status = await service.getVersionStatus(true);
+
+    expect(status.updateStrategy).toEqual(
+      expect.objectContaining({
+        provider: "apex",
+        action: "instructions",
+        primaryActionLabel: "Done",
+      }),
+    );
+
+    const result = await service.updateAlphaclaw();
+    expect(result.status).toBe(409);
+    expect(result.body.updateStrategy).toEqual(
+      expect.objectContaining({
+        provider: "apex",
+        action: "instructions",
+        primaryActionLabel: "Done",
+      }),
+    );
+  });
+
   it("returns container instructions without attempting a registry lookup", async () => {
     const fetchMock = vi.fn();
     const { service } = createService({
@@ -177,6 +435,34 @@ describe("server/alphaclaw-version", () => {
         description: "This AlphaClaw instance is managed by TeamYou.",
         steps: ["Contact TeamYou support to request an upgrade."],
         primaryActionLabel: "Done",
+      }),
+    );
+  });
+
+  it("returns instructions-only rejection for railway deployments", async () => {
+    const fetchMock = vi.fn(async () =>
+      createFetchResponse({
+        body: {
+          dependencies: {
+            "@chrysb/alphaclaw": "0.8.10",
+            openclaw: "2026.4.10",
+          },
+        },
+      }),
+    );
+    const { service } = createService({
+      env: { RAILWAY_ENVIRONMENT: "production" },
+      fetchMock,
+    });
+
+    const result = await service.updateAlphaclaw();
+
+    expect(result.status).toBe(409);
+    expect(result.body.ok).toBe(false);
+    expect(result.body.updateStrategy).toEqual(
+      expect.objectContaining({
+        provider: "railway",
+        action: "instructions",
       }),
     );
   });

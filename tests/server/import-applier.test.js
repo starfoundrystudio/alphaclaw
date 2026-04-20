@@ -23,24 +23,50 @@ afterEach(() => {
 });
 
 describe("import-applier", () => {
-  it("replaces a pre-populated full-root target when replacement is allowed", () => {
+  it("merges imported files into an existing target directory", () => {
     const tempDir = createTempDir();
     const targetDir = createTempDir();
 
-    fs.writeFileSync(path.join(tempDir, "openclaw.json"), '{"gateway":{}}', "utf8");
-    fs.mkdirSync(path.join(targetDir, "agents", "main"), { recursive: true });
-    fs.writeFileSync(path.join(targetDir, "agents", "main", "stale.json"), "{}", "utf8");
+    fs.writeFileSync(
+      path.join(tempDir, "openclaw.json"),
+      JSON.stringify({ channels: { telegram: { enabled: true } } }, null, 2),
+      "utf8",
+    );
+    fs.mkdirSync(path.join(tempDir, "workspace"), { recursive: true });
+    fs.writeFileSync(
+      path.join(tempDir, "workspace", "AGENTS.md"),
+      "# imported workspace\n",
+      "utf8",
+    );
+
+    fs.writeFileSync(
+      path.join(targetDir, "openclaw.json"),
+      JSON.stringify({ channels: { telegram: { enabled: false } } }, null, 2),
+      "utf8",
+    );
+    fs.writeFileSync(
+      path.join(targetDir, "exec-approvals.json"),
+      JSON.stringify({ version: 1, defaults: { security: "full" } }, null, 2),
+      "utf8",
+    );
 
     const result = promoteCloneToTarget({
       fs,
       tempDir,
       targetDir,
-      replaceTarget: true,
     });
 
     expect(result).toEqual({ ok: true });
-    expect(fs.existsSync(path.join(targetDir, "openclaw.json"))).toBe(true);
-    expect(fs.existsSync(path.join(targetDir, "agents"))).toBe(false);
+    expect(
+      JSON.parse(fs.readFileSync(path.join(targetDir, "openclaw.json"), "utf8")),
+    ).toEqual({
+      channels: { telegram: { enabled: true } },
+    });
+    expect(
+      fs.readFileSync(path.join(targetDir, "workspace", "AGENTS.md"), "utf8"),
+    ).toBe("# imported workspace\n");
+    expect(fs.existsSync(path.join(targetDir, "exec-approvals.json"))).toBe(true);
+    expect(fs.existsSync(tempDir)).toBe(false);
   });
 
   it("relocates mismatched hook transforms into _backup and writes a shim", () => {
