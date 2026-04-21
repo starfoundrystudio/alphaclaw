@@ -100,6 +100,34 @@ Re-evaluate when:
 - we revert our longer `devices list` timeout and no longer need the matching
   interval change.
 
+### Channel pairing polling gating
+
+- Status: pending local change
+- Area: General tab / channel pairing polling
+
+Decision:
+
+- Keep the General tab's initial `/api/pairings` fetches on tab load, restart,
+  and pairing actions.
+- Only keep the recurring `/api/pairings` polling interval running when there
+  are actual pending pairing requests to watch.
+
+Why:
+
+- Imported or preconfigured hosts can leave channels in a long-lived
+  `"configured"` state without any real pending pairing requests.
+- Upstream General-tab logic treats that as a reason to poll `/api/pairings`
+  every `3s`, and each poll shells out to `openclaw pairing list --channel ...`
+  for enabled channels.
+- On loaded VPS hosts, that creates sustained CPU pressure without helping the
+  user when there is nothing to approve.
+
+Re-evaluate when:
+
+- Upstream narrows General-tab `/api/pairings` polling similarly, or
+- channel status becomes a reliable signal for "there is an actionable pending
+  pairing request right now."
+
 ## Retired Deviations
 
 ### Full-root import target cleanup workaround
