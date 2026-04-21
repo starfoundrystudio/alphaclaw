@@ -109,6 +109,61 @@ const createApp = (deps) => {
 };
 
 describe("server/routes/system", () => {
+  it("returns a proxied tokenized dashboard URL when the managed gateway token exists", async () => {
+    const deps = createSystemDeps();
+    const previousGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+    process.env.OPENCLAW_GATEWAY_TOKEN = "managed-gateway-token";
+    deps.clawCmd.mockResolvedValue({
+      ok: true,
+      stdout: "Dashboard URL: http://127.0.0.1:18789/\nCopied to clipboard.",
+    });
+    const app = createApp(deps);
+
+    try {
+      const res = await request(app).get("/api/gateway/dashboard");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        ok: true,
+        url: "/openclaw/#token=managed-gateway-token",
+      });
+      expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open");
+    } finally {
+      if (previousGatewayToken === undefined) {
+        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+      } else {
+        process.env.OPENCLAW_GATEWAY_TOKEN = previousGatewayToken;
+      }
+    }
+  });
+
+  it("prefers the dashboard command tokenized URL when available", async () => {
+    const deps = createSystemDeps();
+    const previousGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+    process.env.OPENCLAW_GATEWAY_TOKEN = "managed-gateway-token";
+    deps.clawCmd.mockResolvedValue({
+      ok: true,
+      stdout: "Dashboard URL: http://127.0.0.1:18789/#token=command-token",
+    });
+    const app = createApp(deps);
+
+    try {
+      const res = await request(app).get("/api/gateway/dashboard");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        ok: true,
+        url: "/openclaw/#token=command-token",
+      });
+    } finally {
+      if (previousGatewayToken === undefined) {
+        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+      } else {
+        process.env.OPENCLAW_GATEWAY_TOKEN = previousGatewayToken;
+      }
+    }
+  });
+
   it("merges known vars and custom vars on GET /api/env", async () => {
     const deps = createSystemDeps();
     deps.readEnvFile.mockReturnValue([
