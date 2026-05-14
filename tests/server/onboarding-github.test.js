@@ -2,6 +2,7 @@ const fs = require("fs");
 
 const {
   cloneRepoToTemp,
+  ensureGithubRepoAccessible,
   verifyGithubRepoForOnboarding,
 } = require("../../lib/server/onboarding/github");
 
@@ -44,6 +45,11 @@ describe("server/onboarding/github", () => {
         ok: false,
         statusText: "Not Found",
         json: async () => ({ message: "Not Found" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => "" },
+        json: async () => [{ login: "make-stories" }],
       });
 
     const result = await verifyGithubRepoForOnboarding({
@@ -56,7 +62,85 @@ describe("server/onboarding/github", () => {
       ok: true,
       repoExists: false,
       repoIsEmpty: false,
+      createOwnerType: "org",
+      viewerLogin: "tokudu",
     });
+  });
+
+  it("rejects new repos when the owner is not the token user or an accessible org", async () => {
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => "repo" },
+        json: async () => ({ login: "chrysbtest" }),
+      })
+      .mockResolvedValueOnce({
+        status: 404,
+        ok: false,
+        statusText: "Not Found",
+        json: async () => ({ message: "Not Found" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => "" },
+        json: async () => [],
+      });
+
+    const result = await verifyGithubRepoForOnboarding({
+      repoUrl: "chrybtest/test81",
+      githubToken: "ghp_secret_token_value",
+      mode: "new",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe(400);
+    expect(result.error).toContain('Repository owner "chrybtest"');
+    expect(result.error).toContain('authenticated GitHub user "chrysbtest"');
+  });
+
+  it("creates org-owned new repos through the organization endpoint", async () => {
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => "repo" },
+        json: async () => ({ login: "tokudu" }),
+      })
+      .mockResolvedValueOnce({
+        status: 404,
+        ok: false,
+        statusText: "Not Found",
+        json: async () => ({ message: "Not Found" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => "" },
+        json: async () => [{ login: "make-stories" }],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        statusText: "Created",
+        json: async () => ({}),
+      });
+
+    const result = await ensureGithubRepoAccessible({
+      repoUrl: "make-stories/new-workspace",
+      repoName: "new-workspace",
+      githubToken: "ghp_secret_token_value",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(global.fetch).toHaveBeenLastCalledWith(
+      "https://api.github.com/orgs/make-stories/repos",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          name: "new-workspace",
+          private: true,
+          auto_init: false,
+        }),
+      }),
+    );
   });
 
   it("flags a user-owned repo as already taken when listing shows a hidden match", async () => {

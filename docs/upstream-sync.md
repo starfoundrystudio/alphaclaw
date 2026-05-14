@@ -117,7 +117,7 @@ that `patches/` only contains patch files that still match the current
 Recommended check:
 
 ```bash
-find patches -maxdepth 1 -type f | sort
+[ -d patches ] && find patches -maxdepth 1 -type f | sort || true
 npm ci
 ```
 

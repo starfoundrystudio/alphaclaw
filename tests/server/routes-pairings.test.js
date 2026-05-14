@@ -7,6 +7,7 @@ const createApp = ({
   clawCmd,
   isOnboarded,
   fsModule,
+  approveDevicePairingDirect,
   gatewayToken = "",
   getGatewayPort = null,
 }) => {
@@ -18,6 +19,7 @@ const createApp = ({
     isOnboarded,
     fsModule,
     openclawDir: "/tmp/openclaw",
+    approveDevicePairingDirect,
     gatewayToken,
     getGatewayPort,
   });
@@ -83,6 +85,180 @@ describe("server/routes/pairings", () => {
         channel: "telegram",
         accountId: "tester",
         requesterId: "1050628644",
+      },
+    ]);
+  });
+
+  it("falls back to the local pairing store when CLI output is empty", async () => {
+    const createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const clawCmd = vi.fn(async (cmd) => {
+      if (cmd === "pairing list --channel telegram --json") {
+        return {
+          ok: true,
+          stdout: JSON.stringify({ requests: [] }),
+          stderr: "",
+        };
+      }
+      return { ok: true, stdout: "{}", stderr: "" };
+    });
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      readFileSync: vi.fn((targetPath) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          return JSON.stringify({
+            channels: {
+              telegram: { enabled: true },
+            },
+          });
+        }
+        if (targetPath === "/tmp/openclaw/credentials/telegram-pairing.json") {
+          return JSON.stringify({
+            version: 1,
+            requests: [
+              {
+                id: "1050628644",
+                code: "ABCD1234",
+                createdAt,
+                lastSeenAt: createdAt,
+                meta: { accountId: "tester" },
+              },
+            ],
+          });
+        }
+        throw new Error(`unexpected read: ${targetPath}`);
+      }),
+      mkdirSync: vi.fn(),
+      writeFileSync: vi.fn(),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+    });
+
+    const res = await request(app).get("/api/pairings");
+
+    expect(res.status).toBe(200);
+    expect(res.body.pending).toEqual([
+      {
+        id: "ABCD1234",
+        code: "ABCD1234",
+        channel: "telegram",
+        accountId: "tester",
+        requesterId: "1050628644",
+        createdAt,
+      },
+    ]);
+  });
+
+  it("parses pending pairings from noisy stderr even when the command exits non-zero", async () => {
+    const createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const clawCmd = vi.fn(async (cmd) => {
+      if (cmd === "pairing list --channel telegram --json") {
+        return {
+          ok: false,
+          stdout: "",
+          stderr: [
+            "00:20:56 [plugins] [usage-tracker] initialized db=/data/db/usage.db",
+            "{",
+            '  "channel": "telegram",',
+            '  "requests": [',
+            "    {",
+            '      "id": "1050628644",',
+            '      "code": "PCQPPPVM",',
+            `      "createdAt": "${createdAt}",`,
+            `      "lastSeenAt": "${createdAt}",`,
+            '      "meta": { "accountId": "default" }',
+            "    }",
+            "  ]",
+            "}",
+            "00:21:08 [plugins] ollama installed bundled runtime deps: @sinclair/typebox@0.34.49",
+          ].join("\n"),
+          code: 1,
+        };
+      }
+      return { ok: true, stdout: "{}", stderr: "" };
+    });
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      readFileSync: vi.fn((targetPath) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          return JSON.stringify({
+            channels: {
+              telegram: { enabled: true },
+            },
+          });
+        }
+        throw new Error(`unexpected read: ${targetPath}`);
+      }),
+      mkdirSync: vi.fn(),
+      writeFileSync: vi.fn(),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+    });
+
+    const res = await request(app).get("/api/pairings");
+
+    expect(res.status).toBe(200);
+    expect(res.body.pending).toEqual([
+      {
+        id: "PCQPPPVM",
+        code: "PCQPPPVM",
+        channel: "telegram",
+        accountId: "default",
+        requesterId: "1050628644",
+      },
+    ]);
+  });
+
+  it("includes pending store requests even when the channel is not enabled in config", async () => {
+    const createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "{}", stderr: "" }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      readFileSync: vi.fn((targetPath) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          return JSON.stringify({ channels: {} });
+        }
+        if (targetPath === "/tmp/openclaw/credentials/telegram-pairing.json") {
+          return JSON.stringify({
+            version: 1,
+            requests: [
+              {
+                id: "1050628644",
+                code: "PCQPPPVM",
+                createdAt,
+                lastSeenAt: createdAt,
+                meta: { accountId: "default" },
+              },
+            ],
+          });
+        }
+        throw new Error(`unexpected read: ${targetPath}`);
+      }),
+      mkdirSync: vi.fn(),
+      writeFileSync: vi.fn(),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+    });
+
+    const res = await request(app).get("/api/pairings");
+
+    expect(res.status).toBe(200);
+    expect(res.body.pending).toEqual([
+      {
+        id: "PCQPPPVM",
+        code: "PCQPPPVM",
+        channel: "telegram",
+        accountId: "default",
+        requesterId: "1050628644",
+        createdAt,
       },
     ]);
   });
@@ -317,6 +493,11 @@ describe("server/routes/pairings", () => {
       }
       return { ok: true, stdout: "{}", stderr: "" };
     });
+    const approveDevicePairingDirect = vi.fn(async () => ({
+      status: "approved",
+      requestId: "req-cli-1",
+      device: { deviceId: "cli-device-1" },
+    }));
     const fsModule = {
       existsSync: vi.fn(() => cliMarkerWritten),
       mkdirSync: vi.fn(),
@@ -330,6 +511,7 @@ describe("server/routes/pairings", () => {
       clawCmd,
       isOnboarded: () => true,
       fsModule,
+      approveDevicePairingDirect,
     });
 
     const res = await request(app).get("/api/devices");
@@ -339,7 +521,14 @@ describe("server/routes/pairings", () => {
       pending: [],
       cliAutoApproveComplete: true,
     });
-    expect(clawCmd).toHaveBeenCalledWith("devices approve 'req-cli-1'", { quiet: true });
+    expect(clawCmd).not.toHaveBeenCalledWith("devices approve req-cli-1", { quiet: true });
+    expect(approveDevicePairingDirect).toHaveBeenCalledWith(
+      "req-cli-1",
+      {
+        callerScopes: expect.arrayContaining(["operator.admin", "operator.pairing"]),
+      },
+      "/tmp/openclaw",
+    );
     expect(fsModule.writeFileSync).toHaveBeenCalledWith(
       "/tmp/openclaw/.alphaclaw/.cli-device-auto-approved",
       expect.stringContaining("approvedAt"),
@@ -398,8 +587,7 @@ describe("server/routes/pairings", () => {
     });
   });
 
-  it("uses the local loopback gateway for device list and auto-approve when token is available", async () => {
-    let cliMarkerWritten = false;
+  it("uses the local loopback gateway for device list when token is available", async () => {
     const clawCmd = vi.fn(async (cmd) => {
       if (
         cmd ===
@@ -410,32 +598,22 @@ describe("server/routes/pairings", () => {
           stdout: JSON.stringify({
             pending: [
               {
-                requestId: "req-cli-local",
-                clientId: "cli",
-                clientMode: "cli",
-                platform: "linux",
+                requestId: "req-ui-local",
+                clientId: "openclaw-control-ui",
+                clientMode: "webchat",
+                platform: "MacIntel",
               },
             ],
           }),
           stderr: "",
         };
       }
-      if (
-        cmd ===
-        "devices approve 'req-cli-local' --url 'ws://127.0.0.1:18789' --token 'gateway-token'"
-      ) {
-        return { ok: true, stdout: "", stderr: "" };
-      }
       return { ok: true, stdout: "{}", stderr: "" };
     });
     const fsModule = {
-      existsSync: vi.fn(() => cliMarkerWritten),
+      existsSync: vi.fn(() => true),
       mkdirSync: vi.fn(),
-      writeFileSync: vi.fn((targetPath) => {
-        if (targetPath === "/tmp/openclaw/.alphaclaw/.cli-device-auto-approved") {
-          cliMarkerWritten = true;
-        }
-      }),
+      writeFileSync: vi.fn(),
     };
     const app = createApp({
       clawCmd,
@@ -448,10 +626,12 @@ describe("server/routes/pairings", () => {
     const res = await request(app).get("/api/devices");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({
-      pending: [],
-      cliAutoApproveComplete: true,
-    });
+    expect(res.body.pending).toEqual([
+      expect.objectContaining({
+        id: "req-ui-local",
+        clientId: "openclaw-control-ui",
+      }),
+    ]);
     expect(clawCmd).toHaveBeenCalledWith(
       "devices list --json --url 'ws://127.0.0.1:18789' --token 'gateway-token'",
       {
@@ -459,9 +639,108 @@ describe("server/routes/pairings", () => {
         timeoutMs: 15000,
       },
     );
+  });
+
+  it("approves device pairing through the OpenClaw helper with admin caller scope", async () => {
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const approveDevicePairingDirect = vi.fn(async () => ({
+      status: "approved",
+      requestId: "req-admin-1",
+      device: {
+        deviceId: "admin-device-1",
+        publicKey: "public-key",
+        clientId: "openclaw-control-ui",
+        tokens: {
+          operator: {
+            token: "secret-token",
+            role: "operator",
+            scopes: ["operator.admin"],
+          },
+        },
+      },
+    }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      mkdirSync: vi.fn(),
+      writeFileSync: vi.fn(),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+      approveDevicePairingDirect,
+    });
+
+    const res = await request(app).post("/api/devices/req-admin-1/approve");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      ok: true,
+      requestId: "req-admin-1",
+      device: {
+        deviceId: "admin-device-1",
+        clientId: "openclaw-control-ui",
+      },
+    });
+    expect(approveDevicePairingDirect).toHaveBeenCalledWith(
+      "req-admin-1",
+      {
+        callerScopes: expect.arrayContaining(["operator.admin", "operator.pairing"]),
+      },
+      "/tmp/openclaw",
+    );
+    expect(clawCmd).not.toHaveBeenCalledWith(expect.stringContaining("devices approve"));
+  });
+
+  it("returns a visible failure when direct device approval lacks scope", async () => {
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const approveDevicePairingDirect = vi.fn(async () => ({
+      status: "forbidden",
+      reason: "caller-missing-scope",
+      scope: "operator.admin",
+    }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      mkdirSync: vi.fn(),
+      writeFileSync: vi.fn(),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+      approveDevicePairingDirect,
+    });
+
+    const res = await request(app).post("/api/devices/req-admin-2/approve");
+
+    expect(res.status).toBe(403);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "missing scope: operator.admin",
+    });
+    expect(clawCmd).not.toHaveBeenCalledWith(expect.stringContaining("devices approve"));
+  });
+
+  it("uses the local loopback gateway for device reject when token is available", async () => {
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      mkdirSync: vi.fn(),
+      writeFileSync: vi.fn(),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+      gatewayToken: "gateway-token",
+      getGatewayPort: () => 18790,
+    });
+
+    const res = await request(app).post("/api/devices/req-ui-local/reject");
+
+    expect(res.status).toBe(200);
     expect(clawCmd).toHaveBeenCalledWith(
-      "devices approve 'req-cli-local' --url 'ws://127.0.0.1:18789' --token 'gateway-token'",
-      { quiet: true },
+      "devices reject 'req-ui-local' --url 'ws://127.0.0.1:18790' --token 'gateway-token'",
     );
   });
 
@@ -510,40 +789,5 @@ describe("server/routes/pairings", () => {
     });
     expect(clawCmd).not.toHaveBeenCalledWith("devices approve req-cli-2", { quiet: true });
     expect(fsModule.writeFileSync).not.toHaveBeenCalled();
-  });
-
-  it("logs device list failures even when the CLI exits without stdout or stderr", async () => {
-    const clawCmd = vi.fn(async () => ({
-      ok: false,
-      stdout: "",
-      stderr: "",
-      code: null,
-      signal: "SIGTERM",
-      killed: true,
-      message: "Command failed: openclaw devices list --json",
-    }));
-    const fsModule = {
-      existsSync: vi.fn(() => false),
-      mkdirSync: vi.fn(),
-      writeFileSync: vi.fn(),
-    };
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    const app = createApp({
-      clawCmd,
-      isOnboarded: () => true,
-      fsModule,
-    });
-
-    const res = await request(app).get("/api/devices");
-
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({
-      pending: [],
-      cliAutoApproveComplete: false,
-    });
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("[alphaclaw] devices list failed: Command failed: openclaw devices list --json"),
-    );
-    logSpy.mockRestore();
   });
 });

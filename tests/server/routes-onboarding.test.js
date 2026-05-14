@@ -40,7 +40,16 @@ const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
       ]),
     },
     shellCmd: vi.fn(async () => ""),
-    gatewayEnv: vi.fn(() => ({ OPENCLAW_GATEWAY_TOKEN: "tok" })),
+    gatewayEnv: vi.fn(() => ({
+      HOME: "/tmp/alphaclaw",
+      OPENCLAW_HOME: "/tmp/alphaclaw",
+      OPENCLAW_CONFIG_PATH: "/tmp/openclaw/openclaw.json",
+      OPENCLAW_GATEWAY_TOKEN: "tok",
+      OPENCLAW_NO_RESPAWN: "1",
+      OPENCLAW_STATE_DIR: "/tmp/openclaw",
+      XDG_CONFIG_HOME: "/tmp/openclaw",
+      NODE_COMPILE_CACHE: "/tmp/alphaclaw/cache/openclaw-compile-cache",
+    })),
     readEnvFile: vi.fn(() => []),
     writeEnvFile: vi.fn(),
     reloadEnv: vi.fn(),
@@ -391,6 +400,11 @@ describe("server/routes/onboarding", () => {
         ok: false,
         statusText: "Not Found",
         json: async () => ({ message: "Not Found" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => "" },
+        json: async () => [{ login: "make-stories" }],
       });
 
     const res = await request(app).post("/api/onboard/github/verify").send({
@@ -406,6 +420,39 @@ describe("server/routes/onboarding", () => {
       repoIsEmpty: false,
       tempDir: null,
     });
+  });
+
+  it("rejects new workspace repos with an owner typo during github verification", async () => {
+    const deps = createBaseDeps();
+    const app = createApp(deps);
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => "repo" },
+        json: async () => ({ login: "chrysbtest" }),
+      })
+      .mockResolvedValueOnce({
+        status: 404,
+        ok: false,
+        statusText: "Not Found",
+        json: async () => ({ message: "Not Found" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => "" },
+        json: async () => [],
+      });
+
+    const res = await request(app).post("/api/onboard/github/verify").send({
+      repo: "chrybtest/test81",
+      token: "ghp_test_123456789",
+      mode: "new",
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.ok).toBe(false);
+    expect(res.body.error).toContain('Repository owner "chrybtest"');
+    expect(res.body.error).toContain('authenticated GitHub user "chrysbtest"');
   });
 
   it("surfaces a hidden repo-name conflict during github verification", async () => {
@@ -815,7 +862,7 @@ describe("server/routes/onboarding", () => {
     expect(deps.shellCmd).toHaveBeenCalledWith(
       'openclaw models set "openai/gpt-5.1-codex"',
       expect.objectContaining({
-        env: { OPENCLAW_GATEWAY_TOKEN: "tok" },
+        env: expect.objectContaining({ OPENCLAW_GATEWAY_TOKEN: "tok" }),
       }),
     );
   });
