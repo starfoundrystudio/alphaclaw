@@ -4,9 +4,19 @@ const path = require("path");
 const express = require("express");
 const request = require("supertest");
 
-const { createModelCatalogCache } = require("../../lib/server/model-catalog-cache");
+const {
+  createModelCatalogCache,
+  kModelCatalogBootstrapSource,
+  kModelCatalogLoadTimeoutMs,
+} = require("../../lib/server/model-catalog-cache");
 const { registerModelRoutes } = require("../../lib/server/routes/models");
 const { kFallbackOnboardingModels } = require("../../lib/server/constants");
+
+const flushPromises = async () => {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+};
 
 const createModelDeps = () => {
   const deps = {
@@ -14,6 +24,8 @@ const createModelDeps = () => {
     gatewayEnv: vi.fn(() => ({ OPENCLAW_GATEWAY_TOKEN: "token" })),
     parseJsonFromNoisyOutput: vi.fn(() => ({})),
     normalizeOnboardingModels: vi.fn(() => []),
+    readOpenclawVersion: vi.fn(() => "2026.4.15"),
+    isOnboarded: vi.fn(() => true),
     readEnvFile: vi.fn(() => []),
     writeEnvFile: vi.fn(),
     reloadEnv: vi.fn(() => true),
@@ -52,6 +64,8 @@ const createApp = (deps) => {
     gatewayEnv: deps.gatewayEnv,
     parseJsonFromNoisyOutput: deps.parseJsonFromNoisyOutput,
     normalizeOnboardingModels: deps.normalizeOnboardingModels,
+    readOpenclawVersion: deps.readOpenclawVersion,
+    shouldStartDynamicRefresh: deps.isOnboarded,
   });
   registerModelRoutes({
     app,
@@ -62,7 +76,7 @@ const createApp = (deps) => {
 };
 
 describe("server/routes/models", () => {
-  it("returns normalized models from openclaw output", async () => {
+  it("bootstraps with the bundled catalog, then returns normalized models from openclaw output", async () => {
     const deps = createModelDeps();
     deps.shellCmd.mockResolvedValue("noise");
     deps.parseJsonFromNoisyOutput.mockReturnValue({
@@ -76,7 +90,25 @@ describe("server/routes/models", () => {
     const res = await request(app).get("/api/models");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual(
+    expect(res.body).toEqual({
+      ok: true,
+      source: kModelCatalogBootstrapSource,
+      fetchedAt: null,
+      stale: true,
+      refreshing: true,
+      models: kFallbackOnboardingModels,
+    });
+    expect(deps.shellCmd).toHaveBeenCalledWith("openclaw models list --all --json", {
+      env: { OPENCLAW_GATEWAY_TOKEN: "token" },
+      timeout: kModelCatalogLoadTimeoutMs,
+    });
+
+    await flushPromises();
+
+    const refreshed = await request(app).get("/api/models");
+
+    expect(refreshed.status).toBe(200);
+    expect(refreshed.body).toEqual(
       expect.objectContaining({
         ok: true,
         source: "openclaw",
@@ -86,13 +118,9 @@ describe("server/routes/models", () => {
         models: [{ key: "openai/gpt-5.1-codex", provider: "openai", label: "GPT" }],
       }),
     );
-    expect(deps.shellCmd).toHaveBeenCalledWith("openclaw models list --all --json", {
-      env: { OPENCLAW_GATEWAY_TOKEN: "token" },
-      timeout: 30000,
-    });
   });
 
-  it("falls back to static models when normalized list is empty", async () => {
+  it("serves the bundled catalog while a dynamic refresh resolves empty", async () => {
     const deps = createModelDeps();
     deps.shellCmd.mockResolvedValue("{}");
     deps.parseJsonFromNoisyOutput.mockReturnValue({ models: [] });
@@ -104,15 +132,15 @@ describe("server/routes/models", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
       ok: true,
-      source: "fallback",
+      source: kModelCatalogBootstrapSource,
       fetchedAt: null,
-      stale: false,
-      refreshing: false,
+      stale: true,
+      refreshing: true,
       models: kFallbackOnboardingModels,
     });
   });
 
-  it("returns fallback models when command throws", async () => {
+  it("serves the bundled catalog when the dynamic refresh command throws", async () => {
     const deps = createModelDeps();
     deps.shellCmd.mockRejectedValue(new Error("boom"));
     const app = createApp(deps);
@@ -122,13 +150,31 @@ describe("server/routes/models", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
       ok: true,
-      source: "fallback",
+      source: kModelCatalogBootstrapSource,
       fetchedAt: null,
-      stale: false,
+      stale: true,
+      refreshing: true,
+      models: kFallbackOnboardingModels,
+    });
+  });
+
+  it("serves the bundled catalog without launching openclaw before onboarding", async () => {
+    const deps = createModelDeps();
+    deps.isOnboarded.mockReturnValue(false);
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/models");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      ok: true,
+      source: kModelCatalogBootstrapSource,
+      fetchedAt: null,
+      stale: true,
       refreshing: false,
       models: kFallbackOnboardingModels,
     });
-    expect(res.body.models.some((model) => model.key === "openrouter/anthropic/claude-sonnet-4-6")).toBe(
+    expect(res.body.models.some((model) => model.key === "openrouter/anthropic/claude-sonnet-4.6")).toBe(
       true,
     );
     expect(
@@ -136,6 +182,7 @@ describe("server/routes/models", () => {
         (model) => model.key === "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
       ),
     ).toBe(true);
+    expect(deps.shellCmd).not.toHaveBeenCalled();
   });
 
   it("returns model status payload on GET /api/models/status", async () => {
@@ -146,6 +193,36 @@ describe("server/routes/models", () => {
       fallbacks: ["anthropic/claude-opus-4-6"],
       imageModel: "google/gemini-3.1-pro-preview",
     });
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/models/status");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      ok: true,
+      modelKey: "openai/gpt-5.1-codex",
+      fallbacks: ["anthropic/claude-opus-4-6"],
+      imageModel: "google/gemini-3.1-pro-preview",
+    });
+  });
+
+  it("recovers model status payload from failed command output", async () => {
+    const deps = createModelDeps();
+    const err = new Error("plugin load failed");
+    err.stdout =
+      'prefix\n{"resolvedDefault":"openai/gpt-5.1-codex","fallbacks":["anthropic/claude-opus-4-6"],"imageModel":"google/gemini-3.1-pro-preview"}\n';
+    err.stderr =
+      '[plugins] google failed to load from /app/node_modules/openclaw/dist/extensions/google/index.js';
+    deps.shellCmd.mockRejectedValue(err);
+    deps.parseJsonFromNoisyOutput.mockImplementation((raw) =>
+      String(raw).includes("resolvedDefault")
+        ? {
+            resolvedDefault: "openai/gpt-5.1-codex",
+            fallbacks: ["anthropic/claude-opus-4-6"],
+            imageModel: "google/gemini-3.1-pro-preview",
+          }
+        : null,
+    );
     const app = createApp(deps);
 
     const res = await request(app).get("/api/models/status");

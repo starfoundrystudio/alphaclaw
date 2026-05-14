@@ -18,6 +18,7 @@ change whenever practical.
 ### Import-managed runtime token handling
 
 - Status: active
+- Last reviewed: upstream sync to `v0.9.15`
 - Introduced in: `102685e` (`Fix import-managed runtime token handling`)
 - Area: onboarding / import
 
@@ -42,9 +43,35 @@ Re-evaluate when:
 - upstream introduces a clearer first-class token rotation/preservation policy
   during import.
 
+### Managed OpenClaw config hardening defaults
+
+- Status: active
+- Last reviewed: upstream sync to `v0.9.15`
+- Area: onboarding / generated OpenClaw config
+
+Decision:
+
+- Keep Starfoundry's managed config defaults during fresh onboarding and
+  managed import, including active-memory defaults, heartbeat model defaults,
+  update checks disabled by default, and managed mDNS discovery mode handling.
+- Keep upstream `usage-tracker` hook policy additions from `v0.9.15`.
+
+Why:
+
+- Starfoundry deployments expect these defaults to keep managed hosts quiet,
+  consistent, and pre-wired for the runtime profile AlphaClaw ships.
+- Upstream `v0.9.15` does not yet include the same managed active-memory,
+  heartbeat, update-check, or mDNS defaults.
+
+Re-evaluate when:
+
+- Upstream adopts equivalent managed config defaults, or
+- Starfoundry changes the desired managed runtime profile.
+
 ### Watchdog startup and repair timeouts
 
-- Status: pending local change
+- Status: active
+- Last reviewed: upstream sync to `v0.9.15`
 - Area: watchdog / gateway lifecycle
 
 Decision:
@@ -75,19 +102,26 @@ Re-evaluate when:
 
 ### Device pairing polling cadence
 
-- Status: pending local change
-- Area: General tab / device pairing polling
+- Status: active
+- Last reviewed: upstream sync to `v0.9.15`
+- Area: General tab / device pairing polling and device CLI calls
 
 Decision:
 
 - Increase the General tab device-pairing polling interval from `5s` to `15s`
   so it matches the current `openclaw devices list --json` timeout budget.
+- When AlphaClaw has a managed gateway token, run device list/reject CLI calls
+  against the local loopback gateway URL with that token.
+- Use upstream's direct OpenClaw helper for device approval, including the
+  admin caller scopes introduced in upstream `v0.9.15`.
 
 Why:
 
 - Our fork currently allows `openclaw devices list --json` to run for up to
   `15s`, so polling the same endpoint every `5s` can create overlapping work on
   slow or overloaded hosts.
+- Managed deployments can require the local gateway URL/token to make device
+  list/reject commands resolve the same gateway AlphaClaw is supervising.
 - This change is intentionally narrow: keep upstream polling behavior, but make
   the interval consistent with the timeout we already ship.
 - No `/api/devices` dedupe/backoff change and no global `clawCmd` divergence
@@ -102,7 +136,8 @@ Re-evaluate when:
 
 ### Channel pairing polling gating
 
-- Status: pending local change
+- Status: active
+- Last reviewed: upstream sync to `v0.9.15`
 - Area: General tab / channel pairing polling
 
 Decision:

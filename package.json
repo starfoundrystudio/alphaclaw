@@ -20,16 +20,11 @@
   },
   "files": [
     "bin/",
-    "lib/",
-    "patches/",
-    "scripts/apply-openclaw-patches.js",
-    "scripts/openclaw-install-utils.js",
-    "scripts/restore-openclaw-bundled-plugin-deps.js"
+    "lib/"
   ],
   "scripts": {
     "start": "node bin/alphaclaw.js start",
     "build:ui": "node scripts/build-ui.mjs",
-    "postinstall": "node ./scripts/apply-openclaw-patches.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:watchdog": "vitest run tests/server/watchdog.test.js tests/server/watchdog-db.test.js tests/server/routes-watchdog.test.js",
@@ -39,8 +34,7 @@
   "dependencies": {
     "express": "^4.21.0",
     "http-proxy": "^1.18.1",
-    "openclaw": "2026.4.15",
-    "patch-package": "^8.0.1",
+    "openclaw": "2026.5.6",
     "ws": "^8.19.0"
   },
   "devDependencies": {

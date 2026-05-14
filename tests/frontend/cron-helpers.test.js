@@ -76,7 +76,7 @@ describe("frontend/cron-helpers", () => {
           id: "job-1",
           name: "Delivery Mismatch",
           delivery: { mode: "none" },
-          payload: { message: "Use message tool to send to telegram" },
+          payload: { kind: "systemEvent", text: "Use message tool to send to telegram" },
           state: { consecutiveErrors: 0 },
         },
         {
@@ -138,6 +138,21 @@ describe("frontend/cron-helpers", () => {
     expect(warnings.some((warning) => warning.title.includes("Heartbeat Delivery"))).toBe(false);
     expect(warnings.some((warning) => warning.title.includes("Needs Delivery"))).toBe(true);
     expect(warnings.some((warning) => warning.title.includes("Ok But Not Delivered"))).toBe(false);
+  });
+
+  it("reads cron prompts from systemEvent text or agentTurn message payloads", async () => {
+    const { readCronJobPrompt } = await loadCronHelpers();
+    expect(
+      readCronJobPrompt({
+        payload: { kind: "systemEvent", text: "main prompt" },
+      }),
+    ).toBe("main prompt");
+    expect(
+      readCronJobPrompt({
+        payload: { kind: "agentTurn", message: "isolated prompt" },
+      }),
+    ).toBe("isolated prompt");
+    expect(readCronJobPrompt({ payload: { text: "missing kind" } })).toBe("");
   });
 
   it("formats next run as due/overdue when timestamp is in the past", async () => {

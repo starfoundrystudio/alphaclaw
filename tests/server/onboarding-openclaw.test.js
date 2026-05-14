@@ -128,7 +128,10 @@ describe("server/onboarding/openclaw", () => {
 
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
     expect(next.plugins.allow).toEqual(["usage-tracker"]);
-    expect(next.plugins.entries["usage-tracker"]).toEqual({ enabled: true });
+    expect(next.plugins.entries["usage-tracker"]).toEqual({
+      enabled: true,
+      hooks: { allowConversationAccess: true },
+    });
     expect(next.plugins.entries["active-memory"]).toEqual({
       enabled: true,
       config: {

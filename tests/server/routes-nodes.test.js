@@ -3,6 +3,36 @@ const request = require("supertest");
 
 const { registerNodeRoutes } = require("../../lib/server/routes/nodes");
 
+const kNodeTimeoutEnvNames = [
+  "ALPHACLAW_NODE_ROUTE_TIMEOUT_MS",
+  "ALPHACLAW_NODES_STATUS_TIMEOUT_MS",
+  "ALPHACLAW_NODES_PENDING_TIMEOUT_MS",
+];
+
+const withNodeTimeoutEnv = async (values, fn) => {
+  const previous = Object.fromEntries(
+    kNodeTimeoutEnvNames.map((name) => [name, process.env[name]]),
+  );
+  for (const name of kNodeTimeoutEnvNames) {
+    if (values[name] === undefined) {
+      delete process.env[name];
+    } else {
+      process.env[name] = values[name];
+    }
+  }
+  try {
+    return await fn();
+  } finally {
+    for (const [name, value] of Object.entries(previous)) {
+      if (value === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = value;
+      }
+    }
+  }
+};
+
 const createApp = ({ clawCmd, fsModule } = {}) => {
   const app = express();
   app.use(express.json());
@@ -22,7 +52,7 @@ const createApp = ({ clawCmd, fsModule } = {}) => {
 };
 
 describe("server/routes/nodes", () => {
-  it("uses short CLI timeouts for status and pending reads", async () => {
+  it("uses default CLI timeouts for status and pending reads", async () => {
     const clawCmd = vi.fn(async (cmd) => {
       if (cmd === "nodes status --json") {
         return {
@@ -57,12 +87,157 @@ describe("server/routes/nodes", () => {
     });
     expect(clawCmd).toHaveBeenNthCalledWith(1, "nodes status --json", {
       quiet: true,
-      timeoutMs: 5000,
+      timeoutMs: 12000,
     });
     expect(clawCmd).toHaveBeenNthCalledWith(2, "nodes pending --json", {
       quiet: true,
-      timeoutMs: 5000,
+      timeoutMs: 12000,
     });
+  });
+
+  it("supports env overrides for nodes CLI timeouts", async () => {
+    await withNodeTimeoutEnv(
+      {
+        ALPHACLAW_NODE_ROUTE_TIMEOUT_MS: "18000",
+        ALPHACLAW_NODES_STATUS_TIMEOUT_MS: "15000",
+        ALPHACLAW_NODES_PENDING_TIMEOUT_MS: "16000",
+      },
+      async () => {
+        const clawCmd = vi.fn(async (cmd) => {
+          if (cmd === "nodes status --json") {
+            return {
+              ok: true,
+              stdout: JSON.stringify({ nodes: [], pending: [] }),
+              stderr: "",
+            };
+          }
+          if (cmd === "nodes pending --json") {
+            return {
+              ok: true,
+              stdout: JSON.stringify({ pending: [] }),
+              stderr: "",
+            };
+          }
+          return { ok: true, stdout: "", stderr: "" };
+        });
+        const app = createApp({ clawCmd });
+
+        const nodesRes = await request(app).get("/api/nodes");
+        const routeRes = await request(app).post("/api/nodes/node-1/route");
+
+        expect(nodesRes.status).toBe(200);
+        expect(routeRes.status).toBe(200);
+        expect(clawCmd).toHaveBeenNthCalledWith(1, "nodes status --json", {
+          quiet: true,
+          timeoutMs: 15000,
+        });
+        expect(clawCmd).toHaveBeenNthCalledWith(2, "nodes pending --json", {
+          quiet: true,
+          timeoutMs: 16000,
+        });
+        for (const call of clawCmd.mock.calls.slice(2)) {
+          expect(call[1]).toEqual({ quiet: true, timeoutMs: 18000 });
+        }
+      },
+    );
+  });
+
+  it("ignores invalid nodes CLI timeout env overrides", async () => {
+    await withNodeTimeoutEnv(
+      {
+        ALPHACLAW_NODE_ROUTE_TIMEOUT_MS: "0",
+        ALPHACLAW_NODES_STATUS_TIMEOUT_MS: "bogus",
+        ALPHACLAW_NODES_PENDING_TIMEOUT_MS: "-1",
+      },
+      async () => {
+        const clawCmd = vi.fn(async (cmd) => {
+          if (cmd === "nodes status --json") {
+            return {
+              ok: true,
+              stdout: JSON.stringify({ nodes: [], pending: [] }),
+              stderr: "",
+            };
+          }
+          if (cmd === "nodes pending --json") {
+            return {
+              ok: true,
+              stdout: JSON.stringify({ pending: [] }),
+              stderr: "",
+            };
+          }
+          return { ok: true, stdout: "", stderr: "" };
+        });
+        const app = createApp({ clawCmd });
+
+        const nodesRes = await request(app).get("/api/nodes");
+        const routeRes = await request(app).post("/api/nodes/node-1/route");
+
+        expect(nodesRes.status).toBe(200);
+        expect(routeRes.status).toBe(200);
+        expect(clawCmd).toHaveBeenNthCalledWith(1, "nodes status --json", {
+          quiet: true,
+          timeoutMs: 12000,
+        });
+        expect(clawCmd).toHaveBeenNthCalledWith(2, "nodes pending --json", {
+          quiet: true,
+          timeoutMs: 12000,
+        });
+        for (const call of clawCmd.mock.calls.slice(2)) {
+          expect(call[1]).toEqual({ quiet: true, timeoutMs: 12000 });
+        }
+      },
+    );
+  });
+
+  it("surfaces status CLI timeouts with the configured timeout", async () => {
+    await withNodeTimeoutEnv(
+      {
+        ALPHACLAW_NODES_STATUS_TIMEOUT_MS: "9000",
+      },
+      async () => {
+        const clawCmd = vi.fn(async () => ({
+          ok: false,
+          stdout: "",
+          stderr: "",
+          timedOut: true,
+        }));
+        const app = createApp({ clawCmd });
+
+        const res = await request(app).get("/api/nodes");
+
+        expect(res.status).toBe(500);
+        expect(res.body).toEqual({
+          ok: false,
+          error: "nodes status CLI timed out after 9000ms",
+        });
+      },
+    );
+  });
+
+  it("surfaces node routing CLI timeouts with the configured timeout", async () => {
+    await withNodeTimeoutEnv(
+      {
+        ALPHACLAW_NODE_ROUTE_TIMEOUT_MS: "19000",
+      },
+      async () => {
+        const clawCmd = vi.fn(async () => ({
+          ok: false,
+          stdout: "",
+          stderr: "",
+          killed: true,
+          signal: "SIGTERM",
+        }));
+        const app = createApp({ clawCmd });
+
+        const res = await request(app).post("/api/nodes/node-1/route");
+
+        expect(res.status).toBe(500);
+        expect(res.body).toEqual({
+          ok: false,
+          error: "node routing CLI timed out after 19000ms",
+        });
+      },
+    );
   });
 
   it("falls back to status-derived pending nodes when pending command fails", async () => {
