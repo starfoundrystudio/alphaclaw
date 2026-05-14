@@ -209,6 +209,66 @@ Module._load = function patchedLoad(request, parent, isMain) {
 
   });
 
+  it("runs plugin reconciliation before startup-only setup checks", () => {
+    const preloadPath = path.join(tmpDir, "reconcile-preload.js");
+    const commandLogPath = path.join(tmpDir, "openclaw-commands.json");
+    fs.writeFileSync(
+      preloadPath,
+      `
+const fs = require("fs");
+const os = require("os");
+const childProcess = require("child_process");
+
+const commandLogPath = ${JSON.stringify(commandLogPath)};
+const commands = [];
+const testHome = process.env.ALPHACLAW_TEST_HOME;
+if (testHome) {
+  os.homedir = () => testHome;
+}
+
+childProcess.execSync = (command, options = {}) => {
+  const cmd = String(command || "");
+  commands.push(cmd);
+  fs.writeFileSync(commandLogPath, JSON.stringify(commands, null, 2));
+  if (cmd.includes("'--version'")) {
+    return "OpenClaw 2026.5.6\\n";
+  }
+  if (cmd.includes("'plugins' 'list' '--json'")) {
+    return JSON.stringify({
+      plugins: [
+        { id: "discord", name: "@openclaw/discord", version: "2026.5.6" },
+        { id: "acpx", name: "@openclaw/acpx", version: "2026.5.6" }
+      ]
+    });
+  }
+  return "";
+};
+      `.trim(),
+    );
+
+    const output = execSync(
+      `node "${binPath}" --root-dir "${tmpDir}" reconcile-openclaw-plugins`,
+      {
+        stdio: "pipe",
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          SETUP_PASSWORD: "",
+          ALPHACLAW_TEST_HOME: tmpHome,
+          NODE_OPTIONS: `--require=${preloadPath}`,
+        },
+      },
+    );
+
+    const commands = JSON.parse(fs.readFileSync(commandLogPath, "utf8"));
+    expect(output).toContain("OpenClaw plugin reconciliation complete");
+    expect(commands.some((cmd) => cmd.includes("'--version'"))).toBe(true);
+    expect(commands.some((cmd) => cmd.includes("'plugins' 'list' '--json'"))).toBe(
+      true,
+    );
+    expect(output).not.toContain("SETUP_PASSWORD is missing or empty");
+  });
+
   it("creates a gogcli compatibility symlink under the managed home", () => {
     const preloadPath = path.join(tmpDir, "capture-openclaw-env.js");
     fs.writeFileSync(

@@ -25,11 +25,12 @@
   "scripts": {
     "start": "node bin/alphaclaw.js start",
     "build:ui": "node scripts/build-ui.mjs",
+    "generate:openclaw-compatibility-manifest": "node scripts/generate-openclaw-compatibility-manifest.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:watchdog": "vitest run tests/server/watchdog.test.js tests/server/watchdog-db.test.js tests/server/routes-watchdog.test.js",
     "test:coverage": "vitest run --coverage",
-    "prepack": "npm run build:ui"
+    "prepack": "npm run generate:openclaw-compatibility-manifest && npm run build:ui"
   },
   "dependencies": {
     "express": "^4.21.0",

@@ -78,19 +78,23 @@ Runtime model:
 Use this release flow when promoting tested beta builds to production:
 
 1. Ensure `main` is clean and synced, and tests pass.
-2. Publish beta iterations as needed:
+2. Regenerate the AlphaClaw-managed OpenClaw compatibility manifest whenever the AlphaClaw version or pinned `openclaw` dependency changes:
+   - `npm run generate:openclaw-compatibility-manifest`
+   - Confirm `lib/openclaw-compatibility.manifest.json` includes every entry from OpenClaw's official external channel, plugin, and provider catalogs, and that reconciler behavior stays config-aware rather than installing every catalog entry unconditionally.
+   - `npm publish` also runs this through `prepack`, but release commits should keep the generated manifest in sync before publishing.
+3. Publish beta iterations as needed:
    - `npm version prerelease --preid=beta`
    - `git push && git push --tags`
    - `npm publish --tag beta`
-3. Immediately after each beta publish, update `~/Projects/openclaw-railway-template` on the `beta` branch to pin the exact beta version in `package.json` (for example `0.3.2-beta.4`), then commit and push that template change. Do not leave the beta template on `latest`, or Docker layer cache can reuse an older install.
-4. When ready for production, publish a stable release version (for example `0.3.2`):
+4. Immediately after each beta publish, update `~/Projects/openclaw-railway-template` on the `beta` branch to pin the exact beta version in `package.json` (for example `0.3.2-beta.4`), then commit and push that template change. Do not leave the beta template on `latest`, or Docker layer cache can reuse an older install.
+5. When ready for production, publish a stable release version (for example `0.3.2`):
    - `npm version 0.3.2`
    - `git push && git push --tags`
    - `npm publish` (publishes to `latest`)
    - Pin all deployment templates on `main` to that release: set `@starfoundrystudio/alphaclaw` in `~/Projects/openclaw-railway-template`, `~/Projects/openclaw-render-template`, and `~/Projects/openclaw-apex-template` to the released version (templates rely on AlphaClaw's declared `openclaw` dependency; do not add `package.json` `overrides` for `openclaw` unless you have a one-off debug reason). Run `npm install` in each repo, confirm `npm ls openclaw` matches AlphaClaw's `package.json` pin, commit `package.json` and `package-lock.json`, and push. Skipping a template leaves it stale relative to the others.
-5. Return templates to production channel:
+6. Return templates to production channel:
    - `@starfoundrystudio/alphaclaw: "latest"`
-6. Optionally keep beta branch/tag flows active for next release cycle.
+7. Optionally keep beta branch/tag flows active for next release cycle.
 
 ### Runtime Dependency Guardrails (Express 4 vs 5)
 
@@ -139,7 +143,7 @@ Use these conventions for all UI work under `lib/public/js` and `lib/public/css`
 
 - The browser loads the compiled bundle under `lib/public/dist/` (for example `app.bundle.js` and chunk files), produced by `scripts/build-ui.mjs` (esbuild).
 - **After any UI source change** that should ship in production (`lib/public/js`, `lib/public/css`, or other inputs to the build), run **`npm run build:ui`** so `lib/public/dist/` stays in sync. Verify the app in the browser against the rebuilt bundle when the change is non-trivial.
-- **`npm publish`** runs **`prepack`** → **`npm run build:ui`**, so published packages always include a fresh bundle. Local installs, Docker builds from a git checkout, or commits that include `dist/` still require **`npm run build:ui`** when you change UI sources and expect the built assets to match.
+- **`npm publish`** runs **`prepack`** → **`npm run generate:openclaw-compatibility-manifest && npm run build:ui`**, so published packages always include a fresh OpenClaw compatibility manifest and UI bundle. Local installs, Docker builds from a git checkout, or commits that include `dist/` still require **`npm run build:ui`** when you change UI sources and expect the built assets to match.
 
 ### Component structure
 

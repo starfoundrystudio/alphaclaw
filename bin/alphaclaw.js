@@ -15,6 +15,9 @@ const {
   ensureMainUpstream,
   restoreMissingOpenclawConfigFromRemote,
 } = require("../lib/cli/openclaw-config-restore");
+const {
+  reconcileOpenclawPlugins,
+} = require("../lib/cli/openclaw-plugin-compat");
 const { buildSecretReplacements } = require("../lib/server/helpers");
 const {
   buildManagedPaths,
@@ -96,6 +99,7 @@ Usage: alphaclaw <command> [options]
 Commands:
   start     Start the AlphaClaw server (Setup UI + gateway manager)
   git-sync  Commit and push /data/.openclaw safely using GITHUB_TOKEN
+  reconcile-openclaw-plugins  Install/update AlphaClaw-managed OpenClaw plugins
   telegram topic add  Add/update Telegram topic mapping by thread ID
   version   Print version
 
@@ -121,6 +125,7 @@ telegram topic add options:
 Examples:
   alphaclaw git-sync --message "sync workspace"
   alphaclaw git-sync --message "update config" --file "workspace/app/config.json"
+  alphaclaw reconcile-openclaw-plugins
   alphaclaw telegram topic add --thread 12 --name "Testing"
   alphaclaw telegram topic add --thread 12 --name "Testing" --system "Handle QA requests"
   alphaclaw telegram topic add --thread 12 --name "Ops" --agent ops
@@ -398,6 +403,30 @@ const runGitSync = () => {
 
 if (command === "git-sync") {
   process.exit(runGitSync());
+}
+
+const runReconcileOpenclawPlugins = () => {
+  try {
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      fsModule: fs,
+      execSyncImpl: execSync,
+      logger: console,
+      env: process.env,
+    });
+    return 0;
+  } catch (e) {
+    const details = String(e.stderr || e.stdout || e.message || "").trim();
+    console.error(
+      `[alphaclaw] OpenClaw plugin reconciliation failed: ${details.slice(0, 800)}`,
+    );
+    return 1;
+  }
+};
+
+if (command === "reconcile-openclaw-plugins") {
+  process.exit(runReconcileOpenclawPlugins());
 }
 
 const runTelegramTopicAdd = () => {
