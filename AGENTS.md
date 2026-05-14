@@ -81,20 +81,16 @@ Use this release flow when promoting tested beta builds to production:
 2. Regenerate the AlphaClaw-managed OpenClaw compatibility manifest whenever the AlphaClaw version or pinned `openclaw` dependency changes:
    - `npm run generate:openclaw-compatibility-manifest`
    - Confirm `lib/openclaw-compatibility.manifest.json` includes every entry from OpenClaw's official external channel, plugin, and provider catalogs, and that reconciler behavior stays config-aware rather than installing every catalog entry unconditionally.
-   - `npm publish` also runs this through `prepack`, but release commits should keep the generated manifest in sync before publishing.
+   - The GitHub package publish job also runs this through `prepack`, but release commits should keep the generated manifest in sync before tagging.
 3. Publish beta iterations as needed:
-   - `npm version prerelease --preid=beta`
-   - `git push && git push --tags`
-   - `npm publish --tag beta`
-4. Immediately after each beta publish, update `~/Projects/openclaw-railway-template` on the `beta` branch to pin the exact beta version in `package.json` (for example `0.3.2-beta.4`), then commit and push that template change. Do not leave the beta template on `latest`, or Docker layer cache can reuse an older install.
-5. When ready for production, publish a stable release version (for example `0.3.2`):
-   - `npm version 0.3.2`
-   - `git push && git push --tags`
-   - `npm publish` (publishes to `latest`)
-   - Pin all deployment templates on `main` to that release: set `@starfoundrystudio/alphaclaw` in `~/Projects/openclaw-railway-template`, `~/Projects/openclaw-render-template`, and `~/Projects/openclaw-apex-template` to the released version (templates rely on AlphaClaw's declared `openclaw` dependency; do not add `package.json` `overrides` for `openclaw` unless you have a one-off debug reason). Run `npm install` in each repo, confirm `npm ls openclaw` matches AlphaClaw's `package.json` pin, commit `package.json` and `package-lock.json`, and push. Skipping a template leaves it stale relative to the others.
-6. Return templates to production channel:
-   - `@starfoundrystudio/alphaclaw: "latest"`
-7. Optionally keep beta branch/tag flows active for next release cycle.
+   - Bump the explicit Starfoundry prerelease version (for example `0.9.15-starfoundry.0-beta.1`). Do not use `npm version prerelease --preid=beta` if it would drop the `starfoundry` prerelease segment.
+   - Regenerate the compatibility manifest so `alphaclawVersion` matches the release version.
+   - Commit the version/manifest update, tag it as `v<version>`, then push `main` and the tag.
+   - GitHub Actions publishes the GitHub Package on `v*` tag pushes; beta tags containing `-beta.` publish with the `beta` dist-tag.
+4. When ready for production, publish a stable release version (for example `0.3.2`):
+   - Bump the stable version, regenerate the compatibility manifest, run tests, commit, tag `v<version>`, and push `main` plus the tag.
+   - GitHub Actions publishes stable tags without `-beta.` using the default package dist-tag.
+5. Optionally keep beta branch/tag flows active for next release cycle.
 
 ### Runtime Dependency Guardrails (Express 4 vs 5)
 
