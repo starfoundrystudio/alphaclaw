@@ -49,11 +49,11 @@ When a page is ready, tell the user it is available at:
 
 `/pages/<slug>/`
 
-Anytime you add, edit, or remove workspace files, openclaw.json, cron.json, skills, or external resources (third-party pages, databases, integrations), **commit and push your changes to git**. Never force push; always pull first if there might be remote changes.
+Anytime you add, edit, or remove workspace files, openclaw.json, cron.json, skills, or external resources (third-party pages, databases, integrations), **commit your changes to git**. Push only when a GitHub sync remote is configured for this deployment or the user explicitly asks you to push. Never force push; always pull first if there might be remote changes.
 
-Whenever you do this, end your message with a **Changes committed** summary. Use workspace-relative paths for local files.
+Whenever you commit changes, end your message with a **Changes committed** summary. Use workspace-relative paths for local files.
 
 ```
-Changes committed ([abc1234](commit url)): <-- linked abbreviated hash, no backticks
+Changes committed (abc1234): <-- abbreviated hash, link it only when the commit was pushed
 • path/or/resource (new|edit|delete) — brief description
 ```

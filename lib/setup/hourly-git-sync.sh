@@ -12,6 +12,11 @@ if [[ -f "$REPO/.env" ]]; then
   set +a
 fi
 
+if [[ -z "${GITHUB_TOKEN:-}" || -z "${GITHUB_WORKSPACE_REPO:-}" ]]; then
+  echo "hourly-git-sync: GitHub sync is not configured; skipping"
+  exit 0
+fi
+
 # Drop cron scheduler runtime-only churn when it is metadata/timestamp-only.
 maybe_restore_if_runtime_only() {
   local file="$1"

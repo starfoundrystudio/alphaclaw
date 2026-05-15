@@ -209,6 +209,80 @@ Module._load = function patchedLoad(request, parent, isMain) {
 
   });
 
+  it("skips managed hourly git sync cron when GitHub sync env vars are absent", () => {
+    const preloadPath = path.join(tmpDir, "startup-preload.js");
+    const syncScriptPath = path.join(
+      tmpDir,
+      ".openclaw",
+      ".alphaclaw",
+      "hourly-git-sync.sh",
+    );
+    fs.mkdirSync(path.dirname(syncScriptPath), { recursive: true });
+    fs.writeFileSync(syncScriptPath, "echo sync\n", "utf8");
+    writeStartupPreload({ targetPath: preloadPath });
+
+    const output = execSync(`node "${binPath}" start`, {
+      stdio: "pipe",
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        GITHUB_TOKEN: "",
+        GITHUB_WORKSPACE_REPO: "",
+        SETUP_PASSWORD: "test-password",
+        ALPHACLAW_ROOT_DIR: tmpDir,
+        ALPHACLAW_TEST_HOME: tmpHome,
+        NODE_OPTIONS: `--require=${preloadPath}`,
+      },
+    });
+
+    expect(output).toContain(
+      "System cron entry skipped; GitHub sync is not configured",
+    );
+    expect(output).not.toContain("System cron entry installed");
+  });
+
+  it("installs managed hourly git sync cron when GitHub sync env vars are present", () => {
+    const preloadPath = path.join(tmpDir, "startup-preload.js");
+    const syncScriptPath = path.join(
+      tmpDir,
+      ".openclaw",
+      ".alphaclaw",
+      "hourly-git-sync.sh",
+    );
+    fs.mkdirSync(path.dirname(syncScriptPath), { recursive: true });
+    fs.writeFileSync(syncScriptPath, "echo sync\n", "utf8");
+    writeStartupPreload({ targetPath: preloadPath });
+
+    const output = execSync(`node "${binPath}" start`, {
+      stdio: "pipe",
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        GITHUB_TOKEN: "ghp_test",
+        GITHUB_WORKSPACE_REPO: "owner/repo",
+        SETUP_PASSWORD: "test-password",
+        ALPHACLAW_ROOT_DIR: tmpDir,
+        ALPHACLAW_TEST_HOME: tmpHome,
+        NODE_OPTIONS: `--require=${preloadPath}`,
+      },
+    });
+
+    expect(output).toContain("System cron entry installed");
+  });
+
+  it("hourly git sync script exits cleanly when GitHub sync is not configured", () => {
+    const scriptPath = path.resolve(__dirname, "../../lib/setup/hourly-git-sync.sh");
+    const output = execSync(`bash "${scriptPath}"`, {
+      stdio: "pipe",
+      encoding: "utf8",
+      env: {
+        PATH: process.env.PATH,
+      },
+    });
+
+    expect(output).toContain("GitHub sync is not configured; skipping");
+  });
+
   it("runs plugin reconciliation before startup-only setup checks", () => {
     const preloadPath = path.join(tmpDir, "reconcile-preload.js");
     const commandLogPath = path.join(tmpDir, "openclaw-commands.json");

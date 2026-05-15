@@ -631,6 +631,9 @@ if (!gogInstalled) {
 // ---------------------------------------------------------------------------
 
 const packagedHourlyGitSyncPath = path.join(setupDir, "hourly-git-sync.sh");
+const hasGithubSyncConfig =
+  !!String(process.env.GITHUB_TOKEN || "").trim() &&
+  !!String(process.env.GITHUB_WORKSPACE_REPO || "").trim();
 
 try {
   if (shouldInitializeManagedRuntime && fs.existsSync(packagedHourlyGitSyncPath)) {
@@ -660,13 +663,13 @@ try {
 if (fs.existsSync(hourlyGitSyncPath)) {
   try {
     const syncCronConfig = path.join(openclawDir, "cron", "system-sync.json");
-    let cronEnabled = true;
+    let cronEnabled = hasGithubSyncConfig;
     let cronSchedule = "0 * * * *";
 
     if (fs.existsSync(syncCronConfig)) {
       try {
         const cfg = JSON.parse(fs.readFileSync(syncCronConfig, "utf8"));
-        cronEnabled = cfg.enabled !== false;
+        cronEnabled = hasGithubSyncConfig && cfg.enabled !== false;
         const schedule = String(cfg.schedule || "").trim();
         if (/^(\S+\s+){4}\S+$/.test(schedule)) cronSchedule = schedule;
       } catch {}
@@ -686,7 +689,11 @@ if (fs.existsSync(hourlyGitSyncPath)) {
       try {
         fs.unlinkSync(cronFilePath);
       } catch {}
-      console.log("[alphaclaw] System cron entry disabled");
+      console.log(
+        hasGithubSyncConfig
+          ? "[alphaclaw] System cron entry disabled"
+          : "[alphaclaw] System cron entry skipped; GitHub sync is not configured",
+      );
     }
   } catch (e) {
     console.log(`[alphaclaw] Cron setup skipped: ${e.message}`);

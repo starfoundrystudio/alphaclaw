@@ -15,6 +15,32 @@ change whenever practical.
 
 ## Active Deviations
 
+### GitHub sync only when explicitly configured
+
+- Status: active
+- Last reviewed: GitHub sync prompt guard
+- Area: runtime prompt / managed sync cron
+
+Decision:
+
+- Keep upstream's GitHub sync setup, `alphaclaw git-sync` command, sync
+  schedule UI, and import behavior.
+- Only install/run the managed hourly GitHub sync cron when both
+  `GITHUB_TOKEN` and `GITHUB_WORKSPACE_REPO` are configured.
+- Tell the runtime OpenClaw agent to commit locally, and only push when a
+  GitHub sync remote is configured or the user explicitly asks for a push.
+
+Why:
+
+- In this fork, GitHub sync setup can be skipped during onboarding.
+- Without this guard, the packaged agent prompt and legacy/stale cron state can
+  make OpenClaw try to push even when the user never configured a sync repo.
+
+Re-evaluate when:
+
+- Upstream makes GitHub sync optional in both runtime prompt guidance and
+  managed schedule reconciliation.
+
 ### Import-managed runtime token handling
 
 - Status: active
