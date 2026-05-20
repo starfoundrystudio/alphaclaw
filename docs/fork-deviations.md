@@ -94,6 +94,40 @@ Re-evaluate when:
 - Upstream adopts equivalent managed config defaults, or
 - Starfoundry changes the desired managed runtime profile.
 
+### Explicit Codex OAuth runtime route during onboarding
+
+- Status: active
+- Last reviewed: Codex runtime setup route split
+- Area: onboarding / setup UI / generated OpenClaw config
+
+Decision:
+
+- Keep Codex OAuth separate from the native Codex runtime choice.
+- When a user selects an `openai/*` model and connects Codex OAuth, default to
+  the flexible OpenClaw Pi route by setting the effective model to
+  `openai-codex/*` unless the user explicitly opts into `agentRuntime.id:
+  "codex"`.
+- Only install/enable the managed `codex` plugin, set
+  `agents.defaults.agentRuntime.id: "codex"`, and enable
+  `tools.web.search.openaiCodex` when the user opts into the Codex runtime.
+
+Why:
+
+- Codex OAuth can authenticate the default Pi route without requiring an
+  `OPENAI_API_KEY`.
+- The native Codex runtime improves OpenAI/Codex behavior, but it makes the
+  agent harder to switch to non-Codex-compatible model providers later.
+- Upstream exposes these as separate OpenClaw concepts; AlphaClaw's setup UI
+  needs to make that tradeoff explicit rather than inferring runtime from OAuth
+  connection state.
+
+Re-evaluate when:
+
+- Upstream adds a first-class setup choice that distinguishes Codex OAuth auth
+  from the native Codex runtime, or
+- OpenClaw supports mixed-provider runtime switching cleanly while
+  `agentRuntime.id: "codex"` is configured globally.
+
 ### Watchdog startup and repair timeouts
 
 - Status: active

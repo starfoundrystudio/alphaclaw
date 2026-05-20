@@ -66,6 +66,22 @@ describe("frontend/welcome-config", () => {
     ).toBe("Connect Codex OAuth to continue.");
   });
 
+  it("allows OpenAI models to use either API keys or Codex OAuth", async () => {
+    const welcomeConfig = await loadWelcomeConfig();
+
+    expect(
+      welcomeConfig.getWelcomeGroupError(
+        "ai",
+        { MODEL_KEY: "openai/gpt-5.5" },
+        {
+          selectedProvider: "openai",
+          hasAi: false,
+          codexLoading: false,
+        },
+      ),
+    ).toBe("Add an OpenAI API key or connect Codex OAuth to continue.");
+  });
+
   it("requires both Slack tokens before the channels step can pass", async () => {
     const welcomeConfig = await loadWelcomeConfig();
 

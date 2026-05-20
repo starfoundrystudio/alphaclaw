@@ -67,6 +67,23 @@ describe("server/onboarding/openclaw", () => {
     expect(args).toContain("aigw_live_test");
   });
 
+  it("prefers existing Codex OAuth over OpenAI API keys for openai-codex onboarding", () => {
+    const args = buildOnboardArgs({
+      varMap: {
+        OPENAI_API_KEY: "sk-api-key-that-should-not-be-used",
+        OPENCLAW_GATEWAY_TOKEN: "gw-token",
+      },
+      selectedProvider: "openai-codex",
+      hasCodexOauth: true,
+      workspaceDir: "/tmp/workspace",
+    });
+
+    expect(args).toContain("--auth-choice");
+    expect(args).toContain("skip");
+    expect(args).not.toContain("--openai-api-key");
+    expect(args).not.toContain("sk-api-key-that-should-not-be-used");
+  });
+
   it("only scrubs exact secret string values in JSON", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");

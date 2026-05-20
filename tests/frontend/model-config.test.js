@@ -94,4 +94,17 @@ describe("frontend/model-config", () => {
       "Opus 4.6 (OpenRouter)",
     );
   });
+
+  it("maps canonical OpenAI model refs to the Codex OAuth PI route", async () => {
+    const modelConfig = await loadModelConfig();
+
+    expect(
+      modelConfig.getCodexOauthModelKeyForOpenAiModel("openai/gpt-5.5", [
+        { key: "openai-codex/gpt-5.5", label: "GPT-5.5" },
+      ]),
+    ).toBe("openai-codex/gpt-5.5");
+    expect(
+      modelConfig.getCodexOauthModelKeyForOpenAiModel("anthropic/claude-opus-4-6"),
+    ).toBe("anthropic/claude-opus-4-6");
+  });
 });
