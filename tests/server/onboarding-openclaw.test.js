@@ -190,6 +190,13 @@ describe("server/onboarding/openclaw", () => {
     });
     expect(next.plugins.allow).toContain("codex");
     expect(next.plugins.entries.codex).toEqual({ enabled: true });
+    expect(next.tools.web.search).toEqual({
+      enabled: true,
+      openaiCodex: {
+        enabled: true,
+        mode: "cached",
+      },
+    });
   });
 
   it("configures Codex runtime for imported OpenClaw configs when requested", () => {
@@ -219,6 +226,122 @@ describe("server/onboarding/openclaw", () => {
     expect(next.agents.defaults.agentRuntime).toEqual({ id: "codex" });
     expect(next.plugins.allow).toContain("codex");
     expect(next.plugins.entries.codex).toEqual({ enabled: true });
+    expect(next.tools.web.search).toEqual({
+      enabled: true,
+      openaiCodex: {
+        enabled: true,
+        mode: "cached",
+      },
+    });
+  });
+
+  it("leaves Codex native web search unset when Codex runtime is not requested", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.tools.web).toBeUndefined();
+    expect(next.plugins.allow).not.toContain("codex");
+    expect(next.plugins.entries.codex).toBeUndefined();
+  });
+
+  it("preserves imported global web search opt-out when enabling Codex runtime", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+          tools: {
+            web: {
+              search: {
+                enabled: false,
+              },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeManagedImportOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+      agentRuntimeId: "codex",
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.agents.defaults.agentRuntime).toEqual({ id: "codex" });
+    expect(next.tools.web.search).toEqual({
+      enabled: false,
+    });
+  });
+
+  it("preserves imported Codex native web search options when enabling defaults", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+          tools: {
+            web: {
+              search: {
+                openaiCodex: {
+                  mode: "live",
+                  contextSize: "high",
+                },
+              },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeManagedImportOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+      agentRuntimeId: "codex",
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.tools.web.search).toEqual({
+      enabled: true,
+      openaiCodex: {
+        enabled: true,
+        mode: "live",
+        contextSize: "high",
+      },
+    });
   });
 
   it("resets imported allowlist dmPolicy to pairing when re-enabling discord", () => {
