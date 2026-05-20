@@ -425,7 +425,8 @@ describe("server/routes/onboarding", () => {
     expect(res.status).toBe(500);
     expect(res.body).toEqual({
       ok: false,
-      error: "OpenClaw plugin reconciliation failed: install failed",
+      error:
+        "OpenClaw plugin installation failed. Please retry setup; if it persists, check package registry/network access for OpenClaw plugins.",
     });
     expect(deps.startGateway).not.toHaveBeenCalled();
   });
@@ -851,6 +852,53 @@ describe("server/routes/onboarding", () => {
       ok: false,
       error:
         "GitHub access failed. Verify your token permissions and workspace repo, then try again.",
+    });
+  });
+
+  it("does not report GitHub access failure when GitHub backup is not configured", async () => {
+    const deps = createBaseDeps();
+    const app = createApp(deps);
+    const err = new Error("Command failed: openclaw onboard");
+    err.stderr = "remote: Permission denied";
+    deps.shellCmd
+      .mockResolvedValueOnce("")
+      .mockRejectedValueOnce(err);
+
+    const res = await request(app).post("/api/onboard").send({
+      modelKey: "openai/gpt-5.1-codex",
+      vars: [{ key: "OPENAI_API_KEY", value: "sk-test-123456789" }],
+    });
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "Onboarding command failed. Please verify credentials and try again.",
+    });
+  });
+
+  it("returns a plugin-specific message for OpenClaw plugin install failures", async () => {
+    const deps = createBaseDeps({ hasCodexOauth: true });
+    deps.fs.readFileSync.mockImplementation((p) => {
+      if (p === "/tmp/openclaw/openclaw.json") return "{}";
+      if (p === path.join(kSetupDir, "hourly-git-sync.sh")) return "echo Auto-commit hourly sync";
+      return "{}";
+    });
+    deps.reconcileOpenclawPlugins.mockRejectedValueOnce(
+      new Error("npm ERR! 404 Not Found - @openclaw/codex"),
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      modelKey: "openai/gpt-5.5",
+      agentRuntimeId: "codex",
+      vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
+    });
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({
+      ok: false,
+      error:
+        "OpenClaw plugin installation failed. Please retry setup; if it persists, check package registry/network access for OpenClaw plugins.",
     });
   });
 
