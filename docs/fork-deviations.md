@@ -103,13 +103,14 @@ Re-evaluate when:
 Decision:
 
 - Keep Codex OAuth separate from the native Codex runtime choice.
-- When a user selects an `openai/*` model and connects Codex OAuth, default to
-  the flexible OpenClaw Pi route by setting the effective model to
-  `openai-codex/*` unless the user explicitly opts into `agentRuntime.id:
-  "codex"`.
+- When a user selects an `openai/*` or `openai-codex/*` model and connects
+  Codex OAuth, default to the native Codex runtime by setting
+  `agentRuntime.id: "codex"` and using the canonical `openai/*` model key.
+- Let the user explicitly switch to the flexible OpenClaw Pi route, which uses
+  the effective `openai-codex/*` model key.
 - Only install/enable the managed `codex` plugin, set
   `agents.defaults.agentRuntime.id: "codex"`, and enable
-  `tools.web.search.openaiCodex` when the user opts into the Codex runtime.
+  `tools.web.search.openaiCodex` when the Codex runtime route is selected.
 
 Why:
 

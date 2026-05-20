@@ -63,6 +63,20 @@ describe("onboarding/validation", () => {
     expect(res.data.agentRuntimeId).toBe("codex");
   });
 
+  it("canonicalizes openai-codex models when Codex runtime is selected", () => {
+    const res = validateOnboardingInput({
+      vars: kBaseVars({ includeChannel: false, includeGithub: false }),
+      modelKey: "openai-codex/gpt-5.5",
+      agentRuntimeId: "codex",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => true,
+    });
+    expect(res.ok).toBe(true);
+    expect(res.data.modelKey).toBe("openai/gpt-5.5");
+    expect(res.data.selectedProvider).toBe("openai");
+    expect(res.data.agentRuntimeId).toBe("codex");
+  });
+
   it("routes OpenAI models through Codex OAuth on Pi when no API key is provided", () => {
     const res = validateOnboardingInput({
       vars: kBaseVars({ includeChannel: false, includeGithub: false }),

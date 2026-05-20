@@ -346,6 +346,36 @@ describe("server/routes/onboarding", () => {
     ).toBeLessThan(deps.startGateway.mock.invocationCallOrder[0]);
   });
 
+  it("canonicalizes openai-codex model keys when configuring the Codex runtime", async () => {
+    const deps = createBaseDeps({ hasCodexOauth: true });
+    deps.fs.readFileSync.mockImplementation((p) => {
+      if (p === "/tmp/openclaw/openclaw.json") return "{}";
+      if (p === path.join(kSetupDir, "hourly-git-sync.sh")) return "echo Auto-commit hourly sync";
+      return "{}";
+    });
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      modelKey: "openai-codex/gpt-5.5",
+      agentRuntimeId: "codex",
+      vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(deps.shellCmd).toHaveBeenCalledWith(
+      'openclaw models set "openai/gpt-5.5"',
+      expect.objectContaining({
+        env: expect.objectContaining({ OPENCLAW_GATEWAY_TOKEN: "tok" }),
+      }),
+    );
+    expect(
+      deps.shellCmd.mock.calls.some(([cmd]) =>
+        cmd.includes('"--auth-choice" "skip"'),
+      ),
+    ).toBe(true);
+  });
+
   it("uses the openai-codex Pi route for OpenAI models with Codex OAuth when runtime is not requested", async () => {
     const deps = createBaseDeps({ hasCodexOauth: true });
     deps.fs.readFileSync.mockImplementation((p) => {

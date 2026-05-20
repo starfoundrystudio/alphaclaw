@@ -107,4 +107,17 @@ describe("frontend/model-config", () => {
       modelConfig.getCodexOauthModelKeyForOpenAiModel("anthropic/claude-opus-4-6"),
     ).toBe("anthropic/claude-opus-4-6");
   });
+
+  it("maps Codex OAuth model refs to canonical OpenAI refs for the Codex runtime", async () => {
+    const modelConfig = await loadModelConfig();
+
+    expect(
+      modelConfig.getOpenAiModelKeyForCodexRuntimeModel("openai-codex/gpt-5.5", [
+        { key: "openai/gpt-5.5", label: "GPT-5.5" },
+      ]),
+    ).toBe("openai/gpt-5.5");
+    expect(
+      modelConfig.getOpenAiModelKeyForCodexRuntimeModel("openai/gpt-5.5"),
+    ).toBe("openai/gpt-5.5");
+  });
 });
