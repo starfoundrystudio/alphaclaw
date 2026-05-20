@@ -51,6 +51,42 @@ describe("onboarding/validation", () => {
     expect(res.ok).toBe(true);
   });
 
+  it("accepts an OpenAI model with Codex runtime when Codex OAuth is connected", () => {
+    const res = validateOnboardingInput({
+      vars: kBaseVars({ includeChannel: false, includeGithub: false }),
+      modelKey: "openai/gpt-5.5",
+      agentRuntimeId: "codex",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => true,
+    });
+    expect(res.ok).toBe(true);
+    expect(res.data.agentRuntimeId).toBe("codex");
+  });
+
+  it("rejects Codex runtime without Codex OAuth", () => {
+    const res = validateOnboardingInput({
+      vars: kBaseVars({ includeChannel: false, includeGithub: false }),
+      modelKey: "openai/gpt-5.5",
+      agentRuntimeId: "codex",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+    });
+    expect(res.ok).toBe(false);
+    expect(res.error).toBe("Connect OpenAI Codex OAuth before continuing");
+  });
+
+  it("rejects Codex runtime for non-OpenAI model providers", () => {
+    const res = validateOnboardingInput({
+      vars: [...kBaseVars(), { key: "ANTHROPIC_API_KEY", value: "sk-ant-api03-test" }],
+      modelKey: "anthropic/claude-opus-4-6",
+      agentRuntimeId: "codex",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => true,
+    });
+    expect(res.ok).toBe(false);
+    expect(res.error).toBe("Codex runtime requires an OpenAI model");
+  });
+
   it("accepts fresh onboarding without GitHub backup configured", () => {
     const res = validateOnboardingInput({
       vars: [

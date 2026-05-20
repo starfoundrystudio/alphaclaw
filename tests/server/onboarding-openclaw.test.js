@@ -153,6 +153,74 @@ describe("server/onboarding/openclaw", () => {
     expect(next.update.checkOnStart).toBe(false);
   });
 
+  it("configures Codex as the managed default agent runtime when requested", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+          agents: {
+            defaults: {
+              agentRuntime: {
+                fallback: "none",
+              },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+      agentRuntimeId: "codex",
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.agents.defaults.agentRuntime).toEqual({
+      fallback: "none",
+      id: "codex",
+    });
+    expect(next.plugins.allow).toContain("codex");
+    expect(next.plugins.entries.codex).toEqual({ enabled: true });
+  });
+
+  it("configures Codex runtime for imported OpenClaw configs when requested", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeManagedImportOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+      agentRuntimeId: "codex",
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.agents.defaults.agentRuntime).toEqual({ id: "codex" });
+    expect(next.plugins.allow).toContain("codex");
+    expect(next.plugins.entries.codex).toEqual({ enabled: true });
+  });
+
   it("resets imported allowlist dmPolicy to pairing when re-enabling discord", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");

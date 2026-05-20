@@ -27,6 +27,7 @@ const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
       appendFileSync: vi.fn(),
     },
     constants: {
+      kRootDir: "/tmp/alphaclaw",
       OPENCLAW_DIR: "/tmp/openclaw",
       WORKSPACE_DIR: "/tmp/openclaw/workspace",
       kOnboardingMarkerPath,
@@ -74,6 +75,7 @@ const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
     ensureGatewayProxyConfig: vi.fn(),
     getBaseUrl: vi.fn(() => "https://example.com"),
     startGateway: vi.fn(),
+    reconcileOpenclawPlugins: vi.fn(),
   };
 };
 
@@ -301,6 +303,71 @@ describe("server/routes/onboarding", () => {
       ok: false,
       error: "Connect OpenAI Codex OAuth before continuing",
     });
+  });
+
+  it("configures and reconciles the Codex runtime for OpenAI models with Codex OAuth", async () => {
+    const deps = createBaseDeps({ hasCodexOauth: true });
+    deps.fs.readFileSync.mockImplementation((p) => {
+      if (p === "/tmp/openclaw/openclaw.json") return "{}";
+      if (p === path.join(kSetupDir, "hourly-git-sync.sh")) return "echo Auto-commit hourly sync";
+      return "{}";
+    });
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      modelKey: "openai/gpt-5.5",
+      agentRuntimeId: "codex",
+      vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(
+      deps.shellCmd.mock.calls.some(([cmd]) =>
+        cmd.includes('"--auth-choice" "skip"'),
+      ),
+    ).toBe(true);
+    const openclawWriteCall = deps.fs.writeFileSync.mock.calls.find(
+      ([targetPath]) => targetPath === "/tmp/openclaw/openclaw.json",
+    );
+    const writtenConfig = JSON.parse(openclawWriteCall[1]);
+    expect(writtenConfig.agents.defaults.agentRuntime).toEqual({ id: "codex" });
+    expect(writtenConfig.plugins.allow).toContain("codex");
+    expect(writtenConfig.plugins.entries.codex).toEqual({ enabled: true });
+    expect(deps.reconcileOpenclawPlugins).toHaveBeenCalledWith({
+      rootDir: "/tmp/alphaclaw",
+      openclawDir: "/tmp/openclaw",
+      fsModule: deps.fs,
+      logger: console,
+      env: process.env,
+    });
+    expect(
+      deps.reconcileOpenclawPlugins.mock.invocationCallOrder[0],
+    ).toBeLessThan(deps.startGateway.mock.invocationCallOrder[0]);
+  });
+
+  it("fails onboarding before gateway start when managed plugin reconciliation fails", async () => {
+    const deps = createBaseDeps();
+    deps.reconcileOpenclawPlugins.mockImplementation(() => {
+      throw new Error("install failed");
+    });
+    deps.fs.readFileSync.mockImplementation((p) => {
+      if (p === "/tmp/openclaw/openclaw.json") return "{}";
+      return "{}";
+    });
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      modelKey: "openai/gpt-5.1-codex",
+      vars: [{ key: "OPENAI_API_KEY", value: "sk-test-123456789" }],
+    });
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "OpenClaw plugin reconciliation failed: install failed",
+    });
+    expect(deps.startGateway).not.toHaveBeenCalled();
   });
 
   it("rejects anthropic setup tokens with the wrong prefix", async () => {

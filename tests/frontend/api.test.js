@@ -47,19 +47,26 @@ describe("frontend/api", () => {
     expect(window.location.href).toBe("/setup");
   });
 
-  it("runOnboard sends vars and modelKey payload", async () => {
+  it("runOnboard sends vars, modelKey, and runtime payload", async () => {
     global.fetch.mockResolvedValue(mockJsonResponse(200, { ok: true }));
     const api = await loadApiModule();
     const vars = [{ key: "OPENAI_API_KEY", value: "sk-123" }];
     const modelKey = "openai/gpt-5.1-codex";
 
-    const result = await api.runOnboard(vars, modelKey);
+    const result = await api.runOnboard(vars, modelKey, {
+      agentRuntimeId: "codex",
+    });
 
     expect(global.fetch).toHaveBeenCalledWith(
       "/api/onboard",
       expect.objectContaining({
         method: "POST",
-        body: JSON.stringify({ vars, modelKey, importMode: false }),
+        body: JSON.stringify({
+          vars,
+          modelKey,
+          agentRuntimeId: "codex",
+          importMode: false,
+        }),
         headers: expect.any(Headers),
       }),
     );

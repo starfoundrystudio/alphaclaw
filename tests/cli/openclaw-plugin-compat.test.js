@@ -284,6 +284,31 @@ describe("openclaw plugin compatibility manifest", () => {
     );
   });
 
+  it("installs provider plugins when agent runtime config references them", () => {
+    const { commands, result } = reconcileFixture({
+      tmpDir,
+      config: {
+        agents: {
+          defaults: {
+            model: "openai/gpt-5.5",
+            agentRuntime: { id: "codex" },
+          },
+        },
+      },
+    });
+
+    expect(result.plugins).toEqual([
+      expect.objectContaining({
+        id: "codex",
+        action: "installed",
+        reasons: ["agent-runtime-reference"],
+      }),
+    ]);
+    expect(commands.some((cmd) => cmd.includes("'npm:@openclaw/codex@2026.5.6'"))).toBe(
+      true,
+    );
+  });
+
   it("pins exact plugin versions instead of resolving latest", () => {
     expect(
       buildInstallSpec({
