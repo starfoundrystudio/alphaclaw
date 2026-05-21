@@ -26,6 +26,9 @@ const writeOpenclawConfig = (openclawDir, config) => {
   );
 };
 
+const readOpenclawConfig = (openclawDir) =>
+  JSON.parse(fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"));
+
 const baseManifest = (overrides = {}) => ({
   schemaVersion: 1,
   alphaclawVersion: "0.0.0-test",
@@ -90,6 +93,51 @@ const createExecRecorder = ({ version = "2026.5.6", plugins = [] } = {}) => {
     return "";
   };
   return { commands, execSyncImpl };
+};
+
+const createConfigRecoveryExecRecorder = ({
+  openclawDir,
+  version = "2026.5.6",
+  plugins = [],
+  shouldFailInstall,
+  mutateOnInstall,
+} = {}) => {
+  const commands = [];
+  const installConfigs = [];
+  let currentPlugins = plugins;
+  const execSyncImpl = (command) => {
+    commands.push(String(command));
+    if (String(command).includes("'--version'")) {
+      return `${version}\n`;
+    }
+    if (String(command).includes("'plugins' 'list' '--json'")) {
+      return JSON.stringify({ plugins: currentPlugins });
+    }
+    if (String(command).includes("'plugins' 'install'")) {
+      const config = readOpenclawConfig(openclawDir);
+      installConfigs.push(config);
+      if (shouldFailInstall?.(config)) {
+        const error = new Error(
+          "Invalid config: missing plugin provider referenced by config",
+        );
+        error.stderr =
+          "invalid-config: missing plugin provider referenced by config";
+        throw error;
+      }
+      const nextConfig = mutateOnInstall ? mutateOnInstall(config) : config;
+      writeOpenclawConfig(openclawDir, nextConfig);
+      currentPlugins = [
+        {
+          id: "installed-after-recovery",
+          name: "@openclaw/installed-after-recovery",
+          version,
+        },
+      ];
+      return "";
+    }
+    return "";
+  };
+  return { commands, execSyncImpl, installConfigs };
 };
 
 const reconcileFixture = ({
@@ -385,5 +433,257 @@ describe("openclaw plugin compatibility manifest", () => {
       false,
     );
     expect(Object.keys(result.lock.plugins)).toEqual(["discord"]);
+  });
+
+  it("recovers missing Brave web search plugin installs by temporarily suppressing the selector", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        brave: {
+          kind: "provider",
+          package: "@openclaw/brave-plugin",
+          version: "2026.5.6",
+          pluginId: "brave",
+          webSearchProviderIds: ["brave"],
+          install: {
+            npmSpec: "@openclaw/brave-plugin",
+            exactNpmSpec: "@openclaw/brave-plugin@2026.5.6",
+          },
+        },
+      },
+    });
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, {
+      tools: {
+        web: {
+          search: {
+            provider: "brave",
+            apiKey: "env:BRAVE_API_KEY",
+          },
+        },
+      },
+      plugins: {
+        entries: {
+          brave: {
+            config: { apiKey: "env:BRAVE_API_KEY" },
+          },
+        },
+      },
+    });
+    const { commands, execSyncImpl, installConfigs } =
+      createConfigRecoveryExecRecorder({
+        openclawDir,
+        shouldFailInstall: (config) =>
+          config.tools?.web?.search?.provider === "brave",
+      });
+
+    const manifestPath = writeManifest(tmpDir, manifest);
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    expect(
+      commands.some((cmd) =>
+        cmd.includes("'npm:@openclaw/brave-plugin@2026.5.6'"),
+      ),
+    ).toBe(true);
+    expect(installConfigs).toHaveLength(2);
+    expect(installConfigs[1].tools.web.search.provider).toBeUndefined();
+    expect(installConfigs[1].tools.web.search.apiKey).toBe(
+      "env:BRAVE_API_KEY",
+    );
+    expect(installConfigs[1].plugins.entries.brave.config).toEqual({
+      apiKey: "env:BRAVE_API_KEY",
+    });
+    expect(readOpenclawConfig(openclawDir).tools.web.search.provider).toBe(
+      "brave",
+    );
+  });
+
+  it("recovers generic provider selector installs without removing provider config", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        demo: {
+          kind: "provider",
+          package: "@openclaw/demo-provider",
+          version: "2026.5.6",
+          pluginId: "demo",
+          providerIds: ["demo-provider"],
+          install: {
+            npmSpec: "@openclaw/demo-provider",
+            exactNpmSpec: "@openclaw/demo-provider@2026.5.6",
+          },
+        },
+      },
+    });
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, {
+      models: {
+        default: "demo-provider/sensible",
+        providers: {
+          "demo-provider": {
+            apiKey: "env:DEMO_PROVIDER_API_KEY",
+          },
+        },
+      },
+    });
+    const { execSyncImpl, installConfigs } = createConfigRecoveryExecRecorder({
+      openclawDir,
+      shouldFailInstall: (config) =>
+        config.models?.default === "demo-provider/sensible",
+    });
+
+    const manifestPath = writeManifest(tmpDir, manifest);
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    expect(installConfigs[1].models.default).toBeUndefined();
+    expect(installConfigs[1].models.providers["demo-provider"]).toEqual({
+      apiKey: "env:DEMO_PROVIDER_API_KEY",
+    });
+    expect(readOpenclawConfig(openclawDir).models.default).toBe(
+      "demo-provider/sensible",
+    );
+  });
+
+  it("recovers backend and agent runtime selector installs", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        runtime: {
+          kind: "plugin",
+          package: "@openclaw/runtime-plugin",
+          version: "2026.5.6",
+          pluginId: "runtime-plugin",
+          install: {
+            npmSpec: "@openclaw/runtime-plugin",
+            exactNpmSpec: "@openclaw/runtime-plugin@2026.5.6",
+          },
+        },
+      },
+    });
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, {
+      bindings: [{ acp: { backend: "runtime-plugin" } }],
+      agents: {
+        defaults: {
+          agentRuntime: {
+            id: "runtime-plugin",
+            mode: "managed",
+          },
+        },
+      },
+    });
+    const { execSyncImpl, installConfigs } = createConfigRecoveryExecRecorder({
+      openclawDir,
+      shouldFailInstall: (config) =>
+        config.bindings?.[0]?.acp?.backend === "runtime-plugin" ||
+        config.agents?.defaults?.agentRuntime?.id === "runtime-plugin",
+    });
+
+    const manifestPath = writeManifest(tmpDir, manifest);
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    expect(installConfigs[1].bindings[0].acp.backend).toBeUndefined();
+    expect(installConfigs[1].agents.defaults.agentRuntime).toEqual({
+      mode: "managed",
+    });
+    const finalConfig = readOpenclawConfig(openclawDir);
+    expect(finalConfig.bindings[0].acp.backend).toBe("runtime-plugin");
+    expect(finalConfig.agents.defaults.agentRuntime).toEqual({
+      id: "runtime-plugin",
+      mode: "managed",
+    });
+  });
+
+  it("keeps OpenClaw install config mutations while restoring suppressed selectors", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        demo: {
+          kind: "provider",
+          package: "@openclaw/demo-provider",
+          version: "2026.5.6",
+          pluginId: "demo",
+          providerIds: ["demo-provider"],
+          install: {
+            npmSpec: "@openclaw/demo-provider",
+            exactNpmSpec: "@openclaw/demo-provider@2026.5.6",
+          },
+        },
+      },
+    });
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, {
+      models: { default: "demo-provider/sensible" },
+      plugins: {
+        entries: {
+          demo: {
+            config: { apiKey: "env:DEMO_PROVIDER_API_KEY" },
+          },
+        },
+      },
+    });
+    const { execSyncImpl, installConfigs } = createConfigRecoveryExecRecorder({
+      openclawDir,
+      shouldFailInstall: (config) =>
+        config.models?.default === "demo-provider/sensible",
+      mutateOnInstall: (config) => ({
+        ...config,
+        plugins: {
+          ...(config.plugins || {}),
+          entries: {
+            ...(config.plugins?.entries || {}),
+            demo: {
+              ...(config.plugins?.entries?.demo || {}),
+              enabled: true,
+            },
+          },
+        },
+      }),
+    });
+
+    const manifestPath = writeManifest(tmpDir, manifest);
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    expect(installConfigs[1].plugins.entries.demo.config).toEqual({
+      apiKey: "env:DEMO_PROVIDER_API_KEY",
+    });
+    const finalConfig = readOpenclawConfig(openclawDir);
+    expect(finalConfig.models.default).toBe("demo-provider/sensible");
+    expect(finalConfig.plugins.entries.demo).toEqual({
+      config: { apiKey: "env:DEMO_PROVIDER_API_KEY" },
+      enabled: true,
+    });
   });
 });
