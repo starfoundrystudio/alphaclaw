@@ -191,7 +191,7 @@ describe("openclaw plugin compatibility manifest", () => {
       "plugin",
       "provider",
     ]);
-    expect(Object.keys(manifest.managedPlugins).length).toBe(27);
+    expect(Object.keys(manifest.managedPlugins).length).toBe(33);
     expect(manifest.managedPlugins.discord).toMatchObject({
       kind: "channel",
       package: "@openclaw/discord",
@@ -213,6 +213,33 @@ describe("openclaw plugin compatibility manifest", () => {
       package: "@openclaw/codex",
       version: packageJson.dependencies.openclaw,
       providerIds: ["codex"],
+    });
+    expect(manifest.managedPlugins.slack).toMatchObject({
+      kind: "channel",
+      package: "@openclaw/slack",
+      version: packageJson.dependencies.openclaw,
+      channelId: "slack",
+    });
+    expect(manifest.managedPlugins.matrix).toMatchObject({
+      kind: "channel",
+      package: "@openclaw/matrix",
+      version: packageJson.dependencies.openclaw,
+      channelId: "matrix",
+      install: expect.objectContaining({
+        defaultChoice: "clawhub",
+      }),
+    });
+    expect(manifest.managedPlugins["amazon-bedrock"]).toMatchObject({
+      kind: "provider",
+      package: "@openclaw/amazon-bedrock-provider",
+      version: packageJson.dependencies.openclaw,
+      providerIds: ["amazon-bedrock"],
+    });
+    expect(manifest.managedPlugins["anthropic-vertex"]).toMatchObject({
+      kind: "provider",
+      package: "@openclaw/anthropic-vertex-provider",
+      version: packageJson.dependencies.openclaw,
+      providerIds: ["anthropic-vertex"],
     });
   });
 
