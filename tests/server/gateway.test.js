@@ -62,7 +62,7 @@ describe("server/gateway restart behavior", () => {
     delete require.cache[modulePath];
   });
 
-  it("uses force restart when a managed child exists", async () => {
+  it("restarts the managed child without force restart", async () => {
     const spawnMock = vi.fn(() => createChild());
     const execSyncMock = vi.fn(() => "");
     childProcess.spawn = spawnMock;
@@ -90,15 +90,17 @@ describe("server/gateway restart behavior", () => {
     gateway.restartGateway(reloadEnv);
 
     expect(reloadEnv).toHaveBeenCalledTimes(1);
-    expect(execSyncMock).toHaveBeenCalledTimes(1);
-    expect(execSyncMock).toHaveBeenCalledWith("openclaw gateway --force", {
-      env: expect.any(Object),
-      timeout: 15000,
-      encoding: "utf8",
-    });
+    expect(execSyncMock).not.toHaveBeenCalled();
     expect(spawnMock).toHaveBeenCalledTimes(1);
     const firstChild = spawnMock.mock.results[0].value;
-    expect(firstChild.kill).not.toHaveBeenCalled();
+    expect(firstChild.kill).toHaveBeenCalledWith("SIGTERM");
+
+    const exitRegistration = firstChild.on.mock.calls.find((call) => call[0] === "exit");
+    expect(exitRegistration).toBeTruthy();
+    const [, onExit] = exitRegistration;
+    onExit(0, null);
+
+    expect(spawnMock).toHaveBeenCalledTimes(2);
   });
 
   it("exports the durable OpenClaw state dir in gateway env", () => {
@@ -136,7 +138,7 @@ describe("server/gateway restart behavior", () => {
     }
   });
 
-  it("uses force restart when no managed child exists", () => {
+  it("stops any existing gateway and launches a managed child when no managed child exists", () => {
     const spawnMock = vi.fn(() => createChild());
     const execSyncMock = vi.fn(() => "");
     childProcess.spawn = spawnMock;
@@ -162,12 +164,12 @@ describe("server/gateway restart behavior", () => {
 
     expect(reloadEnv).toHaveBeenCalledTimes(1);
     expect(execSyncMock).toHaveBeenCalledTimes(1);
-    expect(execSyncMock).toHaveBeenCalledWith("openclaw gateway --force", {
+    expect(execSyncMock).toHaveBeenCalledWith("openclaw gateway stop", {
       env: expect.any(Object),
       timeout: 15000,
       encoding: "utf8",
     });
-    expect(spawnMock).not.toHaveBeenCalled();
+    expect(spawnMock).toHaveBeenCalledTimes(1);
   });
 
   it("retries channel plugin preflight after cleaning stale install stages", () => {
@@ -232,7 +234,7 @@ describe("server/gateway restart behavior", () => {
     );
   });
 
-  it("marks managed child exit as expected before force restart", async () => {
+  it("marks managed child exit as expected before relaunch", async () => {
     const child = createChild();
     const spawnMock = vi.fn(() => child);
     const execSyncMock = vi.fn(() => "");
@@ -272,6 +274,7 @@ describe("server/gateway restart behavior", () => {
         expectedExit: true,
       }),
     );
+    expect(spawnMock).toHaveBeenCalledTimes(2);
   });
 
   it("does not treat auth-only openclaw config as onboarded", () => {
