@@ -1,6 +1,6 @@
 {
   "name": "@starfoundrystudio/alphaclaw",
-  "version": "0.9.15-starfoundry.4",
+  "version": "0.9.15-starfoundry.4-beta.0",
   "publishConfig": {
     "access": "restricted",
     "registry": "https://npm.pkg.github.com"
@@ -35,7 +35,7 @@
   "dependencies": {
     "express": "^4.21.0",
     "http-proxy": "^1.18.1",
-    "openclaw": "2026.5.6",
+    "openclaw": "2026.5.20",
     "ws": "^8.19.0"
   },
   "devDependencies": {
