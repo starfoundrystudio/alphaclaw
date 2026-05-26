@@ -43,6 +43,11 @@ describe("server/startup", () => {
       gmailWatchService,
     });
 
+    expect(reloadEnv).toHaveBeenCalledWith({ clearMissing: false });
+    expect(syncChannelConfig).toHaveBeenCalledWith(
+      [{ key: "OPENAI_API_KEY", value: "sk-test" }],
+      "add",
+    );
     expect(ensureGatewayProxyConfig).toHaveBeenCalledWith("https://setup.example.com");
     expect(callOrder).toEqual([
       "ensureManagedExecDefaults",
