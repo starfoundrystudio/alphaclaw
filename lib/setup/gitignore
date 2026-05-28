@@ -16,6 +16,8 @@ db/**
 !hooks/
 !hooks/transforms/
 !hooks/transforms/**
+!pages/
+!pages/**
 !cron/
 !cron/jobs.json
 # OpenClaw 2026.4.20+: runtime execution state (job definitions stay in cron/jobs.json).

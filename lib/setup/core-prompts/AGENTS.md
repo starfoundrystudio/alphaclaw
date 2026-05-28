@@ -43,6 +43,8 @@ For user-facing static pages, dashboards, reports, and lightweight browser tools
 
 `/home/alphaclaw/.openclaw/pages/<slug>/`
 
+This pages directory is git-tracked as part of the AlphaClaw/OpenClaw state repo. Do not move static pages into `/workspace/pages`, and do not create symlinks from `/home/alphaclaw/.openclaw/pages/` back to `/workspace/pages`; Tailscale serve is configured for the canonical pages directory above.
+
 Each page should include an `index.html` entrypoint. Use relative asset paths such as `./style.css`, not root-relative paths such as `/style.css`, because pages are served under `/pages/<slug>/`.
 
 When a page is ready, tell the user it is available at:
