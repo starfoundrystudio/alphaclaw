@@ -99,6 +99,32 @@ describe("frontend/welcome-config", () => {
     expect(welcomeConfig.getWelcomeGroupError("channels", {})).toBe("");
   });
 
+  it("requires a Tailscale API access token before final setup", async () => {
+    const welcomeConfig = await loadWelcomeConfig();
+
+    expect(
+      welcomeConfig.getWelcomeGroupError(
+        welcomeConfig.kTailscaleGroupId,
+        {},
+        { tailscaleApiToken: "" },
+      ),
+    ).toBe("Enter a Tailscale API access token to continue.");
+    expect(
+      welcomeConfig.getWelcomeGroupError(
+        welcomeConfig.kTailscaleGroupId,
+        {},
+        { tailscaleApiToken: "not-a-ts-key" },
+      ),
+    ).toBe("Tailscale API access token must start with tskey-api-.");
+    expect(
+      welcomeConfig.getWelcomeGroupError(
+        welcomeConfig.kTailscaleGroupId,
+        {},
+        { tailscaleApiToken: "tskey-api-test_123" },
+      ),
+    ).toBe("");
+  });
+
   it("finds the first invalid step in welcome order", async () => {
     const welcomeConfig = await loadWelcomeConfig();
 

@@ -32,4 +32,20 @@ describe("frontend/welcome-storage", () => {
       welcomeConfig.kOpenAiCodexRoutePi,
     );
   });
+
+  it("drops transient Tailscale tokens from persisted setup state", async () => {
+    const welcomeStorage = await loadWelcomeStorage();
+
+    const normalized = welcomeStorage.normalizeWelcomeStorageState({
+      MODEL_KEY: "openai/gpt-5.1-codex",
+      TAILSCALE_API_TOKEN: "tskey-api-secret",
+      _TAILSCALE_API_TOKEN: "tskey-api-secret",
+      tailscaleApiToken: "tskey-api-secret",
+    });
+
+    expect(normalized.MODEL_KEY).toBe("openai/gpt-5.1-codex");
+    expect(normalized.TAILSCALE_API_TOKEN).toBeUndefined();
+    expect(normalized._TAILSCALE_API_TOKEN).toBeUndefined();
+    expect(normalized.tailscaleApiToken).toBeUndefined();
+  });
 });

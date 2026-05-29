@@ -55,6 +55,7 @@ describe("frontend/api", () => {
 
     const result = await api.runOnboard(vars, modelKey, {
       agentRuntimeId: "codex",
+      tailscaleApiToken: "tskey-api-test_123456789",
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
@@ -66,6 +67,7 @@ describe("frontend/api", () => {
           modelKey,
           agentRuntimeId: "codex",
           importMode: false,
+          tailscaleApiToken: "tskey-api-test_123456789",
         }),
         headers: expect.any(Headers),
       }),

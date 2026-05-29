@@ -33,13 +33,15 @@ describe("server/commands", () => {
   it("redacts known token prefixes even outside secret-looking flags", () => {
     const { sanitizeOnboardCommandForLog } = loadCommandsModule();
     const sanitized = sanitizeOnboardCommandForLog(
-      "echo ghp_secret github_pat_secret sk-secret vck_secret",
+      "echo ghp_secret github_pat_secret sk-secret vck_secret tskey-api-secret tskey-auth-secret",
     );
 
     expect(sanitized).not.toContain("ghp_secret");
     expect(sanitized).not.toContain("github_pat_secret");
     expect(sanitized).not.toContain("sk-secret");
     expect(sanitized).not.toContain("vck_secret");
+    expect(sanitized).not.toContain("tskey-api-secret");
+    expect(sanitized).not.toContain("tskey-auth-secret");
     expect(sanitized).toContain("***");
   });
 

@@ -76,6 +76,12 @@ const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
     getBaseUrl: vi.fn(() => "https://example.com"),
     startGateway: vi.fn(),
     reconcileOpenclawPlugins: vi.fn(),
+    tailscaleFinalizer: {
+      finalizeTailscaleOnboarding: vi.fn(async () => ({
+        setupUrl: "https://alphaclaw.tail123.ts.net",
+        publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
+      })),
+    },
   };
 };
 
@@ -88,6 +94,7 @@ const createApp = (deps) => {
 
 const makeValidBody = () => ({
   modelKey: "openai/gpt-5.1-codex",
+  tailscaleApiToken: "tskey-api-test_123456789",
   vars: [
     { key: "OPENAI_API_KEY", value: "sk-test-123456789" },
     { key: "GITHUB_TOKEN", value: "ghp_test_123456789" },
@@ -174,6 +181,22 @@ describe("server/routes/onboarding", () => {
     expect(res.body).toEqual({ ok: false, error: "A model selection is required" });
   });
 
+  it("rejects missing Tailscale API token", async () => {
+    const deps = createBaseDeps();
+    const app = createApp(deps);
+    const body = makeValidBody();
+    delete body.tailscaleApiToken;
+
+    const res = await request(app).post("/api/onboard").send(body);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "Tailscale API access token is required",
+    });
+    expect(deps.tailscaleFinalizer.finalizeTailscaleOnboarding).not.toHaveBeenCalled();
+  });
+
   it("allows onboarding without any channel tokens", async () => {
     const deps = createBaseDeps();
     mockGithubVerifyAndCreate();
@@ -192,6 +215,7 @@ describe("server/routes/onboarding", () => {
     const app = createApp(deps);
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openrouter/anthropic/claude-sonnet-4-6",
       vars: [{ key: "OPENROUTER_API_KEY", value: "sk-or-test-123456789" }],
     });
@@ -214,6 +238,7 @@ describe("server/routes/onboarding", () => {
     const app = createApp(deps);
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
       vars: [{ key: "AI_GATEWAY_API_KEY", value: "aigw_test_123456789" }],
     });
@@ -233,6 +258,7 @@ describe("server/routes/onboarding", () => {
     const app = createApp(deps);
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.1-codex",
       vars: [
         { key: "OPENAI_API_KEY", value: "sk-test-123456789" },
@@ -254,6 +280,9 @@ describe("server/routes/onboarding", () => {
         cmd.includes('alphaclaw git-sync -m "initial setup"'),
       ),
     ).toBe(false);
+    expect(deps.tailscaleFinalizer.finalizeTailscaleOnboarding).toHaveBeenCalledWith({
+      tailscaleApiToken: "tskey-api-test_123456789",
+    });
     expect(deps.fs.writeFileSync).toHaveBeenCalledWith(
       "/tmp/openclaw/cron/system-sync.json",
       JSON.stringify({ enabled: false, schedule: "0 * * * *" }, null, 2),
@@ -261,6 +290,31 @@ describe("server/routes/onboarding", () => {
     expect(deps.fs.rmSync).toHaveBeenCalledWith("/etc/cron.d/openclaw-hourly-sync", {
       force: true,
     });
+  });
+
+  it("does not persist Tailscale API tokens submitted in vars", async () => {
+    const deps = createBaseDeps();
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
+      modelKey: "openai/gpt-5.1-codex",
+      vars: [
+        { key: "OPENAI_API_KEY", value: "sk-test-123456789" },
+        { key: "TAILSCALE_API_TOKEN", value: "tskey-api-should-not-save" },
+      ],
+    });
+
+    expect(res.status).toBe(200);
+    const savedVars = deps.writeEnvFile.mock.calls[0][0];
+    expect(savedVars).toEqual(
+      expect.arrayContaining([
+        { key: "OPENAI_API_KEY", value: "sk-test-123456789" },
+      ]),
+    );
+    expect(
+      savedVars.some((entry) => String(entry.key).startsWith("TAILSCALE_")),
+    ).toBe(false);
   });
 
   it("rejects overly large env var values before running onboarding", async () => {
@@ -315,6 +369,7 @@ describe("server/routes/onboarding", () => {
     const app = createApp(deps);
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.5",
       agentRuntimeId: "codex",
       vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
@@ -356,6 +411,7 @@ describe("server/routes/onboarding", () => {
     const app = createApp(deps);
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai-codex/gpt-5.5",
       agentRuntimeId: "codex",
       vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
@@ -386,6 +442,7 @@ describe("server/routes/onboarding", () => {
     const app = createApp(deps);
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.5",
       vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
     });
@@ -418,6 +475,7 @@ describe("server/routes/onboarding", () => {
     const app = createApp(deps);
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.1-codex",
       vars: [{ key: "OPENAI_API_KEY", value: "sk-test-123456789" }],
     });
@@ -431,11 +489,37 @@ describe("server/routes/onboarding", () => {
     expect(deps.startGateway).not.toHaveBeenCalled();
   });
 
+  it("keeps onboarding incomplete when Tailscale finalization fails", async () => {
+    const deps = createBaseDeps();
+    deps.tailscaleFinalizer.finalizeTailscaleOnboarding.mockRejectedValue(
+      new Error("Tailscale setup failed"),
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
+      modelKey: "openai/gpt-5.1-codex",
+      vars: [{ key: "OPENAI_API_KEY", value: "sk-test-123456789" }],
+    });
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "Tailscale setup failed",
+    });
+    expect(deps.fs.writeFileSync).not.toHaveBeenCalledWith(
+      "/tmp/alphaclaw/onboarded.json",
+      expect.any(String),
+    );
+    expect(deps.startGateway).not.toHaveBeenCalled();
+  });
+
   it("rejects anthropic setup tokens with the wrong prefix", async () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "anthropic/claude-opus-4-6",
       vars: [
         { key: "ANTHROPIC_TOKEN", value: "sk-ant-api03-not-a-setup-token" },
@@ -642,13 +726,15 @@ describe("server/routes/onboarding", () => {
       path.join(kSetupDir, "core-prompts", "AGENTS.md"),
       "/tmp/openclaw/workspace/hooks/bootstrap/AGENTS.md",
     );
-    const toolsWriteCall = deps.fs.writeFileSync.mock.calls.find(
+    const toolsWriteCall = deps.fs.writeFileSync.mock.calls
+      .filter(
       ([path]) => path === "/tmp/openclaw/workspace/hooks/bootstrap/TOOLS.md",
-    );
+      )
+      .at(-1);
     expect(toolsWriteCall).toBeTruthy();
-    expect(toolsWriteCall[1]).toContain("https://setup.example.com");
+    expect(toolsWriteCall[1]).toContain("https://alphaclaw.tail123.ts.net");
     expect(deps.ensureGatewayProxyConfig).toHaveBeenCalledWith(
-      "https://setup.example.com",
+      "https://alphaclaw.tail123.ts.net",
     );
 
     expect(deps.fs.writeFileSync).toHaveBeenCalledWith(
@@ -722,6 +808,7 @@ describe("server/routes/onboarding", () => {
     mockGithubVerifyAndCreate();
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "anthropic/claude-opus-4-6",
       vars: [
         { key: "ANTHROPIC_API_KEY", value: "sk-ant-api03-123456789" },
@@ -755,6 +842,7 @@ describe("server/routes/onboarding", () => {
     mockGithubVerifyAndCreate();
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "anthropic/claude-opus-4-6",
       vars: [
         { key: "ANTHROPIC_API_KEY", value: "sk-ant-api-fresh-123456789" },
@@ -865,6 +953,7 @@ describe("server/routes/onboarding", () => {
       .mockRejectedValueOnce(err);
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.1-codex",
       vars: [{ key: "OPENAI_API_KEY", value: "sk-test-123456789" }],
     });
@@ -889,6 +978,7 @@ describe("server/routes/onboarding", () => {
     const app = createApp(deps);
 
     const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.5",
       agentRuntimeId: "codex",
       vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
