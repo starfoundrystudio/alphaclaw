@@ -207,6 +207,69 @@ describe("server/onboarding/tailscale-finalizer", () => {
     ]);
   });
 
+  it("retries Tailscale CLI permission failures with non-interactive sudo", async () => {
+    const fetchImpl = vi.fn(async (url, opts = {}) => {
+      if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ grants: [] }),
+        };
+      }
+      if (String(url).endsWith("/keys")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ key: "tskey-auth-secret" }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => "" },
+        text: async () => JSON.stringify({ ok: true }),
+      };
+    });
+    const shellCmd = vi.fn(async (cmd) => {
+      if (cmd === "tailscale status --json") {
+        return JSON.stringify({
+          Self: {
+            ID: "device-123",
+            DNSName: "alphaclaw.tail123.ts.net.",
+          },
+        });
+      }
+      if (cmd === "tailscale serve --bg --https=443 --set-path=/pages/ '/tmp/openclaw/pages'") {
+        const error = new Error("Command failed");
+        error.stderr =
+          "sending serve config: 401 Unauthorized: must be root, or be an operator and able to run 'sudo tailscale' to serve a path";
+        throw error;
+      }
+      return "";
+    });
+    const finalizer = createTailscaleFinalizer({
+      shellCmd,
+      constants: { OPENCLAW_DIR: "/tmp/openclaw" },
+      readEnvFile: vi.fn(() => []),
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      env: {},
+    });
+
+    await finalizer.finalizeTailscaleOnboarding({
+      tailscaleApiToken: "tskey-api-secret",
+    });
+
+    expect(shellCmd.mock.calls.map(([cmd]) => cmd)).toEqual([
+      "tailscale up --auth-key='tskey-auth-secret' --hostname='alphaclaw' --ssh",
+      "tailscale status --json",
+      "tailscale serve --bg --https=443 127.0.0.1:3000",
+      "tailscale serve --bg --https=443 --set-path=/pages/ '/tmp/openclaw/pages'",
+      "sudo -n tailscale serve --bg --https=443 --set-path=/pages/ '/tmp/openclaw/pages'",
+      "tailscale funnel --bg --https=8443 127.0.0.1:3000",
+    ]);
+  });
+
   it("reuses an already-joined host on retry after local URLs were written", async () => {
     const fetchImpl = vi.fn(async (url, opts = {}) => {
       if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {

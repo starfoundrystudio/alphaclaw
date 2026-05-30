@@ -1,6 +1,6 @@
 {
   "name": "@starfoundrystudio/alphaclaw",
-  "version": "0.9.15-starfoundry.8-beta.0",
+  "version": "0.9.15-starfoundry.8-beta.1",
   "publishConfig": {
     "access": "restricted",
     "registry": "https://npm.pkg.github.com"
