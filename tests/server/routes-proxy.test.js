@@ -3,6 +3,7 @@ const http = require("http");
 const zlib = require("zlib");
 const request = require("supertest");
 
+const { createLoginThrottle } = require("../../lib/server/login-throttle");
 const { registerProxyRoutes } = require("../../lib/server/routes/proxy");
 
 const listen = (server) =>
@@ -23,6 +24,7 @@ const createApp = ({
   openAiJsonLimit = "50mb",
   globalJsonLimit = "5mb",
   openAiCompatApiEnabled = true,
+  openAiCompatApiThrottle = null,
 }) => {
   const app = express();
   const openAiParser = express.json({ limit: openAiJsonLimit });
@@ -41,6 +43,7 @@ const createApp = ({
     getGatewayUrl: () => gatewayUrl,
     getGatewayToken: () => gatewayToken,
     isOpenAiCompatApiEnabled: () => openAiCompatApiEnabled,
+    openAiCompatApiThrottle,
     SETUP_API_PREFIXES: [],
     requireAuth: (_req, _res, next) => next(),
     oauthCallbackMiddleware: (_req, res) => res.status(204).end(),
@@ -48,6 +51,25 @@ const createApp = ({
   });
   return app;
 };
+
+const createApiAuthThrottle = ({
+  clientKey = "test-client",
+  maxAttempts = 2,
+} = {}) => ({
+  ...createLoginThrottle({
+    scope: `test-openai-api-${clientKey}`,
+    windowMs: 60_000,
+    maxAttempts,
+    baseLockMs: 60_000,
+    maxLockMs: 60_000,
+    globalWindowMs: 60_000,
+    globalMaxAttempts: 100,
+    globalBaseLockMs: 60_000,
+    globalMaxLockMs: 60_000,
+    stateTtlMs: 180_000,
+  }),
+  getClientKey: () => clientKey,
+});
 
 describe("server/routes/proxy OpenAI compatibility", () => {
   let upstream;
@@ -99,6 +121,40 @@ describe("server/routes/proxy OpenAI compatibility", () => {
 
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ error: "Unauthorized" });
+    expect(upstreamCalls).toBe(0);
+  });
+
+  it("rate limits repeated /v1 bearer auth failures", async () => {
+    let upstreamCalls = 0;
+    upstream = http.createServer((_req, res) => {
+      upstreamCalls += 1;
+      res.statusCode = 200;
+      res.end("{}");
+    });
+    const port = await listen(upstream);
+    const app = createApp({
+      gatewayUrl: `http://127.0.0.1:${port}`,
+      openAiCompatApiThrottle: createApiAuthThrottle(),
+    });
+
+    const first = await request(app)
+      .post("/v1/chat/completions")
+      .set("Authorization", "Bearer wrong-token")
+      .send({ model: "openclaw/default", stream: true });
+    const second = await request(app)
+      .post("/v1/chat/completions")
+      .set("Authorization", "Bearer still-wrong")
+      .send({ model: "openclaw/default", stream: true });
+
+    expect(first.status).toBe(401);
+    expect(second.status).toBe(429);
+    expect(second.headers["retry-after"]).toBeDefined();
+    expect(second.body).toEqual(
+      expect.objectContaining({
+        error: "Too many attempts. Try again shortly.",
+        retryAfterSec: expect.any(Number),
+      }),
+    );
     expect(upstreamCalls).toBe(0);
   });
 
