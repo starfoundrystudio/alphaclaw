@@ -160,9 +160,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
     expect(shellCmd.mock.calls.map(([cmd]) => cmd)).toEqual([
       "tailscale up --auth-key='tskey-auth-secret' --hostname='alphaclaw' --ssh",
       "tailscale status --json",
-      "tailscale serve --bg --https=443 127.0.0.1:3000",
-      "tailscale serve --bg --https=443 --set-path=/pages/ '/tmp/openclaw/pages'",
-      "tailscale funnel --bg --https=8443 127.0.0.1:3000",
+      "sudo -n /usr/local/sbin/alphaclaw-tailscale-expose configure-all",
     ]);
     expect(writeEnvFile).toHaveBeenCalledWith(
       expect.arrayContaining([
@@ -198,8 +196,6 @@ describe("server/onboarding/tailscale-finalizer", () => {
       "shell",
       "shell",
       "shell",
-      "shell",
-      "shell",
       "fetch",
       "writeEnv",
       "reloadEnv",
@@ -207,7 +203,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
     ]);
   });
 
-  it("retries Tailscale CLI permission failures with non-interactive sudo", async () => {
+  it("surfaces an actionable error when the host exposure wrapper is missing", async () => {
     const fetchImpl = vi.fn(async (url, opts = {}) => {
       if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
         return {
@@ -238,10 +234,9 @@ describe("server/onboarding/tailscale-finalizer", () => {
           },
         });
       }
-      if (cmd === "tailscale serve --bg --https=443 --set-path=/pages/ '/tmp/openclaw/pages'") {
+      if (cmd === "sudo -n /usr/local/sbin/alphaclaw-tailscale-expose configure-all") {
         const error = new Error("Command failed");
-        error.stderr =
-          "sending serve config: 401 Unauthorized: must be root, or be an operator and able to run 'sudo tailscale' to serve a path";
+        error.stderr = "sudo: /usr/local/sbin/alphaclaw-tailscale-expose: command not found";
         throw error;
       }
       return "";
@@ -256,17 +251,15 @@ describe("server/onboarding/tailscale-finalizer", () => {
       env: {},
     });
 
-    await finalizer.finalizeTailscaleOnboarding({
-      tailscaleApiToken: "tskey-api-secret",
-    });
-
+    await expect(
+      finalizer.finalizeTailscaleOnboarding({
+        tailscaleApiToken: "tskey-api-secret",
+      }),
+    ).rejects.toThrow(/older clawctl/);
     expect(shellCmd.mock.calls.map(([cmd]) => cmd)).toEqual([
       "tailscale up --auth-key='tskey-auth-secret' --hostname='alphaclaw' --ssh",
       "tailscale status --json",
-      "tailscale serve --bg --https=443 127.0.0.1:3000",
-      "tailscale serve --bg --https=443 --set-path=/pages/ '/tmp/openclaw/pages'",
-      "sudo -n tailscale serve --bg --https=443 --set-path=/pages/ '/tmp/openclaw/pages'",
-      "tailscale funnel --bg --https=8443 127.0.0.1:3000",
+      "sudo -n /usr/local/sbin/alphaclaw-tailscale-expose configure-all",
     ]);
   });
 
@@ -336,9 +329,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
 
     expect(shellCmd.mock.calls.map(([cmd]) => cmd)).toEqual([
       "tailscale status --json",
-      "tailscale serve --bg --https=443 127.0.0.1:3000",
-      "tailscale serve --bg --https=443 --set-path=/pages/ '/tmp/openclaw/pages'",
-      "tailscale funnel --bg --https=8443 127.0.0.1:3000",
+      "sudo -n /usr/local/sbin/alphaclaw-tailscale-expose configure-all",
     ]);
     expect(fetchImpl.mock.calls.some(([url]) => String(url).endsWith("/keys"))).toBe(false);
   });
