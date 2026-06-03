@@ -142,8 +142,9 @@ describe("server/onboarding/tailscale-finalizer", () => {
       reloadEnv,
       fetchImpl,
       env: {
-        TEAMYOU_FINALIZE_CALLBACK_URL: "https://teamyou.example/finalize",
-        TEAMYOU_FINALIZE_CALLBACK_TOKEN: "callback-secret",
+        OPENCLAW_WEBHOOK_URL: "https://teamyou.example/api/openclaw/webhook",
+        OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
+        OPENCLAW_INSTANCE_ID: "oc_inst_123",
       },
     });
 
@@ -172,11 +173,18 @@ describe("server/onboarding/tailscale-finalizer", () => {
       ]),
     );
     expect(fetchImpl).toHaveBeenCalledWith(
-      "https://teamyou.example/finalize",
+      "https://teamyou.example/api/openclaw/webhook",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
           Authorization: "Bearer callback-secret",
+        }),
+        body: JSON.stringify({
+          type: "instance.network_finalized",
+          instance_id: "oc_inst_123",
+          setup_url: "https://alphaclaw.tail123.ts.net",
+          public_base_url: "https://alphaclaw.tail123.ts.net:8443",
+          tailscale_dns: "alphaclaw.tail123.ts.net",
         }),
       }),
     );
@@ -201,6 +209,58 @@ describe("server/onboarding/tailscale-finalizer", () => {
       "reloadEnv",
       "fetch",
     ]);
+  });
+
+  it("requires an instance id when the TeamYou webhook is configured", async () => {
+    const fetchImpl = vi.fn(async (url, opts = {}) => {
+      if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ grants: [] }),
+        };
+      }
+      if (String(url).endsWith("/keys")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ key: "tskey-auth-secret" }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => "" },
+        text: async () => JSON.stringify({ ok: true }),
+      };
+    });
+    const shellCmd = vi.fn(async (cmd) => {
+      if (cmd === "tailscale status --json") {
+        return JSON.stringify({
+          Self: {
+            ID: "device-123",
+            DNSName: "alphaclaw.tail123.ts.net.",
+          },
+        });
+      }
+      return "";
+    });
+    const finalizer = createTailscaleFinalizer({
+      shellCmd,
+      readEnvFile: vi.fn(() => []),
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      env: {
+        OPENCLAW_WEBHOOK_URL: "https://teamyou.example/api/openclaw/webhook",
+        OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
+      },
+    });
+
+    await expect(
+      finalizer.finalizeTailscaleOnboarding({
+        tailscaleApiToken: "tskey-api-secret",
+      }),
+    ).rejects.toThrow("OPENCLAW_INSTANCE_ID is required");
   });
 
   it("surfaces an actionable error when the host exposure wrapper is missing", async () => {

@@ -80,6 +80,7 @@ const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
       finalizeTailscaleOnboarding: vi.fn(async () => ({
         setupUrl: "https://alphaclaw.tail123.ts.net",
         publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
+        dnsName: "alphaclaw.tail123.ts.net",
       })),
     },
   };
@@ -102,6 +103,13 @@ const makeValidBody = () => ({
     { key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" },
   ],
 });
+
+const kExpectedOnboardSuccess = {
+  ok: true,
+  setupUrl: "https://alphaclaw.tail123.ts.net",
+  publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
+  tailscaleDns: "alphaclaw.tail123.ts.net",
+};
 
 const failShellCommand = (deps, matcher, error) => {
   deps.shellCmd.mockImplementation(async (cmd) => {
@@ -247,7 +255,7 @@ describe("server/routes/onboarding", () => {
     const res = await request(app).post("/api/onboard").send(body);
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
   });
 
   it("runs host finalization check before setup work and complete after final setup", async () => {
@@ -301,7 +309,7 @@ describe("server/routes/onboarding", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(
       deps.shellCmd.mock.calls.some(([cmd]) =>
         cmd.includes(
@@ -324,7 +332,7 @@ describe("server/routes/onboarding", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(
       deps.shellCmd.mock.calls.some(([cmd]) =>
         cmd.includes('"--auth-choice" "ai-gateway-api-key"') &&
@@ -347,7 +355,7 @@ describe("server/routes/onboarding", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(global.fetch).not.toHaveBeenCalled();
 
     const initCall = deps.shellCmd.mock.calls.find(([cmd]) =>
@@ -456,7 +464,7 @@ describe("server/routes/onboarding", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(
       deps.shellCmd.mock.calls.some(([cmd]) =>
         cmd.includes('"--auth-choice" "skip"'),
@@ -498,7 +506,7 @@ describe("server/routes/onboarding", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(deps.shellCmd).toHaveBeenCalledWith(
       'openclaw models set "openai/gpt-5.5"',
       expect.objectContaining({
@@ -528,7 +536,7 @@ describe("server/routes/onboarding", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(deps.shellCmd).toHaveBeenCalledWith(
       'openclaw models set "openai-codex/gpt-5.5"',
       expect.objectContaining({
@@ -795,7 +803,7 @@ describe("server/routes/onboarding", () => {
     const res = await request(app).post("/api/onboard").send(makeValidBody());
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(deps.startGateway).toHaveBeenCalledTimes(1);
     expect(deps.authProfiles.upsertApiKeyProfileForEnvVar).toHaveBeenCalledWith(
       "openai",
@@ -1157,7 +1165,7 @@ describe("server/routes/onboarding", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(deps.writeEnvFile).toHaveBeenCalledWith(
       expect.arrayContaining([
         { key: "GITHUB_WORKSPACE_REPO", value: "owner/target-repo" },
@@ -1252,7 +1260,7 @@ describe("server/routes/onboarding", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(
       deps.shellCmd.mock.calls.some(([cmd]) => cmd.startsWith("openclaw onboard ")),
     ).toBe(true);
@@ -1298,7 +1306,7 @@ describe("server/routes/onboarding", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true });
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(global.fetch).toHaveBeenCalledWith(
       "https://api.github.com/user/repos",
       expect.objectContaining({
