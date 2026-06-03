@@ -103,6 +103,13 @@ const makeValidBody = () => ({
   ],
 });
 
+const failShellCommand = (deps, matcher, error) => {
+  deps.shellCmd.mockImplementation(async (cmd) => {
+    if (matcher(cmd)) throw error;
+    return "";
+  });
+};
+
 const mockGithubVerifyAndCreate = ({
   repoStatus = 404,
   repoOk = false,
@@ -197,6 +204,39 @@ describe("server/routes/onboarding", () => {
     expect(deps.tailscaleFinalizer.finalizeTailscaleOnboarding).not.toHaveBeenCalled();
   });
 
+  it("fails early when host finalization preflight is unavailable", async () => {
+    const deps = createBaseDeps();
+    const err = new Error("Command failed");
+    err.stderr =
+      "sudo: /usr/local/sbin/alphaclaw-host-finalize-setup: command not found";
+    failShellCommand(
+      deps,
+      (cmd) =>
+        cmd ===
+        "sudo -n /usr/local/sbin/alphaclaw-host-finalize-setup check",
+      err,
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
+      modelKey: "openai/gpt-5.1-codex",
+      vars: [{ key: "OPENAI_API_KEY", value: "sk-test-123456789" }],
+    });
+
+    expect(res.status).toBe(500);
+    expect(res.body.ok).toBe(false);
+    expect(res.body.error).toContain(
+      "This host was likely provisioned with an older clawctl",
+    );
+    expect(res.body.error).toContain(
+      "/usr/local/sbin/alphaclaw-host-finalize-setup",
+    );
+    expect(deps.writeEnvFile).not.toHaveBeenCalled();
+    expect(deps.tailscaleFinalizer.finalizeTailscaleOnboarding).not.toHaveBeenCalled();
+    expect(deps.startGateway).not.toHaveBeenCalled();
+  });
+
   it("allows onboarding without any channel tokens", async () => {
     const deps = createBaseDeps();
     mockGithubVerifyAndCreate();
@@ -208,6 +248,46 @@ describe("server/routes/onboarding", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true });
+  });
+
+  it("runs host finalization check before setup work and complete after final setup", async () => {
+    const deps = createBaseDeps();
+    mockGithubVerifyAndCreate();
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send(makeValidBody());
+
+    expect(res.status).toBe(200);
+    const shellCommands = deps.shellCmd.mock.calls.map(([cmd]) => cmd);
+    const checkIndex = shellCommands.indexOf(
+      "sudo -n /usr/local/sbin/alphaclaw-host-finalize-setup check",
+    );
+    const completeIndex = shellCommands.indexOf(
+      "sudo -n /usr/local/sbin/alphaclaw-host-finalize-setup complete",
+    );
+    expect(checkIndex).toBe(0);
+    expect(completeIndex).toBeGreaterThan(-1);
+    expect(
+      deps.shellCmd.mock.invocationCallOrder[checkIndex],
+    ).toBeLessThan(deps.writeEnvFile.mock.invocationCallOrder[0]);
+
+    const markerWriteIndex = deps.fs.writeFileSync.mock.calls.findIndex(
+      ([targetPath]) => targetPath === "/tmp/alphaclaw/onboarded.json",
+    );
+    expect(markerWriteIndex).toBeGreaterThan(-1);
+    const completeOrder = deps.shellCmd.mock.invocationCallOrder[completeIndex];
+    expect(completeOrder).toBeGreaterThan(
+      deps.tailscaleFinalizer.finalizeTailscaleOnboarding.mock.invocationCallOrder[0],
+    );
+    expect(completeOrder).toBeGreaterThan(
+      deps.fs.writeFileSync.mock.invocationCallOrder[markerWriteIndex],
+    );
+    expect(completeOrder).toBeGreaterThan(
+      deps.ensureGatewayProxyConfig.mock.invocationCallOrder[0],
+    );
+    expect(completeOrder).toBeGreaterThan(
+      deps.startGateway.mock.invocationCallOrder[0],
+    );
   });
 
   it("passes OpenRouter auth-choice flags during onboarding for openrouter models", async () => {
@@ -878,7 +958,9 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
     mockGithubVerifyAndCreate();
-    deps.shellCmd.mockRejectedValueOnce(
+    failShellCommand(
+      deps,
+      (cmd) => cmd.startsWith("openclaw onboard "),
       new Error('Command failed: openclaw onboard --openai-api-key "sk-test-secret-value"'),
     );
 
@@ -895,7 +977,9 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
     mockGithubVerifyAndCreate();
-    deps.shellCmd.mockRejectedValueOnce(
+    failShellCommand(
+      deps,
+      (cmd) => cmd.startsWith("openclaw onboard "),
       new Error('boom github_pat_super_secret_value openclaw onboard'),
     );
 
@@ -911,7 +995,9 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
     mockGithubVerifyAndCreate();
-    deps.shellCmd.mockRejectedValueOnce(
+    failShellCommand(
+      deps,
+      (cmd) => cmd.startsWith("openclaw onboard "),
       new Error("FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory"),
     );
 
@@ -931,7 +1017,7 @@ describe("server/routes/onboarding", () => {
     mockGithubVerifyAndCreate();
     const err = new Error("Command failed: openclaw onboard");
     err.stderr = "remote: Permission to owner/repo denied to user";
-    deps.shellCmd.mockRejectedValueOnce(err);
+    failShellCommand(deps, (cmd) => cmd.startsWith("openclaw onboard "), err);
 
     const res = await request(app).post("/api/onboard").send(makeValidBody());
 
@@ -948,9 +1034,7 @@ describe("server/routes/onboarding", () => {
     const app = createApp(deps);
     const err = new Error("Command failed: openclaw onboard");
     err.stderr = "remote: Permission denied";
-    deps.shellCmd
-      .mockResolvedValueOnce("")
-      .mockRejectedValueOnce(err);
+    failShellCommand(deps, (cmd) => cmd.startsWith("openclaw onboard "), err);
 
     const res = await request(app).post("/api/onboard").send({
       tailscaleApiToken: "tskey-api-test_123456789",
@@ -996,7 +1080,11 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
     mockGithubVerifyAndCreate();
-    deps.shellCmd.mockRejectedValueOnce(new Error("invalid_api_key"));
+    failShellCommand(
+      deps,
+      (cmd) => cmd.startsWith("openclaw onboard "),
+      new Error("invalid_api_key"),
+    );
 
     const res = await request(app).post("/api/onboard").send(makeValidBody());
 
