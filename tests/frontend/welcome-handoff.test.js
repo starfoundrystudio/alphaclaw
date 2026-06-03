@@ -28,6 +28,23 @@ describe("frontend/welcome handoff", () => {
     ).toBe(false);
   });
 
+  it("returns the final setup redirect URL from an onboarding result", async () => {
+    const { getSetupRedirectUrlForOnboardResult } = await loadWelcomeHook();
+
+    expect(
+      getSetupRedirectUrlForOnboardResult(
+        { setupUrl: "https://alphaclaw.tail123.ts.net" },
+        "https://bootstrap.openclaw.teamyou.ai",
+      ),
+    ).toBe("https://alphaclaw.tail123.ts.net/#/general");
+    expect(
+      getSetupRedirectUrlForOnboardResult(
+        { setupUrl: "https://alphaclaw.tail123.ts.net" },
+        "https://alphaclaw.tail123.ts.net",
+      ),
+    ).toBe("");
+  });
+
   it("probes the redirect target without requiring CORS", async () => {
     const { probeSetupRedirectTarget } = await loadWelcomeHook();
     const fetchImpl = vi.fn(async () => ({}));

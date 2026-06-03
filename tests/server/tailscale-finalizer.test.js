@@ -261,6 +261,62 @@ describe("server/onboarding/tailscale-finalizer", () => {
         tailscaleApiToken: "tskey-api-secret",
       }),
     ).rejects.toThrow("OPENCLAW_INSTANCE_ID is required");
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(shellCmd).not.toHaveBeenCalled();
+  });
+
+  it("requires a webhook token when the TeamYou webhook is configured", async () => {
+    const fetchImpl = vi.fn(async (url, opts = {}) => {
+      if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ grants: [] }),
+        };
+      }
+      if (String(url).endsWith("/keys")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ key: "tskey-auth-secret" }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => "" },
+        text: async () => JSON.stringify({ ok: true }),
+      };
+    });
+    const shellCmd = vi.fn(async (cmd) => {
+      if (cmd === "tailscale status --json") {
+        return JSON.stringify({
+          Self: {
+            ID: "device-123",
+            DNSName: "alphaclaw.tail123.ts.net.",
+          },
+        });
+      }
+      return "";
+    });
+    const finalizer = createTailscaleFinalizer({
+      shellCmd,
+      readEnvFile: vi.fn(() => []),
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      env: {
+        OPENCLAW_WEBHOOK_URL: "https://teamyou.example/api/openclaw/webhook",
+        OPENCLAW_INSTANCE_ID: "oc_inst_123",
+      },
+    });
+
+    await expect(
+      finalizer.finalizeTailscaleOnboarding({
+        tailscaleApiToken: "tskey-api-secret",
+      }),
+    ).rejects.toThrow("OPENCLAW_WEBHOOK_TOKEN is required");
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(shellCmd).not.toHaveBeenCalled();
   });
 
   it("surfaces an actionable error when the host exposure wrapper is missing", async () => {
