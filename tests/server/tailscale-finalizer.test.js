@@ -44,7 +44,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
     expect(result.policy.ssh).toEqual([
       {
         action: "accept",
-        src: ["cloud-ops@teamyou.ai"],
+        src: ["autogroup:admin", "cloud-ops@teamyou.ai"],
         dst: ["tag:openclaw"],
         users: ["root", "alphaclaw"],
       },
@@ -74,10 +74,32 @@ describe("server/onboarding/tailscale-finalizer", () => {
       defaultSshRule,
       partialCloudOpsRule,
       {
-        src: ["cloud-ops@teamyou.ai"],
+        src: ["autogroup:admin", "cloud-ops@teamyou.ai"],
         dst: ["tag:openclaw"],
         users: ["root", "alphaclaw"],
         action: "accept",
+      },
+    ]);
+  });
+
+  it("upgrades existing cloud-ops SSH rule to include tailnet admins", () => {
+    const existingCloudOpsRule = {
+      src: ["cloud-ops@teamyou.ai"],
+      dst: ["tag:openclaw"],
+      users: ["root", "alphaclaw"],
+      action: "accept",
+    };
+
+    const result = ensureAlphaClawTailscalePolicy({
+      acls: [],
+      ssh: [existingCloudOpsRule],
+    });
+
+    expect(result.changed).toBe(true);
+    expect(result.policy.ssh).toEqual([
+      {
+        ...existingCloudOpsRule,
+        src: ["cloud-ops@teamyou.ai", "autogroup:admin"],
       },
     ]);
   });
@@ -411,7 +433,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
               ssh: [
                 {
                   action: "accept",
-                  src: ["cloud-ops@teamyou.ai"],
+                  src: ["autogroup:admin", "cloud-ops@teamyou.ai"],
                   dst: ["tag:openclaw"],
                   users: ["root", "alphaclaw"],
                 },
