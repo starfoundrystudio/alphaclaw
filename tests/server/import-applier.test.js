@@ -69,6 +69,61 @@ describe("import-applier", () => {
     expect(fs.existsSync(tempDir)).toBe(false);
   });
 
+  it("skips dangling symlinks when merging imported files cross-device", () => {
+    const tempDir = createTempDir();
+    const targetDir = createTempDir();
+    const codexHomeDir = path.join(
+      tempDir,
+      "agents",
+      "main",
+      "agent",
+      "codex-home",
+      "home",
+    );
+    fs.mkdirSync(codexHomeDir, { recursive: true });
+    fs.symlinkSync(
+      "/missing/teamyou/.teamyou_key",
+      path.join(codexHomeDir, ".teamyou_key"),
+    );
+    fs.writeFileSync(
+      path.join(codexHomeDir, "README.md"),
+      "agent home\n",
+      "utf8",
+    );
+    fs.writeFileSync(path.join(targetDir, "openclaw.json"), "{}", "utf8");
+
+    const fsWithCrossDeviceRename = {
+      ...fs,
+      renameSync(src, dest) {
+        if (src.startsWith(tempDir) && dest.startsWith(targetDir)) {
+          const error = new Error("cross-device link not permitted");
+          error.code = "EXDEV";
+          throw error;
+        }
+        return fs.renameSync(src, dest);
+      },
+    };
+
+    const result = promoteCloneToTarget({
+      fs: fsWithCrossDeviceRename,
+      tempDir,
+      targetDir,
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(
+      fs.readFileSync(
+        path.join(targetDir, "agents/main/agent/codex-home/home/README.md"),
+        "utf8",
+      ),
+    ).toBe("agent home\n");
+    expect(
+      fs.existsSync(
+        path.join(targetDir, "agents/main/agent/codex-home/home/.teamyou_key"),
+      ),
+    ).toBe(false);
+  });
+
   it("relocates mismatched hook transforms into _backup and writes a shim", () => {
     const baseDir = createTempDir();
     const legacyTransformDir = path.join(

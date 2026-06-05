@@ -113,7 +113,8 @@ What the preparation script does:
 
 - copies `~/.openclaw` into a clean output directory
 - removes common runtime-only folders like logs, media, delivery queue, device
-  identity, and cron run history
+  identity, plugin skill symlinks, Codex temp/auth artifacts, and cron run
+  history
 - removes nested `.git` and `.openclaw` state from copied workspaces
 - optionally replaces the imported `workspace/` with an external main workspace
 - rewrites migrated JSON path references such as agent workspaces, agent dirs,

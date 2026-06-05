@@ -196,7 +196,19 @@ describe("server/onboarding/tailscale-finalizer", () => {
         }),
       }),
     );
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.tailscale.com/api/v2/tailnet/-/settings",
+      expect.objectContaining({
+        method: "PATCH",
+        headers: expect.objectContaining({
+          Authorization: expectedTailscaleAuth,
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ httpsEnabled: true }),
+      }),
+    );
     expect(calls.map((entry) => entry[0])).toEqual([
+      "fetch",
       "fetch",
       "fetch",
       "fetch",

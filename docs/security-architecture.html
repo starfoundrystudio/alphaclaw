@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AlphaClaw Security Architecture</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f9fb;
+        --ink: #17212b;
+        --muted: #5d6d7c;
+        --panel: #ffffff;
+        --panel-2: #eef5f0;
+        --border: #cfd9e2;
+        --line: #637384;
+        --ok: #1d7a58;
+        --ok-soft: #dff3eb;
+        --plan: #0d6f87;
+        --plan-soft: #dff3f7;
+        --warn: #9a5b13;
+        --warn-soft: #fff0d6;
+        --danger: #b4323a;
+        --danger-soft: #fde4e6;
+        --blocked: #8b2430;
+        --shadow: 0 18px 50px rgba(29, 44, 56, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(180deg, #f8fbfd 0%, var(--bg) 34%, #edf5f8 100%);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+
+      main {
+        width: min(1220px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 44px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 38px;
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 21px;
+        line-height: 1.2;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        font-size: 14px;
+        line-height: 1.25;
+        letter-spacing: 0;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: end;
+        margin-bottom: 24px;
+      }
+
+      .eyebrow {
+        color: var(--plan);
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        max-width: 840px;
+        margin-top: 12px;
+        font-size: 16px;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex: 0 0 auto;
+      }
+
+      .dot.ok {
+        background: var(--ok);
+      }
+
+      .dot.plan {
+        background: var(--plan);
+      }
+
+      .dot.warn {
+        background: var(--warn);
+      }
+
+      .dot.blocked {
+        background: var(--blocked);
+      }
+
+      .canvas {
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .network-diagram {
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .network-diagram svg {
+        display: block;
+        min-width: 1120px;
+        width: 100%;
+        height: auto;
+      }
+
+      .boundary-caption {
+        font-size: 16px;
+        font-weight: 850;
+        fill: var(--ink);
+      }
+
+      .boundary-note,
+      .map-note {
+        font-size: 12px;
+        fill: var(--muted);
+      }
+
+      .map-node-title {
+        font-size: 14px;
+        font-weight: 850;
+        fill: var(--ink);
+      }
+
+      .map-node-text {
+        font-size: 12px;
+        fill: var(--muted);
+      }
+
+      .map-small {
+        font-size: 11px;
+        fill: var(--muted);
+      }
+
+      .map-status {
+        font-size: 10px;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+
+      .network-callouts {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .network-callout {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fbfdff;
+        padding: 11px;
+      }
+
+      .network-callout h3 {
+        margin-bottom: 5px;
+      }
+
+      .network-callout p {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .zones {
+        display: grid;
+        grid-template-columns: 1.05fr 1.6fr 1.15fr;
+        gap: 16px;
+      }
+
+      .zone {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        min-height: 560px;
+        background: #fbfdff;
+        padding: 14px;
+        position: relative;
+      }
+
+      .zone.credential {
+        background: #fbfdf9;
+      }
+
+      .zone-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+      }
+
+      .zone-title span {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .node {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 13px;
+        margin-bottom: 12px;
+      }
+
+      .node.implemented {
+        border-color: rgba(29, 122, 88, 0.34);
+        background: linear-gradient(180deg, #ffffff 0%, var(--ok-soft) 140%);
+      }
+
+      .node.planned {
+        border-color: rgba(13, 111, 135, 0.34);
+        background: linear-gradient(180deg, #ffffff 0%, var(--plan-soft) 140%);
+      }
+
+      .node.warning {
+        border-color: rgba(154, 91, 19, 0.36);
+        background: linear-gradient(180deg, #ffffff 0%, var(--warn-soft) 140%);
+      }
+
+      .node.danger {
+        border-color: rgba(180, 50, 58, 0.34);
+        background: linear-gradient(180deg, #ffffff 0%, var(--danger-soft) 140%);
+      }
+
+      .node-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .node-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .icon {
+        width: 26px;
+        height: 26px;
+        flex: 0 0 auto;
+        border-radius: 6px;
+        display: grid;
+        place-items: center;
+        color: #ffffff;
+        background: var(--line);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .implemented .icon {
+        background: var(--ok);
+      }
+
+      .planned .icon {
+        background: var(--plan);
+      }
+
+      .warning .icon {
+        background: var(--warn);
+      }
+
+      .danger .icon {
+        background: var(--danger);
+      }
+
+      .badge {
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .badge.ok {
+        color: var(--ok);
+        background: var(--ok-soft);
+      }
+
+      .badge.plan {
+        color: var(--plan);
+        background: var(--plan-soft);
+      }
+
+      .badge.warn {
+        color: var(--warn);
+        background: var(--warn-soft);
+      }
+
+      .badge.blocked {
+        color: var(--blocked);
+        background: var(--danger-soft);
+      }
+
+      .node p {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .flow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        margin: 8px 0 12px;
+      }
+
+      .flow-line {
+        height: 2px;
+        flex: 1 1 auto;
+        background: var(--line);
+        opacity: 0.46;
+      }
+
+      .flow-line.allowed {
+        background: var(--ok);
+      }
+
+      .flow-line.planned {
+        background: var(--plan);
+        border-top: 2px dashed var(--plan);
+        height: 0;
+      }
+
+      .flow-line.blocked {
+        background: var(--blocked);
+      }
+
+      .matrix {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .control {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 14px;
+        min-height: 168px;
+      }
+
+      .control h3 {
+        margin-bottom: 8px;
+      }
+
+      .control p {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .control ul,
+      .risk-list {
+        padding: 0;
+        margin: 12px 0 0;
+        list-style: none;
+      }
+
+      .control li,
+      .risk-list li {
+        display: grid;
+        grid-template-columns: 18px minmax(0, 1fr);
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 8px;
+      }
+
+      .marker {
+        width: 18px;
+        height: 18px;
+        border-radius: 5px;
+        display: inline-grid;
+        place-items: center;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .marker.ok {
+        background: var(--ok);
+      }
+
+      .marker.plan {
+        background: var(--plan);
+      }
+
+      .marker.warn {
+        background: var(--warn);
+      }
+
+      .marker.blocked {
+        background: var(--blocked);
+      }
+
+      .diagram-svg {
+        width: 100%;
+        height: auto;
+        display: block;
+        margin-top: 18px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .section {
+        margin-top: 24px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 12px;
+      }
+
+      .section-head p {
+        color: var(--muted);
+        max-width: 720px;
+        font-size: 14px;
+      }
+
+      .risk-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 0;
+      }
+
+      .risk-list li {
+        border: 1px solid rgba(154, 91, 19, 0.28);
+        border-radius: 8px;
+        background: #fffaf0;
+        margin-top: 0;
+        padding: 13px;
+      }
+
+      .risk-list strong {
+        display: block;
+        color: var(--ink);
+        margin-bottom: 3px;
+      }
+
+      .footnotes {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 18px;
+      }
+
+      .footnotes a {
+        color: var(--plan);
+        text-decoration: none;
+      }
+
+      .footnotes a:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 980px) {
+        main {
+          width: min(100% - 20px, 760px);
+          padding-top: 20px;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+          align-items: start;
+        }
+
+        .legend {
+          justify-content: flex-start;
+        }
+
+        .zones,
+        .matrix,
+        .network-callouts,
+        .risk-list {
+          grid-template-columns: 1fr;
+        }
+
+        .zone {
+          min-height: auto;
+        }
+
+        h1 {
+          font-size: 30px;
+        }
+      }
+
+      @media print {
+        body {
+          background: #ffffff;
+        }
+
+        main {
+          width: 100%;
+          padding: 0;
+        }
+
+        .canvas {
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Target security architecture</p>
+          <h1>AlphaClaw isolated runtime with brokered credentials</h1>
+          <p class="subtitle">
+            The target state keeps the agent runtime on a dedicated CPX31 host,
+            keeps raw credentials on a separate CPX11 broker, constrains ingress
+            through Tailscale, constrains egress through Agent Vault, and adds
+            host-level egress inspection for any bypass.
+          </p>
+        </div>
+        <div class="legend" aria-label="Diagram legend">
+          <span class="chip"><span class="dot ok"></span>Implemented</span>
+          <span class="chip"><span class="dot plan"></span>Planned</span>
+          <span class="chip"><span class="dot warn"></span>Assumption</span>
+          <span class="chip"><span class="dot blocked"></span>Blocked path</span>
+        </div>
+      </header>
+
+      <section class="canvas" aria-label="AlphaClaw security diagram">
+        <div class="network-diagram">
+          <svg
+            viewBox="0 0 1180 760"
+            role="img"
+            aria-labelledby="network-title network-desc"
+          >
+            <title id="network-title">AlphaClaw network security boundaries</title>
+            <desc id="network-desc">
+              Network-style diagram showing external actors, Tailscale overlay
+              access, Hetzner Cloud firewall boundaries, the CPX31 runtime host,
+              the CPX11 Agent Vault broker, allowed traffic, planned traffic,
+              and blocked direct paths.
+            </desc>
+            <defs>
+              <marker
+                id="map-arrow-ok"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="3"
+                orient="auto"
+                markerUnits="strokeWidth"
+              >
+                <path d="M0,0 L0,6 L8,3 z" fill="#1d7a58" />
+              </marker>
+              <marker
+                id="map-arrow-plan"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="3"
+                orient="auto"
+                markerUnits="strokeWidth"
+              >
+                <path d="M0,0 L0,6 L8,3 z" fill="#0d6f87" />
+              </marker>
+              <marker
+                id="map-arrow-block"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="3"
+                orient="auto"
+                markerUnits="strokeWidth"
+              >
+                <path d="M0,0 L0,6 L8,3 z" fill="#8b2430" />
+              </marker>
+              <filter id="map-shadow" x="-10%" y="-10%" width="120%" height="130%">
+                <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#17212b" flood-opacity="0.13" />
+              </filter>
+            </defs>
+
+            <rect x="16" y="16" width="1148" height="728" rx="8" fill="#f7fafc" stroke="#cfd9e2" />
+            <text x="42" y="50" class="boundary-caption">Network security boundaries</text>
+            <text x="42" y="72" class="boundary-note">Clean path map: ingress at top, protected hosts in the middle, blocked direct paths at bottom</text>
+
+            <rect x="44" y="92" width="1092" height="126" rx="8" fill="#eaf7f2" stroke="#1d7a58" stroke-width="2" stroke-dasharray="10 7" />
+            <text x="68" y="122" class="boundary-caption">Tailscale overlay boundary</text>
+            <text x="68" y="144" class="boundary-note">Serve for private UI, Funnel for callbacks, Tailscale SSH for admin access</text>
+
+            <rect x="84" y="158" width="156" height="42" rx="8" fill="#ffffff" stroke="#91c9b5" filter="url(#map-shadow)" />
+            <text x="106" y="184" class="map-node-title">Operator devices</text>
+
+            <rect x="302" y="158" width="158" height="42" rx="8" fill="#ffffff" stroke="#91c9b5" filter="url(#map-shadow)" />
+            <text x="324" y="184" class="map-node-title">Tailscale policy</text>
+
+            <rect x="522" y="158" width="202" height="42" rx="8" fill="#ffffff" stroke="#91c9b5" filter="url(#map-shadow)" />
+            <text x="544" y="184" class="map-node-title">Serve + SSH endpoint</text>
+
+            <rect x="286" y="252" width="636" height="354" rx="8" fill="#ffffff" stroke="#637384" stroke-width="2" />
+            <text x="310" y="282" class="boundary-caption">Hetzner Cloud project boundary</text>
+            <text x="310" y="304" class="boundary-note">Two dedicated hosts for one AlphaClaw/OpenClaw deployment</text>
+
+            <rect x="326" y="330" width="276" height="218" rx="8" fill="#fff7f8" stroke="#b4323a" stroke-width="3" />
+            <rect x="326" y="330" width="276" height="50" rx="8" fill="#fde4e6" stroke="none" />
+            <text x="348" y="356" class="map-node-title">CPX31 Hetzner Firewall</text>
+            <text x="348" y="374" class="map-small">Ingress: Tailscale UDP 41641 only</text>
+
+            <rect x="354" y="404" width="220" height="116" rx="8" fill="#eef8fb" stroke="#0d6f87" stroke-width="2" filter="url(#map-shadow)" />
+            <text x="374" y="430" class="map-node-title">CPX31 runtime host</text>
+            <rect x="374" y="446" width="180" height="26" rx="7" fill="#ffffff" stroke="#cfd9e2" />
+            <text x="388" y="464" class="map-node-text">AlphaClaw UI/API</text>
+            <rect x="374" y="480" width="180" height="26" rx="7" fill="#ffffff" stroke="#cfd9e2" />
+            <text x="388" y="498" class="map-node-text">OpenClaw gateway</text>
+            <rect x="374" y="512" width="180" height="22" rx="7" fill="#dff3f7" stroke="#0d6f87" />
+            <text x="388" y="528" class="map-small">PipeLock planned</text>
+
+            <rect x="650" y="330" width="226" height="218" rx="8" fill="#fff7f8" stroke="#b4323a" stroke-width="3" />
+            <rect x="650" y="330" width="226" height="50" rx="8" fill="#fde4e6" stroke="none" />
+            <text x="672" y="356" class="map-node-title">CPX11 Hetzner Firewall</text>
+            <text x="672" y="374" class="map-small">Allow CPX31 to 14321/14322 only</text>
+
+            <rect x="680" y="404" width="166" height="116" rx="8" fill="#eef5f0" stroke="#1d7a58" stroke-width="2" filter="url(#map-shadow)" />
+            <text x="700" y="430" class="map-node-title">CPX11 Agent Vault</text>
+            <rect x="700" y="446" width="126" height="26" rx="7" fill="#ffffff" stroke="#cfd9e2" />
+            <text x="714" y="464" class="map-node-text">API :14321</text>
+            <rect x="700" y="480" width="126" height="26" rx="7" fill="#ffffff" stroke="#cfd9e2" />
+            <text x="714" y="498" class="map-node-text">Proxy :14322</text>
+            <rect x="700" y="512" width="126" height="22" rx="7" fill="#dff3eb" stroke="#1d7a58" />
+            <text x="714" y="528" class="map-small">Credential store</text>
+
+            <rect x="70" y="426" width="156" height="58" rx="8" fill="#fff0d6" stroke="#d4a15e" filter="url(#map-shadow)" />
+            <text x="92" y="454" class="map-node-title">Webhook senders</text>
+            <text x="92" y="474" class="map-node-text">Public internet</text>
+
+            <rect x="968" y="426" width="150" height="82" rx="8" fill="#ffffff" stroke="#cfd9e2" filter="url(#map-shadow)" />
+            <text x="990" y="456" class="map-node-title">Upstream APIs</text>
+            <text x="990" y="478" class="map-node-text">OpenAI, GitHub,</text>
+            <text x="990" y="498" class="map-node-text">Slack, Telegram</text>
+
+            <path d="M240 179 H302" fill="none" stroke="#1d7a58" stroke-width="4" marker-end="url(#map-arrow-ok)" />
+            <path d="M460 179 H522" fill="none" stroke="#1d7a58" stroke-width="4" marker-end="url(#map-arrow-ok)" />
+            <path d="M565 200 V404" fill="none" stroke="#1d7a58" stroke-width="4" marker-end="url(#map-arrow-ok)" />
+            <text x="580" y="248" class="map-note" fill="#1d7a58">private UI + SSH</text>
+
+            <path d="M226 455 H354" fill="none" stroke="#1d7a58" stroke-width="4" marker-end="url(#map-arrow-ok)" />
+            <text x="248" y="439" class="map-note" fill="#1d7a58">Funnel allowlisted paths</text>
+
+            <path d="M554 459 H700" fill="none" stroke="#0d6f87" stroke-width="4" stroke-dasharray="9 7" marker-end="url(#map-arrow-plan)" />
+            <text x="578" y="443" class="map-note" fill="#0d6f87">management token</text>
+
+            <path d="M554 493 H700" fill="none" stroke="#0d6f87" stroke-width="4" stroke-dasharray="9 7" marker-end="url(#map-arrow-plan)" />
+            <text x="578" y="512" class="map-note" fill="#0d6f87">proxy-role token</text>
+
+            <path d="M826 493 H968" fill="none" stroke="#1d7a58" stroke-width="4" marker-end="url(#map-arrow-ok)" />
+            <text x="846" y="478" class="map-note" fill="#1d7a58">credentials injected here</text>
+
+            <path d="M92 632 H326" fill="none" stroke="#8b2430" stroke-width="4" stroke-dasharray="10 8" marker-end="url(#map-arrow-block)" />
+            <text x="92" y="615" class="map-note" fill="#8b2430">direct public web/SSH ingress blocked</text>
+            <line x1="316" y1="620" x2="340" y2="644" stroke="#8b2430" stroke-width="4" />
+            <line x1="340" y1="620" x2="316" y2="644" stroke="#8b2430" stroke-width="4" />
+
+            <path d="M554 672 H968" fill="none" stroke="#8b2430" stroke-width="4" stroke-dasharray="10 8" marker-end="url(#map-arrow-block)" />
+            <text x="618" y="655" class="map-note" fill="#8b2430">direct CPX31 egress to upstream APIs blocked</text>
+            <line x1="776" y1="660" x2="800" y2="684" stroke="#8b2430" stroke-width="4" />
+            <line x1="800" y1="660" x2="776" y2="684" stroke="#8b2430" stroke-width="4" />
+
+            <rect x="70" y="702" width="112" height="26" rx="13" fill="#dff3eb" />
+            <text x="92" y="720" class="map-status" fill="#1d7a58">Allowed now</text>
+            <rect x="204" y="702" width="118" height="26" rx="13" fill="#dff3f7" />
+            <text x="226" y="720" class="map-status" fill="#0d6f87">Planned path</text>
+            <rect x="344" y="702" width="116" height="26" rx="13" fill="#fde4e6" />
+            <text x="366" y="720" class="map-status" fill="#8b2430">Blocked path</text>
+          </svg>
+        </div>
+
+        <div class="network-callouts">
+          <article class="network-callout">
+            <h3>Visible Firewall Boundary</h3>
+            <p>
+              CPX31 and CPX11 each have a dedicated Hetzner Firewall boundary,
+              with ingress and planned egress policy called out directly.
+            </p>
+          </article>
+          <article class="network-callout">
+            <h3>Separate Tokens</h3>
+            <p>
+              AlphaClaw management traffic targets Agent Vault API port 14321;
+              OpenClaw runtime traffic targets proxy port 14322.
+            </p>
+          </article>
+          <article class="network-callout">
+            <h3>No Wrapper Layer</h3>
+            <p>
+              AlphaClaw provisions OpenClaw proxy config and CA trust directly
+              instead of launching the gateway through another wrapper.
+            </p>
+          </article>
+          <article class="network-callout">
+            <h3>Direct Egress Denied</h3>
+            <p>
+              The intended posture is brokered outbound traffic only, with
+              PipeLock and host firewall policy catching bypass attempts.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Control layers</p>
+            <h2>What Each Layer Prevents</h2>
+          </div>
+          <p>
+            The security model is strongest when every control has a different
+            failure mode. Identity, firewall policy, credential brokering, and
+            egress inspection should each catch something the others miss.
+          </p>
+        </div>
+
+        <div class="matrix">
+          <article class="control">
+            <h3>Ingress Minimization</h3>
+            <p>Reduces the remote attack surface on the runtime host.</p>
+            <ul>
+              <li><span class="marker ok">I</span><span>Dedicated CPX31 per instance.</span></li>
+              <li><span class="marker ok">I</span><span>Tailscale Serve for control UIs.</span></li>
+              <li><span class="marker ok">I</span><span>Funnel only for allowlisted callbacks.</span></li>
+            </ul>
+          </article>
+
+          <article class="control">
+            <h3>Admin Access</h3>
+            <p>Moves SSH identity and authorization into the tailnet policy.</p>
+            <ul>
+              <li><span class="marker ok">I</span><span>Tailscale SSH required.</span></li>
+              <li><span class="marker ok">I</span><span>Public SSH blocked by firewall.</span></li>
+              <li><span class="marker warn">A</span><span>Tailnet SSH policy must stay narrow.</span></li>
+            </ul>
+          </article>
+
+          <article class="control">
+            <h3>Credential Isolation</h3>
+            <p>Keeps raw secrets away from the agent runtime.</p>
+            <ul>
+              <li><span class="marker plan">P</span><span>Agent Vault on separate CPX11.</span></li>
+              <li><span class="marker plan">P</span><span>Runtime receives proxy-role token only.</span></li>
+              <li><span class="marker plan">P</span><span>Credentials injected by service policy.</span></li>
+            </ul>
+          </article>
+
+          <article class="control">
+            <h3>Exfiltration Resistance</h3>
+            <p>Limits and monitors outbound traffic from the runtime host.</p>
+            <ul>
+              <li><span class="marker plan">P</span><span>CPX31 egress allowlist to CPX11.</span></li>
+              <li><span class="marker plan">P</span><span>PipeLock scans outbound payloads.</span></li>
+              <li><span class="marker blocked">X</span><span>Direct upstream internet denied.</span></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Security review</p>
+            <h2>Design Risks To Close</h2>
+          </div>
+          <p>
+            These are not reasons to avoid the architecture; they are the places
+            where a strong diagram can hide operational edge cases.
+          </p>
+        </div>
+
+        <ul class="risk-list">
+          <li>
+            <span class="marker warn">1</span>
+            <span>
+              <strong>Outbound firewall rules need both cloud and host layers.</strong>
+              Hetzner Cloud Firewalls are allow-by-default for outbound traffic
+              unless outbound rules are defined. Add host firewall enforcement
+              too, because local processes, overlays, and future network changes
+              can surprise a cloud-only model.
+            </span>
+          </li>
+          <li>
+            <span class="marker warn">2</span>
+            <span>
+              <strong>Do not block Tailscale's own control/data traffic.</strong>
+              CPX31 still needs Tailscale connectivity for Serve, Funnel, and
+              SSH. Egress policy should explicitly preserve required Tailscale
+              traffic while blocking ordinary direct internet egress.
+            </span>
+          </li>
+          <li>
+            <span class="marker warn">3</span>
+            <span>
+              <strong>Keep Agent Vault management and proxy tokens separate.</strong>
+              OpenClaw should get only a revocable proxy-scoped token. AlphaClaw
+              may need a management token for credential UI operations, but that
+              token should never be injected into the agent runtime.
+            </span>
+          </li>
+          <li>
+            <span class="marker warn">4</span>
+            <span>
+              <strong>CPX31 will still hold operational secrets.</strong>
+              The goal is to remove upstream API credentials from the agent
+              runtime, not to make CPX31 secret-free. Setup passwords, Tailscale
+              state, proxy-role tokens, and any AlphaClaw management token still
+              need strict filesystem permissions and rotation paths.
+            </span>
+          </li>
+          <li>
+            <span class="marker warn">5</span>
+            <span>
+              <strong>Agent Vault proxy exposure is the critical boundary.</strong>
+              The proxy port should be private to CPX31. If it is exposed
+              publicly, token theft, brute force attempts, or unintended use of
+              the broker become much more serious.
+            </span>
+          </li>
+          <li>
+            <span class="marker warn">6</span>
+            <span>
+              <strong>Funnel path allowlists must be exact and tested.</strong>
+              Broad prefixes can accidentally expose setup or gateway routes.
+              Treat every new webhook/OAuth path as a change that needs
+              review, tests, and a negative-path check.
+            </span>
+          </li>
+          <li>
+            <span class="marker warn">7</span>
+            <span>
+              <strong>Proxy policy only covers traffic that reaches the proxy.</strong>
+              Raw sockets, UDP, package managers, and direct SDK traffic must be
+              controlled by firewall policy, proxy-aware runtime config, or both.
+              Include IPv4 and IPv6 rules in the deny-by-default design.
+            </span>
+          </li>
+          <li>
+            <span class="marker warn">8</span>
+            <span>
+              <strong>PipeLock is detection, not primary containment.</strong>
+              It is valuable as a catch layer, but the primary protection should
+              remain no raw secrets on CPX31 plus enforced egress through Agent
+              Vault.
+            </span>
+          </li>
+        </ul>
+      </section>
+
+      <p class="footnotes">
+        Reference docs:
+        <a href="https://tailscale.com/docs/features/tailscale-ssh">Tailscale SSH</a>,
+        <a href="https://tailscale.com/docs/features/tailscale-funnel">Tailscale Funnel</a>,
+        <a href="https://docs.hetzner.com/cloud/firewalls/overview/">Hetzner Firewall overview</a>,
+        <a href="https://docs.agent-vault.dev/quickstart/openclaw">Agent Vault OpenClaw quickstart</a>,
+        <a href="https://docs.agent-vault.dev/learn/security">Agent Vault security model</a>.
+      </p>
+    </main>
+  </body>
+</html>

@@ -128,6 +128,9 @@ RSYNC_ARGS=(
   -a
   --exclude=.git/
   --exclude=agents/*/sessions/
+  --exclude=agents/*/agent/codex-home/home/.teamyou_key
+  --exclude=agents/*/agent/codex-home/tmp/
+  --exclude=plugin-skills/
   --exclude=cron/runs/
   --exclude=delivery-queue/
   --exclude=logs/
