@@ -76,6 +76,19 @@ describe("frontend/api", () => {
     expect(result).toEqual({ ok: true });
   });
 
+  it("runOnboard marks empty final responses as interrupted", async () => {
+    global.fetch.mockResolvedValue({
+      status: 200,
+      ok: true,
+      text: async () => "",
+    });
+    const api = await loadApiModule();
+
+    await expect(api.runOnboard([], "openai/gpt-5.1-codex")).rejects.toMatchObject({
+      code: "ONBOARD_RESPONSE_EMPTY",
+    });
+  });
+
   it("verifyGithubOnboardingRepo posts repo, token, and mode", async () => {
     global.fetch.mockResolvedValue(mockJsonResponse(200, { ok: true, repoExists: true }));
     const api = await loadApiModule();

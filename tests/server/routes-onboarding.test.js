@@ -166,6 +166,29 @@ describe("server/routes/onboarding", () => {
     expect(res.body).toEqual({ onboarded: true });
   });
 
+  it("returns final setup details from the onboarding marker", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.readFileSync.mockReturnValueOnce(
+      JSON.stringify({
+        onboarded: true,
+        setupUrl: "https://alphaclaw.tail123.ts.net",
+        publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
+        tailscaleDns: "alphaclaw.tail123.ts.net",
+      }),
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/onboard/status");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      onboarded: true,
+      setupUrl: "https://alphaclaw.tail123.ts.net",
+      publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
+      tailscaleDns: "alphaclaw.tail123.ts.net",
+    });
+  });
+
   it("short-circuits when already onboarded", async () => {
     const deps = createBaseDeps({ onboarded: true });
     const app = createApp(deps);
@@ -296,6 +319,60 @@ describe("server/routes/onboarding", () => {
     expect(completeOrder).toBeGreaterThan(
       deps.startGateway.mock.invocationCallOrder[0],
     );
+  });
+
+  it("returns the onboarding response before host finalization complete resolves", async () => {
+    const deps = createBaseDeps();
+    let completeStarted = false;
+    let releaseComplete = () => {};
+    deps.shellCmd.mockImplementation(async (cmd) => {
+      if (cmd === "sudo -n /usr/local/sbin/alphaclaw-host-finalize-setup complete") {
+        completeStarted = true;
+        return new Promise((resolve) => {
+          releaseComplete = resolve;
+        });
+      }
+      return "";
+    });
+    mockGithubVerifyAndCreate();
+    const app = createApp(deps);
+
+    const res = await Promise.race([
+      request(app).post("/api/onboard").send(makeValidBody()),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("onboarding response timed out")), 1000),
+      ),
+    ]);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(kExpectedOnboardSuccess);
+    expect(completeStarted).toBe(true);
+    releaseComplete("");
+    await new Promise((resolve) => setImmediate(resolve));
+  });
+
+  it("does not mark onboarding complete when Tailscale does not return a setup URL", async () => {
+    const deps = createBaseDeps();
+    deps.tailscaleFinalizer.finalizeTailscaleOnboarding.mockResolvedValueOnce({
+      publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
+      dnsName: "alphaclaw.tail123.ts.net",
+    });
+    mockGithubVerifyAndCreate();
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send(makeValidBody());
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "Tailscale finalization completed without a final setup URL",
+    });
+    expect(deps.fs.writeFileSync).not.toHaveBeenCalledWith(
+      "/tmp/alphaclaw/onboarded.json",
+      expect.any(String),
+    );
+    expect(deps.ensureGatewayProxyConfig).not.toHaveBeenCalled();
+    expect(deps.startGateway).not.toHaveBeenCalled();
   });
 
   it("passes OpenRouter auth-choice flags during onboarding for openrouter models", async () => {

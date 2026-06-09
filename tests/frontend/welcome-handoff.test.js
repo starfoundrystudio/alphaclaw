@@ -45,6 +45,17 @@ describe("frontend/welcome handoff", () => {
     ).toBe("");
   });
 
+  it("requires a final setup URL before leaving onboarding", async () => {
+    const { requireFinalSetupUrl } = await loadWelcomeHook();
+
+    expect(() =>
+      requireFinalSetupUrl({ setupUrl: "https://alphaclaw.tail123.ts.net" }),
+    ).not.toThrow();
+    expect(() => requireFinalSetupUrl({ ok: true })).toThrow(
+      "final Tailscale URL",
+    );
+  });
+
   it("probes the redirect target without requiring CORS", async () => {
     const { probeSetupRedirectTarget } = await loadWelcomeHook();
     const fetchImpl = vi.fn(async () => ({}));
@@ -76,5 +87,38 @@ describe("frontend/welcome handoff", () => {
         timeoutMs: 0,
       }),
     ).resolves.toBe(false);
+  });
+
+  it("recognizes interrupted final onboarding responses as recoverable", async () => {
+    const { isRecoverableOnboardCompletionError } = await loadWelcomeHook();
+    const emptyResponseError = new Error("empty");
+    emptyResponseError.code = "ONBOARD_RESPONSE_EMPTY";
+
+    expect(isRecoverableOnboardCompletionError(emptyResponseError)).toBe(true);
+    expect(
+      isRecoverableOnboardCompletionError(
+        new Error("Unexpected end of JSON input"),
+      ),
+    ).toBe(true);
+    expect(isRecoverableOnboardCompletionError(new Error("Bad token"))).toBe(
+      false,
+    );
+  });
+
+  it("polls onboarding status until completion is visible", async () => {
+    const { waitForOnboardingCompletion } = await loadWelcomeHook();
+    const fetchStatus = vi
+      .fn()
+      .mockResolvedValueOnce({ onboarded: false })
+      .mockResolvedValueOnce({ onboarded: true });
+
+    await expect(
+      waitForOnboardingCompletion({
+        fetchStatus,
+        attempts: 3,
+        intervalMs: 0,
+      }),
+    ).resolves.toEqual({ onboarded: true });
+    expect(fetchStatus).toHaveBeenCalledTimes(2);
   });
 });
