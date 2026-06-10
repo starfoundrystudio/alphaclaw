@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "alphaclawVersion": "0.9.15-starfoundry.10",
+  "alphaclawVersion": "0.9.15-starfoundry.11",
   "openclawVersion": "2026.5.20",
   "source": {
     "openclawPackage": "openclaw",
