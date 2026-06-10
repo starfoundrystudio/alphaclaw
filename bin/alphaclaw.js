@@ -18,7 +18,6 @@ const {
 const {
   reconcileOpenclawPlugins,
 } = require("../lib/cli/openclaw-plugin-compat");
-const { buildSecretReplacements } = require("../lib/server/helpers");
 const {
   buildManagedPaths,
   migrateManagedInternalFiles,
@@ -26,14 +25,9 @@ const {
 const {
   shouldInitializeManagedOpenclawRuntime,
 } = require("../lib/server/openclaw-runtime-state");
-
-const kUsageTrackerPluginPath = path.resolve(
-  __dirname,
-  "..",
-  "lib",
-  "plugin",
-  "usage-tracker",
-);
+const {
+  runOpenclawDoctorRepairSync,
+} = require("../lib/server/openclaw-doctor-repair");
 
 // ---------------------------------------------------------------------------
 // Parse CLI flags
@@ -772,71 +766,26 @@ if (fs.existsSync(path.join(openclawDir, ".git"))) {
 }
 
 if (fs.existsSync(configPath)) {
-  console.log("[alphaclaw] Config exists, reconciling channels...");
+  console.log("[alphaclaw] Config exists; skipping startup channel reconciliation");
 
   try {
-    const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    if (!cfg.channels) cfg.channels = {};
-    if (!cfg.plugins) cfg.plugins = {};
-    if (!cfg.plugins.load) cfg.plugins.load = {};
-    if (!Array.isArray(cfg.plugins.load.paths)) cfg.plugins.load.paths = [];
-    if (!cfg.plugins.entries) cfg.plugins.entries = {};
-    let changed = false;
-
-    if (process.env.TELEGRAM_BOT_TOKEN && !cfg.channels.telegram) {
-      cfg.channels.telegram = {
-        enabled: true,
-        botToken: process.env.TELEGRAM_BOT_TOKEN,
-        dmPolicy: "pairing",
-        groupPolicy: "allowlist",
-      };
-      cfg.plugins.entries.telegram = { enabled: true };
-      console.log("[alphaclaw] Telegram added");
-      changed = true;
-    }
-
-    if (process.env.DISCORD_BOT_TOKEN && !cfg.channels.discord) {
-      cfg.channels.discord = {
-        enabled: true,
-        token: process.env.DISCORD_BOT_TOKEN,
-        dmPolicy: "pairing",
-        groupPolicy: "allowlist",
-      };
-      cfg.plugins.entries.discord = { enabled: true };
-      console.log("[alphaclaw] Discord added");
-      changed = true;
-    }
-    if (!cfg.plugins.load.paths.includes(kUsageTrackerPluginPath)) {
-      cfg.plugins.load.paths.push(kUsageTrackerPluginPath);
-      changed = true;
-    }
-    if (cfg.plugins.entries["usage-tracker"]?.enabled !== true) {
-      cfg.plugins.entries["usage-tracker"] = { enabled: true };
-      changed = true;
-    }
-
-    if (changed) {
-      let content = JSON.stringify(cfg, null, 2);
-      const replacements = buildSecretReplacements(process.env);
-      for (const [secret, envRef] of replacements) {
-        if (secret) {
-          // Only replace the secret if it is an exact match for a JSON string value
-          // This ensures we do not replace substrings inside other strings
-          const secretJson = JSON.stringify(secret);
-          content = content.replace(
-            new RegExp(
-              secretJson.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&"),
-              "g",
-            ),
-            JSON.stringify(envRef),
-          );
-        }
-      }
-      fs.writeFileSync(configPath, content);
-      console.log("[alphaclaw] Config updated and sanitized");
-    }
+    JSON.parse(fs.readFileSync(configPath, "utf8"));
   } catch (e) {
-    console.error(`[alphaclaw] Channel reconciliation error: ${e.message}`);
+    console.error(`[alphaclaw] openclaw.json is invalid on startup: ${e.message}`);
+    const repairResult = runOpenclawDoctorRepairSync({
+      env: process.env,
+      execSyncImpl: execSync,
+      reason: "startup_config_parse_failed",
+    });
+    if (repairResult.ok) {
+      try {
+        JSON.parse(fs.readFileSync(configPath, "utf8"));
+      } catch (retryError) {
+        console.error(
+          `[alphaclaw] openclaw.json is still invalid after doctor repair: ${retryError.message}`,
+        );
+      }
+    }
   }
 } else {
   console.log(

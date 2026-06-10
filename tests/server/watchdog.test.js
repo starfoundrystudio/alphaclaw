@@ -26,6 +26,7 @@ const createHarness = ({
     text: async () => JSON.stringify({ ok: true, status: "live" }),
   }),
   reconcileOpenclawPlugins,
+  openclawConfig = { gateway: { mode: "local" } },
 } = {}) => {
   process.env.WATCHDOG_AUTO_REPAIR = autoRepair ? "true" : "false";
   process.env.WATCHDOG_NOTIFICATIONS_DISABLED = notificationsDisabled ? "true" : "false";
@@ -43,6 +44,11 @@ const createHarness = ({
   const readEnvFile = vi.fn(() => []);
   const writeEnvFile = vi.fn();
   const reloadEnv = vi.fn();
+  const fsModule = {
+    readFileSync: vi.fn(() => JSON.stringify(openclawConfig)),
+    mkdirSync: vi.fn(),
+    writeFileSync: vi.fn(),
+  };
   global.fetch = vi.fn(fetchImpl);
 
   const watchdog = createWatchdog({
@@ -58,7 +64,7 @@ const createHarness = ({
     reconcileOpenclawPlugins,
     rootDir: "/tmp/alphaclaw",
     openclawDir: "/tmp/alphaclaw/.openclaw",
-    fsModule: {},
+    fsModule,
     reconcileLogger: { log: vi.fn() },
   });
 
@@ -72,6 +78,7 @@ const createHarness = ({
     writeEnvFile,
     reloadEnv,
     reconcileOpenclawPlugins,
+    fsModule,
   };
 };
 
@@ -262,7 +269,7 @@ describe("server/watchdog", () => {
     );
   });
 
-  it("reconciles managed plugin pins around doctor repair", async () => {
+  it("runs pinned plugin reconciliation after doctor repair", async () => {
     const calls = [];
     const reconcileOpenclawPlugins = vi.fn(async () => {
       calls.push("reconcile");
@@ -294,32 +301,25 @@ describe("server/watchdog", () => {
 
     watchdog.onGatewayExit({ code: 1, expectedExit: false });
     watchdog.onGatewayExit({ code: 1, expectedExit: false });
+    await flushMicrotasks();
+    launchGatewayProcess.mockClear();
     watchdog.onGatewayExit({ code: 1, expectedExit: false });
     await flushMicrotasks();
     await flushMicrotasks();
 
-    expect(calls).toEqual([
-      "reconcile",
-      "doctor --fix --yes",
-      "reconcile",
-    ]);
-    expect(reconcileOpenclawPlugins).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rootDir: "/tmp/alphaclaw",
-        openclawDir: "/tmp/alphaclaw/.openclaw",
-      }),
-    );
+    expect(calls).toEqual(["doctor --fix --yes", "reconcile"]);
+    expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
+      rootDir: "/tmp/alphaclaw",
+      openclawDir: "/tmp/alphaclaw/.openclaw",
+      fsModule: expect.any(Object),
+      logger: expect.any(Object),
+      env: process.env,
+    });
     expect(launchGatewayProcess).toHaveBeenCalled();
     expect(insertWatchdogEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         eventType: "plugin_reconcile",
-        status: "ok",
-        details: expect.objectContaining({ phase: "before_doctor" }),
-      }),
-    );
-    expect(insertWatchdogEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        eventType: "plugin_reconcile",
+        source: "repair",
         status: "ok",
         details: expect.objectContaining({ phase: "after_doctor" }),
       }),
@@ -330,11 +330,11 @@ describe("server/watchdog", () => {
     );
   });
 
-  it("does not run doctor when managed plugin reconciliation fails", async () => {
+  it("fails repair when post-doctor pinned plugin reconciliation fails", async () => {
     const reconcileOpenclawPlugins = vi.fn(async () => {
       throw new Error("pin reconcile failed");
     });
-    const { watchdog, clawCmd, insertWatchdogEvent } = createHarness({
+    const { watchdog, clawCmd, insertWatchdogEvent, launchGatewayProcess } = createHarness({
       autoRepair: true,
       reconcileOpenclawPlugins,
       clawCmdImpl: async () => ({ ok: true, stdout: "" }),
@@ -345,21 +345,61 @@ describe("server/watchdog", () => {
 
     watchdog.onGatewayExit({ code: 1, expectedExit: false });
     watchdog.onGatewayExit({ code: 1, expectedExit: false });
+    await flushMicrotasks();
+    launchGatewayProcess.mockClear();
     watchdog.onGatewayExit({ code: 1, expectedExit: false });
     await flushMicrotasks();
     await flushMicrotasks();
 
-    expect(clawCmd).not.toHaveBeenCalledWith(
+    expect(reconcileOpenclawPlugins).toHaveBeenCalledTimes(1);
+    expect(clawCmd).toHaveBeenCalledWith(
       "doctor --fix --yes",
       kExpectedRepairCommandArgs,
     );
+    expect(launchGatewayProcess).not.toHaveBeenCalled();
     expect(insertWatchdogEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         eventType: "plugin_reconcile",
+        source: "repair",
         status: "failed",
         details: expect.objectContaining({
-          phase: "before_doctor",
+          phase: "after_doctor",
           error: "pin reconcile failed",
+        }),
+      }),
+    );
+  });
+
+  it("does not run plugin reconciliation when doctor leaves config unsafe", async () => {
+    const reconcileOpenclawPlugins = vi.fn(async () => ({ plugins: [] }));
+    const { watchdog, insertWatchdogEvent, launchGatewayProcess } = createHarness({
+      autoRepair: true,
+      reconcileOpenclawPlugins,
+      openclawConfig: { gateway: {} },
+      clawCmdImpl: async () => ({ ok: true, stdout: "" }),
+      fetchImpl: async () => {
+        throw new Error("still unhealthy");
+      },
+    });
+
+    watchdog.onGatewayExit({ code: 1, expectedExit: false });
+    watchdog.onGatewayExit({ code: 1, expectedExit: false });
+    await flushMicrotasks();
+    launchGatewayProcess.mockClear();
+    watchdog.onGatewayExit({ code: 1, expectedExit: false });
+    await flushMicrotasks();
+    await flushMicrotasks();
+
+    expect(reconcileOpenclawPlugins).not.toHaveBeenCalled();
+    expect(launchGatewayProcess).not.toHaveBeenCalled();
+    expect(insertWatchdogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "plugin_reconcile",
+        source: "repair",
+        status: "failed",
+        details: expect.objectContaining({
+          phase: "after_doctor",
+          code: "OPENCLAW_CONFIG_UNSAFE_FOR_MUTATION",
         }),
       }),
     );

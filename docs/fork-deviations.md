@@ -161,6 +161,56 @@ Re-evaluate when:
 - Upstream introduces equivalent watchdog tuning, or
 - we confirm a better upstream-compatible approach for slow-start gateways.
 
+### OpenClaw config repair delegation with pinned plugin reconciliation
+
+- Status: active
+- Last reviewed: config-clobber incident hardening, 2026-06-10
+- Area: watchdog / startup / OpenClaw config mutation
+
+Decision:
+
+- Delegate broad OpenClaw config repair to `openclaw doctor --fix --yes`.
+- Do not treat a failed `openclaw.json` read as an empty config.
+- Do not parse and rewrite `openclaw.json` from partial AlphaClaw knowledge
+  during normal startup repair.
+- Do not re-add channels during already-onboarded startup as a repair strategy.
+- Do not mutate OpenClaw config outside the shared config helper unless the
+  config is valid and includes `gateway.mode`.
+- Keep AlphaClaw's managed plugin compatibility reconciliation, but only after
+  `openclaw doctor --fix --yes` has succeeded and the repaired config is safe
+  for mutation.
+
+Why:
+
+- OpenClaw now has stronger typed/audited config repair through `doctor`, and
+  AlphaClaw's older fallback-based repair paths can undermine that by
+  clobbering a damaged config into a small partial stub.
+- The watchdog still needs to enforce AlphaClaw's release manifest for managed
+  plugin versions because this fork pins OpenClaw and tests plugins against
+  that pinned version. `openclaw doctor --fix` can repair plugin presence, but
+  it should not be assumed to install the exact Starfoundry-pinned plugin set.
+- Running plugin reconciliation only after doctor keeps AlphaClaw out of
+  low-level config reconstruction while preserving the fork-specific
+  compatibility contract.
+
+Current local behavior under evaluation:
+
+- Already-onboarded startup does not run channel re-add/reconciliation.
+- Startup config-read failures invoke `openclaw doctor --fix --yes` and retry
+  safe boot mutations.
+- Watchdog auto-repair runs `openclaw doctor --fix --yes`, validates
+  `gateway.mode`, then runs the AlphaClaw managed plugin reconciler before
+  relaunching the gateway.
+- If doctor leaves the config unreadable or missing `gateway.mode`, AlphaClaw
+  refuses further config mutation and leaves repair failed for manual action.
+
+Re-evaluate when:
+
+- Upstream exposes a stable, first-class repair path that also honors an
+  external AlphaClaw/OpenClaw compatibility manifest, or
+- OpenClaw doctor gains explicit support for installing the exact managed
+  plugin versions pinned by this fork's manifest.
+
 ### Device pairing polling cadence
 
 - Status: active

@@ -97,4 +97,43 @@ describe("server/usage-tracker-config", () => {
       allowConversationAccess: true,
     });
   });
+
+  it("does not treat an invalid openclaw.json as an empty config", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    const invalidConfig = '{ "gateway": { "mode": "local" },';
+    fs.writeFileSync(configPath, invalidConfig, "utf8");
+
+    expect(() =>
+      ensureUsageTrackerPluginConfig({ fsModule: fs, openclawDir }),
+    ).toThrow(/Could not read valid openclaw\.json/);
+    expect(fs.readFileSync(configPath, "utf8")).toBe(invalidConfig);
+  });
+
+  it("refuses boot-time mutation when gateway.mode is missing", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    const clobberedStub = JSON.stringify(
+      {
+        plugins: {
+          allow: [],
+          load: { paths: [] },
+          entries: {},
+        },
+        gateway: {},
+      },
+      null,
+      2,
+    );
+    fs.writeFileSync(configPath, clobberedStub, "utf8");
+
+    expect(() =>
+      ensureUsageTrackerPluginConfig({
+        fsModule: fs,
+        openclawDir,
+        requireGatewayMode: true,
+      }),
+    ).toThrow(/gateway\.mode is missing/);
+    expect(fs.readFileSync(configPath, "utf8")).toBe(clobberedStub);
+  });
 });

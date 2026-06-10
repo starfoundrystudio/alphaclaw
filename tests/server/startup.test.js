@@ -11,10 +11,6 @@ describe("server/startup", () => {
     );
     const doSyncPromptFiles = vi.fn(() => callOrder.push("doSyncPromptFiles"));
     const reloadEnv = vi.fn(() => callOrder.push("reloadEnv"));
-    const readEnvFile = vi.fn(() => {
-      callOrder.push("readEnvFile");
-      return [{ key: "OPENAI_API_KEY", value: "sk-test" }];
-    });
     const syncChannelConfig = vi.fn(() => callOrder.push("syncChannelConfig"));
     const resolveSetupUrl = vi.fn(() => {
       callOrder.push("resolveSetupUrl");
@@ -35,7 +31,6 @@ describe("server/startup", () => {
       doSyncPromptFiles,
       reloadEnv,
       syncChannelConfig,
-      readEnvFile,
       ensureGatewayProxyConfig,
       resolveSetupUrl,
       startGateway,
@@ -44,18 +39,77 @@ describe("server/startup", () => {
     });
 
     expect(reloadEnv).toHaveBeenCalledWith({ clearMissing: false });
-    expect(syncChannelConfig).toHaveBeenCalledWith(
-      [{ key: "OPENAI_API_KEY", value: "sk-test" }],
-      "add",
-    );
+    expect(syncChannelConfig).not.toHaveBeenCalled();
     expect(ensureGatewayProxyConfig).toHaveBeenCalledWith("https://setup.example.com");
     expect(callOrder).toEqual([
       "ensureManagedExecDefaults",
       "ensureUsageTrackerPluginConfig",
       "doSyncPromptFiles",
       "reloadEnv",
-      "readEnvFile",
-      "syncChannelConfig",
+      "resolveSetupUrl",
+      "ensureGatewayProxyConfig",
+      "startGateway",
+      "watchdog.start",
+      "gmailWatchService.start",
+    ]);
+  });
+
+  it("delegates invalid config repair to doctor before retrying config boot steps", () => {
+    const callOrder = [];
+    const configError = new Error("Could not read valid openclaw.json: bad json");
+    configError.name = "OpenclawConfigReadError";
+    const ensureManagedExecDefaults = vi
+      .fn()
+      .mockImplementationOnce(() => {
+        callOrder.push("ensureManagedExecDefaults:error");
+        throw configError;
+      })
+      .mockImplementationOnce(() => callOrder.push("ensureManagedExecDefaults:retry"));
+    const ensureUsageTrackerPluginConfig = vi.fn(() =>
+      callOrder.push("ensureUsageTrackerPluginConfig"),
+    );
+    const doSyncPromptFiles = vi.fn(() => callOrder.push("doSyncPromptFiles"));
+    const reloadEnv = vi.fn(() => callOrder.push("reloadEnv"));
+    const ensureGatewayProxyConfig = vi.fn(() => callOrder.push("ensureGatewayProxyConfig"));
+    const resolveSetupUrl = vi.fn(() => {
+      callOrder.push("resolveSetupUrl");
+      return "https://setup.example.com";
+    });
+    const startGateway = vi.fn(() => callOrder.push("startGateway"));
+    const watchdog = {
+      start: vi.fn(() => callOrder.push("watchdog.start")),
+    };
+    const gmailWatchService = {
+      start: vi.fn(() => callOrder.push("gmailWatchService.start")),
+    };
+    const runOpenclawDoctorRepair = vi.fn(() => {
+      callOrder.push("doctor");
+      return { ok: true };
+    });
+
+    runOnboardedBootSequence({
+      ensureManagedExecDefaults,
+      ensureUsageTrackerPluginConfig,
+      doSyncPromptFiles,
+      reloadEnv,
+      ensureGatewayProxyConfig,
+      resolveSetupUrl,
+      startGateway,
+      watchdog,
+      gmailWatchService,
+      runOpenclawDoctorRepair,
+    });
+
+    expect(runOpenclawDoctorRepair).toHaveBeenCalledWith({
+      reason: "failed_to_ensure_managed_exec_defaults_on_boot",
+    });
+    expect(callOrder).toEqual([
+      "ensureManagedExecDefaults:error",
+      "doctor",
+      "ensureManagedExecDefaults:retry",
+      "ensureUsageTrackerPluginConfig",
+      "doSyncPromptFiles",
+      "reloadEnv",
       "resolveSetupUrl",
       "ensureGatewayProxyConfig",
       "startGateway",

@@ -194,4 +194,34 @@ describe("server/exec-defaults-config", () => {
     });
     expect(fs.readFileSync(approvalsPath, "utf8")).toBe(approvalsContent);
   });
+
+  it("does not use fallback config when openclaw.json exists but is invalid", () => {
+    const openclawDir = createTempOpenclawDir();
+    const openclawPath = path.join(openclawDir, "openclaw.json");
+    const invalidConfig = '{ "tools": {';
+    fs.writeFileSync(openclawPath, invalidConfig, "utf8");
+
+    expect(() => ensureManagedExecDefaults({ fsModule: fs, openclawDir })).toThrow(
+      /Could not read valid openclaw\.json/,
+    );
+    expect(fs.readFileSync(openclawPath, "utf8")).toBe(invalidConfig);
+    expect(fs.existsSync(path.join(openclawDir, "exec-approvals.json"))).toBe(false);
+  });
+
+  it("refuses boot-time openclaw.json mutation when gateway.mode is missing", () => {
+    const openclawDir = createTempOpenclawDir();
+    const openclawPath = path.join(openclawDir, "openclaw.json");
+    const clobberedStub = JSON.stringify({ gateway: {}, tools: {} }, null, 2);
+    fs.writeFileSync(openclawPath, clobberedStub, "utf8");
+
+    expect(() =>
+      ensureManagedExecDefaults({
+        fsModule: fs,
+        openclawDir,
+        requireGatewayMode: true,
+      }),
+    ).toThrow(/gateway\.mode is missing/);
+    expect(fs.readFileSync(openclawPath, "utf8")).toBe(clobberedStub);
+    expect(fs.existsSync(path.join(openclawDir, "exec-approvals.json"))).toBe(false);
+  });
 });

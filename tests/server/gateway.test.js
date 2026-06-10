@@ -20,6 +20,7 @@ const originalExistsSync = fs.existsSync;
 const originalMkdirSync = fs.mkdirSync;
 const originalReaddirSync = fs.readdirSync;
 const originalReadFileSync = fs.readFileSync;
+const originalRenameSync = fs.renameSync;
 const originalRmSync = fs.rmSync;
 const originalWriteFileSync = fs.writeFileSync;
 const originalCreateConnection = net.createConnection;
@@ -56,6 +57,7 @@ describe("server/gateway restart behavior", () => {
     fs.mkdirSync = originalMkdirSync;
     fs.readdirSync = originalReaddirSync;
     fs.readFileSync = originalReadFileSync;
+    fs.renameSync = originalRenameSync;
     fs.rmSync = originalRmSync;
     fs.writeFileSync = originalWriteFileSync;
     net.createConnection = originalCreateConnection;
@@ -358,12 +360,18 @@ describe("server/gateway restart behavior", () => {
 
   it("adds the setup origin to gateway control UI config", () => {
     let currentConfig = {
-      gateway: {},
+      gateway: { mode: "local" },
     };
+    let pendingConfigContent = "";
     fs.existsSync = vi.fn((targetPath) => targetPath === kOnboardingMarkerPath);
     fs.writeFileSync = vi.fn((targetPath, contents) => {
-      if (targetPath === `${OPENCLAW_DIR}/openclaw.json`) {
-        currentConfig = JSON.parse(contents);
+      if (String(targetPath).includes("openclaw.json.alphaclaw-")) {
+        pendingConfigContent = contents;
+      }
+    });
+    fs.renameSync = vi.fn((fromPath, toPath) => {
+      if (toPath === `${OPENCLAW_DIR}/openclaw.json`) {
+        currentConfig = JSON.parse(pendingConfigContent);
       }
     });
     delete require.cache[modulePath];
@@ -378,9 +386,9 @@ describe("server/gateway restart behavior", () => {
     const changed = gateway.ensureGatewayProxyConfig("https://setup.example.com");
 
     expect(changed).toBe(true);
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
+    expect(fs.renameSync).toHaveBeenCalledWith(
+      expect.stringContaining("openclaw.json.alphaclaw-"),
       `${OPENCLAW_DIR}/openclaw.json`,
-      expect.any(String),
     );
     expect(currentConfig.gateway.trustedProxies).toEqual(["127.0.0.1"]);
     expect(currentConfig.gateway.controlUi.allowedOrigins).toEqual([
@@ -391,16 +399,23 @@ describe("server/gateway restart behavior", () => {
   it("preserves existing allowed origins and remains idempotent", () => {
     let currentConfig = {
       gateway: {
+        mode: "local",
         trustedProxies: ["127.0.0.1"],
         controlUi: {
           allowedOrigins: ["https://existing.example.com"],
         },
       },
     };
+    let pendingConfigContent = "";
     fs.existsSync = vi.fn((targetPath) => targetPath === kOnboardingMarkerPath);
     fs.writeFileSync = vi.fn((targetPath, contents) => {
-      if (targetPath === `${OPENCLAW_DIR}/openclaw.json`) {
-        currentConfig = JSON.parse(contents);
+      if (String(targetPath).includes("openclaw.json.alphaclaw-")) {
+        pendingConfigContent = contents;
+      }
+    });
+    fs.renameSync = vi.fn((fromPath, toPath) => {
+      if (toPath === `${OPENCLAW_DIR}/openclaw.json`) {
+        currentConfig = JSON.parse(pendingConfigContent);
       }
     });
     delete require.cache[modulePath];
@@ -421,7 +436,28 @@ describe("server/gateway restart behavior", () => {
       "https://existing.example.com",
       "https://setup.example.com",
     ]);
-    expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
+    expect(fs.renameSync).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not mutate gateway proxy config when gateway.mode is missing", () => {
+    const currentConfig = {
+      gateway: {},
+    };
+    fs.existsSync = vi.fn((targetPath) => targetPath === kOnboardingMarkerPath);
+    fs.writeFileSync = vi.fn();
+    fs.renameSync = vi.fn();
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    fs.readFileSync = vi.fn((targetPath) => {
+      if (targetPath === `${OPENCLAW_DIR}/openclaw.json`) {
+        return JSON.stringify(currentConfig);
+      }
+      return "{}";
+    });
+
+    expect(gateway.ensureGatewayProxyConfig("https://setup.example.com")).toBe(false);
+    expect(fs.writeFileSync).not.toHaveBeenCalled();
+    expect(fs.renameSync).not.toHaveBeenCalled();
   });
 
   it("reports channel status per account while preserving provider summary", () => {
