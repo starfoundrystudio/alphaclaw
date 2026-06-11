@@ -39,11 +39,23 @@
       </div>
       <form
         id="login-form"
+        autocomplete="on"
         class="bg-surface border border-border rounded-xl p-4 space-y-3"
       >
         <input
+          type="text"
+          name="username"
+          value="alphaclaw-setup"
+          autocomplete="username"
+          class="hidden"
+          tabindex="-1"
+          aria-hidden="true"
+        />
+        <input
           id="password"
+          name="password"
           type="password"
+          autocomplete="current-password"
           placeholder="Password"
           autofocus
           class="w-full bg-field border border-border rounded-lg px-3 py-2 text-sm outline-none focus:border-fg-muted"
