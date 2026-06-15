@@ -103,6 +103,8 @@ describe("server/chat-ws", () => {
     expect(history).toEqual({ messages: [], rawHistory: { messages: [] } });
     expect(captured.headers.origin).toBeUndefined();
     expect(captured.connectParams).toMatchObject({
+      minProtocol: 4,
+      maxProtocol: 4,
       client: {
         id: "gateway-client",
         mode: "backend",
