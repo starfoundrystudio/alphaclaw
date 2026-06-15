@@ -163,9 +163,7 @@ describe("server/onboarding/openclaw", () => {
         logging: true,
       },
     });
-    expect(next.agents.defaults.heartbeat.model).toBe(
-      "vercel-ai-gateway/google/gemini-2.5-flash-lite",
-    );
+    expect(next.agents.defaults.heartbeat).toBeUndefined();
     expect(next.agents.defaults.memorySearch).toBeUndefined();
     expect(next.update.checkOnStart).toBe(false);
   });
@@ -409,9 +407,7 @@ describe("server/onboarding/openclaw", () => {
         logging: true,
       },
     });
-    expect(next.agents.defaults.heartbeat.model).toBe(
-      "vercel-ai-gateway/google/gemini-2.5-flash-lite",
-    );
+    expect(next.agents.defaults.heartbeat).toBeUndefined();
     expect(next.agents.defaults.memorySearch).toBeUndefined();
     expect(next.update.checkOnStart).toBe(false);
   });
@@ -451,7 +447,7 @@ describe("server/onboarding/openclaw", () => {
     });
   });
 
-  it("preserves unrelated heartbeat settings while forcing the managed heartbeat model", () => {
+  it("preserves heartbeat settings without forcing a managed heartbeat model", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
     fs.writeFileSync(
@@ -486,7 +482,7 @@ describe("server/onboarding/openclaw", () => {
     expect(next.agents.defaults.heartbeat).toEqual({
       every: "45m",
       directPolicy: "summary",
-      model: "vercel-ai-gateway/google/gemini-2.5-flash-lite",
+      model: "anthropic/claude-opus-4.6",
     });
   });
 

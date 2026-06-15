@@ -72,14 +72,17 @@ Re-evaluate when:
 ### Managed OpenClaw config hardening defaults
 
 - Status: active
-- Last reviewed: upstream sync to `v0.9.15`
+- Last reviewed: remove managed AI Gateway heartbeat model default
 - Area: onboarding / generated OpenClaw config
 
 Decision:
 
 - Keep Starfoundry's managed config defaults during fresh onboarding and
-  managed import, including active-memory defaults, heartbeat model defaults,
-  update checks disabled by default, and managed mDNS discovery mode handling.
+  managed import, including active-memory defaults, update checks disabled by
+  default, and managed mDNS discovery mode handling.
+- Do not force an AlphaClaw-managed heartbeat model. Leave
+  `agents.defaults.heartbeat.model` unset for fresh managed configs, and
+  preserve imported/existing heartbeat model settings as-is.
 - Keep upstream `usage-tracker` hook policy additions from `v0.9.15`.
 
 Why:
@@ -87,7 +90,11 @@ Why:
 - Starfoundry deployments expect these defaults to keep managed hosts quiet,
   consistent, and pre-wired for the runtime profile AlphaClaw ships.
 - Upstream `v0.9.15` does not yet include the same managed active-memory,
-  heartbeat, update-check, or mDNS defaults.
+  update-check, or mDNS defaults.
+- AlphaClaw previously forced `vercel-ai-gateway/google/gemini-2.5-flash-lite`
+  for heartbeats when provisioning also supplied `AI_GATEWAY_API_KEY`. That key
+  is no longer part of default provisioning, so forcing the Gateway heartbeat
+  model can create unauthenticated heartbeat runs.
 
 Re-evaluate when:
 
@@ -97,7 +104,7 @@ Re-evaluate when:
 ### Explicit Codex OAuth runtime route during onboarding
 
 - Status: active
-- Last reviewed: Codex runtime setup route split
+- Last reviewed: provider-scoped Codex runtime config
 - Area: onboarding / setup UI / generated OpenClaw config
 
 Decision:
@@ -105,19 +112,21 @@ Decision:
 - Keep Codex OAuth separate from the native Codex runtime choice.
 - When a user selects an `openai/*` or `openai-codex/*` model and connects
   Codex OAuth, default to the native Codex runtime by setting
-  `agentRuntime.id: "codex"` and using the canonical `openai/*` model key.
+  `models.providers.openai.agentRuntime.id: "codex"` and using the canonical
+  `openai/*` model key.
 - Let the user explicitly switch to the flexible OpenClaw Pi route, which uses
   the effective `openai-codex/*` model key.
 - Only install/enable the managed `codex` plugin, set
-  `agents.defaults.agentRuntime.id: "codex"`, and enable
+  `models.providers.openai.agentRuntime.id: "codex"`, and enable
   `tools.web.search.openaiCodex` when the Codex runtime route is selected.
 
 Why:
 
 - Codex OAuth can authenticate the default Pi route without requiring an
   `OPENAI_API_KEY`.
-- The native Codex runtime improves OpenAI/Codex behavior, but it makes the
-  agent harder to switch to non-Codex-compatible model providers later.
+- The native Codex runtime improves OpenAI/Codex behavior, while provider-scoped
+  runtime config lets non-OpenAI providers keep using their own runtime/auth
+  path later.
 - Upstream exposes these as separate OpenClaw concepts; AlphaClaw's setup UI
   needs to make that tradeoff explicit rather than inferring runtime from OAuth
   connection state.
@@ -126,8 +135,7 @@ Re-evaluate when:
 
 - Upstream adds a first-class setup choice that distinguishes Codex OAuth auth
   from the native Codex runtime, or
-- OpenClaw supports mixed-provider runtime switching cleanly while
-  `agentRuntime.id: "codex"` is configured globally.
+- OpenClaw changes the provider/model-scoped agent runtime contract.
 
 ### Watchdog startup and repair timeouts
 
