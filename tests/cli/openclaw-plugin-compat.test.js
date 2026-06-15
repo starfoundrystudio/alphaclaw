@@ -363,10 +363,11 @@ describe("openclaw plugin compatibility manifest", () => {
     const { commands, result } = reconcileFixture({
       tmpDir,
       config: {
-        agents: {
-          defaults: {
-            model: "openai/gpt-5.5",
-            agentRuntime: { id: "codex" },
+        models: {
+          providers: {
+            openai: {
+              agentRuntime: { id: "codex" },
+            },
           },
         },
       },

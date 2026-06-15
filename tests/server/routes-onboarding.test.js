@@ -551,7 +551,10 @@ describe("server/routes/onboarding", () => {
       ([targetPath]) => targetPath === "/tmp/openclaw/openclaw.json",
     );
     const writtenConfig = JSON.parse(openclawWriteCall[1]);
-    expect(writtenConfig.agents.defaults.agentRuntime).toEqual({ id: "codex" });
+    expect(writtenConfig.agents.defaults.agentRuntime).toBeUndefined();
+    expect(writtenConfig.models.providers.openai.agentRuntime).toEqual({
+      id: "codex",
+    });
     expect(writtenConfig.plugins.allow).toContain("codex");
     expect(writtenConfig.plugins.entries.codex).toEqual({ enabled: true });
     expect(deps.reconcileOpenclawPlugins).toHaveBeenCalledWith({
@@ -625,6 +628,7 @@ describe("server/routes/onboarding", () => {
     );
     const writtenConfig = JSON.parse(openclawWriteCall[1]);
     expect(writtenConfig.agents.defaults.agentRuntime).toBeUndefined();
+    expect(writtenConfig.models?.providers?.openai?.agentRuntime).toBeUndefined();
     expect(writtenConfig.plugins.entries.codex).toBeUndefined();
   });
 

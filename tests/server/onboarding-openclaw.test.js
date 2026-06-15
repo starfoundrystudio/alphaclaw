@@ -170,7 +170,7 @@ describe("server/onboarding/openclaw", () => {
     expect(next.update.checkOnStart).toBe(false);
   });
 
-  it("configures Codex as the managed default agent runtime when requested", () => {
+  it("configures Codex as the managed OpenAI provider runtime when requested", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
     fs.writeFileSync(
@@ -201,8 +201,8 @@ describe("server/onboarding/openclaw", () => {
     });
 
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.agents.defaults.agentRuntime).toEqual({
-      fallback: "none",
+    expect(next.agents.defaults.agentRuntime).toBeUndefined();
+    expect(next.models.providers.openai.agentRuntime).toEqual({
       id: "codex",
     });
     expect(next.plugins.allow).toContain("codex");
@@ -240,7 +240,8 @@ describe("server/onboarding/openclaw", () => {
     });
 
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.agents.defaults.agentRuntime).toEqual({ id: "codex" });
+    expect(next.agents.defaults.agentRuntime).toBeUndefined();
+    expect(next.models.providers.openai.agentRuntime).toEqual({ id: "codex" });
     expect(next.plugins.allow).toContain("codex");
     expect(next.plugins.entries.codex).toEqual({ enabled: true });
     expect(next.tools.web.search).toEqual({
@@ -311,7 +312,8 @@ describe("server/onboarding/openclaw", () => {
     });
 
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.agents.defaults.agentRuntime).toEqual({ id: "codex" });
+    expect(next.agents.defaults.agentRuntime).toBeUndefined();
+    expect(next.models.providers.openai.agentRuntime).toEqual({ id: "codex" });
     expect(next.tools.web.search).toEqual({
       enabled: false,
     });
