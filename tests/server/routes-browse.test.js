@@ -79,6 +79,41 @@ describe("server/routes/browse", () => {
     ).toBe(false);
   });
 
+  it("keeps browse tree usable when a child directory cannot be traversed", async () => {
+    const rootDir = createTestRoot();
+    const referencesDir = path.join(rootDir, "skills", "teamyou", "references");
+    fs.mkdirSync(referencesDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(referencesDir, "API_REFERENCE.md"),
+      "# Reference\n",
+      "utf8",
+    );
+    fs.chmodSync(referencesDir, 0o644);
+    const app = createApp(rootDir);
+
+    try {
+      const res = await request(app).get("/api/browse/tree");
+
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.root).toEqual(
+        expect.objectContaining({
+          type: "folder",
+        }),
+      );
+      expect(res.body.skippedPaths).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: "skills/teamyou/references/API_REFERENCE.md",
+            reason: expect.stringMatching(/EACCES|EPERM/),
+          }),
+        ]),
+      );
+    } finally {
+      fs.chmodSync(referencesDir, 0o755);
+    }
+  });
+
   it("rejects path traversal on read", async () => {
     const rootDir = createTestRoot();
     const app = createApp(rootDir);

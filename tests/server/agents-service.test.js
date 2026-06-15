@@ -883,12 +883,15 @@ describe("server/agents/service", () => {
     const writeEnvFile = vi.fn();
     const reloadEnv = vi.fn();
     const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const reconcileOpenclawPlugins = vi.fn(async () => ({ plugins: [] }));
     const service = createAgentsService({
       fs: fsMock,
       OPENCLAW_DIR: "/tmp/openclaw",
+      rootDir: "/tmp",
       readEnvFile,
       writeEnvFile,
       reloadEnv,
+      reconcileOpenclawPlugins,
       clawCmd,
     });
 
@@ -927,6 +930,16 @@ describe("server/agents/service", () => {
       "agents bind --agent 'main' --bind 'telegram:default'",
       { quiet: true, timeoutMs: 30000 },
     );
+    expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
+      rootDir: "/tmp",
+      openclawDir: "/tmp/openclaw",
+      fsModule: fsMock,
+      logger: console,
+      env: process.env,
+    });
+    expect(
+      reconcileOpenclawPlugins.mock.invocationCallOrder[0],
+    ).toBeLessThan(clawCmd.mock.invocationCallOrder[0]);
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
         channels: {
@@ -1279,12 +1292,15 @@ describe("server/agents/service", () => {
     const writeEnvFile = vi.fn();
     const reloadEnv = vi.fn();
     const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const reconcileOpenclawPlugins = vi.fn(async () => ({ plugins: [] }));
     const service = createAgentsService({
       fs: fsMock,
       OPENCLAW_DIR: "/tmp/openclaw",
+      rootDir: "/tmp",
       readEnvFile,
       writeEnvFile,
       reloadEnv,
+      reconcileOpenclawPlugins,
       clawCmd,
     });
 
@@ -1362,12 +1378,15 @@ describe("server/agents/service", () => {
     const writeEnvFile = vi.fn();
     const reloadEnv = vi.fn();
     const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const reconcileOpenclawPlugins = vi.fn(async () => ({ plugins: [] }));
     const service = createAgentsService({
       fs: fsMock,
       OPENCLAW_DIR: "/tmp/openclaw",
+      rootDir: "/tmp",
       readEnvFile,
       writeEnvFile,
       reloadEnv,
+      reconcileOpenclawPlugins,
       clawCmd,
     });
 
@@ -1402,6 +1421,16 @@ describe("server/agents/service", () => {
       "channels add --channel 'slack' --name 'Slack' --bot-token 'xoxb-bot-token' --app-token 'xapp-app-token'",
       { quiet: true, timeoutMs: 30000 },
     );
+    expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
+      rootDir: "/tmp",
+      openclawDir: "/tmp/openclaw",
+      fsModule: fsMock,
+      logger: console,
+      env: process.env,
+    });
+    expect(
+      reconcileOpenclawPlugins.mock.invocationCallOrder[0],
+    ).toBeLessThan(clawCmd.mock.invocationCallOrder[0]);
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
         channels: {
