@@ -1228,7 +1228,21 @@ describe("server/agents/service", () => {
     ]);
     const writeEnvFile = vi.fn();
     const reloadEnv = vi.fn();
-    const restartGateway = vi.fn(async () => {});
+    const restartGateway = vi.fn(async () => {
+      const currentConfig = fsMock.readConfig();
+      expect(currentConfig.plugins).toEqual({
+        allow: ["discord", "usage-tracker", "telegram"],
+        entries: {
+          discord: { enabled: true },
+          "usage-tracker": { enabled: true },
+          telegram: { enabled: true },
+        },
+      });
+      expect(currentConfig.channels?.telegram?.accounts?.default).toMatchObject({
+        name: "Telegram",
+        botToken: "${TELEGRAM_BOT_TOKEN}",
+      });
+    });
     const clawCmd = vi.fn(async (command) => {
       if (String(command).startsWith("channels add")) {
         const currentConfig = fsMock.readConfig();
@@ -1265,11 +1279,11 @@ describe("server/agents/service", () => {
     expect(writeEnvFile.mock.invocationCallOrder[0]).toBeLessThan(
       fsMock.writeFileSync.mock.invocationCallOrder[0],
     );
-    expect(writeEnvFile.mock.invocationCallOrder[0]).toBeLessThan(
-      restartGateway.mock.invocationCallOrder[0],
+    expect(fsMock.writeFileSync.mock.invocationCallOrder[0]).toBeLessThan(
+      clawCmd.mock.invocationCallOrder[0],
     );
-    expect(restartGateway.mock.invocationCallOrder[0]).toBeLessThan(
-      fsMock.writeFileSync.mock.invocationCallOrder[0],
+    expect(clawCmd.mock.invocationCallOrder[1]).toBeLessThan(
+      restartGateway.mock.invocationCallOrder[0],
     );
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
@@ -1379,6 +1393,20 @@ describe("server/agents/service", () => {
     const reloadEnv = vi.fn();
     const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
     const reconcileOpenclawPlugins = vi.fn(async () => ({ plugins: [] }));
+    const restartGateway = vi.fn(async () => {
+      const currentConfig = fsMock.readConfig();
+      expect(currentConfig.plugins).toEqual({
+        allow: ["slack"],
+        entries: {
+          slack: { enabled: true },
+        },
+      });
+      expect(currentConfig.channels?.slack?.accounts?.default).toMatchObject({
+        name: "Slack",
+        botToken: "${SLACK_BOT_TOKEN}",
+        appToken: "${SLACK_APP_TOKEN}",
+      });
+    });
     const service = createAgentsService({
       fs: fsMock,
       OPENCLAW_DIR: "/tmp/openclaw",
@@ -1387,6 +1415,7 @@ describe("server/agents/service", () => {
       writeEnvFile,
       reloadEnv,
       reconcileOpenclawPlugins,
+      restartGateway,
       clawCmd,
     });
 
@@ -1431,6 +1460,14 @@ describe("server/agents/service", () => {
     expect(
       reconcileOpenclawPlugins.mock.invocationCallOrder[0],
     ).toBeLessThan(clawCmd.mock.invocationCallOrder[0]);
+    expect(clawCmd).toHaveBeenNthCalledWith(
+      2,
+      "agents bind --agent 'main' --bind 'slack:default'",
+      { quiet: true, timeoutMs: 30000 },
+    );
+    expect(clawCmd.mock.invocationCallOrder[1]).toBeLessThan(
+      restartGateway.mock.invocationCallOrder[0],
+    );
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
         channels: {
