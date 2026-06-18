@@ -74,7 +74,6 @@ const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
     },
     ensureGatewayProxyConfig: vi.fn(),
     getBaseUrl: vi.fn(() => "https://example.com"),
-    startGateway: vi.fn(),
     reconcileOpenclawPlugins: vi.fn(),
     tailscaleFinalizer: {
       finalizeTailscaleOnboarding: vi.fn(async () => ({
@@ -83,6 +82,7 @@ const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
         dnsName: "alphaclaw.tail123.ts.net",
       })),
     },
+    runOnboardedBootSequence: vi.fn(),
   };
 };
 
@@ -265,7 +265,7 @@ describe("server/routes/onboarding", () => {
     );
     expect(deps.writeEnvFile).not.toHaveBeenCalled();
     expect(deps.tailscaleFinalizer.finalizeTailscaleOnboarding).not.toHaveBeenCalled();
-    expect(deps.startGateway).not.toHaveBeenCalled();
+    expect(deps.runOnboardedBootSequence).not.toHaveBeenCalled();
   });
 
   it("allows onboarding without any channel tokens", async () => {
@@ -317,7 +317,7 @@ describe("server/routes/onboarding", () => {
       deps.ensureGatewayProxyConfig.mock.invocationCallOrder[0],
     );
     expect(completeOrder).toBeGreaterThan(
-      deps.startGateway.mock.invocationCallOrder[0],
+      deps.runOnboardedBootSequence.mock.invocationCallOrder[0],
     );
   });
 
@@ -372,7 +372,7 @@ describe("server/routes/onboarding", () => {
       expect.any(String),
     );
     expect(deps.ensureGatewayProxyConfig).not.toHaveBeenCalled();
-    expect(deps.startGateway).not.toHaveBeenCalled();
+    expect(deps.runOnboardedBootSequence).not.toHaveBeenCalled();
   });
 
   it("passes OpenRouter auth-choice flags during onboarding for openrouter models", async () => {
@@ -566,7 +566,7 @@ describe("server/routes/onboarding", () => {
     });
     expect(
       deps.reconcileOpenclawPlugins.mock.invocationCallOrder[0],
-    ).toBeLessThan(deps.startGateway.mock.invocationCallOrder[0]);
+    ).toBeLessThan(deps.runOnboardedBootSequence.mock.invocationCallOrder[0]);
   });
 
   it("canonicalizes openai-codex model keys when configuring the Codex runtime", async () => {
@@ -655,7 +655,7 @@ describe("server/routes/onboarding", () => {
       error:
         "OpenClaw plugin installation failed. Please retry setup; if it persists, check package registry/network access for OpenClaw plugins.",
     });
-    expect(deps.startGateway).not.toHaveBeenCalled();
+    expect(deps.runOnboardedBootSequence).not.toHaveBeenCalled();
   });
 
   it("keeps onboarding incomplete when Tailscale finalization fails", async () => {
@@ -680,7 +680,7 @@ describe("server/routes/onboarding", () => {
       "/tmp/alphaclaw/onboarded.json",
       expect.any(String),
     );
-    expect(deps.startGateway).not.toHaveBeenCalled();
+    expect(deps.runOnboardedBootSequence).not.toHaveBeenCalled();
   });
 
   it("rejects anthropic setup tokens with the wrong prefix", async () => {
@@ -885,7 +885,7 @@ describe("server/routes/onboarding", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(kExpectedOnboardSuccess);
-    expect(deps.startGateway).toHaveBeenCalledTimes(1);
+    expect(deps.runOnboardedBootSequence).toHaveBeenCalledTimes(1);
     expect(deps.authProfiles.upsertApiKeyProfileForEnvVar).toHaveBeenCalledWith(
       "openai",
       "sk-test-123456789",

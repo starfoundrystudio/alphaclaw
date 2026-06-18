@@ -18,7 +18,7 @@ change whenever practical.
 ### GitHub sync only when explicitly configured
 
 - Status: active
-- Last reviewed: GitHub sync prompt guard
+- Last reviewed: upstream sync to `v0.9.18`
 - Area: runtime prompt / managed sync cron
 
 Decision:
@@ -44,7 +44,7 @@ Re-evaluate when:
 ### Import-managed runtime token handling
 
 - Status: active
-- Last reviewed: upstream sync to `v0.9.15`
+- Last reviewed: upstream sync to `v0.9.18`
 - Introduced in: `102685e` (`Fix import-managed runtime token handling`)
 - Area: onboarding / import
 
@@ -72,7 +72,7 @@ Re-evaluate when:
 ### Managed OpenClaw config hardening defaults
 
 - Status: active
-- Last reviewed: remove managed AI Gateway heartbeat model default
+- Last reviewed: upstream sync to `v0.9.18`
 - Area: onboarding / generated OpenClaw config
 
 Decision:
@@ -80,6 +80,8 @@ Decision:
 - Keep Starfoundry's managed config defaults during fresh onboarding and
   managed import, including active-memory defaults, update checks disabled by
   default, and managed mDNS discovery mode handling.
+- Keep upstream's managed gateway API endpoint and remote MCP config additions,
+  but route them through the fork's safe config mutation guardrails.
 - Do not force an AlphaClaw-managed heartbeat model. Leave
   `agents.defaults.heartbeat.model` unset for fresh managed configs, and
   preserve imported/existing heartbeat model settings as-is.
@@ -104,7 +106,7 @@ Re-evaluate when:
 ### Explicit Codex OAuth runtime route during onboarding
 
 - Status: active
-- Last reviewed: provider-scoped Codex runtime config
+- Last reviewed: upstream sync to `v0.9.18`
 - Area: onboarding / setup UI / generated OpenClaw config
 
 Decision:
@@ -140,7 +142,7 @@ Re-evaluate when:
 ### Watchdog startup and repair timeouts
 
 - Status: active
-- Last reviewed: upstream sync to `v0.9.15`
+- Last reviewed: upstream sync to `v0.9.18`
 - Area: watchdog / gateway lifecycle
 
 Decision:
@@ -172,7 +174,7 @@ Re-evaluate when:
 ### OpenClaw config repair delegation with pinned plugin reconciliation
 
 - Status: active
-- Last reviewed: config-clobber incident hardening, 2026-06-10
+- Last reviewed: upstream sync to `v0.9.18`
 - Area: watchdog / startup / OpenClaw config mutation
 
 Decision:
@@ -222,7 +224,7 @@ Re-evaluate when:
 ### Device pairing polling cadence
 
 - Status: active
-- Last reviewed: upstream sync to `v0.9.15`
+- Last reviewed: upstream sync to `v0.9.18`
 - Area: General tab / device pairing polling and device CLI calls
 
 Decision:
@@ -256,7 +258,7 @@ Re-evaluate when:
 ### Channel pairing polling gating
 
 - Status: active
-- Last reviewed: upstream sync to `v0.9.15`
+- Last reviewed: upstream sync to `v0.9.18`
 - Area: General tab / channel pairing polling
 
 Decision:

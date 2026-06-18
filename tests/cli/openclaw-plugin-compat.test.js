@@ -191,7 +191,7 @@ describe("openclaw plugin compatibility manifest", () => {
       "plugin",
       "provider",
     ]);
-    expect(Object.keys(manifest.managedPlugins).length).toBe(33);
+    expect(Object.keys(manifest.managedPlugins).length).toBe(37);
     expect(manifest.managedPlugins.discord).toMatchObject({
       kind: "channel",
       package: "@openclaw/discord",
