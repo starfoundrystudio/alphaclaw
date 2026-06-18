@@ -88,4 +88,103 @@ describe("frontend/dashboard-launcher-helpers", () => {
       }),
     ).toBe(false);
   });
+
+  it("detects an already paired OpenClaw browser from local storage", async () => {
+    const {
+      kOpenClawDeviceAuthStorageKey,
+      kOpenClawDeviceIdentityStorageKey,
+      readOpenClawBrowserAuthState,
+    } = await loadHelpers();
+    const storage = new Map([
+      [
+        kOpenClawDeviceIdentityStorageKey,
+        JSON.stringify({
+          version: 1,
+          deviceId: "device-1",
+          publicKey: "public-key",
+          privateKey: "private-key",
+        }),
+      ],
+      [
+        kOpenClawDeviceAuthStorageKey,
+        JSON.stringify({
+          version: 1,
+          deviceId: "device-1",
+          tokens: {
+            operator: {
+              token: "operator-token",
+              role: "operator",
+              scopes: ["operator.read"],
+              updatedAtMs: 1000,
+            },
+          },
+        }),
+      ],
+    ]);
+
+    expect(
+      readOpenClawBrowserAuthState({
+        getItem: (key) => storage.get(key) || null,
+      }),
+    ).toEqual({
+      deviceId: "device-1",
+      hasOperatorToken: true,
+      scopes: ["operator.read"],
+    });
+  });
+
+  it("does not treat mismatched or unreadable OpenClaw browser auth as paired", async () => {
+    const {
+      kOpenClawDeviceAuthStorageKey,
+      kOpenClawDeviceIdentityStorageKey,
+      readOpenClawBrowserAuthState,
+    } = await loadHelpers();
+    const makeStorage = (auth) => {
+      const storage = new Map([
+        [
+          kOpenClawDeviceIdentityStorageKey,
+          JSON.stringify({
+            version: 1,
+            deviceId: "device-1",
+            publicKey: "public-key",
+            privateKey: "private-key",
+          }),
+        ],
+        [kOpenClawDeviceAuthStorageKey, JSON.stringify(auth)],
+      ]);
+      return {
+        getItem: (key) => storage.get(key) || null,
+      };
+    };
+
+    expect(
+      readOpenClawBrowserAuthState(
+        makeStorage({
+          version: 1,
+          deviceId: "other-device",
+          tokens: {
+            operator: {
+              token: "operator-token",
+              scopes: ["operator.read"],
+            },
+          },
+        }),
+      ).hasOperatorToken,
+    ).toBe(false);
+
+    expect(
+      readOpenClawBrowserAuthState(
+        makeStorage({
+          version: 1,
+          deviceId: "device-1",
+          tokens: {
+            operator: {
+              token: "operator-token",
+              scopes: ["operator.pairing"],
+            },
+          },
+        }),
+      ).hasOperatorToken,
+    ).toBe(false);
+  });
 });
