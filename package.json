@@ -25,6 +25,10 @@
   "scripts": {
     "start": "node bin/alphaclaw.js start",
     "build:ui": "node scripts/build-ui.mjs",
+    "dev:ui": "node scripts/start-ui-sandbox.mjs --mode dashboard",
+    "dev:ui:setup": "node scripts/start-ui-sandbox.mjs --mode setup",
+    "dev:ui:persist": "node scripts/start-ui-sandbox.mjs --mode dashboard --persist",
+    "dev:ui:build": "npm run build:ui && npm run dev:ui",
     "generate:openclaw-compatibility-manifest": "node scripts/generate-openclaw-compatibility-manifest.mjs",
     "test": "vitest run",
     "test:watch": "vitest",

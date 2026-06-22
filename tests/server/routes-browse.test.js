@@ -546,4 +546,38 @@ describe("server/routes/browse", () => {
       error: "No git repo at this root",
     });
   });
+
+  it("rejects git sync before committing when GitHub sync is not configured", async () => {
+    const rootDir = createTestRoot();
+    const previousRepo = process.env.GITHUB_WORKSPACE_REPO;
+    delete process.env.GITHUB_WORKSPACE_REPO;
+    fs.writeFileSync(path.join(rootDir, "openclaw.json"), '{"ok":true}\n', "utf8");
+    runGit(rootDir, "init -b main");
+    runGit(rootDir, "config user.email test@example.com");
+    runGit(rootDir, "config user.name Test");
+    runGit(rootDir, "add openclaw.json");
+    runGit(rootDir, "commit -m \"initial\"");
+    const commitBefore = runGit(rootDir, "rev-parse HEAD");
+    fs.writeFileSync(path.join(rootDir, "openclaw.json"), '{"ok":false}\n', "utf8");
+    const app = createApp(rootDir);
+
+    try {
+      const res = await request(app).post("/api/browse/git-sync").send({
+        message: "sync changes",
+      });
+
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({
+        ok: false,
+        error: "GitHub sync is not configured. Set up GitHub sync before syncing changes.",
+      });
+      expect(runGit(rootDir, "rev-parse HEAD")).toBe(commitBefore);
+    } finally {
+      if (previousRepo === undefined) {
+        delete process.env.GITHUB_WORKSPACE_REPO;
+      } else {
+        process.env.GITHUB_WORKSPACE_REPO = previousRepo;
+      }
+    }
+  });
 });
