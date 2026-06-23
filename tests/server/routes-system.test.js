@@ -94,6 +94,12 @@ const createSystemDeps = () => {
       upsertApiKeyProfileForEnvVar: vi.fn(),
       removeApiKeyProfileForEnvVar: vi.fn(),
     },
+    resolveGithubRepoUrl: vi.fn((value) =>
+      String(value || "")
+        .trim()
+        .replace(/^https:\/\/github\.com\//, "")
+        .replace(/\.git$/, ""),
+    ),
     OPENCLAW_DIR: "/tmp/openclaw",
     ensureGatewayProxyConfig: vi.fn(() => false),
     getBaseUrl: vi.fn(() => "https://setup.example.com"),
@@ -442,11 +448,69 @@ describe("server/routes/system", () => {
           },
         },
         syncCron: expect.objectContaining({
-          enabled: true,
+          enabled: false,
           schedule: "0 * * * *",
         }),
       }),
     );
+  });
+
+  it("configures GitHub sync through the dashboard endpoint", async () => {
+    const previousFetch = global.fetch;
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => "repo" },
+        json: async () => ({ login: "owner" }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: "Not Found",
+        json: async () => ({ message: "Not Found" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => "" },
+        json: async () => [],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ full_name: "owner/repo" }),
+      });
+    const deps = createSystemDeps();
+    const app = createApp(deps);
+
+    try {
+      const res = await request(app).post("/api/github-sync/config").send({
+        repo: "owner/repo",
+        token: "ghp_test_123456789",
+        schedule: "0 * * * *",
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        ok: true,
+        repo: "owner/repo",
+        syncCron: {
+          enabled: true,
+          schedule: "0 * * * *",
+        },
+      });
+      expect(deps.writeEnvFile).toHaveBeenCalledWith([
+        { key: "GITHUB_TOKEN", value: "ghp_test_123456789" },
+        { key: "GITHUB_WORKSPACE_REPO", value: "owner/repo" },
+      ]);
+      expect(deps.reloadEnv).toHaveBeenCalled();
+      expect(deps.fs.writeFileSync).toHaveBeenCalledWith(
+        "/tmp/openclaw/cron/system-sync.json",
+        JSON.stringify({ enabled: true, schedule: "0 * * * *" }, null, 2),
+      );
+    } finally {
+      global.fetch = previousFetch;
+    }
   });
 
   it("returns tokenized dashboard URL when OpenClaw CLI prints a token", async () => {

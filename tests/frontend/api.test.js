@@ -115,6 +115,32 @@ describe("frontend/api", () => {
     expect(result).toEqual({ ok: true, repoExists: true });
   });
 
+  it("configureGithubSync posts repo, token, and schedule", async () => {
+    global.fetch.mockResolvedValue(mockJsonResponse(200, { ok: true, repo: "owner/repo" }));
+    const api = await loadApiModule();
+
+    const result = await api.configureGithubSync({
+      repo: "owner/repo",
+      token: "ghp_123",
+      schedule: "0 * * * *",
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/github-sync/config",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          repo: "owner/repo",
+          token: "ghp_123",
+          schedule: "0 * * * *",
+        }),
+        headers: expect.any(Headers),
+      }),
+    );
+    expectLastFetchHeaders("application/json");
+    expect(result).toEqual({ ok: true, repo: "owner/repo" });
+  });
+
   it("scanImportRepo posts the temp dir payload", async () => {
     global.fetch.mockResolvedValue(mockJsonResponse(200, { ok: true, hasOpenclawSetup: true }));
     const api = await loadApiModule();
