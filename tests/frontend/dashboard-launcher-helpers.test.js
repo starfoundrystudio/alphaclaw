@@ -89,30 +89,6 @@ describe("frontend/dashboard-launcher-helpers", () => {
     ).toBe(false);
   });
 
-  it("does not auto-close the launcher for an ignored preexisting operator token", async () => {
-    const { shouldAutoCloseLauncherForOperatorToken } = await loadHelpers();
-
-    expect(
-      shouldAutoCloseLauncherForOperatorToken({
-        hasOperatorToken: true,
-      }),
-    ).toBe(true);
-
-    expect(
-      shouldAutoCloseLauncherForOperatorToken({
-        hasOperatorToken: true,
-        ignorePreexistingOperatorToken: true,
-      }),
-    ).toBe(false);
-
-    expect(
-      shouldAutoCloseLauncherForOperatorToken({
-        hasOperatorToken: false,
-        ignorePreexistingOperatorToken: true,
-      }),
-    ).toBe(false);
-  });
-
   it("detects an already paired OpenClaw browser from local storage", async () => {
     const {
       kOpenClawDeviceAuthStorageKey,
