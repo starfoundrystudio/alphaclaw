@@ -154,7 +154,6 @@ describe("server/onboarding/openclaw", () => {
       config: {
         agents: ["main"],
         allowedChatTypes: ["direct", "channel"],
-        modelFallbackPolicy: "default-remote",
         queryMode: "recent",
         promptStyle: "balanced",
         timeoutMs: 15000,
@@ -491,7 +490,6 @@ describe("server/onboarding/openclaw", () => {
       config: {
         agents: ["main"],
         allowedChatTypes: ["direct", "channel"],
-        modelFallbackPolicy: "default-remote",
         queryMode: "recent",
         promptStyle: "balanced",
         timeoutMs: 15000,
@@ -601,6 +599,7 @@ describe("server/onboarding/openclaw", () => {
                   maxSummaryChars: 400,
                   persistTranscripts: true,
                   logging: false,
+                  modelFallbackPolicy: "default-remote",
                   model: "anthropic/claude-sonnet-4.6",
                 },
               },
@@ -626,7 +625,6 @@ describe("server/onboarding/openclaw", () => {
       config: {
         agents: ["main"],
         allowedChatTypes: ["direct", "channel"],
-        modelFallbackPolicy: "default-remote",
         promptStyle: "strict",
         queryMode: "full",
         timeoutMs: 22000,

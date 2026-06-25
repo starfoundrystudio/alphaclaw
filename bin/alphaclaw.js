@@ -19,6 +19,9 @@ const {
   reconcileOpenclawPlugins,
 } = require("../lib/cli/openclaw-plugin-compat");
 const {
+  runAlphaClawMigrations,
+} = require("../lib/cli/alphaclaw-migrations");
+const {
   buildManagedPaths,
   migrateManagedInternalFiles,
 } = require("../lib/server/internal-files-migration");
@@ -93,6 +96,7 @@ Usage: alphaclaw <command> [options]
 Commands:
   start     Start the AlphaClaw server (Setup UI + gateway manager)
   git-sync  Commit and push /data/.openclaw safely using GITHUB_TOKEN
+  migrate   Inspect or apply AlphaClaw-owned upgrade migrations
   reconcile-openclaw-plugins  Install/update AlphaClaw-managed OpenClaw plugins
   telegram topic add  Add/update Telegram topic mapping by thread ID
   version   Print version
@@ -109,6 +113,12 @@ git-sync options:
   --message, -m <text> Commit message
   --file, -f <path>    Optional file path in .openclaw to sync only one file
 
+migrate options:
+  --fix                    Apply pending AlphaClaw migrations
+  --status                 Show migration status (default without --fix)
+  --json                   Print machine-readable JSON
+  --force-retry <id|all>   Retry a migration after repeated failures
+
 telegram topic add options:
   --thread <id>       Telegram thread ID
   --name <text>       Topic name
@@ -119,6 +129,8 @@ telegram topic add options:
 Examples:
   alphaclaw git-sync --message "sync workspace"
   alphaclaw git-sync --message "update config" --file "workspace/app/config.json"
+  alphaclaw migrate
+  alphaclaw migrate --fix
   alphaclaw reconcile-openclaw-plugins
   alphaclaw telegram topic add --thread 12 --name "Testing"
   alphaclaw telegram topic add --thread 12 --name "Testing" --system "Handle QA requests"
@@ -397,6 +409,71 @@ const runGitSync = () => {
 
 if (command === "git-sync") {
   process.exit(runGitSync());
+}
+
+const hasFlag = (argv, ...flags) => flags.some((flag) => argv.includes(flag));
+
+const formatMigrationStatus = (result) => {
+  const summary = result.summary || {};
+  const pieces = [
+    `${summary.total || 0} checked`,
+    `${summary.pending || 0} pending`,
+    `${summary.fixed || 0} fixed`,
+    `${summary.blocked || 0} blocked`,
+    `${summary.failed || 0} failed`,
+  ];
+  const lines = [
+    `[alphaclaw] AlphaClaw migrations: ${pieces.join(", ")}`,
+    `[alphaclaw] Ledger: ${result.ledgerPath}`,
+  ];
+  for (const item of result.results || []) {
+    const prefix = item.status === "fixed"
+      ? "fixed"
+      : item.status === "pending"
+        ? "pending"
+        : item.status === "blocked"
+          ? "blocked"
+          : item.status === "failed"
+            ? "failed"
+            : "ok";
+    lines.push(
+      `[alphaclaw] ${prefix}: ${item.id} - ${
+        item.message || item.error || item.title
+      }`,
+    );
+    for (const change of item.changes || []) {
+      lines.push(`[alphaclaw]   - ${change}`);
+    }
+  }
+  return lines.join("\n");
+};
+
+const runMigrate = () => {
+  try {
+    const result = runAlphaClawMigrations({
+      rootDir,
+      openclawDir,
+      fsModule: fs,
+      fix: hasFlag(commandArgs, "--fix"),
+      forceRetry: flagValue(commandArgs, "--force-retry") || "",
+    });
+    if (hasFlag(commandArgs, "--json")) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      console.log(formatMigrationStatus(result));
+    }
+    return result.ok ? 0 : 1;
+  } catch (e) {
+    const details = String(e.stderr || e.stdout || e.message || "").trim();
+    console.error(
+      `[alphaclaw] AlphaClaw migration failed: ${details.slice(0, 800)}`,
+    );
+    return 1;
+  }
+};
+
+if (command === "migrate") {
+  process.exit(runMigrate());
 }
 
 const runReconcileOpenclawPlugins = () => {
