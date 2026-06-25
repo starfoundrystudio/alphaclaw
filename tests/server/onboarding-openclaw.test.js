@@ -362,6 +362,48 @@ describe("server/onboarding/openclaw", () => {
     });
   });
 
+  it("preserves imported managed web search provider when enabling Codex runtime", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: ["brave"], load: { paths: [] }, entries: {} },
+          channels: {},
+          tools: {
+            web: {
+              search: {
+                enabled: true,
+                provider: "brave",
+              },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeManagedImportOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+      agentRuntimeId: "codex",
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.tools.web.search).toEqual({
+      enabled: true,
+      provider: "brave",
+      openaiCodex: {
+        enabled: true,
+        mode: "cached",
+      },
+    });
+  });
+
   it("preserves existing gateway HTTP endpoint settings when API exposure is opted in", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");

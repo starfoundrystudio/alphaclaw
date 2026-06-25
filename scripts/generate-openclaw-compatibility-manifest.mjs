@@ -57,6 +57,18 @@ const splitNpmSpec = (npmSpec) => {
   };
 };
 
+const uniqueStrings = (values = []) =>
+  [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+
+const normalizeContracts = (contracts = {}) => {
+  const normalized = {};
+  for (const [key, value] of Object.entries(contracts || {})) {
+    const ids = uniqueStrings(Array.isArray(value) ? value : []);
+    if (ids.length > 0) normalized[key] = ids;
+  }
+  return normalized;
+};
+
 const buildManagedPluginEntry = ({ catalogKind, entry, openclawVersion }) => {
   const openclaw = entry.openclaw || {};
   const pluginId =
@@ -65,12 +77,16 @@ const buildManagedPluginEntry = ({ catalogKind, entry, openclawVersion }) => {
     openclaw.providers?.[0]?.id ||
     entry.name;
   const channelId = openclaw.channel?.id;
-  const providerIds = (openclaw.providers || [])
-    .map((provider) => provider.id)
-    .filter(Boolean);
-  const webSearchProviderIds = (openclaw.webSearchProviders || [])
-    .map((provider) => provider.id)
-    .filter(Boolean);
+  const providerIds = uniqueStrings(
+    (openclaw.providers || []).map((provider) => provider.id),
+  );
+  const providerAliases = uniqueStrings(
+    (openclaw.providers || []).flatMap((provider) => provider.aliases || []),
+  );
+  const webSearchProviderIds = uniqueStrings(
+    (openclaw.webSearchProviders || []).map((provider) => provider.id),
+  );
+  const contracts = normalizeContracts(openclaw.contracts);
   const npmSpec = openclaw.install?.npmSpec || entry.name;
   const { packageName, version: explicitVersion } = splitNpmSpec(npmSpec);
   const version = explicitVersion || openclawVersion;
@@ -84,7 +100,9 @@ const buildManagedPluginEntry = ({ catalogKind, entry, openclawVersion }) => {
       pluginId,
       ...(channelId ? { channelId } : {}),
       ...(providerIds.length > 0 ? { providerIds } : {}),
+      ...(providerAliases.length > 0 ? { providerAliases } : {}),
       ...(webSearchProviderIds.length > 0 ? { webSearchProviderIds } : {}),
+      ...(Object.keys(contracts).length > 0 ? { contracts } : {}),
       ...(entry.description ? { description: entry.description } : {}),
       source: entry.source || "official",
       install: {

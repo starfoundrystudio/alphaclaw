@@ -300,7 +300,7 @@ npm run test:watch      # Watch mode
 npm run test:coverage   # Coverage report
 ```
 
-**Requirements:** Node.js ≥ 22.14.0
+**Requirements:** Node.js ≥ 22.19.0
 
 ## License
 

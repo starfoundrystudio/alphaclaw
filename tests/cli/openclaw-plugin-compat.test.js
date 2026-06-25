@@ -191,7 +191,7 @@ describe("openclaw plugin compatibility manifest", () => {
       "plugin",
       "provider",
     ]);
-    expect(Object.keys(manifest.managedPlugins).length).toBe(37);
+    expect(Object.keys(manifest.managedPlugins).length).toBe(59);
     expect(manifest.managedPlugins.discord).toMatchObject({
       kind: "channel",
       package: "@openclaw/discord",
@@ -240,6 +240,24 @@ describe("openclaw plugin compatibility manifest", () => {
       package: "@openclaw/anthropic-vertex-provider",
       version: packageJson.dependencies.openclaw,
       providerIds: ["anthropic-vertex"],
+    });
+    expect(manifest.managedPlugins.kimi).toMatchObject({
+      kind: "provider",
+      package: "@openclaw/kimi-provider",
+      version: packageJson.dependencies.openclaw,
+      providerIds: ["kimi"],
+      providerAliases: ["kimi-coding"],
+    });
+    expect(manifest.managedPlugins.firecrawl).toMatchObject({
+      kind: "plugin",
+      package: "@openclaw/firecrawl-plugin",
+      version: packageJson.dependencies.openclaw,
+      webSearchProviderIds: ["firecrawl"],
+      contracts: {
+        webFetchProviders: ["firecrawl"],
+        webSearchProviders: ["firecrawl"],
+        tools: ["firecrawl_search", "firecrawl_scrape"],
+      },
     });
   });
 
@@ -357,6 +375,96 @@ describe("openclaw plugin compatibility manifest", () => {
     expect(commands.some((cmd) => cmd.includes("'npm:@openclaw/codex@2026.5.6'"))).toBe(
       true,
     );
+  });
+
+  it("installs provider plugins when provider aliases reference them", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        kimi: {
+          kind: "provider",
+          package: "@openclaw/kimi-provider",
+          version: "2026.5.6",
+          pluginId: "kimi",
+          providerIds: ["kimi"],
+          providerAliases: ["kimi-coding"],
+          install: {
+            npmSpec: "@openclaw/kimi-provider",
+            exactNpmSpec: "@openclaw/kimi-provider@2026.5.6",
+          },
+        },
+      },
+    });
+    const { commands, result } = reconcileFixture({
+      tmpDir,
+      manifest,
+      config: {
+        models: {
+          providers: {
+            "kimi-coding": { apiKey: "env:MOONSHOT_API_KEY" },
+          },
+          default: "kimi-coding/k2-coder",
+        },
+      },
+    });
+
+    expect(result.plugins).toEqual([
+      expect.objectContaining({
+        id: "kimi",
+        action: "installed",
+        reasons: ["models.providers.kimi-coding", "provider-reference"],
+      }),
+    ]);
+    expect(
+      commands.some((cmd) =>
+        cmd.includes("'npm:@openclaw/kimi-provider@2026.5.6'"),
+      ),
+    ).toBe(true);
+  });
+
+  it("installs plugins for contract-defined memory providers", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        "llama-cpp": {
+          kind: "plugin",
+          package: "@openclaw/llama-cpp-provider",
+          version: "2026.5.6",
+          pluginId: "llama-cpp",
+          contracts: {
+            embeddingProviders: ["local"],
+          },
+          install: {
+            npmSpec: "@openclaw/llama-cpp-provider",
+            exactNpmSpec: "@openclaw/llama-cpp-provider@2026.5.6",
+          },
+        },
+      },
+    });
+    const { commands, result } = reconcileFixture({
+      tmpDir,
+      manifest,
+      config: {
+        agents: {
+          defaults: {
+            memorySearch: {
+              provider: "local",
+            },
+          },
+        },
+      },
+    });
+
+    expect(result.plugins).toEqual([
+      expect.objectContaining({
+        id: "llama-cpp",
+        action: "installed",
+        reasons: ["memory-provider-reference"],
+      }),
+    ]);
+    expect(
+      commands.some((cmd) =>
+        cmd.includes("'npm:@openclaw/llama-cpp-provider@2026.5.6'"),
+      ),
+    ).toBe(true);
   });
 
   it("installs provider plugins when agent runtime config references them", () => {
@@ -585,6 +693,131 @@ describe("openclaw plugin compatibility manifest", () => {
     });
     expect(readOpenclawConfig(openclawDir).models.default).toBe(
       "demo-provider/sensible",
+    );
+  });
+
+  it("recovers alias provider selector installs without removing provider config", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        kimi: {
+          kind: "provider",
+          package: "@openclaw/kimi-provider",
+          version: "2026.5.6",
+          pluginId: "kimi",
+          providerIds: ["kimi"],
+          providerAliases: ["kimi-coding"],
+          install: {
+            npmSpec: "@openclaw/kimi-provider",
+            exactNpmSpec: "@openclaw/kimi-provider@2026.5.6",
+          },
+        },
+      },
+    });
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, {
+      models: {
+        default: "kimi-coding/k2-coder",
+        providers: {
+          "kimi-coding": {
+            apiKey: "env:MOONSHOT_API_KEY",
+          },
+        },
+      },
+    });
+    const { execSyncImpl, installConfigs } = createConfigRecoveryExecRecorder({
+      openclawDir,
+      shouldFailInstall: (config) =>
+        config.models?.default === "kimi-coding/k2-coder",
+    });
+
+    const manifestPath = writeManifest(tmpDir, manifest);
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    expect(installConfigs[1].models.default).toBeUndefined();
+    expect(installConfigs[1].models.providers["kimi-coding"]).toEqual({
+      apiKey: "env:MOONSHOT_API_KEY",
+    });
+    expect(readOpenclawConfig(openclawDir).models.default).toBe(
+      "kimi-coding/k2-coder",
+    );
+  });
+
+  it("recovers contract web fetch provider installs by temporarily suppressing the selector", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        firecrawl: {
+          kind: "plugin",
+          package: "@openclaw/firecrawl-plugin",
+          version: "2026.5.6",
+          pluginId: "firecrawl",
+          contracts: {
+            webFetchProviders: ["firecrawl"],
+          },
+          install: {
+            npmSpec: "@openclaw/firecrawl-plugin",
+            exactNpmSpec: "@openclaw/firecrawl-plugin@2026.5.6",
+          },
+        },
+      },
+    });
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, {
+      tools: {
+        web: {
+          fetch: {
+            provider: "firecrawl",
+            maxPages: 3,
+          },
+        },
+      },
+      plugins: {
+        entries: {
+          firecrawl: {
+            config: {
+              webFetch: {
+                apiKey: "env:FIRECRAWL_API_KEY",
+              },
+            },
+          },
+        },
+      },
+    });
+    const { execSyncImpl, installConfigs } = createConfigRecoveryExecRecorder({
+      openclawDir,
+      shouldFailInstall: (config) =>
+        config.tools?.web?.fetch?.provider === "firecrawl",
+    });
+
+    const manifestPath = writeManifest(tmpDir, manifest);
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    expect(installConfigs[1].tools.web.fetch.provider).toBeUndefined();
+    expect(installConfigs[1].tools.web.fetch.maxPages).toBe(3);
+    expect(installConfigs[1].plugins.entries.firecrawl.config).toEqual({
+      webFetch: {
+        apiKey: "env:FIRECRAWL_API_KEY",
+      },
+    });
+    expect(readOpenclawConfig(openclawDir).tools.web.fetch.provider).toBe(
+      "firecrawl",
     );
   });
 

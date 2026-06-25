@@ -766,7 +766,7 @@ if (fs.existsSync(path.join(openclawDir, ".git"))) {
 }
 
 if (fs.existsSync(configPath)) {
-  console.log("[alphaclaw] Config exists; skipping startup channel reconciliation");
+  console.log("[alphaclaw] Config exists; running startup plugin reconciliation");
 
   try {
     JSON.parse(fs.readFileSync(configPath, "utf8"));
@@ -786,6 +786,12 @@ if (fs.existsSync(configPath)) {
         );
       }
     }
+  }
+  const reconcileExitCode = runReconcileOpenclawPlugins();
+  if (reconcileExitCode !== 0) {
+    console.error(
+      "[alphaclaw] Startup OpenClaw plugin reconciliation failed; continuing so the setup UI can surface recovery options",
+    );
   }
 } else {
   console.log(

@@ -15,7 +15,10 @@ const loadVersionModule = ({ execMock, execSyncMock }) => {
   return require(modulePath);
 };
 
-const createService = ({ isOnboarded = false } = {}) => {
+const createService = ({
+  isOnboarded = false,
+  reconcileOpenclawPlugins,
+} = {}) => {
   const execMock = vi.fn();
   const execSyncMock = vi.fn();
   const { createOpenclawVersionService } = loadVersionModule({
@@ -28,6 +31,9 @@ const createService = ({ isOnboarded = false } = {}) => {
     gatewayEnv,
     restartGateway,
     isOnboarded: () => isOnboarded,
+    reconcileOpenclawPlugins,
+    rootDir: "/tmp/alphaclaw-root",
+    openclawDir: "/tmp/alphaclaw-root/.openclaw",
   });
   return { service, gatewayEnv, restartGateway, execMock, execSyncMock };
 };
@@ -176,6 +182,74 @@ describe("server/openclaw-version", () => {
       expect.any(Function),
     );
     expect(restartGateway).toHaveBeenCalledTimes(1);
+  });
+
+  it("reconciles managed plugins before restarting after an onboarded update", async () => {
+    const callOrder = [];
+    const reconcileOpenclawPlugins = vi.fn(async () => {
+      callOrder.push("reconcile");
+      return { plugins: [{ id: "kimi", action: "installed" }] };
+    });
+    const { service, restartGateway, execMock, execSyncMock } = createService({
+      isOnboarded: true,
+      reconcileOpenclawPlugins,
+    });
+    restartGateway.mockImplementation(async () => {
+      callOrder.push("restart");
+    });
+    execSyncMock
+      .mockReturnValueOnce("openclaw 2026.6.8")
+      .mockReturnValueOnce("openclaw 2026.6.10")
+      .mockReturnValueOnce(
+        JSON.stringify({
+          availability: { available: false, latestVersion: "2026.6.10" },
+        }),
+      );
+    execMock.mockImplementation((cmd, opts, callback) => {
+      callback(null, cmd.startsWith("npm install") ? "installed" : "", "");
+    });
+
+    const result = await service.updateOpenclaw();
+
+    expect(result.status).toBe(200);
+    expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
+      rootDir: "/tmp/alphaclaw-root",
+      openclawDir: "/tmp/alphaclaw-root/.openclaw",
+      fsModule: expect.any(Object),
+      logger: console,
+      env: process.env,
+    });
+    expect(callOrder).toEqual(["reconcile", "restart"]);
+    expect(result.body.pluginReconcile).toEqual({
+      plugins: [{ id: "kimi", action: "installed" }],
+    });
+  });
+
+  it("does not restart after an onboarded update when plugin reconciliation fails", async () => {
+    const reconcileOpenclawPlugins = vi.fn(async () => {
+      throw new Error("missing provider package");
+    });
+    const { service, restartGateway, execMock, execSyncMock } = createService({
+      isOnboarded: true,
+      reconcileOpenclawPlugins,
+    });
+    execSyncMock
+      .mockReturnValueOnce("openclaw 2026.6.8")
+      .mockReturnValueOnce("openclaw 2026.6.10")
+      .mockReturnValueOnce(
+        JSON.stringify({
+          availability: { available: false, latestVersion: "2026.6.10" },
+        }),
+      );
+    execMock.mockImplementation((cmd, opts, callback) => {
+      callback(null, cmd.startsWith("npm install") ? "installed" : "", "");
+    });
+
+    const result = await service.updateOpenclaw();
+
+    expect(result.status).toBe(500);
+    expect(result.body.error).toContain("missing provider package");
+    expect(restartGateway).not.toHaveBeenCalled();
   });
 
   it("returns 409 while another update is in progress", async () => {
