@@ -73,6 +73,23 @@ Runtime model:
 
 ## Operations
 
+### OpenClaw Upgrade Reviews
+
+When upgrading the pinned `openclaw` dependency, do not rely on release notes alone. AlphaClaw writes and reconciles OpenClaw-managed runtime state directly, so every OpenClaw upgrade review must compare AlphaClaw's direct state/config writers against OpenClaw's changed code paths before recommending or implementing AlphaClaw changes.
+
+Required review checklist:
+
+1. Read non-beta OpenClaw release notes for every version between the old pin and new target.
+2. Inspect relevant OpenClaw code changes for runtime state, persistence, config schemas, provider/plugin catalogs, and CLI/onboarding behavior. Use the local OpenClaw checkout when available (`~/Projects/openclaw/src`, or another local checkout such as `~/Development/openclaw/src`).
+3. Trace AlphaClaw code paths that write or reconcile OpenClaw-owned state, including:
+   - `openclaw.json` and `models.json` model/provider/runtime configuration.
+   - Agent auth profiles and auth ordering, including SQLite stores such as `agents/<id>/agent/openclaw-agent.sqlite` and any legacy JSON import/migration paths.
+   - Provider/plugin/channel compatibility manifests and managed plugin install/reconcile behavior.
+   - Runtime selection, Codex/OpenAI routing, web search/tool config, watchdog/doctor repair flows, and gateway startup assumptions.
+4. For each changed OpenClaw persistence or config contract, verify AlphaClaw writes the current runtime-readable format, not only a legacy or doctor-migratable format.
+5. Add or update tests that simulate a fresh AlphaClaw provision on the new OpenClaw version for affected paths. For auth/runtime changes, verify the exact provider id, profile id, auth order, and durable store path consumed by OpenClaw runtime.
+6. Summarize the reviewed OpenClaw changes, the AlphaClaw impact, recommended updates, and any deliberately deferred follow-ups before making code changes when the user asks for an upgrade assessment.
+
 ### Release Flow (Beta -> Production)
 
 Use this release flow when promoting tested beta builds to production:

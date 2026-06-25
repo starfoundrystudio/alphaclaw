@@ -10,6 +10,8 @@ const readJson = (relPath) =>
     fs.readFileSync(path.join(tmpDir, ".openclaw", relPath), "utf8"),
   );
 
+const readAuthStore = () => ap.loadAuthStore();
+
 beforeAll(() => {
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ac-auth-test-"));
   process.env.ALPHACLAW_ROOT_DIR = tmpDir;
@@ -64,6 +66,14 @@ beforeEach(() => {
     "auth-profiles.json",
   );
   if (fs.existsSync(storePath)) fs.unlinkSync(storePath);
+  const storeDatabasePath = path.join(
+    openclawDir,
+    "agents",
+    "main",
+    "agent",
+    "openclaw-agent.sqlite",
+  );
+  if (fs.existsSync(storeDatabasePath)) fs.rmSync(storeDatabasePath, { force: true });
   const pendingStorePath = path.join(
     tmpDir,
     "pending-auth-profiles",
@@ -85,13 +95,22 @@ describe("server/auth-profiles", () => {
       key: "sk-ant-test-key",
     });
 
-    const store = readJson("agents/main/agent/auth-profiles.json");
+    const store = readAuthStore();
     expect(store.version).toBe(1);
     expect(store.profiles["anthropic:default"]).toEqual({
       type: "api_key",
       provider: "anthropic",
       key: "sk-ant-test-key",
     });
+    expect(
+      fs.existsSync(
+        path.join(
+          tmpDir,
+          ".openclaw",
+          "agents/main/agent/openclaw-agent.sqlite",
+        ),
+      ),
+    ).toBe(true);
 
     const config = readJson("openclaw.json");
     expect(config.auth.profiles["anthropic:default"]).toEqual({
@@ -109,7 +128,7 @@ describe("server/auth-profiles", () => {
       expires: 9999999999999,
     });
 
-    const store = readJson("agents/main/agent/auth-profiles.json");
+    const store = readAuthStore();
     expect(store.profiles["anthropic:manual"].type).toBe("token");
     expect(store.profiles["anthropic:manual"].token).toBe("sk-ant-oat01-test");
 
@@ -118,20 +137,23 @@ describe("server/auth-profiles", () => {
   });
 
   it("upserts an oauth profile and syncs config", () => {
-    ap.upsertProfile("openai-codex:codex-cli", {
+    ap.upsertProfile("openai:codex-cli", {
       type: "oauth",
-      provider: "openai-codex",
+      provider: "openai",
       access: "jwt-access",
       refresh: "rt-refresh",
       expires: 9999999999999,
       accountId: "test-account",
     });
 
-    const store = readJson("agents/main/agent/auth-profiles.json");
-    expect(store.profiles["openai-codex:codex-cli"].type).toBe("oauth");
+    const store = readAuthStore();
+    expect(store.profiles["openai:codex-cli"].type).toBe("oauth");
 
     const config = readJson("openclaw.json");
-    expect(config.auth.profiles["openai-codex:codex-cli"].mode).toBe("oauth");
+    expect(config.auth.profiles["openai:codex-cli"]).toEqual({
+      provider: "openai",
+      mode: "oauth",
+    });
   });
 
   it("removes a profile and cleans config reference", () => {
@@ -146,7 +168,7 @@ describe("server/auth-profiles", () => {
 
     ap.removeProfile("google:default");
 
-    const store = readJson("agents/main/agent/auth-profiles.json");
+    const store = readAuthStore();
     expect(store.profiles["google:default"]).toBeUndefined();
 
     config = readJson("openclaw.json");
@@ -185,7 +207,7 @@ describe("server/auth-profiles", () => {
       key: "AItest",
     });
 
-    const store = readJson("agents/main/agent/auth-profiles.json");
+    const store = readAuthStore();
     expect(store.order).toEqual({ anthropic: ["anthropic:default"] });
     expect(store.lastGood).toEqual({ anthropic: "anthropic:default" });
     expect(store.usageStats).toEqual({ total: 42 });
@@ -200,7 +222,7 @@ describe("server/auth-profiles", () => {
       key: "  sk-ant-key\r\n  ",
     });
 
-    const store = readJson("agents/main/agent/auth-profiles.json");
+    const store = readAuthStore();
     expect(store.profiles["anthropic:default"].key).toBe("sk-ant-key");
   });
 
@@ -247,18 +269,23 @@ describe("server/auth-profiles", () => {
       accountId: "acct",
     });
 
-    const store = readJson("agents/main/agent/auth-profiles.json");
-    expect(store.profiles["openai-codex:codex-cli"]).toEqual({
+    const store = readAuthStore();
+    expect(store.profiles["openai:codex-cli"]).toEqual({
       type: "oauth",
-      provider: "openai-codex",
+      provider: "openai",
       access: "jwt",
       refresh: "rt",
       expires: 9999999999999,
       accountId: "acct",
     });
+    expect(store.order.openai).toEqual(["openai:codex-cli"]);
 
     const config = readJson("openclaw.json");
-    expect(config.auth.profiles["openai-codex:codex-cli"].mode).toBe("oauth");
+    expect(config.auth.profiles["openai:codex-cli"]).toEqual({
+      provider: "openai",
+      mode: "oauth",
+    });
+    expect(config.auth.order.openai).toEqual(["openai:codex-cli"]);
   });
 
   it("legacy removeCodexProfiles removes all codex profiles", () => {
@@ -268,16 +295,17 @@ describe("server/auth-profiles", () => {
       expires: 1,
     });
 
-    let store = readJson("agents/main/agent/auth-profiles.json");
-    expect(store.profiles["openai-codex:codex-cli"]).toBeDefined();
+    let store = readAuthStore();
+    expect(store.profiles["openai:codex-cli"]).toBeDefined();
 
     ap.removeCodexProfiles();
 
-    store = readJson("agents/main/agent/auth-profiles.json");
-    expect(store.profiles["openai-codex:codex-cli"]).toBeUndefined();
+    store = readAuthStore();
+    expect(store.profiles["openai:codex-cli"]).toBeUndefined();
 
     const config = readJson("openclaw.json");
-    expect(config.auth?.profiles?.["openai-codex:codex-cli"]).toBeUndefined();
+    expect(config.auth?.profiles?.["openai:codex-cli"]).toBeUndefined();
+    expect(config.auth?.order?.openai).toBeUndefined();
   });
 
   it("does not write auth refs into incomplete pre-onboarding config", () => {
@@ -302,8 +330,8 @@ describe("server/auth-profiles", () => {
       accountId: "acct",
     });
 
-    const store = readJson("agents/main/agent/auth-profiles.json");
-    expect(store.profiles["openai-codex:codex-cli"]).toBeDefined();
+    const store = readAuthStore();
+    expect(store.profiles["openai:codex-cli"]).toBeDefined();
 
     const config = readJson("openclaw.json");
     expect(config.auth?.profiles || {}).toEqual({});
@@ -318,7 +346,7 @@ describe("server/auth-profiles", () => {
       "agents",
       "main",
       "agent",
-      "auth-profiles.json",
+      "openclaw-agent.sqlite",
     );
     const pendingStorePath = path.join(
       tmpDir,
@@ -358,10 +386,10 @@ describe("server/auth-profiles", () => {
 
     expect(fs.existsSync(finalStorePath)).toBe(true);
     expect(fs.existsSync(pendingStorePath)).toBe(false);
-    const store = readJson("agents/main/agent/auth-profiles.json");
-    expect(store.profiles["openai-codex:codex-cli"]).toMatchObject({
+    const store = readAuthStore();
+    expect(store.profiles["openai:codex-cli"]).toMatchObject({
       type: "oauth",
-      provider: "openai-codex",
+      provider: "openai",
       access: "jwt",
       refresh: "rt",
       accountId: "acct",

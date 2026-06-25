@@ -314,8 +314,8 @@ describe("server/gateway restart behavior", () => {
       JSON.stringify({
         auth: {
           profiles: {
-            "openai-codex:codex-cli": {
-              provider: "openai-codex",
+            "openai:codex-cli": {
+              provider: "openai",
               mode: "oauth",
             },
           },
