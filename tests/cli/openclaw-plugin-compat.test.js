@@ -529,6 +529,66 @@ describe("openclaw plugin compatibility manifest", () => {
     expect(commands.some((cmd) => cmd.includes("latest"))).toBe(false);
   });
 
+  it("retries plugin install when OpenClaw reports a config write conflict", () => {
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, { channels: { discord: {} } });
+    const manifestPath = writeManifest(tmpDir, baseManifest());
+    const commands = [];
+    const logs = [];
+    let installAttempts = 0;
+    const execSyncImpl = (command) => {
+      commands.push(String(command));
+      if (String(command).includes("'--version'")) {
+        return "2026.5.6\n";
+      }
+      if (String(command).includes("'plugins' 'list' '--json'")) {
+        return JSON.stringify({
+          plugins: [
+            {
+              id: "discord",
+              name: "@openclaw/discord",
+              version: "2026.5.5",
+            },
+          ],
+        });
+      }
+      if (String(command).includes("'plugins' 'install'")) {
+        installAttempts += 1;
+        if (installAttempts === 1) {
+          const error = new Error("[openclaw] Could not start the CLI.");
+          error.stderr = [
+            "[openclaw] Could not start the CLI.",
+            "[openclaw] Reason: config changed since last load",
+          ].join("\n");
+          throw error;
+        }
+        return "";
+      }
+      return "";
+    };
+
+    const result = reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: (line) => logs.push(line) },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    expect(result.plugins[0]).toMatchObject({
+      id: "discord",
+      action: "updated",
+      previousVersion: "2026.5.5",
+    });
+    expect(commands.filter((cmd) => cmd.includes("'plugins' 'install'"))).toHaveLength(2);
+    expect(logs.join("\n")).toContain(
+      "discord plugin install hit an OpenClaw config write conflict; retrying",
+    );
+  });
+
   it("keeps already-installed official plugins updated even without current config", () => {
     const { commands, result } = reconcileFixture({
       tmpDir,
