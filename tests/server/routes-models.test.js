@@ -390,6 +390,27 @@ describe("server/routes/models", () => {
     ]);
   });
 
+  it("returns provider runtime ids on GET /api/models/config", async () => {
+    const deps = createModelDeps();
+    deps.authProfiles.getModelConfig.mockReturnValue({
+      primary: "openai/gpt-5.5",
+      configuredModels: { "openai/gpt-5.5": {} },
+      providerRuntimeIds: { openai: "codex" },
+      modelRuntimeIds: {},
+    });
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/models/config");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        providerRuntimeIds: { openai: "codex" },
+        modelRuntimeIds: {},
+      }),
+    );
+  });
+
   it("writes API-key model auth changes back to env vars", async () => {
     const deps = createModelDeps();
     deps.shellCmd.mockResolvedValue("");

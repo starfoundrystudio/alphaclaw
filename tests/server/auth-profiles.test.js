@@ -276,6 +276,7 @@ describe("server/auth-profiles", () => {
       access: "jwt",
       refresh: "rt",
       expires: 9999999999999,
+      updatedAt: expect.any(Number),
       accountId: "acct",
     });
     expect(store.order.openai).toEqual(["openai:codex-cli"]);
