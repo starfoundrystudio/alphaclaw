@@ -179,7 +179,8 @@ Re-evaluate when:
 
 Decision:
 
-- Delegate broad OpenClaw config repair to `openclaw doctor --fix --yes`.
+- Delegate broad OpenClaw config repair to OpenClaw doctor, using guarded
+  `openclaw doctor --non-interactive --fix` for unattended AlphaClaw repair.
 - Do not treat a failed `openclaw.json` read as an empty config.
 - Do not parse and rewrite `openclaw.json` from partial AlphaClaw knowledge
   during normal startup repair.
@@ -187,8 +188,8 @@ Decision:
 - Do not mutate OpenClaw config outside the shared config helper unless the
   config is valid and includes `gateway.mode`.
 - Keep AlphaClaw's managed plugin compatibility reconciliation, but only after
-  `openclaw doctor --fix --yes` has succeeded and the repaired config is safe
-  for mutation.
+  the guarded OpenClaw doctor repair has succeeded and the repaired config is
+  safe for mutation.
 
 Why:
 
@@ -206,11 +207,13 @@ Why:
 Current local behavior under evaluation:
 
 - Already-onboarded startup does not run channel re-add/reconciliation.
-- Startup config-read failures invoke `openclaw doctor --fix --yes` and retry
-  safe boot mutations.
-- Watchdog auto-repair runs `openclaw doctor --fix --yes`, validates
-  `gateway.mode`, then runs the AlphaClaw managed plugin reconciler before
-  relaunching the gateway.
+- Startup config-read failures invoke
+  `alphaclaw openclaw-doctor-guard -- openclaw doctor --non-interactive --fix`
+  and retry safe boot mutations.
+- Watchdog auto-repair runs
+  `alphaclaw openclaw-doctor-guard -- openclaw doctor --non-interactive --fix`,
+  validates `gateway.mode`, then runs the AlphaClaw managed plugin reconciler
+  before relaunching the gateway.
 - If doctor leaves the config unreadable or missing `gateway.mode`, AlphaClaw
   refuses further config mutation and leaves repair failed for manual action.
 

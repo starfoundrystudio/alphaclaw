@@ -22,6 +22,9 @@ const {
   runAlphaClawMigrations,
 } = require("../lib/cli/alphaclaw-migrations");
 const {
+  runOpenclawDoctorWithOauthGuard,
+} = require("../lib/cli/openclaw-doctor-oauth-guard");
+const {
   buildManagedPaths,
   migrateManagedInternalFiles,
 } = require("../lib/server/internal-files-migration");
@@ -97,6 +100,7 @@ Commands:
   start     Start the AlphaClaw server (Setup UI + gateway manager)
   git-sync  Commit and push /data/.openclaw safely using GITHUB_TOKEN
   migrate   Inspect or apply AlphaClaw-owned upgrade migrations
+  openclaw-doctor-guard  Run an OpenClaw command with OAuth-refresh shielding
   reconcile-openclaw-plugins  Install/update AlphaClaw-managed OpenClaw plugins
   telegram topic add  Add/update Telegram topic mapping by thread ID
   version   Print version
@@ -119,6 +123,9 @@ migrate options:
   --json                   Print machine-readable JSON
   --force-retry <id|all>   Retry a migration after repeated failures
 
+openclaw-doctor-guard options:
+  -- <command...>           Command to run while OAuth auth profiles are shielded
+
 telegram topic add options:
   --thread <id>       Telegram thread ID
   --name <text>       Topic name
@@ -131,6 +138,7 @@ Examples:
   alphaclaw git-sync --message "update config" --file "workspace/app/config.json"
   alphaclaw migrate
   alphaclaw migrate --fix
+  alphaclaw openclaw-doctor-guard -- openclaw doctor --non-interactive --fix
   alphaclaw reconcile-openclaw-plugins
   alphaclaw telegram topic add --thread 12 --name "Testing"
   alphaclaw telegram topic add --thread 12 --name "Testing" --system "Handle QA requests"
@@ -474,6 +482,39 @@ const runMigrate = () => {
 
 if (command === "migrate") {
   process.exit(runMigrate());
+}
+
+const runOpenclawDoctorGuard = () => {
+  const separatorIndex = commandArgs.indexOf("--");
+  const guardedCommandArgs =
+    separatorIndex >= 0 ? commandArgs.slice(separatorIndex + 1) : commandArgs.slice(1);
+  if (guardedCommandArgs.length === 0) {
+    console.error(
+      "[alphaclaw] Missing command for openclaw-doctor-guard. Use: alphaclaw openclaw-doctor-guard -- openclaw doctor --non-interactive --fix",
+    );
+    return 1;
+  }
+  try {
+    return runOpenclawDoctorWithOauthGuard({
+      rootDir,
+      openclawDir,
+      commandArgs: guardedCommandArgs,
+      env: process.env,
+      cwd: process.cwd(),
+      stdio: "inherit",
+      logger: console,
+    });
+  } catch (e) {
+    const details = String(e.stderr || e.stdout || e.message || "").trim();
+    console.error(
+      `[alphaclaw] Guarded OpenClaw doctor failed: ${details.slice(0, 800)}`,
+    );
+    return 1;
+  }
+};
+
+if (command === "openclaw-doctor-guard") {
+  process.exit(runOpenclawDoctorGuard());
 }
 
 const runReconcileOpenclawPlugins = () => {

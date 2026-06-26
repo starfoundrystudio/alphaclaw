@@ -1,8 +1,17 @@
 const { createWatchdog } = require("../../lib/server/watchdog");
 
+const kGuardedDoctorRepairCommand =
+  "alphaclaw openclaw-doctor-guard -- openclaw doctor --non-interactive --fix";
 const kExpectedRepairCommandArgs = {
-  quiet: true,
   timeoutMs: 600000,
+  env: expect.objectContaining({
+    ALPHACLAW_ROOT_DIR: "/tmp/alphaclaw",
+    OPENCLAW_HOME: "/tmp/alphaclaw",
+    OPENCLAW_CONFIG_PATH: "/tmp/alphaclaw/.openclaw/openclaw.json",
+    OPENCLAW_STATE_DIR: "/tmp/alphaclaw/.openclaw",
+    XDG_CONFIG_HOME: "/tmp/alphaclaw/.openclaw",
+    OPENCLAW_SERVICE_REPAIR_POLICY: "external",
+  }),
 };
 
 const flushMicrotasks = async () =>
@@ -18,6 +27,7 @@ const createHarness = ({
   autoRepair = true,
   notificationsDisabled = false,
   clawCmdImpl,
+  shellCmdImpl,
   resolveSetupUrl = () => "https://setup.example.com",
   resolveGatewayHealthUrl = () => "http://127.0.0.1:18789/health",
   fetchImpl = async () => ({
@@ -39,6 +49,7 @@ const createHarness = ({
         stdout: JSON.stringify({ ok: true }),
       })),
   );
+  const shellCmd = vi.fn(shellCmdImpl || (async () => "fixed"));
   const notifier = { notify: vi.fn(async () => ({ ok: true })) };
   const launchGatewayProcess = vi.fn(() => ({ pid: 4242 }));
   const readEnvFile = vi.fn(() => []);
@@ -53,6 +64,7 @@ const createHarness = ({
 
   const watchdog = createWatchdog({
     clawCmd,
+    shellCmd,
     launchGatewayProcess,
     insertWatchdogEvent,
     notifier,
@@ -71,6 +83,7 @@ const createHarness = ({
   return {
     watchdog,
     insertWatchdogEvent,
+    shellCmd,
     clawCmd,
     notifier,
     launchGatewayProcess,
@@ -131,7 +144,7 @@ describe("server/watchdog", () => {
 
   it("keeps slow-start gateways in startup grace for the default 60s window", async () => {
     vi.useFakeTimers();
-    const { watchdog, clawCmd } = createHarness({
+    const { watchdog, shellCmd } = createHarness({
       autoRepair: true,
       clawCmdImpl: async () => ({ ok: true, stdout: "" }),
       fetchImpl: async () => {
@@ -148,8 +161,8 @@ describe("server/watchdog", () => {
         health: "unknown",
       }),
     );
-    expect(clawCmd).not.toHaveBeenCalledWith(
-      "doctor --fix --yes",
+    expect(shellCmd).not.toHaveBeenCalledWith(
+      kGuardedDoctorRepairCommand,
       kExpectedRepairCommandArgs,
     );
     watchdog.stop();
@@ -158,7 +171,7 @@ describe("server/watchdog", () => {
   it("retries startup health checks before marking degraded", async () => {
     vi.useFakeTimers();
     let healthChecks = 0;
-    const { watchdog, clawCmd, insertWatchdogEvent } = createHarness({
+    const { watchdog, shellCmd, insertWatchdogEvent } = createHarness({
       autoRepair: false,
       clawCmdImpl: async (command) => {
         return { ok: true, stdout: "" };
@@ -182,8 +195,8 @@ describe("server/watchdog", () => {
 
     await vi.advanceTimersByTimeAsync(5_000);
 
-    expect(clawCmd).not.toHaveBeenCalledWith(
-      "doctor --fix --yes",
+    expect(shellCmd).not.toHaveBeenCalledWith(
+      kGuardedDoctorRepairCommand,
       kExpectedRepairCommandArgs,
     );
     expect(watchdog.getStatus()).toEqual(
@@ -246,12 +259,8 @@ describe("server/watchdog", () => {
   });
 
   it("triggers auto-repair in crash-loop mode when enabled", async () => {
-    const { watchdog, clawCmd } = createHarness({
+    const { watchdog, shellCmd } = createHarness({
       autoRepair: true,
-      clawCmdImpl: async (command) => {
-        if (command === "doctor --fix --yes") return { ok: true, stdout: "fixed" };
-        return { ok: true, stdout: "" };
-      },
       fetchImpl: async () => {
         throw new Error("still unhealthy");
       },
@@ -263,8 +272,8 @@ describe("server/watchdog", () => {
     await flushMicrotasks();
     await flushMicrotasks();
 
-    expect(clawCmd).toHaveBeenCalledWith(
-      "doctor --fix --yes",
+    expect(shellCmd).toHaveBeenCalledWith(
+      kGuardedDoctorRepairCommand,
       kExpectedRepairCommandArgs,
     );
   });
@@ -286,13 +295,12 @@ describe("server/watchdog", () => {
         ],
       };
     });
-    const { watchdog, clawCmd, launchGatewayProcess, insertWatchdogEvent } = createHarness({
+    const { watchdog, shellCmd, launchGatewayProcess, insertWatchdogEvent } = createHarness({
       autoRepair: true,
       reconcileOpenclawPlugins,
-      clawCmdImpl: async (command) => {
+      shellCmdImpl: async (command) => {
         calls.push(command);
-        if (command === "doctor --fix --yes") return { ok: true, stdout: "fixed" };
-        return { ok: true, stdout: "" };
+        return "fixed";
       },
       fetchImpl: async () => {
         throw new Error("still unhealthy");
@@ -307,7 +315,7 @@ describe("server/watchdog", () => {
     await flushMicrotasks();
     await flushMicrotasks();
 
-    expect(calls).toEqual(["doctor --fix --yes", "reconcile"]);
+    expect(calls).toEqual([kGuardedDoctorRepairCommand, "reconcile"]);
     expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
       rootDir: "/tmp/alphaclaw",
       openclawDir: "/tmp/alphaclaw/.openclaw",
@@ -324,8 +332,8 @@ describe("server/watchdog", () => {
         details: expect.objectContaining({ phase: "after_doctor" }),
       }),
     );
-    expect(clawCmd).toHaveBeenCalledWith(
-      "doctor --fix --yes",
+    expect(shellCmd).toHaveBeenCalledWith(
+      kGuardedDoctorRepairCommand,
       kExpectedRepairCommandArgs,
     );
   });
@@ -334,10 +342,9 @@ describe("server/watchdog", () => {
     const reconcileOpenclawPlugins = vi.fn(async () => {
       throw new Error("pin reconcile failed");
     });
-    const { watchdog, clawCmd, insertWatchdogEvent, launchGatewayProcess } = createHarness({
+    const { watchdog, shellCmd, insertWatchdogEvent, launchGatewayProcess } = createHarness({
       autoRepair: true,
       reconcileOpenclawPlugins,
-      clawCmdImpl: async () => ({ ok: true, stdout: "" }),
       fetchImpl: async () => {
         throw new Error("still unhealthy");
       },
@@ -352,8 +359,8 @@ describe("server/watchdog", () => {
     await flushMicrotasks();
 
     expect(reconcileOpenclawPlugins).toHaveBeenCalledTimes(1);
-    expect(clawCmd).toHaveBeenCalledWith(
-      "doctor --fix --yes",
+    expect(shellCmd).toHaveBeenCalledWith(
+      kGuardedDoctorRepairCommand,
       kExpectedRepairCommandArgs,
     );
     expect(launchGatewayProcess).not.toHaveBeenCalled();
@@ -480,11 +487,8 @@ describe("server/watchdog", () => {
   });
 
   it("suppresses failed health checks during expected restart window", async () => {
-    const { watchdog, clawCmd, insertWatchdogEvent } = createHarness({
+    const { watchdog, shellCmd, insertWatchdogEvent } = createHarness({
       autoRepair: true,
-      clawCmdImpl: async () => {
-        return { ok: true, stdout: "" };
-      },
       fetchImpl: async () => {
         throw new Error("gateway restarting");
       },
@@ -493,8 +497,8 @@ describe("server/watchdog", () => {
     watchdog.onExpectedRestart();
     await flushMicrotasks();
 
-    expect(clawCmd).not.toHaveBeenCalledWith(
-      "doctor --fix --yes",
+    expect(shellCmd).not.toHaveBeenCalledWith(
+      kGuardedDoctorRepairCommand,
       kExpectedRepairCommandArgs,
     );
     expect(insertWatchdogEvent).toHaveBeenCalledWith(
@@ -619,10 +623,6 @@ describe("server/watchdog", () => {
     let healthChecks = 0;
     const { watchdog, notifier } = createHarness({
       autoRepair: true,
-      clawCmdImpl: async (command) => {
-        if (command === "doctor --fix --yes") return { ok: true, stdout: "fixed" };
-        return { ok: true, stdout: "" };
-      },
       fetchImpl: async () => {
         healthChecks += 1;
         if (healthChecks === 1) {
@@ -662,14 +662,8 @@ describe("server/watchdog", () => {
   it("does not repeat auto-repair or notifications while recovery is still pending", async () => {
     vi.useFakeTimers();
     let healthChecks = 0;
-    const { watchdog, clawCmd, notifier } = createHarness({
+    const { watchdog, shellCmd, notifier } = createHarness({
       autoRepair: true,
-      clawCmdImpl: async (command) => {
-        if (command === "doctor --fix --yes") {
-          return { ok: true, stdout: "fixed" };
-        }
-        return { ok: true, stdout: "" };
-      },
       fetchImpl: async () => {
         healthChecks += 1;
         throw new Error("still unhealthy");
@@ -679,9 +673,9 @@ describe("server/watchdog", () => {
     watchdog.onGatewayLaunch({ startedAt: Date.now() - 60_000 });
     await vi.advanceTimersByTimeAsync(10_000);
 
-    expect(clawCmd).toHaveBeenCalledTimes(1);
-    expect(clawCmd).toHaveBeenCalledWith(
-      "doctor --fix --yes",
+    expect(shellCmd).toHaveBeenCalledTimes(1);
+    expect(shellCmd).toHaveBeenCalledWith(
+      kGuardedDoctorRepairCommand,
       kExpectedRepairCommandArgs,
     );
     expect(
@@ -693,7 +687,7 @@ describe("server/watchdog", () => {
     await vi.advanceTimersByTimeAsync(120_000);
 
     expect(healthChecks).toBeGreaterThan(3);
-    expect(clawCmd).toHaveBeenCalledTimes(1);
+    expect(shellCmd).toHaveBeenCalledTimes(1);
     expect(
       notifier.notify.mock.calls.filter((call) =>
         String(call?.[0] || "").includes("awaiting health check"),
