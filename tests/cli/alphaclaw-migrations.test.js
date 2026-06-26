@@ -141,7 +141,7 @@ describe("AlphaClaw migrations", () => {
     const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(true);
-    expect(result.summary.ok).toBe(1);
+    expect(result.summary.ok).toBe(2);
     expect(fs.existsSync(resolveMigrationLedgerPath({ rootDir }))).toBe(false);
   });
 
@@ -152,12 +152,186 @@ describe("AlphaClaw migrations", () => {
     const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(false);
-    expect(result.summary.failed).toBe(1);
+    expect(result.summary.failed).toBe(2);
     expect(result.results[0]).toMatchObject({
       id: "2026-06-remove-active-memory-model-fallback-policy",
       status: "failed",
     });
     expect(result.results[0].error).toMatch(/JSON/);
+  });
+
+  it("reports OpenAI Codex runtime auth order migration without mutating in dry-run mode", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      agents: {
+        defaults: {
+          model: { primary: "openai/gpt-5.5" },
+          models: {
+            "openai/gpt-5.5": {
+              agentRuntime: { id: "codex" },
+            },
+          },
+        },
+      },
+      auth: {
+        profiles: {
+          "openai:bill@example.com": {
+            provider: "openai",
+            mode: "oauth",
+            email: "bill@example.com",
+          },
+          "openai:codex-cli": {
+            provider: "openai",
+            mode: "oauth",
+          },
+        },
+      },
+    });
+
+    const result = runAlphaClawMigrations({ rootDir, openclawDir });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.pending).toBe(1);
+    expect(result.results[1]).toMatchObject({
+      id: "2026-06-prefer-codex-cli-openai-auth-profile",
+      status: "pending",
+      scope: "config",
+      target: "openclaw.json",
+    });
+    expect(readOpenclawConfig(openclawDir).auth.order).toBeUndefined();
+  });
+
+  it("prefers openai:codex-cli for OpenAI Codex runtime models while preserving other profiles", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      models: {
+        providers: {
+          openai: {
+            agentRuntime: { id: "codex" },
+          },
+        },
+      },
+      auth: {
+        profiles: {
+          "openai:bill@example.com": {
+            provider: "openai",
+            mode: "oauth",
+            email: "bill@example.com",
+          },
+          "openai:codex-cli": {
+            provider: "openai",
+            mode: "oauth",
+          },
+          "anthropic:default": {
+            provider: "anthropic",
+            mode: "token",
+          },
+        },
+        order: {
+          openai: ["openai:bill@example.com"],
+          anthropic: ["anthropic:default"],
+        },
+      },
+    });
+
+    const result = runAlphaClawMigrations({
+      rootDir,
+      openclawDir,
+      fix: true,
+      now: new Date("2026-06-26T15:00:00.000Z"),
+    });
+    const nextConfig = readOpenclawConfig(openclawDir);
+    const ledger = readMigrationLedger({ rootDir });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.fixed).toBe(1);
+    expect(nextConfig.auth.order.openai).toEqual([
+      "openai:codex-cli",
+      "openai:bill@example.com",
+    ]);
+    expect(nextConfig.auth.order.anthropic).toEqual(["anthropic:default"]);
+    expect(nextConfig.auth.profiles["openai:bill@example.com"]).toBeDefined();
+    expect(ledger).toContainEqual(
+      expect.objectContaining({
+        timestamp: "2026-06-26T15:00:00.000Z",
+        id: "2026-06-prefer-codex-cli-openai-auth-profile",
+        status: "completed",
+        scope: "config",
+        target: "openclaw.json",
+        changed: true,
+      }),
+    );
+  });
+
+  it("does not change OpenAI API-key or non-Codex-runtime setups", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      agents: {
+        defaults: {
+          model: { primary: "openai/gpt-5.5" },
+          models: {
+            "openai/gpt-5.5": {},
+          },
+        },
+      },
+      auth: {
+        profiles: {
+          "openai:default": {
+            provider: "openai",
+            mode: "token",
+          },
+          "openai:codex-cli": {
+            provider: "openai",
+            mode: "oauth",
+          },
+        },
+      },
+    });
+
+    const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.fixed || 0).toBe(0);
+    expect(readOpenclawConfig(openclawDir).auth.order).toBeUndefined();
+  });
+
+  it("is idempotent when openai:codex-cli is already first", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      models: {
+        providers: {
+          openai: {
+            agentRuntime: { id: "codex" },
+          },
+        },
+      },
+      auth: {
+        profiles: {
+          "openai:codex-cli": {
+            provider: "openai",
+            mode: "oauth",
+          },
+          "openai:bill@example.com": {
+            provider: "openai",
+            mode: "oauth",
+            email: "bill@example.com",
+          },
+        },
+        order: {
+          openai: ["openai:codex-cli", "openai:bill@example.com"],
+        },
+      },
+    });
+
+    const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.fixed || 0).toBe(0);
+    expect(readOpenclawConfig(openclawDir).auth.order.openai).toEqual([
+      "openai:codex-cli",
+      "openai:bill@example.com",
+    ]);
+    expect(fs.existsSync(resolveMigrationLedgerPath({ rootDir }))).toBe(false);
   });
 
   it("blocks a migration after repeated failures until force retry is requested", () => {

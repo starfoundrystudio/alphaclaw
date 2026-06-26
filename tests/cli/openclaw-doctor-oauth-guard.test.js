@@ -31,6 +31,57 @@ const writeAuthStore = (agentDir, store) => {
 const readAuthStore = (agentDir) =>
   JSON.parse(fs.readFileSync(path.join(agentDir, "auth-profiles.json"), "utf8"));
 
+const loadSqlite = () => {
+  try {
+    return require("node:sqlite");
+  } catch {
+    return null;
+  }
+};
+
+const writeSqliteAuthStore = (agentDir, store) => {
+  const sqlite = loadSqlite();
+  if (!sqlite) return false;
+  const db = new sqlite.DatabaseSync(path.join(agentDir, "openclaw-agent.sqlite"));
+  try {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS auth_profile_store (
+        store_key TEXT NOT NULL PRIMARY KEY,
+        store_json TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+    `);
+    db.prepare(
+      `
+      INSERT INTO auth_profile_store (store_key, store_json, updated_at)
+      VALUES ('primary', ?, ?)
+      ON CONFLICT(store_key) DO UPDATE SET
+        store_json = excluded.store_json,
+        updated_at = excluded.updated_at
+    `,
+    ).run(JSON.stringify(store), Date.now());
+    return true;
+  } finally {
+    db.close();
+  }
+};
+
+const readSqliteAuthStore = (agentDir) => {
+  const sqlite = loadSqlite();
+  if (!sqlite) return null;
+  const db = new sqlite.DatabaseSync(path.join(agentDir, "openclaw-agent.sqlite"), {
+    readOnly: true,
+  });
+  try {
+    const row = db
+      .prepare("SELECT store_json FROM auth_profile_store WHERE store_key = 'primary'")
+      .get();
+    return row?.store_json ? JSON.parse(row.store_json) : null;
+  } finally {
+    db.close();
+  }
+};
+
 const makeOauthStore = () => ({
   version: 1,
   profiles: {
@@ -141,6 +192,56 @@ describe("OpenClaw doctor OAuth guard", () => {
       expires: kOldExpires,
       email: "bill@example.com",
       displayName: "Canonical profile",
+    });
+  });
+
+  it("restores SQLite OAuth material from SQLite when stale legacy JSON also exists", () => {
+    const { openclawDir, agentDir } = createRoot();
+    const hasSqlite = writeSqliteAuthStore(agentDir, {
+      version: 1,
+      profiles: {
+        "openai:codex-cli": {
+          type: "oauth",
+          provider: "openai",
+          access: "fresh-sqlite-access",
+          refresh: "fresh-sqlite-refresh",
+          expires: Date.parse("2026-06-25T15:00:00.000Z"),
+          email: "bill@example.com",
+        },
+      },
+    });
+    if (!hasSqlite) return;
+    writeAuthStore(agentDir, {
+      version: 1,
+      profiles: {
+        "openai-codex:codex-cli": {
+          type: "oauth",
+          provider: "openai-codex",
+          access: "stale-json-access",
+          refresh: "stale-json-refresh",
+          expires: Date.parse("2026-06-24T15:00:00.000Z"),
+          email: "bill@example.com",
+        },
+      },
+    });
+
+    const shield = collectAuthStoreSnapshots({
+      openclawDir,
+      now: Date.parse("2026-06-26T00:00:00.000Z"),
+    });
+    restoreAuthStoreSnapshots({ snapshots: shield.snapshots });
+
+    const sqliteStore = readSqliteAuthStore(agentDir);
+    const jsonStore = readAuthStore(agentDir);
+    expect(sqliteStore.profiles["openai:codex-cli"]).toMatchObject({
+      access: "fresh-sqlite-access",
+      refresh: "fresh-sqlite-refresh",
+      expires: Date.parse("2026-06-25T15:00:00.000Z"),
+    });
+    expect(jsonStore.profiles["openai-codex:codex-cli"]).toMatchObject({
+      access: "stale-json-access",
+      refresh: "stale-json-refresh",
+      expires: Date.parse("2026-06-24T15:00:00.000Z"),
     });
   });
 
