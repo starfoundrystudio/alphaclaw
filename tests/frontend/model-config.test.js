@@ -239,6 +239,22 @@ describe("frontend/model-config", () => {
     ).toEqual(["openai", "claude-cli"]);
     expect(
       modelConfig
+        .getAccountLoginProviderOptions(catalog)
+        .find((option) => option.id === "openai"),
+    ).toMatchObject({
+      label: "ChatGPT",
+      description: "Use your ChatGPT subscription through Codex OAuth.",
+    });
+    expect(
+      modelConfig
+        .getAccountLoginProviderOptions(catalog)
+        .find((option) => option.id === "claude-cli"),
+    ).toMatchObject({
+      label: "Claude",
+      description: "Use your Claude subscription through the Claude CLI.",
+    });
+    expect(
+      modelConfig
         .getOnboardingModelsForAccountLoginProvider({
           models: catalog,
           provider: "claude-cli",
