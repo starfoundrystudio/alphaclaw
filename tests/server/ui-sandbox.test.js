@@ -87,6 +87,32 @@ describe("server/ui-sandbox", () => {
     }
   });
 
+  it("serves mixed model auth routes for dashboard model testing", async () => {
+    const sandbox = createSandbox({ mode: "dashboard", scenario: "healthy" });
+    try {
+      const res = await request(sandbox.app).get("/api/models/config");
+
+      expect(res.status).toBe(200);
+      expect(res.body.modelRuntimeIds).toEqual({
+        "anthropic/claude-sonnet-4-6": "claude-cli",
+      });
+      expect(res.body.authProfiles).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: "anthropic-default",
+            provider: "anthropic",
+          }),
+          expect.objectContaining({
+            id: "anthropic:claude-cli",
+            provider: "claude-cli",
+          }),
+        ]),
+      );
+    } finally {
+      sandbox.cleanup();
+    }
+  });
+
   it("uses the generated workspace for real browse APIs", async () => {
     const sandbox = createSandbox({ mode: "dashboard", scenario: "healthy" });
     try {

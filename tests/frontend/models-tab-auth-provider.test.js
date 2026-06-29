@@ -49,6 +49,24 @@ describe("frontend/models-tab auth provider mapping", () => {
     ).toBe("api_key");
   });
 
+  it("builds separate auth routes for mixed Anthropic runtimes", async () => {
+    const modelsTab = await loadModelsTab();
+
+    expect(
+      modelsTab
+        .buildRequiredAuthRoutes({
+          configuredModels: {
+            "anthropic/claude-sonnet-4-6": {},
+            "anthropic/claude-opus-4-8": {},
+          },
+          modelRuntimeIds: {
+            "anthropic/claude-sonnet-4-6": "claude-cli",
+          },
+        })
+        .map((route) => route.id),
+    ).toEqual(["anthropic:claude-cli", "anthropic:api_key"]);
+  });
+
   it("treats connected Codex OAuth as OpenAI auth only for Codex runtime", async () => {
     const modelPicker = await loadModelPicker();
 
