@@ -22,6 +22,7 @@
   --panel-border-contrast: rgba(255, 255, 255, 0.11);
   --field-bg-contrast: rgba(0, 0, 0, 0.3);
   --field-border-contrast: rgba(255, 255, 255, 0.13);
+  --field-menu-bg: #0b1018;
 
   /* ── Semantic theme tokens ────────────────────── */
   --text-bright: #f3f4f6;
@@ -78,6 +79,7 @@
   --panel-border-contrast: rgba(0, 0, 0, 0.1);
   --field-bg-contrast: rgba(0, 0, 0, 0.04);
   --field-border-contrast: rgba(0, 0, 0, 0.15);
+  --field-menu-bg: #ffffff;
   --overlay: rgba(0, 0, 0, 0.5);
 
   --status-error: #dc2626;
@@ -255,6 +257,21 @@ select,
 textarea {
   background: var(--field-bg-contrast);
   border-color: var(--field-border-contrast);
+}
+
+select {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background-color: var(--field-menu-bg);
+  color: var(--text);
+}
+
+select option:checked {
+  background-color: var(--status-info-bg);
+  color: var(--text-bright);
 }
 
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
@@ -830,6 +847,10 @@ textarea:focus {
 [data-theme="light"] select:focus,
 [data-theme="light"] textarea:focus {
   border-color: rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] select {
+  color-scheme: light;
 }
 
 [data-theme="light"] ::-webkit-scrollbar-thumb {
