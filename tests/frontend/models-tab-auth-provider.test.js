@@ -32,6 +32,23 @@ describe("frontend/models-tab auth provider mapping", () => {
     ).toBe("api_key");
   });
 
+  it("derives Anthropic auth mode from configured Claude CLI runtime", async () => {
+    const modelsTab = await loadModelsTab();
+
+    expect(
+      modelsTab.getAnthropicAuthMode({
+        configuredModels: { "anthropic/claude-opus-4-8": {} },
+        modelRuntimeIds: { "anthropic/claude-opus-4-8": "claude-cli" },
+      }),
+    ).toBe("claude-cli");
+    expect(
+      modelsTab.getAnthropicAuthMode({
+        configuredModels: { "anthropic/claude-opus-4-8": {} },
+        providerRuntimeIds: {},
+      }),
+    ).toBe("api_key");
+  });
+
   it("treats connected Codex OAuth as OpenAI auth only for Codex runtime", async () => {
     const modelPicker = await loadModelPicker();
 
@@ -50,6 +67,41 @@ describe("frontend/models-tab auth provider mapping", () => {
         codexStatus: { connected: true },
         openAiAuthMode: "api_key",
       }).openai,
+    ).toBeUndefined();
+  });
+
+  it("treats connected Claude CLI as Anthropic auth only for Claude CLI runtime", async () => {
+    const modelPicker = await loadModelPicker();
+
+    expect(
+      modelPicker.buildProviderHasAuth({
+        authProfiles: [
+          { id: "anthropic:claude-cli", provider: "claude-cli", type: "oauth" },
+        ],
+        anthropicAuthMode: "claude-cli",
+        claudeCliStatus: {
+          ok: true,
+          installed: true,
+          loggedIn: true,
+          configured: true,
+        },
+      }),
+    ).toMatchObject({
+      anthropic: true,
+    });
+    expect(
+      modelPicker.buildProviderHasAuth({
+        authProfiles: [
+          { id: "anthropic:claude-cli", provider: "claude-cli", type: "oauth" },
+        ],
+        anthropicAuthMode: "api_key",
+        claudeCliStatus: {
+          ok: true,
+          installed: true,
+          loggedIn: true,
+          configured: true,
+        },
+      }).anthropic,
     ).toBeUndefined();
   });
 });
