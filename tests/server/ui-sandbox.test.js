@@ -108,4 +108,46 @@ describe("server/ui-sandbox", () => {
       sandbox.cleanup();
     }
   });
+
+  it("can point Claude CLI account-login routes at a real shell command", async () => {
+    const claudeHome = fs.mkdtempSync(path.join(os.tmpdir(), "alphaclaw-claude-home-test-"));
+    const seenHomes = [];
+    const shellCmd = vi.fn(async (cmd, opts = {}) => {
+      seenHomes.push(opts.env?.HOME || "");
+      if (cmd === "command -v claude") return "/opt/homebrew/bin/claude\n";
+      if (cmd === "claude --version") return "2.1.170 (Claude Code local)\n";
+      if (cmd === "claude auth status --text") {
+        return "Login method: Claude Max account\nEmail: local@example.com\n";
+      }
+      return "";
+    });
+    const sandbox = createSandbox({
+      mode: "setup",
+      scenario: "setup",
+      realClaudeCli: true,
+      realClaudeCliHome: claudeHome,
+      realClaudeCliShellCmd: shellCmd,
+    });
+    try {
+      const res = await request(sandbox.app).get("/api/account-logins/claude-cli/status");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        ok: true,
+        installed: true,
+        binary: "/opt/homebrew/bin/claude",
+        version: "2.1.170 (Claude Code local)",
+        loggedIn: true,
+        email: "local@example.com",
+      });
+      expect(shellCmd).toHaveBeenCalledWith(
+        "claude auth status --text",
+        expect.objectContaining({ timeout: 15000 }),
+      );
+      expect(seenHomes).toContain(claudeHome);
+    } finally {
+      sandbox.cleanup();
+      fs.rmSync(claudeHome, { recursive: true, force: true });
+    }
+  });
 });

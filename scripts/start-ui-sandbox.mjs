@@ -28,6 +28,15 @@ const persist =
   ["1", "true", "yes", "on"].includes(
     String(process.env.ALPHACLAW_UI_SANDBOX_PERSIST || "").toLowerCase(),
   );
+const realClaudeCli =
+  hasFlag("--real-claude-cli") ||
+  ["1", "true", "yes", "on"].includes(
+    String(process.env.ALPHACLAW_UI_SANDBOX_REAL_CLAUDE_CLI || "").toLowerCase(),
+  );
+const realClaudeCliHome =
+  flagValue("--real-claude-cli-home") ||
+  process.env.ALPHACLAW_UI_SANDBOX_REAL_CLAUDE_CLI_HOME ||
+  "";
 const workspaceRoot =
   flagValue("--workspace-root") || process.env.ALPHACLAW_UI_SANDBOX_ROOT || "";
 
@@ -37,4 +46,6 @@ startUiSandboxServer({
   port,
   persist,
   workspaceRoot,
+  realClaudeCli,
+  realClaudeCliHome,
 });
