@@ -2,35 +2,18 @@ const loadWelcomeStorage = async () =>
   import("../../lib/public/js/components/onboarding/use-welcome-storage.js");
 
 describe("frontend/welcome-storage", () => {
-  it("drops stale implicit Pi runtime defaults from persisted setup state", async () => {
+  it("drops stale OpenAI Codex route choices from persisted setup state", async () => {
     const welcomeStorage = await loadWelcomeStorage();
-    const welcomeConfig = await import(
-      "../../lib/public/js/components/onboarding/welcome-config.js"
-    );
 
     const normalized = welcomeStorage.normalizeWelcomeStorageState({
-      MODEL_KEY: "openai-codex/gpt-5.5",
-      [welcomeConfig.kOpenAiCodexRouteKey]: welcomeConfig.kOpenAiCodexRoutePi,
+      MODEL_KEY: "openai/gpt-5.5",
+      _OPENAI_CODEX_ROUTE: "pi",
+      _OPENAI_CODEX_ROUTE_TOUCHED: true,
     });
 
-    expect(normalized[welcomeConfig.kOpenAiCodexRouteKey]).toBeUndefined();
-  });
-
-  it("preserves Pi runtime when the user explicitly selected it", async () => {
-    const welcomeStorage = await loadWelcomeStorage();
-    const welcomeConfig = await import(
-      "../../lib/public/js/components/onboarding/welcome-config.js"
-    );
-
-    const normalized = welcomeStorage.normalizeWelcomeStorageState({
-      MODEL_KEY: "openai-codex/gpt-5.5",
-      [welcomeConfig.kOpenAiCodexRouteKey]: welcomeConfig.kOpenAiCodexRoutePi,
-      [welcomeConfig.kOpenAiCodexRouteTouchedKey]: true,
-    });
-
-    expect(normalized[welcomeConfig.kOpenAiCodexRouteKey]).toBe(
-      welcomeConfig.kOpenAiCodexRoutePi,
-    );
+    expect(normalized.MODEL_KEY).toBe("openai/gpt-5.5");
+    expect(normalized._OPENAI_CODEX_ROUTE).toBeUndefined();
+    expect(normalized._OPENAI_CODEX_ROUTE_TOUCHED).toBeUndefined();
   });
 
   it("drops transient Tailscale tokens from persisted setup state", async () => {
@@ -47,5 +30,17 @@ describe("frontend/welcome-storage", () => {
     expect(normalized.TAILSCALE_API_TOKEN).toBeUndefined();
     expect(normalized._TAILSCALE_API_TOKEN).toBeUndefined();
     expect(normalized.tailscaleApiToken).toBeUndefined();
+  });
+
+  it("drops invalid model access modes from persisted setup state", async () => {
+    const welcomeStorage = await loadWelcomeStorage();
+
+    const normalized = welcomeStorage.normalizeWelcomeStorageState({
+      MODEL_KEY: "openai/gpt-5.5",
+      _MODEL_ACCESS_MODE: "legacy-mode",
+    });
+
+    expect(normalized.MODEL_KEY).toBe("openai/gpt-5.5");
+    expect(normalized._MODEL_ACCESS_MODE).toBeUndefined();
   });
 });

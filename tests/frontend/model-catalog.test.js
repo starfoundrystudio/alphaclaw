@@ -19,7 +19,7 @@ describe("frontend/model-catalog", () => {
 
     expect(
       getInitialOnboardingModelKey({
-        catalog: [{ key: "openai-codex/gpt-5.4", label: "GPT-5.4" }],
+        catalog: [{ key: "openai/gpt-5.4", label: "GPT-5.4" }],
         currentModelKey: "anthropic/claude-opus-4-6",
       }),
     ).toBe("anthropic/claude-opus-4-6");
@@ -33,7 +33,7 @@ describe("frontend/model-catalog", () => {
     expect(
       getInitialOnboardingModelKey({
         catalog: [
-          { key: "openai-codex/gpt-5.4", label: "GPT-5.4" },
+          { key: "openai/gpt-5.4", label: "GPT-5.4" },
           { key: "anthropic/claude-opus-4-7", label: "Opus 4.7" },
           { key: "anthropic/claude-opus-4-8", label: "Opus 4.8" },
         ],
@@ -49,12 +49,12 @@ describe("frontend/model-catalog", () => {
     expect(
       getInitialOnboardingModelKey({
         catalog: [
-          { key: "openai-codex/gpt-5.4", label: "GPT-5.4" },
-          { key: "anthropic/claude-opus-4-7", label: "Opus 4.7" },
-          { key: "anthropic/claude-opus-4-6", label: "Opus 4.6" },
+          { key: "openai/gpt-5.4", label: "GPT-5.4" },
+          { key: "openai/gpt-5.5", label: "GPT-5.5" },
+          { key: "anthropic/claude-sonnet-4-6", label: "Sonnet 4.6" },
         ],
       }),
-    ).toBe("anthropic/claude-opus-4-7");
+    ).toBe("anthropic/claude-sonnet-4-6");
   });
 
   it("reports whether the catalog is still refreshing", async () => {

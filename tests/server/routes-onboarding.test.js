@@ -7,7 +7,11 @@ const request = require("supertest");
 const { registerOnboardingRoutes } = require("../../lib/server/routes/onboarding");
 const { kSetupDir } = require("../../lib/server/constants");
 
-const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
+const createBaseDeps = ({
+  onboarded = false,
+  hasCodexOauth = false,
+  hasClaudeCli = false,
+} = {}) => {
   const kOnboardingMarkerPath = "/tmp/alphaclaw/onboarded.json";
   return {
     fs: {
@@ -58,6 +62,7 @@ const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
     resolveGithubRepoUrl: vi.fn((value) => value),
     resolveModelProvider: vi.fn((modelKey) => String(modelKey).split("/")[0]),
     hasCodexOauthProfile: vi.fn(() => hasCodexOauth),
+    hasClaudeCliProfile: vi.fn(() => hasClaudeCli),
     authProfiles: {
       getEnvVarForApiKeyProvider: vi.fn((provider) => {
         const envKeys = {
@@ -70,6 +75,8 @@ const createBaseDeps = ({ onboarded = false, hasCodexOauth = false } = {}) => {
         return envKeys[provider] || "";
       }),
       upsertApiKeyProfileForEnvVar: vi.fn(),
+      hasClaudeCliProfile: vi.fn(() => hasClaudeCli),
+      upsertClaudeCliProfile: vi.fn(),
       syncConfigAuthReferencesForAgent: vi.fn(),
     },
     ensureGatewayProxyConfig: vi.fn(),
@@ -542,6 +549,12 @@ describe("server/routes/onboarding", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(kExpectedOnboardSuccess);
+    expect(deps.shellCmd).toHaveBeenCalledWith(
+      'openclaw models set "openai/gpt-5.5"',
+      expect.objectContaining({
+        env: expect.objectContaining({ OPENCLAW_GATEWAY_TOKEN: "tok" }),
+      }),
+    );
     expect(
       deps.shellCmd.mock.calls.some(([cmd]) =>
         cmd.includes('"--auth-choice" "skip"'),
@@ -600,8 +613,8 @@ describe("server/routes/onboarding", () => {
     ).toBe(true);
   });
 
-  it("uses the openai-codex Pi route for OpenAI models with Codex OAuth when runtime is not requested", async () => {
-    const deps = createBaseDeps({ hasCodexOauth: true });
+  it("configures and reconciles the Claude CLI runtime for Claude CLI models", async () => {
+    const deps = createBaseDeps({ hasClaudeCli: true });
     deps.fs.readFileSync.mockImplementation((p) => {
       if (p === "/tmp/openclaw/openclaw.json") return "{}";
       if (p === path.join(kSetupDir, "hourly-git-sync.sh")) return "echo Auto-commit hourly sync";
@@ -611,25 +624,49 @@ describe("server/routes/onboarding", () => {
 
     const res = await request(app).post("/api/onboard").send({
       tailscaleApiToken: "tskey-api-test_123456789",
-      modelKey: "openai/gpt-5.5",
+      modelKey: "claude-cli/claude-opus-4-8",
+      agentRuntimeId: "claude-cli",
       vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
     });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(kExpectedOnboardSuccess);
     expect(deps.shellCmd).toHaveBeenCalledWith(
-      'openclaw models set "openai-codex/gpt-5.5"',
+      'openclaw models set "anthropic/claude-opus-4-8"',
       expect.objectContaining({
         env: expect.objectContaining({ OPENCLAW_GATEWAY_TOKEN: "tok" }),
       }),
     );
+    expect(
+      deps.shellCmd.mock.calls.some(([cmd]) =>
+        cmd.includes('"--auth-choice" "skip"'),
+      ),
+    ).toBe(true);
     const openclawWriteCall = deps.fs.writeFileSync.mock.calls.find(
       ([targetPath]) => targetPath === "/tmp/openclaw/openclaw.json",
     );
     const writtenConfig = JSON.parse(openclawWriteCall[1]);
-    expect(writtenConfig.agents.defaults.agentRuntime).toBeUndefined();
-    expect(writtenConfig.models?.providers?.openai?.agentRuntime).toBeUndefined();
-    expect(writtenConfig.plugins.entries.codex).toBeUndefined();
+    expect(
+      writtenConfig.agents.defaults.models["anthropic/claude-opus-4-8"].agentRuntime,
+    ).toEqual({ id: "claude-cli" });
+  });
+
+  it("rejects canonical OpenAI models with Codex OAuth when runtime is not requested", async () => {
+    const deps = createBaseDeps({ hasCodexOauth: true });
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
+      modelKey: "openai/gpt-5.5",
+      vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({
+      ok: false,
+      error: 'Missing credentials for selected provider "openai"',
+    });
+    expect(deps.shellCmd).not.toHaveBeenCalled();
   });
 
   it("fails onboarding before gateway start when managed plugin reconciliation fails", async () => {

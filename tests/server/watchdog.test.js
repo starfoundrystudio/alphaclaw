@@ -588,6 +588,42 @@ describe("server/watchdog", () => {
     );
   });
 
+  it("ignores OpenClaw systemd duplicate-launch exits", () => {
+    const { watchdog, insertWatchdogEvent, launchGatewayProcess } = createHarness({
+      autoRepair: true,
+    });
+
+    watchdog.onGatewayExit({
+      code: 78,
+      signal: null,
+      expectedExit: false,
+      stderrTail: [
+        "Gateway failed to start: gateway already running under systemd; existing gateway is healthy, exiting with code 78 to prevent a systemd Restart=always loop | gateway already running (pid 35163); lock timeout after 5000ms",
+        "Port 18789 is already in use.",
+      ],
+    });
+
+    expect(watchdog.getStatus()).toEqual(
+      expect.objectContaining({
+        lifecycle: "running",
+        health: "unknown",
+        crashCountInWindow: 0,
+      }),
+    );
+    expect(launchGatewayProcess).not.toHaveBeenCalled();
+    expect(insertWatchdogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "restart",
+        source: "exit_event",
+        status: "ok",
+        details: expect.objectContaining({
+          duplicateLaunch: true,
+          code: 78,
+        }),
+      }),
+    );
+  });
+
   it("stops suppressing failures after the expected restart timeout", async () => {
     vi.useFakeTimers();
     const { watchdog, insertWatchdogEvent } = createHarness({
@@ -765,10 +801,10 @@ describe("server/watchdog", () => {
     watchdog.onGatewayLaunch({ startedAt, pid: 1234 });
 
     watchdog.onGatewayExit({
-      code: 1,
+      code: 78,
       signal: null,
       expectedExit: false,
-      stderrTail: ["another gateway instance is already listening"],
+      stderrTail: ["gateway already running under systemd"],
     });
 
     expect(watchdog.getStatus().uptimeStartedAt).not.toBeNull();

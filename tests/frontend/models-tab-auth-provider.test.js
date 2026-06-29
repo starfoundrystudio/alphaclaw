@@ -43,7 +43,6 @@ describe("frontend/models-tab auth provider mapping", () => {
       }),
     ).toMatchObject({
       openai: true,
-      "openai-codex": true,
     });
     expect(
       modelPicker.buildProviderHasAuth({

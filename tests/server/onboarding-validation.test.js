@@ -77,17 +77,15 @@ describe("onboarding/validation", () => {
     expect(res.data.agentRuntimeId).toBe("codex");
   });
 
-  it("routes OpenAI models through Codex OAuth on Pi when no API key is provided", () => {
+  it("does not route canonical OpenAI models through Codex OAuth without the Codex runtime", () => {
     const res = validateOnboardingInput({
       vars: kBaseVars({ includeChannel: false, includeGithub: false }),
       modelKey: "openai/gpt-5.5",
       resolveModelProvider: kResolveProvider,
       hasCodexOauthProfile: () => true,
     });
-    expect(res.ok).toBe(true);
-    expect(res.data.modelKey).toBe("openai-codex/gpt-5.5");
-    expect(res.data.selectedProvider).toBe("openai-codex");
-    expect(res.data.agentRuntimeId).toBe(null);
+    expect(res.ok).toBe(false);
+    expect(res.error).toBe('Missing credentials for selected provider "openai"');
   });
 
   it("rejects Codex runtime without Codex OAuth", () => {
@@ -112,6 +110,47 @@ describe("onboarding/validation", () => {
     });
     expect(res.ok).toBe(false);
     expect(res.error).toBe("Codex runtime requires an OpenAI model");
+  });
+
+  it("canonicalizes claude-cli models when Claude CLI runtime is selected", () => {
+    const res = validateOnboardingInput({
+      vars: kBaseVars({ includeChannel: false, includeGithub: false }),
+      modelKey: "claude-cli/claude-opus-4-8",
+      agentRuntimeId: "claude-cli",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+      hasClaudeCliProfile: () => true,
+    });
+    expect(res.ok).toBe(true);
+    expect(res.data.modelKey).toBe("anthropic/claude-opus-4-8");
+    expect(res.data.selectedProvider).toBe("anthropic");
+    expect(res.data.agentRuntimeId).toBe("claude-cli");
+  });
+
+  it("rejects Claude CLI runtime without a Claude CLI profile", () => {
+    const res = validateOnboardingInput({
+      vars: kBaseVars({ includeChannel: false, includeGithub: false }),
+      modelKey: "claude-cli/claude-opus-4-8",
+      agentRuntimeId: "claude-cli",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+      hasClaudeCliProfile: () => false,
+    });
+    expect(res.ok).toBe(false);
+    expect(res.error).toBe("Connect Claude CLI before continuing");
+  });
+
+  it("rejects Claude CLI runtime for non-Anthropic model providers", () => {
+    const res = validateOnboardingInput({
+      vars: kBaseVars({ includeChannel: false, includeGithub: false }),
+      modelKey: "openai/gpt-5.5",
+      agentRuntimeId: "claude-cli",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+      hasClaudeCliProfile: () => true,
+    });
+    expect(res.ok).toBe(false);
+    expect(res.error).toBe("Claude CLI runtime requires an Anthropic model");
   });
 
   it("accepts fresh onboarding without GitHub backup configured", () => {

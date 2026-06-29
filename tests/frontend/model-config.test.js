@@ -32,26 +32,26 @@ describe("frontend/model-config", () => {
       { key: "anthropic/claude-opus-4-8", label: "Opus 4.8" },
       { key: "anthropic/claude-opus-4-7", label: "Opus 4.7" },
       { key: "anthropic/claude-opus-4-6", label: "Opus 4.6" },
-      { key: "openai-codex/gpt-5.3-codex", label: "Codex 5.3" },
-      { key: "openai-codex/gpt-5.4", label: "GPT-5.4" },
-      { key: "openai-codex/gpt-5.5", label: "GPT-5.5" },
+      { key: "anthropic/claude-sonnet-4-6", label: "Sonnet 4.6" },
+      { key: "openai/gpt-5.3-codex", label: "Codex 5.3" },
+      { key: "openai/gpt-5.4", label: "GPT-5.4" },
+      { key: "openai/gpt-5.5", label: "GPT-5.5" },
     ]);
 
     expect(featured.map((entry) => entry.key)).toEqual([
       "anthropic/claude-opus-4-8",
-      "anthropic/claude-opus-4-7",
-      "anthropic/claude-opus-4-6",
-      "openai-codex/gpt-5.3-codex",
-      "openai-codex/gpt-5.5",
-      "google/gemini-3.1-pro-preview",
+      "anthropic/claude-sonnet-4-6",
+      "openai/gpt-5.5",
     ]);
     expect(featured[0]?.featuredLabel).toBe("Opus 4.8");
-    expect(featured[1]?.featuredLabel).toBe("Opus 4.7");
-    expect(featured[4]?.featuredLabel).toBe("GPT-5.5");
-    expect(featured[5]?.featuredLabel).toBe("Gemini 3.1 Pro");
+    expect(featured[1]?.featuredLabel).toBe("Sonnet 4.6");
+    expect(featured[2]?.featuredLabel).toBe("GPT-5.5");
+    expect(featured.some((entry) => entry.featuredLabel === "Gemini 3.1 Pro")).toBe(
+      false,
+    );
   });
 
-  it("surfaces featured provider variants for the same Claude family", async () => {
+  it("keeps recommended onboarding models to canonical provider entries", async () => {
     const modelConfig = await loadModelConfig();
     const featured = modelConfig.getFeaturedModels([
       {
@@ -70,8 +70,6 @@ describe("frontend/model-config", () => {
 
     expect(featured.map((entry) => entry.key)).toEqual([
       "anthropic/claude-sonnet-4-6",
-      "openrouter/anthropic/claude-sonnet-4-6",
-      "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
     ]);
   });
 
@@ -98,7 +96,147 @@ describe("frontend/model-config", () => {
     );
   });
 
-  it("maps canonical OpenAI model refs to the Codex OAuth PI route", async () => {
+  it("adds the provider label when different providers share the same label", async () => {
+    const modelConfig = await loadModelConfig();
+    const catalog = [
+      { key: "openai/gpt-5.5", label: "GPT-5.5" },
+      { key: "azure-openai-responses/gpt-5.5", label: "GPT-5.5" },
+    ];
+
+    expect(modelConfig.getOnboardingModelLabel(catalog[0], catalog)).toBe(
+      "GPT-5.5 (OpenAI)",
+    );
+    expect(modelConfig.getOnboardingModelLabel(catalog[1], catalog)).toBe(
+      "GPT-5.5 (Azure OpenAI)",
+    );
+  });
+
+  it("hides legacy OpenAI Codex model routes from onboarding choices", async () => {
+    const modelConfig = await loadModelConfig();
+
+    expect(
+      modelConfig.isVisibleOnboardingModel({ key: "openai-codex/gpt-5.5" }),
+    ).toBe(false);
+    expect(modelConfig.isVisibleOnboardingModel({ key: "openai/gpt-5.5" })).toBe(
+      true,
+    );
+  });
+
+  it("groups full onboarding model options by recommendation tier", async () => {
+    const modelConfig = await loadModelConfig();
+    const recommended = [
+      { key: "anthropic/claude-opus-4-8", label: "Claude Opus 4.8" },
+      { key: "openai/gpt-5.5", label: "GPT-5.5" },
+    ];
+    const groups = modelConfig.getOnboardingModelGroups({
+      allModels: [
+        ...recommended,
+        { key: "anthropic/claude-haiku-4-6", label: "Claude Haiku 4.6" },
+        { key: "google/gemini-3-flash-preview", label: "Gemini 3 Flash Preview" },
+        { key: "google/gemini-3.1-pro-preview", label: "Gemini 3.1 Pro" },
+      ],
+      recommendedModels: recommended,
+    });
+
+    expect(groups.map((group) => group.label)).toEqual([
+      "Recommended",
+      "Lower cost",
+      "Advanced",
+    ]);
+    expect(groups[0].models.map((model) => model.key)).toEqual([
+      "anthropic/claude-opus-4-8",
+      "openai/gpt-5.5",
+    ]);
+    expect(groups[1].models.map((model) => model.key)).toEqual([
+      "anthropic/claude-haiku-4-6",
+      "google/gemini-3-flash-preview",
+    ]);
+    expect(groups[2].models.map((model) => model.key)).toEqual([
+      "google/gemini-3.1-pro-preview",
+    ]);
+  });
+
+  it("filters onboarding models by access mode and supplements known gateway routes", async () => {
+    const modelConfig = await loadModelConfig();
+    const catalog = modelConfig.getOnboardingModelCatalog([
+      { key: "anthropic/claude-opus-4-8", label: "Opus 4.8" },
+      { key: "github-copilot/gpt-5.5", label: "GPT-5.5" },
+    ]);
+
+    expect(
+      modelConfig
+        .getOnboardingModelsForAccessMode({
+          models: catalog,
+          accessMode: "provider-api",
+        })
+        .map((model) => model.key),
+    ).toContain("anthropic/claude-opus-4-8");
+    const subscriptionKeys = modelConfig
+      .getOnboardingModelsForAccessMode({
+        models: catalog,
+        accessMode: "subscription",
+      })
+      .map((model) => model.key);
+    expect(subscriptionKeys).toContain("openai/gpt-5.5");
+    expect(subscriptionKeys).toContain("github-copilot/gpt-5.5");
+    expect(modelConfig.isSetupReadyAccountLoginProvider("openai")).toBe(true);
+    expect(modelConfig.isSetupReadyAccountLoginProvider("claude-cli")).toBe(true);
+    expect(modelConfig.isSetupReadyAccountLoginProvider("github-copilot")).toBe(
+      false,
+    );
+    expect(
+      modelConfig
+        .getOnboardingModelsForAccessMode({
+          models: catalog,
+          accessMode: "gateway",
+        })
+        .map((model) => model.key),
+    ).toEqual([
+      "openrouter/openai/gpt-5.5",
+      "vercel-ai-gateway/openai/gpt-5.5",
+      "kilocode/openai/gpt-5.5",
+    ]);
+  });
+
+  it("adds route context to gateway onboarding model descriptions", async () => {
+    const modelConfig = await loadModelConfig();
+
+    expect(
+      modelConfig.getOnboardingModelDescription({
+        key: "vercel-ai-gateway/openai/gpt-5.5",
+        label: "GPT-5.5",
+        accessLabel: "via Vercel AI Gateway",
+      }),
+    ).toBe("via Vercel AI Gateway");
+  });
+
+  it("builds account login provider choices and scopes models by account provider", async () => {
+    const modelConfig = await loadModelConfig();
+    const catalog = modelConfig.getOnboardingModelCatalog([
+      { key: "claude-cli/claude-opus-4-8", label: "Claude Opus 4.8" },
+      { key: "github-copilot/gpt-5.5", label: "GPT-5.5" },
+    ]);
+
+    expect(
+      modelConfig.getAccountLoginProviderOptions(catalog).map((option) => option.id),
+    ).toEqual(["openai", "claude-cli", "github-copilot"]);
+    expect(
+      modelConfig
+        .getOnboardingModelsForAccountLoginProvider({
+          models: catalog,
+          provider: "claude-cli",
+        })
+        .map((model) => model.key),
+    ).toEqual(["claude-cli/claude-opus-4-8"]);
+    expect(
+      modelConfig.getInitialModelKeyForAccountLoginProvider({
+        models: catalog,
+        provider: "openai",
+      }),
+    ).toBe("openai/gpt-5.5");
+  });
+
+  it("keeps legacy OpenAI Codex PI route mapping available for compatibility", async () => {
     const modelConfig = await loadModelConfig();
 
     expect(
@@ -122,5 +260,20 @@ describe("frontend/model-config", () => {
     expect(
       modelConfig.getOpenAiModelKeyForCodexRuntimeModel("openai/gpt-5.5"),
     ).toBe("openai/gpt-5.5");
+  });
+
+  it("maps Claude CLI model refs to canonical Anthropic refs for the Claude CLI runtime", async () => {
+    const modelConfig = await loadModelConfig();
+
+    expect(
+      modelConfig.getAnthropicModelKeyForClaudeCliRuntimeModel(
+        "claude-cli/claude-opus-4-8",
+      ),
+    ).toBe("anthropic/claude-opus-4-8");
+    expect(
+      modelConfig.getAnthropicModelKeyForClaudeCliRuntimeModel(
+        "anthropic/claude-sonnet-4-6",
+      ),
+    ).toBe("anthropic/claude-sonnet-4-6");
   });
 });

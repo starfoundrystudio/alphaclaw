@@ -1,7 +1,7 @@
 const { runOnboardedBootSequence } = require("../../lib/server/startup");
 
 describe("server/startup", () => {
-  it("syncs gateway proxy config with the resolved setup URL before startup", () => {
+  it("syncs gateway proxy config with the resolved setup URL before startup", async () => {
     const callOrder = [];
     const ensureManagedExecDefaults = vi.fn(() =>
       callOrder.push("ensureManagedExecDefaults"),
@@ -17,7 +17,7 @@ describe("server/startup", () => {
       return "https://setup.example.com";
     });
     const ensureGatewayProxyConfig = vi.fn(() => callOrder.push("ensureGatewayProxyConfig"));
-    const startGateway = vi.fn(() => callOrder.push("startGateway"));
+    const startGateway = vi.fn(async () => callOrder.push("startGateway"));
     const watchdog = {
       start: vi.fn(() => callOrder.push("watchdog.start")),
     };
@@ -25,7 +25,7 @@ describe("server/startup", () => {
       start: vi.fn(() => callOrder.push("gmailWatchService.start")),
     };
 
-    runOnboardedBootSequence({
+    await runOnboardedBootSequence({
       ensureManagedExecDefaults,
       ensureUsageTrackerPluginConfig,
       doSyncPromptFiles,
@@ -54,7 +54,66 @@ describe("server/startup", () => {
     ]);
   });
 
-  it("delegates invalid config repair to doctor before retrying config boot steps", () => {
+  it("waits for gateway startup before starting watchdog services", async () => {
+    const callOrder = [];
+    let resolveStartGateway;
+    const startGatewayReady = new Promise((resolve) => {
+      resolveStartGateway = resolve;
+    });
+    const ensureManagedExecDefaults = vi.fn(() =>
+      callOrder.push("ensureManagedExecDefaults"),
+    );
+    const ensureUsageTrackerPluginConfig = vi.fn(() =>
+      callOrder.push("ensureUsageTrackerPluginConfig"),
+    );
+    const doSyncPromptFiles = vi.fn(() => callOrder.push("doSyncPromptFiles"));
+    const reloadEnv = vi.fn(() => callOrder.push("reloadEnv"));
+    const resolveSetupUrl = vi.fn(() => {
+      callOrder.push("resolveSetupUrl");
+      return "https://setup.example.com";
+    });
+    const ensureGatewayProxyConfig = vi.fn(() => callOrder.push("ensureGatewayProxyConfig"));
+    const startGateway = vi.fn(async () => {
+      callOrder.push("startGateway:start");
+      await startGatewayReady;
+      callOrder.push("startGateway:done");
+    });
+    const watchdog = {
+      start: vi.fn(() => callOrder.push("watchdog.start")),
+    };
+    const gmailWatchService = {
+      start: vi.fn(() => callOrder.push("gmailWatchService.start")),
+    };
+
+    const bootPromise = runOnboardedBootSequence({
+      ensureManagedExecDefaults,
+      ensureUsageTrackerPluginConfig,
+      doSyncPromptFiles,
+      reloadEnv,
+      ensureGatewayProxyConfig,
+      resolveSetupUrl,
+      startGateway,
+      watchdog,
+      gmailWatchService,
+    });
+
+    await Promise.resolve();
+
+    expect(callOrder).toContain("startGateway:start");
+    expect(watchdog.start).not.toHaveBeenCalled();
+    expect(gmailWatchService.start).not.toHaveBeenCalled();
+
+    resolveStartGateway();
+    await bootPromise;
+
+    expect(callOrder.slice(-3)).toEqual([
+      "startGateway:done",
+      "watchdog.start",
+      "gmailWatchService.start",
+    ]);
+  });
+
+  it("delegates invalid config repair to doctor before retrying config boot steps", async () => {
     const callOrder = [];
     const configError = new Error("Could not read valid openclaw.json: bad json");
     configError.name = "OpenclawConfigReadError";
@@ -75,7 +134,7 @@ describe("server/startup", () => {
       callOrder.push("resolveSetupUrl");
       return "https://setup.example.com";
     });
-    const startGateway = vi.fn(() => callOrder.push("startGateway"));
+    const startGateway = vi.fn(async () => callOrder.push("startGateway"));
     const watchdog = {
       start: vi.fn(() => callOrder.push("watchdog.start")),
     };
@@ -87,7 +146,7 @@ describe("server/startup", () => {
       return { ok: true };
     });
 
-    runOnboardedBootSequence({
+    await runOnboardedBootSequence({
       ensureManagedExecDefaults,
       ensureUsageTrackerPluginConfig,
       doSyncPromptFiles,
