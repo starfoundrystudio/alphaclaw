@@ -156,6 +156,23 @@ describe("frontend/model-config", () => {
     ]);
   });
 
+  it("sorts onboarding model choices by higher numeric model versions first", async () => {
+    const modelConfig = await loadModelConfig();
+    const sorted = modelConfig.sortOnboardingModelsByVersionedName([
+      { key: "vercel-ai-gateway/openai/gpt-5.4", label: "GPT 5.4" },
+      { key: "vercel-ai-gateway/anthropic/claude-opus-4.6", label: "Claude Opus 4.6" },
+      { key: "vercel-ai-gateway/openai/gpt-5.5", label: "GPT-5.5" },
+      { key: "vercel-ai-gateway/anthropic/claude-opus-4.8", label: "Claude Opus 4.8" },
+    ]);
+
+    expect(sorted.map((model) => model.key)).toEqual([
+      "vercel-ai-gateway/anthropic/claude-opus-4.8",
+      "vercel-ai-gateway/anthropic/claude-opus-4.6",
+      "vercel-ai-gateway/openai/gpt-5.5",
+      "vercel-ai-gateway/openai/gpt-5.4",
+    ]);
+  });
+
   it("filters onboarding models by access mode and supplements known gateway routes", async () => {
     const modelConfig = await loadModelConfig();
     const catalog = modelConfig.getOnboardingModelCatalog([
@@ -178,7 +195,7 @@ describe("frontend/model-config", () => {
       })
       .map((model) => model.key);
     expect(subscriptionKeys).toContain("openai/gpt-5.5");
-    expect(subscriptionKeys).toContain("github-copilot/gpt-5.5");
+    expect(subscriptionKeys).not.toContain("github-copilot/gpt-5.5");
     expect(modelConfig.isSetupReadyAccountLoginProvider("openai")).toBe(true);
     expect(modelConfig.isSetupReadyAccountLoginProvider("claude-cli")).toBe(true);
     expect(modelConfig.isSetupReadyAccountLoginProvider("github-copilot")).toBe(
@@ -219,7 +236,7 @@ describe("frontend/model-config", () => {
 
     expect(
       modelConfig.getAccountLoginProviderOptions(catalog).map((option) => option.id),
-    ).toEqual(["openai", "claude-cli", "github-copilot"]);
+    ).toEqual(["openai", "claude-cli"]);
     expect(
       modelConfig
         .getOnboardingModelsForAccountLoginProvider({

@@ -1,708 +1,2293 @@
 {
-  "version": 1,
-  "source": "openclaw models list --all --json",
-  "generatedAt": "2026-06-26T22:05:12.359Z",
+  "schemaVersion": 2,
+  "version": 2,
+  "source": "alphaclaw model-catalog-support.json",
+  "generatedAt": "2026-06-29T02:00:05.605Z",
   "openclawVersion": "2026.6.10 (aa69b12)",
+  "supportSpec": {
+    "path": "lib/server/model-catalog-support.json",
+    "schemaVersion": 1
+  },
+  "compatibilityManifest": {
+    "path": "lib/openclaw-compatibility.manifest.json",
+    "openclawVersion": "2026.6.10"
+  },
+  "accessModes": {
+    "subscription": {
+      "id": "subscription",
+      "label": "Subscription",
+      "shortLabel": "Subscription",
+      "description": "Use an existing provider subscription plan.",
+      "providers": [
+        {
+          "id": "claude-cli",
+          "label": "Claude CLI",
+          "accessMode": "subscription",
+          "authRoute": "claude-cli",
+          "runtimeId": "claude-cli",
+          "envKeys": [],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [
+            "claude-cli/claude-opus-4-8",
+            "claude-cli/claude-sonnet-4-6"
+          ],
+          "models": [
+            {
+              "key": "claude-cli/claude-opus-4-8",
+              "provider": "claude-cli",
+              "label": "Claude Opus 4.8 (Claude CLI)",
+              "accessModes": [
+                "subscription"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "claude-cli/claude-sonnet-4-6",
+              "provider": "claude-cli",
+              "label": "Claude Sonnet 4.6 (Claude CLI)",
+              "accessModes": [
+                "subscription"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "claude-cli/claude-opus-4-6",
+              "provider": "claude-cli",
+              "label": "Claude Opus 4.6 (Claude CLI)",
+              "accessModes": [
+                "subscription"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "claude-cli/claude-opus-4-7",
+              "provider": "claude-cli",
+              "label": "Claude Opus 4.7 (Claude CLI)",
+              "accessModes": [
+                "subscription"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "openai",
+          "label": "OpenAI",
+          "accessMode": "subscription",
+          "authRoute": "codex-oauth",
+          "runtimeId": "codex",
+          "envKeys": [
+            "OPENAI_API_KEY"
+          ],
+          "requiredPlugins": [
+            "codex"
+          ],
+          "recommendedModelKeys": [
+            "openai/gpt-5.5"
+          ],
+          "models": [
+            {
+              "key": "openai/gpt-5.5",
+              "provider": "openai",
+              "label": "GPT-5.5",
+              "accessModes": [
+                "subscription",
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe+alphaclaw-support-spec",
+              "recommendation": "recommended"
+            }
+          ]
+        }
+      ]
+    },
+    "provider-api": {
+      "id": "provider-api",
+      "label": "Provider API Key",
+      "shortLabel": "Provider API Key",
+      "description": "Usage-based billing from the model provider directly.",
+      "providers": [
+        {
+          "id": "anthropic",
+          "label": "Anthropic",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "ANTHROPIC_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [
+            "anthropic/claude-opus-4-8",
+            "anthropic/claude-sonnet-4-6"
+          ],
+          "models": [
+            {
+              "key": "anthropic/claude-opus-4-8",
+              "provider": "anthropic",
+              "label": "Claude Opus 4.8",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "anthropic/claude-sonnet-4-6",
+              "provider": "anthropic",
+              "label": "Claude Sonnet 4.6",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "anthropic/claude-fable-5",
+              "provider": "anthropic",
+              "label": "Claude Fable 5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "anthropic/claude-haiku-4-5",
+              "provider": "anthropic",
+              "label": "Claude Haiku 4.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "anthropic/claude-haiku-4-5-20251001",
+              "provider": "anthropic",
+              "label": "Claude Haiku 4.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "anthropic/claude-opus-4-6",
+              "provider": "anthropic",
+              "label": "Claude Opus 4.6",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "anthropic/claude-opus-4-7",
+              "provider": "anthropic",
+              "label": "Claude Opus 4.7",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "byteplus",
+          "label": "BytePlus",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "BYTEPLUS_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "byteplus/glm-4-7-251222",
+              "provider": "byteplus",
+              "label": "GLM 4.7",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "byteplus/kimi-k2-5-260127",
+              "provider": "byteplus",
+              "label": "Kimi K2.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "byteplus/seed-1-8-251228",
+              "provider": "byteplus",
+              "label": "Seed 1.8",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "byteplus-plan",
+          "label": "BytePlus Plan",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "BYTEPLUS_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "byteplus-plan/ark-code-latest",
+              "provider": "byteplus-plan",
+              "label": "Ark Coding Plan",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "byteplus-plan/doubao-seed-code",
+              "provider": "byteplus-plan",
+              "label": "Doubao Seed Code",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "byteplus-plan/glm-4.7",
+              "provider": "byteplus-plan",
+              "label": "GLM 4.7 Coding",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "byteplus-plan/kimi-k2-thinking",
+              "provider": "byteplus-plan",
+              "label": "Kimi K2 Thinking",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "byteplus-plan/kimi-k2.5",
+              "provider": "byteplus-plan",
+              "label": "Kimi K2.5 Coding",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "cohere",
+          "label": "Cohere",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "COHERE_API_KEY"
+          ],
+          "requiredPlugins": [
+            "cohere"
+          ],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "cohere/command-a-03-2025",
+              "provider": "cohere",
+              "label": "Command A",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "deepseek",
+          "label": "DeepSeek",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "DEEPSEEK_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "deepseek/deepseek-chat",
+              "provider": "deepseek",
+              "label": "DeepSeek Chat",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "deepseek/deepseek-reasoner",
+              "provider": "deepseek",
+              "label": "DeepSeek Reasoner",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "fireworks",
+          "label": "Fireworks",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "FIREWORKS_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "fireworks/accounts/fireworks/routers/kimi-k2p5-turbo",
+              "provider": "fireworks",
+              "label": "Kimi K2.5 Turbo (Fire Pass)",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "fireworks/accounts/fireworks/models/kimi-k2p6",
+              "provider": "fireworks",
+              "label": "Kimi K2.6",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "mistral",
+          "label": "Mistral",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "MISTRAL_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "mistral/codestral-latest",
+              "provider": "mistral",
+              "label": "Codestral (latest)",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "mistral/devstral-medium-latest",
+              "provider": "mistral",
+              "label": "Devstral 2 (latest)",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "mistral/magistral-small",
+              "provider": "mistral",
+              "label": "Magistral Small",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "mistral/mistral-large-latest",
+              "provider": "mistral",
+              "label": "Mistral Large (latest)",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "mistral/mistral-medium-2508",
+              "provider": "mistral",
+              "label": "Mistral Medium 3.1",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "mistral/mistral-medium-3-5",
+              "provider": "mistral",
+              "label": "Mistral Medium 3.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "mistral/mistral-small-latest",
+              "provider": "mistral",
+              "label": "Mistral Small (latest)",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "mistral/pixtral-large-latest",
+              "provider": "mistral",
+              "label": "Pixtral Large (latest)",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "moonshot",
+          "label": "Moonshot",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "MOONSHOT_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "moonshot/kimi-k2-thinking",
+              "provider": "moonshot",
+              "label": "Kimi K2 Thinking",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "moonshot/kimi-k2-thinking-turbo",
+              "provider": "moonshot",
+              "label": "Kimi K2 Thinking Turbo",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "moonshot/kimi-k2-turbo",
+              "provider": "moonshot",
+              "label": "Kimi K2 Turbo",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "moonshot/kimi-k2.5",
+              "provider": "moonshot",
+              "label": "Kimi K2.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "moonshot/kimi-k2.6",
+              "provider": "moonshot",
+              "label": "Kimi K2.6",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "moonshot/kimi-k2.7-code",
+              "provider": "moonshot",
+              "label": "Kimi K2.7 Code",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "novita",
+          "label": "Novita",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "NOVITA_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "novita/deepseek/deepseek-r1-0528",
+              "provider": "novita",
+              "label": "DeepSeek R1 0528",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/deepseek/deepseek-v3-0324",
+              "provider": "novita",
+              "label": "DeepSeek V3 0324",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/zai-org/glm-5",
+              "provider": "novita",
+              "label": "GLM-5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/moonshotai/kimi-k2.5",
+              "provider": "novita",
+              "label": "Kimi K2.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/minimax/minimax-m2.7",
+              "provider": "novita",
+              "label": "MiniMax M2.7",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/qwen/qwen3-235b-a22b-fp8",
+              "provider": "novita",
+              "label": "Qwen3 235B A22B FP8",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "nvidia",
+          "label": "NVIDIA",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "NVIDIA_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "nvidia/z-ai/glm-5.1",
+              "provider": "nvidia",
+              "label": "GLM 5.1",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "nvidia/z-ai/glm5",
+              "provider": "nvidia",
+              "label": "GLM-5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "nvidia/moonshotai/kimi-k2.5",
+              "provider": "nvidia",
+              "label": "Kimi K2.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "nvidia/minimaxai/minimax-m2.5",
+              "provider": "nvidia",
+              "label": "MiniMax M2.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "nvidia/minimaxai/minimax-m2.7",
+              "provider": "nvidia",
+              "label": "Minimax M2.7",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "nvidia/nemotron-3-super-120b-a12b",
+              "provider": "nvidia",
+              "label": "NVIDIA Nemotron 3 Super 120B",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "nvidia/nemotron-3-ultra-550b-a55b",
+              "provider": "nvidia",
+              "label": "NVIDIA Nemotron 3 Ultra 550B",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "ollama-cloud",
+          "label": "Ollama Cloud",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "OLLAMA_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "ollama-cloud/glm-5.1:cloud",
+              "provider": "ollama-cloud",
+              "label": "glm-5.1:cloud",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "ollama-cloud/kimi-k2.5:cloud",
+              "provider": "ollama-cloud",
+              "label": "kimi-k2.5:cloud",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "ollama-cloud/minimax-m2.7:cloud",
+              "provider": "ollama-cloud",
+              "label": "minimax-m2.7:cloud",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "openai",
+          "label": "OpenAI",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "OPENAI_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [
+            "openai/gpt-5.5"
+          ],
+          "models": [
+            {
+              "key": "openai/gpt-5.5",
+              "provider": "openai",
+              "label": "GPT-5.5",
+              "accessModes": [
+                "subscription",
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe+alphaclaw-support-spec",
+              "recommendation": "recommended"
+            }
+          ]
+        },
+        {
+          "id": "tencent-tokenhub",
+          "label": "Tencent TokenHub",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "TENCENT_TOKENHUB_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "tencent-tokenhub/hy3-preview",
+              "provider": "tencent-tokenhub",
+              "label": "Hy3 preview (TokenHub)",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "together",
+          "label": "Together",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "TOGETHER_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "together/deepseek-ai/DeepSeek-V4-Pro",
+              "provider": "together",
+              "label": "DeepSeek V4 Pro",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "together/zai-org/GLM-5.1",
+              "provider": "together",
+              "label": "GLM 5.1 FP4",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "together/moonshotai/Kimi-K2.6",
+              "provider": "together",
+              "label": "Kimi K2.6 FP4",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "together/meta-llama/Llama-3.3-70B-Instruct-Turbo",
+              "provider": "together",
+              "label": "Llama 3.3 70B Instruct Turbo",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "together/Qwen/Qwen2.5-7B-Instruct-Turbo",
+              "provider": "together",
+              "label": "Qwen2.5 7B Instruct Turbo",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "volcengine",
+          "label": "Volcano Engine",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "VOLCANO_ENGINE_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "volcengine/deepseek-v3-2-251201",
+              "provider": "volcengine",
+              "label": "DeepSeek V3.2",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "volcengine/doubao-seed-1-8-251228",
+              "provider": "volcengine",
+              "label": "Doubao Seed 1.8",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "volcengine/doubao-seed-code-preview-251028",
+              "provider": "volcengine",
+              "label": "doubao-seed-code-preview-251028",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "volcengine/glm-4-7-251222",
+              "provider": "volcengine",
+              "label": "GLM 4.7",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "volcengine/kimi-k2-5-260127",
+              "provider": "volcengine",
+              "label": "Kimi K2.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "volcengine-plan",
+          "label": "Volcano Engine Plan",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "VOLCANO_ENGINE_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "volcengine-plan/ark-code-latest",
+              "provider": "volcengine-plan",
+              "label": "Ark Coding Plan",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "volcengine-plan/doubao-seed-code",
+              "provider": "volcengine-plan",
+              "label": "Doubao Seed Code",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "volcengine-plan/doubao-seed-code-preview-251028",
+              "provider": "volcengine-plan",
+              "label": "Doubao Seed Code Preview",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "volcengine-plan/glm-4.7",
+              "provider": "volcengine-plan",
+              "label": "GLM 4.7 Coding",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "volcengine-plan/kimi-k2-thinking",
+              "provider": "volcengine-plan",
+              "label": "Kimi K2 Thinking",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "volcengine-plan/kimi-k2.5",
+              "provider": "volcengine-plan",
+              "label": "Kimi K2.5 Coding",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "xiaomi",
+          "label": "Xiaomi",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "XIAOMI_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "xiaomi/mimo-v2-flash",
+              "provider": "xiaomi",
+              "label": "Xiaomi MiMo V2 Flash",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "xiaomi/mimo-v2-omni",
+              "provider": "xiaomi",
+              "label": "Xiaomi MiMo V2 Omni",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "xiaomi/mimo-v2-pro",
+              "provider": "xiaomi",
+              "label": "Xiaomi MiMo V2 Pro",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "zai",
+          "label": "Z.AI",
+          "accessMode": "provider-api",
+          "authRoute": "api-key",
+          "envKeys": [
+            "ZAI_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "zai/glm-4.5",
+              "provider": "zai",
+              "label": "GLM-4.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-4.5-air",
+              "provider": "zai",
+              "label": "GLM-4.5 Air",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-4.5-flash",
+              "provider": "zai",
+              "label": "GLM-4.5 Flash",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-4.5v",
+              "provider": "zai",
+              "label": "GLM-4.5V",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-4.6",
+              "provider": "zai",
+              "label": "GLM-4.6",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-4.6v",
+              "provider": "zai",
+              "label": "GLM-4.6V",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-4.7",
+              "provider": "zai",
+              "label": "GLM-4.7",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-4.7-flash",
+              "provider": "zai",
+              "label": "GLM-4.7 Flash",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-4.7-flashx",
+              "provider": "zai",
+              "label": "GLM-4.7 FlashX",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-5",
+              "provider": "zai",
+              "label": "GLM-5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-5-turbo",
+              "provider": "zai",
+              "label": "GLM-5 Turbo",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-5.1",
+              "provider": "zai",
+              "label": "GLM-5.1",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-5.2",
+              "provider": "zai",
+              "label": "GLM-5.2",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "zai/glm-5v-turbo",
+              "provider": "zai",
+              "label": "GLM-5V Turbo",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        }
+      ]
+    },
+    "gateway": {
+      "id": "gateway",
+      "label": "AI gateway",
+      "shortLabel": "Gateway",
+      "description": "Usage-based billing across providers using a gateway.",
+      "providers": [
+        {
+          "id": "cloudflare-ai-gateway",
+          "label": "Cloudflare AI Gateway",
+          "accessMode": "gateway",
+          "authRoute": "api-key",
+          "envKeys": [
+            "CLOUDFLARE_AI_GATEWAY_API_KEY"
+          ],
+          "requiredPlugins": [
+            "cloudflare-ai-gateway"
+          ],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "cloudflare-ai-gateway/openai/gpt-5.5",
+              "provider": "cloudflare-ai-gateway",
+              "label": "GPT-5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "accessLabel": "via Cloudflare AI Gateway",
+              "source": "alphaclaw-support-spec"
+            }
+          ]
+        },
+        {
+          "id": "kilocode",
+          "label": "Kilo Gateway",
+          "accessMode": "gateway",
+          "authRoute": "api-key",
+          "envKeys": [
+            "KILOCODE_API_KEY"
+          ],
+          "requiredPlugins": [
+            "kilocode"
+          ],
+          "recommendedModelKeys": [],
+          "models": [
+            {
+              "key": "kilocode/openai/gpt-5.5",
+              "provider": "kilocode",
+              "label": "GPT-5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "accessLabel": "via Kilo Gateway",
+              "source": "alphaclaw-support-spec"
+            }
+          ]
+        },
+        {
+          "id": "openrouter",
+          "label": "OpenRouter",
+          "accessMode": "gateway",
+          "authRoute": "api-key",
+          "envKeys": [
+            "OPENROUTER_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [
+            "openrouter/openai/gpt-5.5",
+            "openrouter/anthropic/claude-sonnet-4.6"
+          ],
+          "models": [
+            {
+              "key": "openrouter/anthropic/claude-sonnet-4.6",
+              "provider": "openrouter",
+              "label": "Claude Sonnet 4.6",
+              "accessModes": [
+                "gateway"
+              ],
+              "accessLabel": "via OpenRouter",
+              "recommendation": "recommended",
+              "source": "alphaclaw-support-spec"
+            },
+            {
+              "key": "openrouter/openai/gpt-5.5",
+              "provider": "openrouter",
+              "label": "GPT-5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "accessLabel": "via OpenRouter",
+              "recommendation": "recommended",
+              "source": "alphaclaw-support-spec"
+            },
+            {
+              "key": "openrouter/anthropic/claude-opus-4.8",
+              "provider": "openrouter",
+              "label": "Claude Opus 4.8",
+              "accessModes": [
+                "gateway"
+              ],
+              "accessLabel": "via OpenRouter",
+              "source": "alphaclaw-support-spec"
+            },
+            {
+              "key": "openrouter/moonshotai/kimi-k2.5",
+              "provider": "openrouter",
+              "label": "MoonshotAI: Kimi K2.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "openrouter/moonshotai/kimi-k2.6",
+              "provider": "openrouter",
+              "label": "MoonshotAI: Kimi K2.6",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "openrouter/auto",
+              "provider": "openrouter",
+              "label": "OpenRouter Auto",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        },
+        {
+          "id": "vercel-ai-gateway",
+          "label": "Vercel AI Gateway",
+          "accessMode": "gateway",
+          "authRoute": "api-key",
+          "envKeys": [
+            "AI_GATEWAY_API_KEY"
+          ],
+          "requiredPlugins": [],
+          "recommendedModelKeys": [
+            "vercel-ai-gateway/anthropic/claude-opus-4.8",
+            "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
+            "vercel-ai-gateway/openai/gpt-5.5"
+          ],
+          "models": [
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.8",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 4.8",
+              "accessModes": [
+                "gateway"
+              ],
+              "accessLabel": "via Vercel AI Gateway",
+              "recommendation": "recommended",
+              "source": "alphaclaw-support-spec"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Sonnet 4.6",
+              "accessModes": [
+                "gateway"
+              ],
+              "accessLabel": "via Vercel AI Gateway",
+              "recommendation": "recommended",
+              "source": "alphaclaw-support-spec"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5.5",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "accessLabel": "via Vercel AI Gateway",
+              "recommendation": "recommended",
+              "source": "alphaclaw-support-spec"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.6",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 4.6",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5.4",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.4",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5.4-pro",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.4 Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "vercel-ai-gateway/moonshotai/kimi-k2.6",
+              "provider": "vercel-ai-gateway",
+              "label": "Kimi K2.6",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            }
+          ]
+        }
+      ]
+    }
+  },
   "models": [
     {
       "key": "anthropic/claude-fable-5",
       "provider": "anthropic",
-      "label": "Claude Fable 5"
+      "label": "Claude Fable 5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-haiku-4-5",
       "provider": "anthropic",
-      "label": "Claude Haiku 4.5"
+      "label": "Claude Haiku 4.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-haiku-4-5-20251001",
       "provider": "anthropic",
-      "label": "Claude Haiku 4.5"
+      "label": "Claude Haiku 4.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-opus-4-6",
       "provider": "anthropic",
-      "label": "Claude Opus 4.6"
+      "label": "Claude Opus 4.6",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-opus-4-7",
       "provider": "anthropic",
-      "label": "Claude Opus 4.7"
+      "label": "Claude Opus 4.7",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-opus-4-8",
       "provider": "anthropic",
-      "label": "Claude Opus 4.8"
+      "label": "Claude Opus 4.8",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-sonnet-4-6",
       "provider": "anthropic",
-      "label": "Claude Sonnet 4.6"
-    },
-    {
-      "key": "byteplus-plan/ark-code-latest",
-      "provider": "byteplus-plan",
-      "label": "Ark Coding Plan"
-    },
-    {
-      "key": "byteplus-plan/doubao-seed-code",
-      "provider": "byteplus-plan",
-      "label": "Doubao Seed Code"
-    },
-    {
-      "key": "byteplus-plan/glm-4.7",
-      "provider": "byteplus-plan",
-      "label": "GLM 4.7 Coding"
-    },
-    {
-      "key": "byteplus-plan/kimi-k2-thinking",
-      "provider": "byteplus-plan",
-      "label": "Kimi K2 Thinking"
-    },
-    {
-      "key": "byteplus-plan/kimi-k2.5",
-      "provider": "byteplus-plan",
-      "label": "Kimi K2.5 Coding"
+      "label": "Claude Sonnet 4.6",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "byteplus/glm-4-7-251222",
       "provider": "byteplus",
-      "label": "GLM 4.7"
+      "label": "GLM 4.7",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "byteplus/kimi-k2-5-260127",
       "provider": "byteplus",
-      "label": "Kimi K2.5"
+      "label": "Kimi K2.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "byteplus/seed-1-8-251228",
       "provider": "byteplus",
-      "label": "Seed 1.8"
+      "label": "Seed 1.8",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "byteplus-plan/ark-code-latest",
+      "provider": "byteplus-plan",
+      "label": "Ark Coding Plan",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "byteplus-plan/doubao-seed-code",
+      "provider": "byteplus-plan",
+      "label": "Doubao Seed Code",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "byteplus-plan/glm-4.7",
+      "provider": "byteplus-plan",
+      "label": "GLM 4.7 Coding",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "byteplus-plan/kimi-k2-thinking",
+      "provider": "byteplus-plan",
+      "label": "Kimi K2 Thinking",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "byteplus-plan/kimi-k2.5",
+      "provider": "byteplus-plan",
+      "label": "Kimi K2.5 Coding",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "claude-cli/claude-opus-4-6",
       "provider": "claude-cli",
-      "label": "Claude Opus 4.6 (Claude CLI)"
+      "label": "Claude Opus 4.6 (Claude CLI)",
+      "accessModes": [
+        "subscription"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "claude-cli/claude-opus-4-7",
       "provider": "claude-cli",
-      "label": "Claude Opus 4.7 (Claude CLI)"
+      "label": "Claude Opus 4.7 (Claude CLI)",
+      "accessModes": [
+        "subscription"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "claude-cli/claude-opus-4-8",
       "provider": "claude-cli",
-      "label": "Claude Opus 4.8 (Claude CLI)"
+      "label": "Claude Opus 4.8 (Claude CLI)",
+      "accessModes": [
+        "subscription"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "claude-cli/claude-sonnet-4-6",
       "provider": "claude-cli",
-      "label": "Claude Sonnet 4.6 (Claude CLI)"
+      "label": "Claude Sonnet 4.6 (Claude CLI)",
+      "accessModes": [
+        "subscription"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "cloudflare-ai-gateway/openai/gpt-5.5",
+      "provider": "cloudflare-ai-gateway",
+      "label": "GPT-5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "accessLabel": "via Cloudflare AI Gateway",
+      "source": "alphaclaw-support-spec"
     },
     {
       "key": "cohere/command-a-03-2025",
       "provider": "cohere",
-      "label": "Command A"
+      "label": "Command A",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "deepseek/deepseek-chat",
       "provider": "deepseek",
-      "label": "DeepSeek Chat"
+      "label": "DeepSeek Chat",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "deepseek/deepseek-reasoner",
       "provider": "deepseek",
-      "label": "DeepSeek Reasoner"
-    },
-    {
-      "key": "fireworks/accounts/fireworks/models/kimi-k2p6",
-      "provider": "fireworks",
-      "label": "Kimi K2.6"
+      "label": "DeepSeek Reasoner",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "fireworks/accounts/fireworks/routers/kimi-k2p5-turbo",
       "provider": "fireworks",
-      "label": "Kimi K2.5 Turbo (Fire Pass)"
+      "label": "Kimi K2.5 Turbo (Fire Pass)",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "github-copilot/claude-opus-4.6",
-      "provider": "github-copilot",
-      "label": "Claude Opus 4.6"
+      "key": "fireworks/accounts/fireworks/models/kimi-k2p6",
+      "provider": "fireworks",
+      "label": "Kimi K2.6",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "github-copilot/claude-opus-4.7",
-      "provider": "github-copilot",
-      "label": "Claude Opus 4.7"
-    },
-    {
-      "key": "github-copilot/claude-opus-4.8",
-      "provider": "github-copilot",
-      "label": "Claude Opus 4.8"
-    },
-    {
-      "key": "github-copilot/claude-sonnet-4.6",
-      "provider": "github-copilot",
-      "label": "Claude Sonnet 4.6"
-    },
-    {
-      "key": "github-copilot/gemini-2.5-pro",
-      "provider": "github-copilot",
-      "label": "Gemini 2.5 Pro"
-    },
-    {
-      "key": "github-copilot/gemini-3-flash",
-      "provider": "github-copilot",
-      "label": "Gemini 3 Flash"
-    },
-    {
-      "key": "github-copilot/gemini-3.1-pro",
-      "provider": "github-copilot",
-      "label": "Gemini 3.1 Pro"
-    },
-    {
-      "key": "github-copilot/goldeneye",
-      "provider": "github-copilot",
-      "label": "Goldeneye"
-    },
-    {
-      "key": "github-copilot/gpt-5.3-codex",
-      "provider": "github-copilot",
-      "label": "GPT-5.3-Codex"
-    },
-    {
-      "key": "github-copilot/gpt-5.4",
-      "provider": "github-copilot",
-      "label": "GPT-5.4"
-    },
-    {
-      "key": "github-copilot/gpt-5.4-mini",
-      "provider": "github-copilot",
-      "label": "GPT-5.4 mini"
-    },
-    {
-      "key": "github-copilot/gpt-5.4-nano",
-      "provider": "github-copilot",
-      "label": "GPT-5.4 nano"
-    },
-    {
-      "key": "github-copilot/gpt-5.5",
-      "provider": "github-copilot",
-      "label": "GPT-5.5"
-    },
-    {
-      "key": "github-copilot/raptor-mini",
-      "provider": "github-copilot",
-      "label": "Raptor mini"
+      "key": "kilocode/openai/gpt-5.5",
+      "provider": "kilocode",
+      "label": "GPT-5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "accessLabel": "via Kilo Gateway",
+      "source": "alphaclaw-support-spec"
     },
     {
       "key": "mistral/codestral-latest",
       "provider": "mistral",
-      "label": "Codestral (latest)"
+      "label": "Codestral (latest)",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "mistral/devstral-medium-latest",
       "provider": "mistral",
-      "label": "Devstral 2 (latest)"
+      "label": "Devstral 2 (latest)",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "mistral/magistral-small",
       "provider": "mistral",
-      "label": "Magistral Small"
+      "label": "Magistral Small",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "mistral/mistral-large-latest",
       "provider": "mistral",
-      "label": "Mistral Large (latest)"
+      "label": "Mistral Large (latest)",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "mistral/mistral-medium-2508",
       "provider": "mistral",
-      "label": "Mistral Medium 3.1"
+      "label": "Mistral Medium 3.1",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "mistral/mistral-medium-3-5",
       "provider": "mistral",
-      "label": "Mistral Medium 3.5"
+      "label": "Mistral Medium 3.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "mistral/mistral-small-latest",
       "provider": "mistral",
-      "label": "Mistral Small (latest)"
+      "label": "Mistral Small (latest)",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "mistral/pixtral-large-latest",
       "provider": "mistral",
-      "label": "Pixtral Large (latest)"
+      "label": "Pixtral Large (latest)",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "moonshot/kimi-k2-thinking",
       "provider": "moonshot",
-      "label": "Kimi K2 Thinking"
+      "label": "Kimi K2 Thinking",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "moonshot/kimi-k2-thinking-turbo",
       "provider": "moonshot",
-      "label": "Kimi K2 Thinking Turbo"
+      "label": "Kimi K2 Thinking Turbo",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "moonshot/kimi-k2-turbo",
       "provider": "moonshot",
-      "label": "Kimi K2 Turbo"
+      "label": "Kimi K2 Turbo",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "moonshot/kimi-k2.5",
       "provider": "moonshot",
-      "label": "Kimi K2.5"
+      "label": "Kimi K2.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "moonshot/kimi-k2.6",
       "provider": "moonshot",
-      "label": "Kimi K2.6"
+      "label": "Kimi K2.6",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "moonshot/kimi-k2.7-code",
       "provider": "moonshot",
-      "label": "Kimi K2.7 Code"
+      "label": "Kimi K2.7 Code",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "novita/deepseek/deepseek-r1-0528",
       "provider": "novita",
-      "label": "DeepSeek R1 0528"
+      "label": "DeepSeek R1 0528",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "novita/deepseek/deepseek-v3-0324",
       "provider": "novita",
-      "label": "DeepSeek V3 0324"
-    },
-    {
-      "key": "novita/minimax/minimax-m2.7",
-      "provider": "novita",
-      "label": "MiniMax M2.7"
-    },
-    {
-      "key": "novita/moonshotai/kimi-k2.5",
-      "provider": "novita",
-      "label": "Kimi K2.5"
-    },
-    {
-      "key": "novita/qwen/qwen3-235b-a22b-fp8",
-      "provider": "novita",
-      "label": "Qwen3 235B A22B FP8"
+      "label": "DeepSeek V3 0324",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "novita/zai-org/glm-5",
       "provider": "novita",
-      "label": "GLM-5"
+      "label": "GLM-5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "nvidia/minimaxai/minimax-m2.5",
-      "provider": "nvidia",
-      "label": "MiniMax M2.5"
+      "key": "novita/moonshotai/kimi-k2.5",
+      "provider": "novita",
+      "label": "Kimi K2.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "nvidia/minimaxai/minimax-m2.7",
-      "provider": "nvidia",
-      "label": "Minimax M2.7"
+      "key": "novita/minimax/minimax-m2.7",
+      "provider": "novita",
+      "label": "MiniMax M2.7",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "nvidia/moonshotai/kimi-k2.5",
-      "provider": "nvidia",
-      "label": "Kimi K2.5"
-    },
-    {
-      "key": "nvidia/nemotron-3-super-120b-a12b",
-      "provider": "nvidia",
-      "label": "NVIDIA Nemotron 3 Super 120B"
-    },
-    {
-      "key": "nvidia/nemotron-3-ultra-550b-a55b",
-      "provider": "nvidia",
-      "label": "NVIDIA Nemotron 3 Ultra 550B"
+      "key": "novita/qwen/qwen3-235b-a22b-fp8",
+      "provider": "novita",
+      "label": "Qwen3 235B A22B FP8",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "nvidia/z-ai/glm-5.1",
       "provider": "nvidia",
-      "label": "GLM 5.1"
+      "label": "GLM 5.1",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "nvidia/z-ai/glm5",
       "provider": "nvidia",
-      "label": "GLM-5"
+      "label": "GLM-5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "nvidia/moonshotai/kimi-k2.5",
+      "provider": "nvidia",
+      "label": "Kimi K2.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "nvidia/minimaxai/minimax-m2.5",
+      "provider": "nvidia",
+      "label": "MiniMax M2.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "nvidia/minimaxai/minimax-m2.7",
+      "provider": "nvidia",
+      "label": "Minimax M2.7",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "nvidia/nemotron-3-super-120b-a12b",
+      "provider": "nvidia",
+      "label": "NVIDIA Nemotron 3 Super 120B",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "nvidia/nemotron-3-ultra-550b-a55b",
+      "provider": "nvidia",
+      "label": "NVIDIA Nemotron 3 Ultra 550B",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/glm-5.1:cloud",
       "provider": "ollama-cloud",
-      "label": "glm-5.1:cloud"
+      "label": "glm-5.1:cloud",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/kimi-k2.5:cloud",
       "provider": "ollama-cloud",
-      "label": "kimi-k2.5:cloud"
+      "label": "kimi-k2.5:cloud",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/minimax-m2.7:cloud",
       "provider": "ollama-cloud",
-      "label": "minimax-m2.7:cloud"
+      "label": "minimax-m2.7:cloud",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "openai/gpt-5.5",
+      "provider": "openai",
+      "label": "GPT-5.5",
+      "accessModes": [
+        "subscription",
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe+alphaclaw-support-spec",
+      "recommendation": "recommended"
+    },
+    {
+      "key": "openrouter/anthropic/claude-opus-4.8",
+      "provider": "openrouter",
+      "label": "Claude Opus 4.8",
+      "accessModes": [
+        "gateway"
+      ],
+      "accessLabel": "via OpenRouter",
+      "source": "alphaclaw-support-spec"
+    },
+    {
+      "key": "openrouter/anthropic/claude-sonnet-4.6",
+      "provider": "openrouter",
+      "label": "Claude Sonnet 4.6",
+      "accessModes": [
+        "gateway"
+      ],
+      "accessLabel": "via OpenRouter",
+      "recommendation": "recommended",
+      "source": "alphaclaw-support-spec"
+    },
+    {
+      "key": "openrouter/openai/gpt-5.5",
+      "provider": "openrouter",
+      "label": "GPT-5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "accessLabel": "via OpenRouter",
+      "recommendation": "recommended",
+      "source": "alphaclaw-support-spec"
+    },
+    {
+      "key": "openrouter/moonshotai/kimi-k2.5",
+      "provider": "openrouter",
+      "label": "MoonshotAI: Kimi K2.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "openrouter/moonshotai/kimi-k2.6",
+      "provider": "openrouter",
+      "label": "MoonshotAI: Kimi K2.6",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "openrouter/auto",
+      "provider": "openrouter",
+      "label": "OpenRouter Auto",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "tencent-tokenhub/hy3-preview",
       "provider": "tencent-tokenhub",
-      "label": "Hy3 preview (TokenHub)"
+      "label": "Hy3 preview (TokenHub)",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "together/deepseek-ai/DeepSeek-V4-Pro",
       "provider": "together",
-      "label": "DeepSeek V4 Pro"
-    },
-    {
-      "key": "together/meta-llama/Llama-3.3-70B-Instruct-Turbo",
-      "provider": "together",
-      "label": "Llama 3.3 70B Instruct Turbo"
-    },
-    {
-      "key": "together/moonshotai/Kimi-K2.6",
-      "provider": "together",
-      "label": "Kimi K2.6 FP4"
-    },
-    {
-      "key": "together/Qwen/Qwen2.5-7B-Instruct-Turbo",
-      "provider": "together",
-      "label": "Qwen2.5 7B Instruct Turbo"
+      "label": "DeepSeek V4 Pro",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "together/zai-org/GLM-5.1",
       "provider": "together",
-      "label": "GLM 5.1 FP4"
+      "label": "GLM 5.1 FP4",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "venice/claude-opus-4-6",
-      "provider": "venice",
-      "label": "Claude Opus 4.6 (via Venice)"
+      "key": "together/moonshotai/Kimi-K2.6",
+      "provider": "together",
+      "label": "Kimi K2.6 FP4",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "venice/claude-sonnet-4-6",
-      "provider": "venice",
-      "label": "Claude Sonnet 4.6 (via Venice)"
+      "key": "together/meta-llama/Llama-3.3-70B-Instruct-Turbo",
+      "provider": "together",
+      "label": "Llama 3.3 70B Instruct Turbo",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "venice/deepseek-v3.2",
-      "provider": "venice",
-      "label": "DeepSeek V3.2"
+      "key": "together/Qwen/Qwen2.5-7B-Instruct-Turbo",
+      "provider": "together",
+      "label": "Qwen2.5 7B Instruct Turbo",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "venice/gemini-3-1-pro-preview",
-      "provider": "venice",
-      "label": "Gemini 3.1 Pro (via Venice)"
+      "key": "vercel-ai-gateway/anthropic/claude-opus-4.6",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 4.6",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "venice/gemini-3-flash-preview",
-      "provider": "venice",
-      "label": "Gemini 3 Flash (via Venice)"
+      "key": "vercel-ai-gateway/anthropic/claude-opus-4.8",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 4.8",
+      "accessModes": [
+        "gateway"
+      ],
+      "accessLabel": "via Vercel AI Gateway",
+      "recommendation": "recommended",
+      "source": "alphaclaw-support-spec"
     },
     {
-      "key": "venice/gemini-3-pro-preview",
-      "provider": "venice",
-      "label": "Gemini 3 Pro (via Venice)"
+      "key": "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Sonnet 4.6",
+      "accessModes": [
+        "gateway"
+      ],
+      "accessLabel": "via Vercel AI Gateway",
+      "recommendation": "recommended",
+      "source": "alphaclaw-support-spec"
     },
     {
-      "key": "venice/google-gemma-3-27b-it",
-      "provider": "venice",
-      "label": "Google Gemma 3 27B Instruct"
+      "key": "vercel-ai-gateway/openai/gpt-5.4",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.4",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "venice/grok-41-fast",
-      "provider": "venice",
-      "label": "Grok 4.1 Fast (via Venice)"
+      "key": "vercel-ai-gateway/openai/gpt-5.4-pro",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.4 Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
-      "key": "venice/hermes-3-llama-3.1-405b",
-      "provider": "venice",
-      "label": "Hermes 3 Llama 3.1 405B"
+      "key": "vercel-ai-gateway/openai/gpt-5.5",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "accessLabel": "via Vercel AI Gateway",
+      "recommendation": "recommended",
+      "source": "alphaclaw-support-spec"
     },
     {
-      "key": "venice/kimi-k2-5",
-      "provider": "venice",
-      "label": "Kimi K2.5"
-    },
-    {
-      "key": "venice/kimi-k2-thinking",
-      "provider": "venice",
-      "label": "Kimi K2 Thinking"
-    },
-    {
-      "key": "venice/llama-3.2-3b",
-      "provider": "venice",
-      "label": "Llama 3.2 3B"
-    },
-    {
-      "key": "venice/llama-3.3-70b",
-      "provider": "venice",
-      "label": "Llama 3.3 70B"
-    },
-    {
-      "key": "venice/minimax-m21",
-      "provider": "venice",
-      "label": "MiniMax M2.1"
-    },
-    {
-      "key": "venice/minimax-m25",
-      "provider": "venice",
-      "label": "MiniMax M2.5"
-    },
-    {
-      "key": "venice/mistral-31-24b",
-      "provider": "venice",
-      "label": "Venice Medium (Mistral)"
-    },
-    {
-      "key": "venice/nvidia-nemotron-3-nano-30b-a3b",
-      "provider": "venice",
-      "label": "NVIDIA Nemotron 3 Nano 30B"
-    },
-    {
-      "key": "venice/olafangensan-glm-4.7-flash-heretic",
-      "provider": "venice",
-      "label": "GLM 4.7 Flash Heretic"
-    },
-    {
-      "key": "venice/openai-gpt-4o-2024-11-20",
-      "provider": "venice",
-      "label": "GPT-4o (via Venice)"
-    },
-    {
-      "key": "venice/openai-gpt-4o-mini-2024-07-18",
-      "provider": "venice",
-      "label": "GPT-4o Mini (via Venice)"
-    },
-    {
-      "key": "venice/openai-gpt-52",
-      "provider": "venice",
-      "label": "GPT-5.2 (via Venice)"
-    },
-    {
-      "key": "venice/openai-gpt-52-codex",
-      "provider": "venice",
-      "label": "GPT-5.2 Codex (via Venice)"
-    },
-    {
-      "key": "venice/openai-gpt-53-codex",
-      "provider": "venice",
-      "label": "GPT-5.3 Codex (via Venice)"
-    },
-    {
-      "key": "venice/openai-gpt-54",
-      "provider": "venice",
-      "label": "GPT-5.4 (via Venice)"
-    },
-    {
-      "key": "venice/openai-gpt-oss-120b",
-      "provider": "venice",
-      "label": "OpenAI GPT OSS 120B"
-    },
-    {
-      "key": "venice/qwen3-235b-a22b-instruct-2507",
-      "provider": "venice",
-      "label": "Qwen3 235B Instruct"
-    },
-    {
-      "key": "venice/qwen3-235b-a22b-thinking-2507",
-      "provider": "venice",
-      "label": "Qwen3 235B Thinking"
-    },
-    {
-      "key": "venice/qwen3-4b",
-      "provider": "venice",
-      "label": "Venice Small (Qwen3 4B)"
-    },
-    {
-      "key": "venice/qwen3-5-35b-a3b",
-      "provider": "venice",
-      "label": "Qwen3.5 35B A3B"
-    },
-    {
-      "key": "venice/qwen3-coder-480b-a35b-instruct",
-      "provider": "venice",
-      "label": "Qwen3 Coder 480B"
-    },
-    {
-      "key": "venice/qwen3-coder-480b-a35b-instruct-turbo",
-      "provider": "venice",
-      "label": "Qwen3 Coder 480B Turbo"
-    },
-    {
-      "key": "venice/qwen3-next-80b",
-      "provider": "venice",
-      "label": "Qwen3 Next 80B"
-    },
-    {
-      "key": "venice/qwen3-vl-235b-a22b",
-      "provider": "venice",
-      "label": "Qwen3 VL 235B (Vision)"
-    },
-    {
-      "key": "venice/venice-uncensored",
-      "provider": "venice",
-      "label": "Venice Uncensored (Dolphin-Mistral)"
-    },
-    {
-      "key": "venice/zai-org-glm-4.6",
-      "provider": "venice",
-      "label": "GLM 4.6"
-    },
-    {
-      "key": "venice/zai-org-glm-4.7",
-      "provider": "venice",
-      "label": "GLM 4.7"
-    },
-    {
-      "key": "venice/zai-org-glm-4.7-flash",
-      "provider": "venice",
-      "label": "GLM 4.7 Flash"
-    },
-    {
-      "key": "venice/zai-org-glm-5",
-      "provider": "venice",
-      "label": "GLM 5"
-    },
-    {
-      "key": "volcengine-plan/ark-code-latest",
-      "provider": "volcengine-plan",
-      "label": "Ark Coding Plan"
-    },
-    {
-      "key": "volcengine-plan/doubao-seed-code",
-      "provider": "volcengine-plan",
-      "label": "Doubao Seed Code"
-    },
-    {
-      "key": "volcengine-plan/doubao-seed-code-preview-251028",
-      "provider": "volcengine-plan",
-      "label": "Doubao Seed Code Preview"
-    },
-    {
-      "key": "volcengine-plan/glm-4.7",
-      "provider": "volcengine-plan",
-      "label": "GLM 4.7 Coding"
-    },
-    {
-      "key": "volcengine-plan/kimi-k2-thinking",
-      "provider": "volcengine-plan",
-      "label": "Kimi K2 Thinking"
-    },
-    {
-      "key": "volcengine-plan/kimi-k2.5",
-      "provider": "volcengine-plan",
-      "label": "Kimi K2.5 Coding"
+      "key": "vercel-ai-gateway/moonshotai/kimi-k2.6",
+      "provider": "vercel-ai-gateway",
+      "label": "Kimi K2.6",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "volcengine/deepseek-v3-2-251201",
       "provider": "volcengine",
-      "label": "DeepSeek V3.2"
+      "label": "DeepSeek V3.2",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "volcengine/doubao-seed-1-8-251228",
       "provider": "volcengine",
-      "label": "Doubao Seed 1.8"
+      "label": "Doubao Seed 1.8",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "volcengine/doubao-seed-code-preview-251028",
       "provider": "volcengine",
-      "label": "doubao-seed-code-preview-251028"
+      "label": "doubao-seed-code-preview-251028",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "volcengine/glm-4-7-251222",
       "provider": "volcengine",
-      "label": "GLM 4.7"
+      "label": "GLM 4.7",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "volcengine/kimi-k2-5-260127",
       "provider": "volcengine",
-      "label": "Kimi K2.5"
+      "label": "Kimi K2.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "volcengine-plan/ark-code-latest",
+      "provider": "volcengine-plan",
+      "label": "Ark Coding Plan",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "volcengine-plan/doubao-seed-code",
+      "provider": "volcengine-plan",
+      "label": "Doubao Seed Code",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "volcengine-plan/doubao-seed-code-preview-251028",
+      "provider": "volcengine-plan",
+      "label": "Doubao Seed Code Preview",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "volcengine-plan/glm-4.7",
+      "provider": "volcengine-plan",
+      "label": "GLM 4.7 Coding",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "volcengine-plan/kimi-k2-thinking",
+      "provider": "volcengine-plan",
+      "label": "Kimi K2 Thinking",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "volcengine-plan/kimi-k2.5",
+      "provider": "volcengine-plan",
+      "label": "Kimi K2.5 Coding",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "xiaomi/mimo-v2-flash",
       "provider": "xiaomi",
-      "label": "Xiaomi MiMo V2 Flash"
+      "label": "Xiaomi MiMo V2 Flash",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "xiaomi/mimo-v2-omni",
       "provider": "xiaomi",
-      "label": "Xiaomi MiMo V2 Omni"
+      "label": "Xiaomi MiMo V2 Omni",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "xiaomi/mimo-v2-pro",
       "provider": "xiaomi",
-      "label": "Xiaomi MiMo V2 Pro"
+      "label": "Xiaomi MiMo V2 Pro",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-4.5",
       "provider": "zai",
-      "label": "GLM-4.5"
+      "label": "GLM-4.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-4.5-air",
       "provider": "zai",
-      "label": "GLM-4.5 Air"
+      "label": "GLM-4.5 Air",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-4.5-flash",
       "provider": "zai",
-      "label": "GLM-4.5 Flash"
+      "label": "GLM-4.5 Flash",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-4.5v",
       "provider": "zai",
-      "label": "GLM-4.5V"
+      "label": "GLM-4.5V",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-4.6",
       "provider": "zai",
-      "label": "GLM-4.6"
+      "label": "GLM-4.6",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-4.6v",
       "provider": "zai",
-      "label": "GLM-4.6V"
+      "label": "GLM-4.6V",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-4.7",
       "provider": "zai",
-      "label": "GLM-4.7"
+      "label": "GLM-4.7",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-4.7-flash",
       "provider": "zai",
-      "label": "GLM-4.7 Flash"
+      "label": "GLM-4.7 Flash",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-4.7-flashx",
       "provider": "zai",
-      "label": "GLM-4.7 FlashX"
+      "label": "GLM-4.7 FlashX",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-5",
       "provider": "zai",
-      "label": "GLM-5"
+      "label": "GLM-5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-5-turbo",
       "provider": "zai",
-      "label": "GLM-5 Turbo"
+      "label": "GLM-5 Turbo",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-5.1",
       "provider": "zai",
-      "label": "GLM-5.1"
+      "label": "GLM-5.1",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-5.2",
       "provider": "zai",
-      "label": "GLM-5.2"
+      "label": "GLM-5.2",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-5v-turbo",
       "provider": "zai",
-      "label": "GLM-5V Turbo"
+      "label": "GLM-5V Turbo",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     }
   ]
 }

@@ -18,6 +18,19 @@ const flushPromises = async () => {
   await Promise.resolve();
 };
 
+const expectModelAccessModes = () =>
+  expect.objectContaining({
+    subscription: expect.objectContaining({
+      providers: expect.any(Array),
+    }),
+    "provider-api": expect.objectContaining({
+      providers: expect.any(Array),
+    }),
+    gateway: expect.objectContaining({
+      providers: expect.any(Array),
+    }),
+  });
+
 const createModelDeps = () => {
   const deps = {
     shellCmd: vi.fn(),
@@ -97,6 +110,7 @@ describe("server/routes/models", () => {
       stale: true,
       refreshing: true,
       models: kFallbackOnboardingModels,
+      accessModes: expectModelAccessModes(),
     });
     expect(deps.shellCmd).toHaveBeenCalledWith("openclaw models list --all --json", {
       env: { OPENCLAW_GATEWAY_TOKEN: "token" },
@@ -137,6 +151,7 @@ describe("server/routes/models", () => {
       stale: true,
       refreshing: true,
       models: kFallbackOnboardingModels,
+      accessModes: expectModelAccessModes(),
     });
   });
 
@@ -155,6 +170,7 @@ describe("server/routes/models", () => {
       stale: true,
       refreshing: true,
       models: kFallbackOnboardingModels,
+      accessModes: expectModelAccessModes(),
     });
   });
 
@@ -173,6 +189,7 @@ describe("server/routes/models", () => {
       stale: true,
       refreshing: false,
       models: kFallbackOnboardingModels,
+      accessModes: expectModelAccessModes(),
     });
     expect(res.body.models.some((model) => model.key === "openrouter/anthropic/claude-sonnet-4.6")).toBe(
       true,

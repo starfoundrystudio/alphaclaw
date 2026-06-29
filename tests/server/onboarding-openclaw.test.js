@@ -538,6 +538,38 @@ describe("server/onboarding/openclaw", () => {
     });
   });
 
+  it("enables required model provider plugins before reconciliation", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+      requiredPlugins: ["cloudflare-ai-gateway"],
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.plugins.allow).toEqual(
+      expect.arrayContaining(["cloudflare-ai-gateway", "usage-tracker"]),
+    );
+    expect(next.plugins.entries["cloudflare-ai-gateway"]).toEqual({
+      enabled: true,
+    });
+  });
+
   it("preserves heartbeat settings without forcing a managed heartbeat model", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
