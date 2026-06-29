@@ -649,6 +649,8 @@ describe("server/routes/onboarding", () => {
     expect(
       writtenConfig.agents.defaults.models["anthropic/claude-opus-4-8"].agentRuntime,
     ).toEqual({ id: "claude-cli" });
+    expect(writtenConfig.plugins.allow).toContain("anthropic");
+    expect(writtenConfig.plugins.entries.anthropic).toEqual({ enabled: true });
   });
 
   it("rejects canonical OpenAI models with Codex OAuth when runtime is not requested", async () => {

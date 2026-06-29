@@ -214,6 +214,38 @@ describe("server/onboarding/openclaw", () => {
     });
   });
 
+  it("configures Claude CLI runtime and enables its owning Anthropic plugin", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+      agentRuntimeId: "claude-cli",
+      modelKey: "anthropic/claude-opus-4-8",
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.agents.defaults.models["anthropic/claude-opus-4-8"].agentRuntime).toEqual({
+      id: "claude-cli",
+    });
+    expect(next.plugins.allow).toContain("anthropic");
+    expect(next.plugins.entries.anthropic).toEqual({ enabled: true });
+  });
+
   it("configures Codex runtime for imported OpenClaw configs when requested", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
