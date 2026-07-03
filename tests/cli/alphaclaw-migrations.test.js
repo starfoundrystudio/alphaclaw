@@ -152,7 +152,7 @@ describe("AlphaClaw migrations", () => {
     const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(true);
-    expect(result.summary.ok).toBe(3);
+    expect(result.summary.ok).toBe(4);
     expect(fs.existsSync(resolveMigrationLedgerPath({ rootDir }))).toBe(false);
   });
 
@@ -163,7 +163,7 @@ describe("AlphaClaw migrations", () => {
     const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(false);
-    expect(result.summary.failed).toBe(3);
+    expect(result.summary.failed).toBe(4);
     expect(result.results[0]).toMatchObject({
       id: "2026-06-remove-active-memory-model-fallback-policy",
       status: "failed",
@@ -354,10 +354,10 @@ describe("AlphaClaw migrations", () => {
     writeOpenclawConfig(openclawDir, {
       gateway: { mode: "local" },
       channels: {
-        discord: { enabled: true },
+        slack: { enabled: true },
       },
       commands: {
-        ownerAllowFrom: ["discord:154077435917369344"],
+        ownerAllowFrom: ["slack:U07KBTT468P"],
       },
     });
 
@@ -379,10 +379,10 @@ describe("AlphaClaw migrations", () => {
     writeOpenclawConfig(openclawDir, {
       gateway: { mode: "local" },
       channels: {
-        discord: { enabled: true },
+        slack: { enabled: true },
       },
       commands: {
-        ownerAllowFrom: ["discord:154077435917369344"],
+        ownerAllowFrom: ["slack:U07KBTT468P"],
       },
     });
 
@@ -401,9 +401,9 @@ describe("AlphaClaw migrations", () => {
       enabled: true,
       mode: "session",
     });
-    expect(nextConfig.channels.discord).toEqual({ enabled: true });
+    expect(nextConfig.channels.slack).toEqual({ enabled: true });
     expect(nextConfig.commands.ownerAllowFrom).toEqual([
-      "discord:154077435917369344",
+      "slack:U07KBTT468P",
     ]);
     expect(ledger).toContainEqual(
       expect.objectContaining({
@@ -439,6 +439,105 @@ describe("AlphaClaw migrations", () => {
       mode: "targets",
       targets: [{ channel: "slack", to: "U123" }],
     });
+  });
+
+  it("reports missing Discord and Telegram plugin approvers without mutating in dry-run mode", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
+      gateway: { mode: "local" },
+      commands: {
+        ownerAllowFrom: [
+          "discord:154077435917369344",
+          "telegram:1050628644",
+        ],
+      },
+      channels: {
+        discord: {
+          enabled: true,
+          guilds: {
+            "1480445624561176649": {
+              users: ["234567890123456789"],
+            },
+          },
+        },
+        telegram: {
+          enabled: true,
+          allowFrom: ["1050628645"],
+        },
+      },
+    });
+
+    const result = runAlphaClawMigrations({ rootDir, openclawDir });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.pending).toBe(1);
+    expect(result.results[3]).toMatchObject({
+      id: "2026-07-backfill-channel-plugin-approvers",
+      status: "pending",
+      scope: "config",
+      target: "openclaw.json",
+    });
+    const config = readOpenclawConfig(openclawDir);
+    expect(config.channels.discord.execApprovals).toBeUndefined();
+    expect(config.channels.telegram.execApprovals).toBeUndefined();
+  });
+
+  it("backfills Discord and Telegram plugin approvers from existing trusted users", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
+      gateway: { mode: "local" },
+      commands: {
+        ownerAllowFrom: [
+          "discord:154077435917369344",
+          "telegram:1050628644",
+        ],
+      },
+      channels: {
+        discord: {
+          enabled: true,
+          guilds: {
+            "1480445624561176649": {
+              users: ["234567890123456789"],
+            },
+          },
+        },
+        telegram: {
+          enabled: true,
+          allowFrom: ["1050628645"],
+        },
+      },
+    });
+
+    const result = runAlphaClawMigrations({
+      rootDir,
+      openclawDir,
+      fix: true,
+      now: new Date("2026-07-03T22:45:00.000Z"),
+    });
+    const nextConfig = readOpenclawConfig(openclawDir);
+    const ledger = readMigrationLedger({ rootDir });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.fixed).toBe(1);
+    expect(nextConfig.channels.discord.execApprovals).toEqual({
+      approvers: ["154077435917369344", "234567890123456789"],
+      enabled: "auto",
+    });
+    expect(nextConfig.channels.telegram.execApprovals).toEqual({
+      approvers: ["1050628644", "1050628645"],
+    });
+    expect(ledger).toContainEqual(
+      expect.objectContaining({
+        timestamp: "2026-07-03T22:45:00.000Z",
+        id: "2026-07-backfill-channel-plugin-approvers",
+        status: "completed",
+        scope: "config",
+        target: "openclaw.json",
+        changed: true,
+      }),
+    );
   });
 
   it("blocks a migration after repeated failures until force retry is requested", () => {

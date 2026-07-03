@@ -207,6 +207,79 @@ describe("server/exec-defaults-config", () => {
     });
   });
 
+  it("backfills Discord plugin approvers from owner and guild user allowlists", () => {
+    const openclawDir = createTempOpenclawDir();
+    fs.writeFileSync(
+      path.join(openclawDir, "openclaw.json"),
+      JSON.stringify(
+        {
+          gateway: { mode: "local" },
+          commands: {
+            ownerAllowFrom: ["discord:154077435917369344"],
+          },
+          channels: {
+            discord: {
+              enabled: true,
+              guilds: {
+                "1480445624561176649": {
+                  users: ["234567890123456789"],
+                },
+              },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    const result = ensureManagedExecDefaults({ fsModule: fs, openclawDir });
+
+    expect(result.openclawChanged).toBe(true);
+    const openclawConfig = JSON.parse(
+      fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"),
+    );
+    expect(openclawConfig.channels.discord.execApprovals).toEqual({
+      approvers: ["154077435917369344", "234567890123456789"],
+      enabled: "auto",
+    });
+  });
+
+  it("backfills Telegram plugin approvers from owner and allowFrom lists", () => {
+    const openclawDir = createTempOpenclawDir();
+    fs.writeFileSync(
+      path.join(openclawDir, "openclaw.json"),
+      JSON.stringify(
+        {
+          gateway: { mode: "local" },
+          commands: {
+            ownerAllowFrom: ["telegram:1050628644"],
+          },
+          channels: {
+            telegram: {
+              enabled: true,
+              allowFrom: ["1050628645"],
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    const result = ensureManagedExecDefaults({ fsModule: fs, openclawDir });
+
+    expect(result.openclawChanged).toBe(true);
+    const openclawConfig = JSON.parse(
+      fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"),
+    );
+    expect(openclawConfig.channels.telegram.execApprovals).toEqual({
+      approvers: ["1050628644", "1050628645"],
+    });
+  });
+
   it("does not add or change exec approvals defaults when defaults is a non-empty object", () => {
     const openclawDir = createTempOpenclawDir();
     const openclawPath = path.join(openclawDir, "openclaw.json");
