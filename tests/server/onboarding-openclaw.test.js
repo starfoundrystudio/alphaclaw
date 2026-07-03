@@ -164,8 +164,49 @@ describe("server/onboarding/openclaw", () => {
     });
     expect(next.agents.defaults.heartbeat).toBeUndefined();
     expect(next.agents.defaults.memorySearch).toBeUndefined();
+    expect(next.approvals.plugin).toEqual({
+      enabled: true,
+      mode: "session",
+    });
     expect(next.update.checkOnStart).toBe(false);
     expect(next.gateway.http).toBeUndefined();
+  });
+
+  it("preserves explicit plugin approval forwarding config", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: [], load: { paths: [] }, entries: {} },
+          channels: {},
+          approvals: {
+            plugin: {
+              enabled: false,
+              mode: "targets",
+              targets: [{ channel: "slack", to: "U123" }],
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.approvals.plugin).toEqual({
+      enabled: false,
+      mode: "targets",
+      targets: [{ channel: "slack", to: "U123" }],
+    });
   });
 
   it("configures Codex as the managed OpenAI provider runtime when requested", () => {

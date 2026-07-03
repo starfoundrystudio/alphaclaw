@@ -587,6 +587,116 @@ describe("server/routes/pairings", () => {
     });
   });
 
+  it("auto-approves managed backend requests for plugin approval scope", async () => {
+    const clawCmd = vi.fn(async (cmd) => {
+      if (cmd === "devices list --json") {
+        return {
+          ok: true,
+          stdout: JSON.stringify({
+            pending: [
+              {
+                requestId: "req-agent-approvals",
+                clientId: "gateway-client",
+                clientMode: "backend",
+                platform: "linux",
+                role: "operator",
+                scopes: ["operator.approvals"],
+                ts: 1773506886016,
+              },
+            ],
+          }),
+          stderr: "",
+        };
+      }
+      return { ok: true, stdout: "{}", stderr: "" };
+    });
+    const approveDevicePairingDirect = vi.fn(async () => ({
+      status: "approved",
+      requestId: "req-agent-approvals",
+      device: { deviceId: "agent-device-1" },
+    }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      mkdirSync: vi.fn(),
+      writeFileSync: vi.fn(),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+      approveDevicePairingDirect,
+    });
+
+    const res = await request(app).get("/api/devices");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      pending: [],
+      cliAutoApproveComplete: true,
+    });
+    expect(approveDevicePairingDirect).toHaveBeenCalledWith(
+      "req-agent-approvals",
+      {
+        callerScopes: expect.arrayContaining(["operator.admin", "operator.approvals"]),
+      },
+      "/tmp/openclaw",
+    );
+    expect(fsModule.writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it("leaves managed backend requests pending when they ask for broader scopes", async () => {
+    const clawCmd = vi.fn(async (cmd) => {
+      if (cmd === "devices list --json") {
+        return {
+          ok: true,
+          stdout: JSON.stringify({
+            pending: [
+              {
+                requestId: "req-agent-admin",
+                clientId: "gateway-client",
+                clientMode: "backend",
+                platform: "linux",
+                role: "operator",
+                scopes: ["operator.approvals", "operator.admin"],
+              },
+            ],
+          }),
+          stderr: "",
+        };
+      }
+      return { ok: true, stdout: "{}", stderr: "" };
+    });
+    const approveDevicePairingDirect = vi.fn(async () => ({
+      status: "approved",
+      requestId: "req-agent-admin",
+      device: { deviceId: "agent-device-1" },
+    }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      mkdirSync: vi.fn(),
+      writeFileSync: vi.fn(),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+      approveDevicePairingDirect,
+    });
+
+    const res = await request(app).get("/api/devices");
+
+    expect(res.status).toBe(200);
+    expect(res.body.pending).toEqual([
+      expect.objectContaining({
+        id: "req-agent-admin",
+        clientId: "gateway-client",
+        clientMode: "backend",
+        scopes: ["operator.approvals", "operator.admin"],
+      }),
+    ]);
+    expect(approveDevicePairingDirect).not.toHaveBeenCalled();
+  });
+
   it("uses the local loopback gateway for device list when token is available", async () => {
     const clawCmd = vi.fn(async (cmd) => {
       if (
