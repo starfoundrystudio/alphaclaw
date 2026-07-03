@@ -6,7 +6,7 @@ describe("frontend/slack-manifest", () => {
     vi.resetModules();
   });
 
-  it("builds the default Slack manifest for the current Agent messaging experience", async () => {
+  it("builds the default Slack manifest for OpenClaw's assistant messaging experience", async () => {
     const { buildSlackManifest } = await loadCreateChannelModalModule();
 
     const manifest = JSON.parse(buildSlackManifest("Ops Agent"));
@@ -15,9 +15,9 @@ describe("frontend/slack-manifest", () => {
       name: "Ops Agent",
       description: "Slack connector for AlphaClaw",
     });
-    expect(manifest.features.assistant_view).toBeUndefined();
-    expect(manifest.features.agent_view).toMatchObject({
-      agent_description: "AlphaClaw connects Slack agent threads to OpenClaw agents.",
+    expect(manifest.features.agent_view).toBeUndefined();
+    expect(manifest.features.assistant_view).toMatchObject({
+      assistant_description: "AlphaClaw connects Slack assistant threads to OpenClaw agents.",
       suggested_prompts: [
         {
           title: "What can you do?",
@@ -73,9 +73,10 @@ describe("frontend/slack-manifest", () => {
     expect(manifest.settings.socket_mode_enabled).toBe(true);
     expect(manifest.settings.interactivity).toEqual({ is_enabled: true });
     expect(manifest.settings.event_subscriptions.bot_events).toEqual([
-      "app_context_changed",
       "app_home_opened",
       "app_mention",
+      "assistant_thread_context_changed",
+      "assistant_thread_started",
       "channel_rename",
       "member_joined_channel",
       "member_left_channel",
