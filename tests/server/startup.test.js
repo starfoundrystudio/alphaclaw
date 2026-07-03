@@ -17,6 +17,9 @@ describe("server/startup", () => {
       return "https://setup.example.com";
     });
     const ensureGatewayProxyConfig = vi.fn(() => callOrder.push("ensureGatewayProxyConfig"));
+    const ensureManagedGatewayDevice = vi.fn(() =>
+      callOrder.push("ensureManagedGatewayDevice"),
+    );
     const startGateway = vi.fn(async () => callOrder.push("startGateway"));
     const watchdog = {
       start: vi.fn(() => callOrder.push("watchdog.start")),
@@ -32,6 +35,7 @@ describe("server/startup", () => {
       reloadEnv,
       syncChannelConfig,
       ensureGatewayProxyConfig,
+      ensureManagedGatewayDevice,
       resolveSetupUrl,
       startGateway,
       watchdog,
@@ -48,6 +52,7 @@ describe("server/startup", () => {
       "reloadEnv",
       "resolveSetupUrl",
       "ensureGatewayProxyConfig",
+      "ensureManagedGatewayDevice",
       "startGateway",
       "watchdog.start",
       "gmailWatchService.start",
@@ -73,6 +78,9 @@ describe("server/startup", () => {
       return "https://setup.example.com";
     });
     const ensureGatewayProxyConfig = vi.fn(() => callOrder.push("ensureGatewayProxyConfig"));
+    const ensureManagedGatewayDevice = vi.fn(() =>
+      callOrder.push("ensureManagedGatewayDevice"),
+    );
     const startGateway = vi.fn(async () => {
       callOrder.push("startGateway:start");
       await startGatewayReady;
@@ -91,6 +99,7 @@ describe("server/startup", () => {
       doSyncPromptFiles,
       reloadEnv,
       ensureGatewayProxyConfig,
+      ensureManagedGatewayDevice,
       resolveSetupUrl,
       startGateway,
       watchdog,
@@ -99,6 +108,7 @@ describe("server/startup", () => {
 
     await Promise.resolve();
 
+    expect(callOrder).toContain("ensureManagedGatewayDevice");
     expect(callOrder).toContain("startGateway:start");
     expect(watchdog.start).not.toHaveBeenCalled();
     expect(gmailWatchService.start).not.toHaveBeenCalled();
@@ -130,6 +140,9 @@ describe("server/startup", () => {
     const doSyncPromptFiles = vi.fn(() => callOrder.push("doSyncPromptFiles"));
     const reloadEnv = vi.fn(() => callOrder.push("reloadEnv"));
     const ensureGatewayProxyConfig = vi.fn(() => callOrder.push("ensureGatewayProxyConfig"));
+    const ensureManagedGatewayDevice = vi.fn(() =>
+      callOrder.push("ensureManagedGatewayDevice"),
+    );
     const resolveSetupUrl = vi.fn(() => {
       callOrder.push("resolveSetupUrl");
       return "https://setup.example.com";
@@ -152,6 +165,7 @@ describe("server/startup", () => {
       doSyncPromptFiles,
       reloadEnv,
       ensureGatewayProxyConfig,
+      ensureManagedGatewayDevice,
       resolveSetupUrl,
       startGateway,
       watchdog,
@@ -171,9 +185,69 @@ describe("server/startup", () => {
       "reloadEnv",
       "resolveSetupUrl",
       "ensureGatewayProxyConfig",
+      "ensureManagedGatewayDevice",
       "startGateway",
       "watchdog.start",
       "gmailWatchService.start",
     ]);
+  });
+
+  it("continues booting when managed gateway device approval repair fails", async () => {
+    const callOrder = [];
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const ensureManagedExecDefaults = vi.fn(() =>
+      callOrder.push("ensureManagedExecDefaults"),
+    );
+    const ensureUsageTrackerPluginConfig = vi.fn(() =>
+      callOrder.push("ensureUsageTrackerPluginConfig"),
+    );
+    const doSyncPromptFiles = vi.fn(() => callOrder.push("doSyncPromptFiles"));
+    const reloadEnv = vi.fn(() => callOrder.push("reloadEnv"));
+    const ensureGatewayProxyConfig = vi.fn(() => callOrder.push("ensureGatewayProxyConfig"));
+    const ensureManagedGatewayDevice = vi.fn(() => {
+      callOrder.push("ensureManagedGatewayDevice");
+      return { ok: false, error: "approval failed" };
+    });
+    const resolveSetupUrl = vi.fn(() => {
+      callOrder.push("resolveSetupUrl");
+      return "https://setup.example.com";
+    });
+    const startGateway = vi.fn(async () => callOrder.push("startGateway"));
+    const watchdog = {
+      start: vi.fn(() => callOrder.push("watchdog.start")),
+    };
+    const gmailWatchService = {
+      start: vi.fn(() => callOrder.push("gmailWatchService.start")),
+    };
+
+    await runOnboardedBootSequence({
+      ensureManagedExecDefaults,
+      ensureUsageTrackerPluginConfig,
+      doSyncPromptFiles,
+      reloadEnv,
+      ensureGatewayProxyConfig,
+      ensureManagedGatewayDevice,
+      resolveSetupUrl,
+      startGateway,
+      watchdog,
+      gmailWatchService,
+    });
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "[alphaclaw] Managed gateway device approval check failed: approval failed",
+    );
+    expect(callOrder).toEqual([
+      "ensureManagedExecDefaults",
+      "ensureUsageTrackerPluginConfig",
+      "doSyncPromptFiles",
+      "reloadEnv",
+      "resolveSetupUrl",
+      "ensureGatewayProxyConfig",
+      "ensureManagedGatewayDevice",
+      "startGateway",
+      "watchdog.start",
+      "gmailWatchService.start",
+    ]);
+    consoleErrorSpy.mockRestore();
   });
 });
