@@ -352,6 +352,299 @@ describe("server/routes/pairings", () => {
     );
   });
 
+  it("mirrors approved Slack requester ids into root allowFrom for plugin approvals", async () => {
+    let openclawConfig = {
+      channels: {
+        slack: {
+          enabled: true,
+          botToken: "${SLACK_BOT_TOKEN}",
+          appToken: "${SLACK_APP_TOKEN}",
+          dmPolicy: "pairing",
+        },
+      },
+    };
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      mkdirSync: vi.fn(),
+      readFileSync: vi.fn((targetPath) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          return JSON.stringify(openclawConfig);
+        }
+        if (targetPath === "/tmp/openclaw/credentials/slack-pairing.json") {
+          return JSON.stringify({ version: 1, requests: [] });
+        }
+        throw new Error(`unexpected read: ${targetPath}`);
+      }),
+      writeFileSync: vi.fn((targetPath, content) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          openclawConfig = JSON.parse(content);
+        }
+      }),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+    });
+
+    const res = await request(app).post("/api/pairings/ABCD1234/approve").send({
+      channel: "slack",
+      accountId: "default",
+      requesterId: "slack:u123owner",
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(openclawConfig.channels.slack.allowFrom).toEqual(["U123OWNER"]);
+    expect(openclawConfig.channels.slack.accounts).toBeUndefined();
+  });
+
+  it("mirrors approved Slack requester ids into account allowFrom from the pairing store", async () => {
+    const createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    let openclawConfig = {
+      channels: {
+        slack: {
+          enabled: true,
+          defaultAccount: "default",
+          accounts: {
+            default: {
+              botToken: "${SLACK_BOT_TOKEN}",
+              appToken: "${SLACK_APP_TOKEN}",
+              dmPolicy: "pairing",
+            },
+            alerts: {
+              name: "Alerts",
+              botToken: "${SLACK_BOT_TOKEN_ALERTS}",
+              appToken: "${SLACK_APP_TOKEN_ALERTS}",
+              dmPolicy: "pairing",
+              allowFrom: ["UEXISTING"],
+            },
+          },
+        },
+      },
+    };
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      mkdirSync: vi.fn(),
+      readFileSync: vi.fn((targetPath) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          return JSON.stringify(openclawConfig);
+        }
+        if (targetPath === "/tmp/openclaw/credentials/slack-pairing.json") {
+          return JSON.stringify({
+            version: 1,
+            requests: [
+              {
+                id: "u456owner",
+                code: "SLACK123",
+                createdAt,
+                lastSeenAt: createdAt,
+                meta: { accountId: "alerts" },
+              },
+            ],
+          });
+        }
+        throw new Error(`unexpected read: ${targetPath}`);
+      }),
+      writeFileSync: vi.fn((targetPath, content) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          openclawConfig = JSON.parse(content);
+        }
+      }),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+    });
+
+    const res = await request(app).post("/api/pairings/SLACK123/approve").send({
+      channel: "slack",
+      accountId: "alerts",
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(openclawConfig.channels.slack.accounts.alerts.allowFrom).toEqual([
+      "UEXISTING",
+      "U456OWNER",
+    ]);
+    expect(openclawConfig.channels.slack.allowFrom).toBeUndefined();
+  });
+
+  it("mirrors approved Discord requester ids into account exec approval approvers", async () => {
+    let openclawConfig = {
+      channels: {
+        discord: {
+          enabled: true,
+          defaultAccount: "default",
+          accounts: {
+            default: {
+              token: "${DISCORD_BOT_TOKEN}",
+              dmPolicy: "pairing",
+              execApprovals: {
+                approvers: ["123456789012345678"],
+              },
+            },
+          },
+        },
+      },
+    };
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      mkdirSync: vi.fn(),
+      readFileSync: vi.fn((targetPath) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          return JSON.stringify(openclawConfig);
+        }
+        if (targetPath === "/tmp/openclaw/credentials/discord-pairing.json") {
+          return JSON.stringify({ version: 1, requests: [] });
+        }
+        throw new Error(`unexpected read: ${targetPath}`);
+      }),
+      writeFileSync: vi.fn((targetPath, content) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          openclawConfig = JSON.parse(content);
+        }
+      }),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+    });
+
+    const res = await request(app).post("/api/pairings/DISC1234/approve").send({
+      channel: "discord",
+      accountId: "default",
+      requesterId: "discord:234567890123456789",
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(openclawConfig.channels.discord.accounts.default.execApprovals).toEqual({
+      approvers: ["123456789012345678", "234567890123456789"],
+      enabled: "auto",
+    });
+  });
+
+  it("mirrors approved Telegram requester ids into root exec approval approvers", async () => {
+    let openclawConfig = {
+      channels: {
+        telegram: {
+          enabled: true,
+          botToken: "${TELEGRAM_BOT_TOKEN}",
+          dmPolicy: "pairing",
+        },
+      },
+    };
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      mkdirSync: vi.fn(),
+      readFileSync: vi.fn((targetPath) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          return JSON.stringify(openclawConfig);
+        }
+        if (targetPath === "/tmp/openclaw/credentials/telegram-pairing.json") {
+          return JSON.stringify({ version: 1, requests: [] });
+        }
+        throw new Error(`unexpected read: ${targetPath}`);
+      }),
+      writeFileSync: vi.fn((targetPath, content) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          openclawConfig = JSON.parse(content);
+        }
+      }),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+    });
+
+    const res = await request(app).post("/api/pairings/TG123456/approve").send({
+      channel: "telegram",
+      accountId: "default",
+      requesterId: "telegram:1050628644",
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(openclawConfig.channels.telegram.execApprovals).toEqual({
+      approvers: ["1050628644"],
+    });
+    expect(openclawConfig.commands).toBeUndefined();
+  });
+
+  it("mirrors approved WhatsApp requester ids into account allowFrom from the pairing store", async () => {
+    const createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    let openclawConfig = {
+      channels: {
+        whatsapp: {
+          enabled: true,
+          defaultAccount: "default",
+          accounts: {
+            default: {
+              allowFrom: ["15550001111"],
+              dmPolicy: "allowlist",
+            },
+          },
+        },
+      },
+    };
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const fsModule = {
+      existsSync: vi.fn(() => true),
+      mkdirSync: vi.fn(),
+      readFileSync: vi.fn((targetPath) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          return JSON.stringify(openclawConfig);
+        }
+        if (targetPath === "/tmp/openclaw/credentials/whatsapp-pairing.json") {
+          return JSON.stringify({
+            version: 1,
+            requests: [
+              {
+                id: "15551230000@s.whatsapp.net",
+                code: "WA123456",
+                createdAt,
+                lastSeenAt: createdAt,
+                meta: { accountId: "default" },
+              },
+            ],
+          });
+        }
+        throw new Error(`unexpected read: ${targetPath}`);
+      }),
+      writeFileSync: vi.fn((targetPath, content) => {
+        if (targetPath === "/tmp/openclaw/openclaw.json") {
+          openclawConfig = JSON.parse(content);
+        }
+      }),
+    };
+    const app = createApp({
+      clawCmd,
+      isOnboarded: () => true,
+      fsModule,
+    });
+
+    const res = await request(app).post("/api/pairings/WA123456/approve").send({
+      channel: "whatsapp",
+      accountId: "default",
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(openclawConfig.channels.whatsapp.accounts.default.allowFrom).toEqual([
+      "15550001111",
+      "15551230000",
+    ]);
+  });
+
   it("rejects invalid pairing approval input before running command", async () => {
     const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
     const fsModule = {

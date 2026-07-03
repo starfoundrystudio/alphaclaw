@@ -6,7 +6,7 @@ AlphaClaw is the ops and setup layer around OpenClaw. It provides a browser-base
 
 ### Understanding OpenClaw
 
-If you need to understand the internals of OpenClaw, you can inspect the code at `~/Projects/openclaw/src`
+If you need to understand the internals of OpenClaw, look for a local `openclaw` checkout in nearby development directories and inspect its `src` directory when present. On this machine, the checkout is usually at `/Users/billk/Development/openclaw/src`.
 
 ### Architecture At A Glance
 
@@ -80,7 +80,7 @@ When upgrading the pinned `openclaw` dependency, do not rely on release notes al
 Required review checklist:
 
 1. Read non-beta OpenClaw release notes for every version between the old pin and new target.
-2. Inspect relevant OpenClaw code changes for runtime state, persistence, config schemas, provider/plugin catalogs, and CLI/onboarding behavior. Use the local OpenClaw checkout when available (`~/Projects/openclaw/src`, or another local checkout such as `~/Development/openclaw/src`).
+2. Inspect relevant OpenClaw code changes for runtime state, persistence, config schemas, provider/plugin catalogs, and CLI/onboarding behavior. Prefer a local `openclaw` checkout when available, checking nearby development directories such as `/Users/billk/Development/openclaw/src` on this machine.
 3. Trace AlphaClaw code paths that write or reconcile OpenClaw-owned state, including:
    - `openclaw.json` and `models.json` model/provider/runtime configuration.
    - Agent auth profiles and auth ordering, including SQLite stores such as `agents/<id>/agent/openclaw-agent.sqlite` and any legacy JSON import/migration paths.

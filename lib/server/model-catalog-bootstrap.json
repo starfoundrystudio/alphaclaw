@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-03T15:49:57.569Z",
+  "generatedAt": "2026-07-03T17:27:28.598Z",
   "openclawVersion": "2026.6.10 (aa69b12)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
