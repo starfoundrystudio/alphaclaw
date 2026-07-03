@@ -28,6 +28,14 @@ const readOpenclawConfig = (openclawDir) =>
 
 describe("AlphaClaw migrations", () => {
   let tempRoots = [];
+  const kSatisfiedPluginApprovals = {
+    approvals: {
+      plugin: {
+        enabled: true,
+        mode: "session",
+      },
+    },
+  };
 
   afterEach(() => {
     for (const rootDir of tempRoots) {
@@ -45,6 +53,7 @@ describe("AlphaClaw migrations", () => {
   it("reports deprecated Active Memory modelFallbackPolicy without mutating in dry-run mode", () => {
     const { rootDir, openclawDir } = createRoot();
     writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
       gateway: { mode: "local" },
       plugins: {
         entries: {
@@ -79,6 +88,7 @@ describe("AlphaClaw migrations", () => {
   it("removes deprecated Active Memory modelFallbackPolicy and writes a ledger entry", () => {
     const { rootDir, openclawDir } = createRoot();
     writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
       gateway: { mode: "local" },
       plugins: {
         entries: {
@@ -127,6 +137,7 @@ describe("AlphaClaw migrations", () => {
   it("is idempotent after the deprecated key has already been removed", () => {
     const { rootDir, openclawDir } = createRoot();
     writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
       gateway: { mode: "local" },
       plugins: {
         entries: {
@@ -141,7 +152,7 @@ describe("AlphaClaw migrations", () => {
     const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(true);
-    expect(result.summary.ok).toBe(2);
+    expect(result.summary.ok).toBe(3);
     expect(fs.existsSync(resolveMigrationLedgerPath({ rootDir }))).toBe(false);
   });
 
@@ -152,7 +163,7 @@ describe("AlphaClaw migrations", () => {
     const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(false);
-    expect(result.summary.failed).toBe(2);
+    expect(result.summary.failed).toBe(3);
     expect(result.results[0]).toMatchObject({
       id: "2026-06-remove-active-memory-model-fallback-policy",
       status: "failed",
@@ -163,6 +174,7 @@ describe("AlphaClaw migrations", () => {
   it("reports OpenAI Codex runtime auth order migration without mutating in dry-run mode", () => {
     const { rootDir, openclawDir } = createRoot();
     writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
       agents: {
         defaults: {
           model: { primary: "openai/gpt-5.5" },
@@ -204,6 +216,7 @@ describe("AlphaClaw migrations", () => {
   it("prefers openai:codex-cli for OpenAI Codex runtime models while preserving other profiles", () => {
     const { rootDir, openclawDir } = createRoot();
     writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
       models: {
         providers: {
           openai: {
@@ -266,6 +279,7 @@ describe("AlphaClaw migrations", () => {
   it("does not change OpenAI API-key or non-Codex-runtime setups", () => {
     const { rootDir, openclawDir } = createRoot();
     writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
       agents: {
         defaults: {
           model: { primary: "openai/gpt-5.5" },
@@ -298,6 +312,7 @@ describe("AlphaClaw migrations", () => {
   it("is idempotent when openai:codex-cli is already first", () => {
     const { rootDir, openclawDir } = createRoot();
     writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
       models: {
         providers: {
           openai: {
@@ -332,6 +347,98 @@ describe("AlphaClaw migrations", () => {
       "openai:bill@example.com",
     ]);
     expect(fs.existsSync(resolveMigrationLedgerPath({ rootDir }))).toBe(false);
+  });
+
+  it("reports missing plugin approval forwarding defaults without mutating in dry-run mode", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      gateway: { mode: "local" },
+      channels: {
+        discord: { enabled: true },
+      },
+      commands: {
+        ownerAllowFrom: ["discord:154077435917369344"],
+      },
+    });
+
+    const result = runAlphaClawMigrations({ rootDir, openclawDir });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.pending).toBe(1);
+    expect(result.results[2]).toMatchObject({
+      id: "2026-07-enable-plugin-approval-forwarding",
+      status: "pending",
+      scope: "config",
+      target: "openclaw.json",
+    });
+    expect(readOpenclawConfig(openclawDir).approvals).toBeUndefined();
+  });
+
+  it("adds plugin approval forwarding defaults while preserving existing config", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      gateway: { mode: "local" },
+      channels: {
+        discord: { enabled: true },
+      },
+      commands: {
+        ownerAllowFrom: ["discord:154077435917369344"],
+      },
+    });
+
+    const result = runAlphaClawMigrations({
+      rootDir,
+      openclawDir,
+      fix: true,
+      now: new Date("2026-07-03T22:30:00.000Z"),
+    });
+    const nextConfig = readOpenclawConfig(openclawDir);
+    const ledger = readMigrationLedger({ rootDir });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.fixed).toBe(1);
+    expect(nextConfig.approvals.plugin).toEqual({
+      enabled: true,
+      mode: "session",
+    });
+    expect(nextConfig.channels.discord).toEqual({ enabled: true });
+    expect(nextConfig.commands.ownerAllowFrom).toEqual([
+      "discord:154077435917369344",
+    ]);
+    expect(ledger).toContainEqual(
+      expect.objectContaining({
+        timestamp: "2026-07-03T22:30:00.000Z",
+        id: "2026-07-enable-plugin-approval-forwarding",
+        status: "completed",
+        scope: "config",
+        target: "openclaw.json",
+        changed: true,
+      }),
+    );
+  });
+
+  it("preserves explicit plugin approval forwarding settings during migration", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      gateway: { mode: "local" },
+      approvals: {
+        plugin: {
+          enabled: false,
+          mode: "targets",
+          targets: [{ channel: "slack", to: "U123" }],
+        },
+      },
+    });
+
+    const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.fixed || 0).toBe(0);
+    expect(readOpenclawConfig(openclawDir).approvals.plugin).toEqual({
+      enabled: false,
+      mode: "targets",
+      targets: [{ channel: "slack", to: "U123" }],
+    });
   });
 
   it("blocks a migration after repeated failures until force retry is requested", () => {

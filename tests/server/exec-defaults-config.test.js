@@ -47,6 +47,10 @@ describe("server/exec-defaults-config", () => {
         strictInlineEval: false,
       },
     });
+    expect(openclawConfig.approvals.plugin).toEqual({
+      enabled: true,
+      mode: "session",
+    });
     expect(openclawConfig.channels.telegram).toEqual({ enabled: true });
 
     const approvals = JSON.parse(
@@ -77,6 +81,13 @@ describe("server/exec-defaults-config", () => {
             security: "allowlist",
             ask: "always",
             strictInlineEval: true,
+          },
+        },
+        approvals: {
+          plugin: {
+            enabled: false,
+            mode: "targets",
+            targets: [{ channel: "slack", to: "U123" }],
           },
         },
       },
@@ -139,7 +150,7 @@ describe("server/exec-defaults-config", () => {
 
     expect(result).toEqual({
       changed: true,
-      openclawChanged: false,
+      openclawChanged: true,
       approvalsChanged: true,
     });
 
@@ -149,6 +160,50 @@ describe("server/exec-defaults-config", () => {
     expect(openclawConfig.tools.exec).toEqual({
       host: "gateway",
       ask: "off",
+    });
+    expect(openclawConfig.approvals.plugin).toEqual({
+      enabled: true,
+      mode: "session",
+    });
+  });
+
+  it("preserves explicit plugin approval forwarding config", () => {
+    const openclawDir = createTempOpenclawDir();
+    fs.writeFileSync(
+      path.join(openclawDir, "openclaw.json"),
+      JSON.stringify(
+        {
+          gateway: { mode: "local" },
+          tools: {
+            profile: "full",
+            exec: {
+              host: "gateway",
+            },
+          },
+          approvals: {
+            plugin: {
+              enabled: false,
+              mode: "targets",
+              targets: [{ channel: "discord", to: "154077435917369344" }],
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    const result = ensureManagedExecDefaults({ fsModule: fs, openclawDir });
+
+    expect(result.openclawChanged).toBe(false);
+    const openclawConfig = JSON.parse(
+      fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"),
+    );
+    expect(openclawConfig.approvals.plugin).toEqual({
+      enabled: false,
+      mode: "targets",
+      targets: [{ channel: "discord", to: "154077435917369344" }],
     });
   });
 
@@ -162,6 +217,12 @@ describe("server/exec-defaults-config", () => {
           profile: "full",
           exec: {
             host: "gateway",
+          },
+        },
+        approvals: {
+          plugin: {
+            enabled: true,
+            mode: "session",
           },
         },
       },

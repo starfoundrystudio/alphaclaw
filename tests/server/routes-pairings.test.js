@@ -8,6 +8,7 @@ const createApp = ({
   isOnboarded,
   fsModule,
   approveDevicePairingDirect,
+  ensureManagedGatewayDevice,
   gatewayToken = "",
   getGatewayPort = null,
 }) => {
@@ -20,6 +21,7 @@ const createApp = ({
     fsModule,
     openclawDir: "/tmp/openclaw",
     approveDevicePairingDirect,
+    ensureManagedGatewayDevice,
     gatewayToken,
     getGatewayPort,
   });
@@ -908,6 +910,12 @@ describe("server/routes/pairings", () => {
       requestId: "req-agent-approvals",
       device: { deviceId: "agent-device-1" },
     }));
+    const ensureManagedGatewayDevice = vi.fn(async () => ({
+      ok: true,
+      reason: "repaired",
+      deviceId: "agent-device-1",
+      scopes: ["operator.approvals"],
+    }));
     const fsModule = {
       existsSync: vi.fn(() => true),
       mkdirSync: vi.fn(),
@@ -918,6 +926,7 @@ describe("server/routes/pairings", () => {
       isOnboarded: () => true,
       fsModule,
       approveDevicePairingDirect,
+      ensureManagedGatewayDevice,
     });
 
     const res = await request(app).get("/api/devices");
@@ -934,6 +943,7 @@ describe("server/routes/pairings", () => {
       },
       "/tmp/openclaw",
     );
+    expect(ensureManagedGatewayDevice).toHaveBeenCalledTimes(1);
     expect(fsModule.writeFileSync).not.toHaveBeenCalled();
   });
 
@@ -964,6 +974,9 @@ describe("server/routes/pairings", () => {
       requestId: "req-agent-admin",
       device: { deviceId: "agent-device-1" },
     }));
+    const ensureManagedGatewayDevice = vi.fn(async () => ({
+      ok: true,
+    }));
     const fsModule = {
       existsSync: vi.fn(() => true),
       mkdirSync: vi.fn(),
@@ -974,6 +987,7 @@ describe("server/routes/pairings", () => {
       isOnboarded: () => true,
       fsModule,
       approveDevicePairingDirect,
+      ensureManagedGatewayDevice,
     });
 
     const res = await request(app).get("/api/devices");
@@ -988,6 +1002,7 @@ describe("server/routes/pairings", () => {
       }),
     ]);
     expect(approveDevicePairingDirect).not.toHaveBeenCalled();
+    expect(ensureManagedGatewayDevice).not.toHaveBeenCalled();
   });
 
   it("uses the local loopback gateway for device list when token is available", async () => {
