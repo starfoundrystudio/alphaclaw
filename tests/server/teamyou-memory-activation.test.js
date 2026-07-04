@@ -68,6 +68,50 @@ describe("server/teamyou-memory-activation", () => {
     expect(restartGateway).not.toHaveBeenCalled();
   });
 
+  it("repairs a leaked managed TeamYou memory slot while bootstrap is pending", async () => {
+    const root = createTempRoot();
+    const openclawDir = path.join(root, "openclaw");
+    const workspaceDir = path.join(root, "workspace");
+    fs.mkdirSync(workspaceDir, { recursive: true });
+    fs.writeFileSync(path.join(workspaceDir, "BOOTSTRAP.md"), "bootstrap", "utf8");
+    writeJson(path.join(openclawDir, "openclaw.json"), {
+      plugins: {
+        allow: ["openclaw-teamyou-memory", "active-memory"],
+        entries: {
+          "active-memory": { enabled: true },
+          "openclaw-teamyou-memory": { enabled: true },
+        },
+        slots: { memory: "openclaw-teamyou-memory" },
+      },
+      agents: { defaults: { workspace: workspaceDir } },
+      gateway: { mode: "local" },
+    });
+    const restartGateway = vi.fn(async () => {});
+
+    const result = await activateTeamyouMemoryIfBootstrapComplete({
+      fsModule: fs,
+      openclawDir,
+      workspaceDir,
+      restartGateway,
+      logger: { log: vi.fn(), warn: vi.fn() },
+    });
+
+    const cfg = JSON.parse(
+      fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"),
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      activated: false,
+      repaired: true,
+      reason: "bootstrap_pending",
+      previousMemorySlot: "openclaw-teamyou-memory",
+      memorySlot: "none",
+      workspaceDir,
+    });
+    expect(cfg.plugins.slots.memory).toBe("none");
+    expect(restartGateway).toHaveBeenCalledTimes(1);
+  });
+
   it("activates the memory slot after workspace setup is complete", async () => {
     const root = createTempRoot();
     const openclawDir = path.join(root, "openclaw");
@@ -82,6 +126,10 @@ describe("server/teamyou-memory-activation", () => {
         allow: [],
         entries: {
           "active-memory": { enabled: true, config: { queryMode: "recent" } },
+          "openclaw-teamyou-memory": {
+            enabled: true,
+            config: { apiKey: "${TEAMYOU_API_KEY}" },
+          },
         },
         slots: { memory: "none" },
       },
@@ -105,15 +153,19 @@ describe("server/teamyou-memory-activation", () => {
       ok: true,
       activated: true,
       reason: "setup_completed_marker",
-      memorySlot: "active-memory",
+      memorySlot: "openclaw-teamyou-memory",
       workspaceDir,
     });
-    expect(cfg.plugins.allow).toContain("active-memory");
+    expect(cfg.plugins.allow).toContain("openclaw-teamyou-memory");
     expect(cfg.plugins.entries["active-memory"]).toEqual({
       enabled: true,
       config: { queryMode: "recent" },
     });
-    expect(cfg.plugins.slots.memory).toBe("active-memory");
+    expect(cfg.plugins.entries["openclaw-teamyou-memory"]).toEqual({
+      enabled: true,
+      config: { apiKey: "${TEAMYOU_API_KEY}" },
+    });
+    expect(cfg.plugins.slots.memory).toBe("openclaw-teamyou-memory");
     expect(restartGateway).toHaveBeenCalledTimes(1);
     expect(
       fs.existsSync(path.join(openclawDir, ".alphaclaw", "teamyou-memory-activated.json")),

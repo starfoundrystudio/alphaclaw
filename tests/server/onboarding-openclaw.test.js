@@ -645,6 +645,61 @@ describe("server/onboarding/openclaw", () => {
     });
   });
 
+  it("disables managed TeamYou memory during fresh bootstrap even when OpenClaw selected it", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: {
+            allow: ["openclaw-teamyou-memory", "active-memory"],
+            load: { paths: [] },
+            entries: {
+              "active-memory": {
+                enabled: true,
+                config: { queryMode: "recent" },
+              },
+              "openclaw-teamyou-memory": {
+                enabled: true,
+                config: { apiKey: "teamyou-live-secret" },
+              },
+            },
+            slots: {
+              memory: "openclaw-teamyou-memory",
+            },
+          },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: { TEAMYOU_API_KEY: "teamyou-live-secret" },
+      requiredPlugins: ["openclaw-teamyou-memory"],
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.plugins.allow).toEqual(
+      expect.arrayContaining([
+        "openclaw-teamyou-memory",
+        "active-memory",
+        "usage-tracker",
+      ]),
+    );
+    expect(next.plugins.entries["openclaw-teamyou-memory"]).toEqual({
+      enabled: true,
+      config: { apiKey: "${TEAMYOU_API_KEY}" },
+    });
+    expect(next.plugins.entries["active-memory"].enabled).toBe(true);
+    expect(next.plugins.slots.memory).toBe("none");
+  });
+
   it("preserves heartbeat settings without forcing a managed heartbeat model", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
