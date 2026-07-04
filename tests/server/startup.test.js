@@ -123,6 +123,57 @@ describe("server/startup", () => {
     ]);
   });
 
+  it("starts the TeamYou memory activation watcher after gateway startup", async () => {
+    const callOrder = [];
+    const ensureManagedExecDefaults = vi.fn(() =>
+      callOrder.push("ensureManagedExecDefaults"),
+    );
+    const ensureUsageTrackerPluginConfig = vi.fn(() =>
+      callOrder.push("ensureUsageTrackerPluginConfig"),
+    );
+    const doSyncPromptFiles = vi.fn(() => callOrder.push("doSyncPromptFiles"));
+    const reloadEnv = vi.fn(() => callOrder.push("reloadEnv"));
+    const ensureGatewayProxyConfig = vi.fn(() => callOrder.push("ensureGatewayProxyConfig"));
+    const ensureManagedGatewayDevice = vi.fn(() =>
+      callOrder.push("ensureManagedGatewayDevice"),
+    );
+    const resolveSetupUrl = vi.fn(() => {
+      callOrder.push("resolveSetupUrl");
+      return "https://setup.example.com";
+    });
+    const startGateway = vi.fn(async () => callOrder.push("startGateway"));
+    const teamyouMemoryActivation = {
+      start: vi.fn(() => callOrder.push("teamyouMemoryActivation.start")),
+    };
+    const watchdog = {
+      start: vi.fn(() => callOrder.push("watchdog.start")),
+    };
+    const gmailWatchService = {
+      start: vi.fn(() => callOrder.push("gmailWatchService.start")),
+    };
+
+    await runOnboardedBootSequence({
+      ensureManagedExecDefaults,
+      ensureUsageTrackerPluginConfig,
+      doSyncPromptFiles,
+      reloadEnv,
+      ensureGatewayProxyConfig,
+      ensureManagedGatewayDevice,
+      resolveSetupUrl,
+      startGateway,
+      teamyouMemoryActivation,
+      watchdog,
+      gmailWatchService,
+    });
+
+    expect(callOrder.slice(-4)).toEqual([
+      "startGateway",
+      "teamyouMemoryActivation.start",
+      "watchdog.start",
+      "gmailWatchService.start",
+    ]);
+  });
+
   it("delegates invalid config repair to doctor before retrying config boot steps", async () => {
     const callOrder = [];
     const configError = new Error("Could not read valid openclaw.json: bad json");

@@ -162,6 +162,7 @@ describe("server/onboarding/openclaw", () => {
         logging: true,
       },
     });
+    expect(next.plugins.slots.memory).toBe("none");
     expect(next.agents.defaults.heartbeat).toBeUndefined();
     expect(next.agents.defaults.memorySearch).toBeUndefined();
     expect(next.approvals.plugin).toEqual({
@@ -571,6 +572,7 @@ describe("server/onboarding/openclaw", () => {
         logging: true,
       },
     });
+    expect(next.plugins.slots.memory).toBe("none");
     expect(next.agents.defaults.heartbeat).toBeUndefined();
     expect(next.agents.defaults.memorySearch).toBeUndefined();
     expect(next.update.checkOnStart).toBe(false);
@@ -739,6 +741,7 @@ describe("server/onboarding/openclaw", () => {
         model: "anthropic/claude-sonnet-4.6",
       },
     });
+    expect(next.plugins.slots.memory).toBe("none");
   });
 
   it("configures memory embeddings through AI Gateway when the gateway key is provided", () => {
