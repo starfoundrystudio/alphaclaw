@@ -38,7 +38,8 @@ describe("server/teamyou-memory-activation", () => {
       plugins: {
         allow: [],
         entries: {
-          "active-memory": { enabled: true },
+          "active-memory": { enabled: true, config: { enabled: false } },
+          "openclaw-teamyou-memory": { enabled: true },
         },
         slots: { memory: "none" },
       },
@@ -105,10 +106,13 @@ describe("server/teamyou-memory-activation", () => {
       repaired: true,
       reason: "bootstrap_pending",
       previousMemorySlot: "openclaw-teamyou-memory",
+      previousActiveMemoryEnabled: true,
       memorySlot: "none",
+      activeMemoryEnabled: false,
       workspaceDir,
     });
     expect(cfg.plugins.slots.memory).toBe("none");
+    expect(cfg.plugins.entries["active-memory"].config.enabled).toBe(false);
     expect(restartGateway).toHaveBeenCalledTimes(1);
   });
 
@@ -159,7 +163,7 @@ describe("server/teamyou-memory-activation", () => {
     expect(cfg.plugins.allow).toContain("openclaw-teamyou-memory");
     expect(cfg.plugins.entries["active-memory"]).toEqual({
       enabled: true,
-      config: { queryMode: "recent" },
+      config: { queryMode: "recent", enabled: true },
     });
     expect(cfg.plugins.entries["openclaw-teamyou-memory"]).toEqual({
       enabled: true,

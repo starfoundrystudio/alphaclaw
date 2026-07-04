@@ -697,6 +697,7 @@ describe("server/onboarding/openclaw", () => {
       config: { apiKey: "${TEAMYOU_API_KEY}" },
     });
     expect(next.plugins.entries["active-memory"].enabled).toBe(true);
+    expect(next.plugins.entries["active-memory"].config.enabled).toBe(false);
     expect(next.plugins.slots.memory).toBe("none");
   });
 
