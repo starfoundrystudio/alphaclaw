@@ -142,8 +142,12 @@ describe("server/ui-sandbox", () => {
       seenHomes.push(opts.env?.HOME || "");
       if (cmd === "command -v claude") return "/opt/homebrew/bin/claude\n";
       if (cmd === "claude --version") return "2.1.170 (Claude Code local)\n";
-      if (cmd === "claude auth status --text") {
-        return "Login method: Claude Max account\nEmail: local@example.com\n";
+      if (cmd === "claude auth status --json 2>&1 || true") {
+        return JSON.stringify({
+          loggedIn: true,
+          authMethod: "claude.ai",
+          email: "local@example.com",
+        });
       }
       return "";
     });
@@ -167,8 +171,8 @@ describe("server/ui-sandbox", () => {
         email: "local@example.com",
       });
       expect(shellCmd).toHaveBeenCalledWith(
-        "claude auth status --text",
-        expect.objectContaining({ timeout: 15000 }),
+        "claude auth status --json 2>&1 || true",
+        expect.objectContaining({ timeout: 15000, logStdout: false }),
       );
       expect(seenHomes).toContain(claudeHome);
     } finally {

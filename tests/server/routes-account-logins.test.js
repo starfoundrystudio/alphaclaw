@@ -46,12 +46,45 @@ describe("server/routes/account-logins", () => {
     });
   });
 
+  it("parses Claude CLI auth status JSON", () => {
+    expect(
+      parseClaudeAuthStatus(
+        JSON.stringify({
+          loggedIn: false,
+          authMethod: "none",
+          apiProvider: "firstParty",
+        }),
+      ),
+    ).toMatchObject({
+      loggedIn: false,
+      email: "",
+      loginMethod: "none",
+    });
+    expect(
+      parseClaudeAuthStatus(
+        JSON.stringify({
+          loggedIn: true,
+          authMethod: "claude.ai",
+          email: "user@example.com",
+        }),
+      ),
+    ).toMatchObject({
+      loggedIn: true,
+      email: "user@example.com",
+      loginMethod: "claude.ai",
+    });
+  });
+
   it("returns Claude CLI status when installed and logged in", async () => {
     const shellCmd = vi.fn(async (cmd) => {
       if (cmd === "command -v claude") return "/usr/local/bin/claude\n";
       if (cmd === "claude --version") return "2.1.170 (Claude Code)\n";
-      if (cmd === "claude auth status --text") {
-        return "Login method: Claude Max account\nEmail: user@example.com\n";
+      if (cmd === "claude auth status --json 2>&1 || true") {
+        return JSON.stringify({
+          loggedIn: true,
+          authMethod: "claude.ai",
+          email: "user@example.com",
+        });
       }
       return "";
     });
@@ -75,8 +108,12 @@ describe("server/routes/account-logins", () => {
     const shellCmd = vi.fn(async (cmd) => {
       if (cmd === "command -v claude") return "/usr/local/bin/claude\n";
       if (cmd === "claude --version") return "2.1.170 (Claude Code)\n";
-      if (cmd === "claude auth status --text") {
-        return "Login method: Claude Max account\nEmail: user@example.com\n";
+      if (cmd === "claude auth status --json 2>&1 || true") {
+        return JSON.stringify({
+          loggedIn: true,
+          authMethod: "claude.ai",
+          email: "user@example.com",
+        });
       }
       return "";
     });
@@ -95,7 +132,13 @@ describe("server/routes/account-logins", () => {
     const shellCmd = vi.fn(async (cmd) => {
       if (cmd === "command -v claude") return "/usr/local/bin/claude\n";
       if (cmd === "claude --version") return "2.1.170 (Claude Code)\n";
-      if (cmd === "claude auth status --text") throw new Error("not logged in");
+      if (cmd === "claude auth status --json 2>&1 || true") {
+        return JSON.stringify({
+          loggedIn: false,
+          authMethod: "none",
+          apiProvider: "firstParty",
+        });
+      }
       return "";
     });
     const upsertClaudeCliProfile = vi.fn();

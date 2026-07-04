@@ -121,8 +121,10 @@ describe("server/gateway restart behavior", () => {
   it("exports the durable OpenClaw state dir in gateway env", () => {
     const previousCompileCache = process.env.NODE_COMPILE_CACHE;
     const previousNoRespawn = process.env.OPENCLAW_NO_RESPAWN;
+    const previousHome = process.env.HOME;
     delete process.env.NODE_COMPILE_CACHE;
     delete process.env.OPENCLAW_NO_RESPAWN;
+    process.env.HOME = "/home/alphaclaw";
     try {
       delete require.cache[modulePath];
       const gateway = require(modulePath);
@@ -138,7 +140,9 @@ describe("server/gateway restart behavior", () => {
           OPENCLAW_NO_RESPAWN: "1",
         }),
       );
-      expect(gateway.gatewayEnv().HOME).toBe(gateway.gatewayEnv().OPENCLAW_HOME);
+      expect(gateway.gatewayEnv().HOME).toBe("/home/alphaclaw");
+      expect(gateway.gatewayEnv().OPENCLAW_HOME).toBe(ALPHACLAW_DIR);
+      expect(gateway.gatewayEnv().HOME).not.toBe(gateway.gatewayEnv().OPENCLAW_HOME);
     } finally {
       if (previousCompileCache === undefined) {
         delete process.env.NODE_COMPILE_CACHE;
@@ -149,6 +153,11 @@ describe("server/gateway restart behavior", () => {
         delete process.env.OPENCLAW_NO_RESPAWN;
       } else {
         process.env.OPENCLAW_NO_RESPAWN = previousNoRespawn;
+      }
+      if (previousHome === undefined) {
+        delete process.env.HOME;
+      } else {
+        process.env.HOME = previousHome;
       }
     }
   });

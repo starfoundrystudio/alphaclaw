@@ -177,6 +177,44 @@ describe("server/model-catalog-cache", () => {
     });
   });
 
+  it("preserves segmented bootstrap choices when dynamic catalog is narrower", async () => {
+    const tempRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), "alphaclaw-model-catalog-merged-"),
+    );
+    const cachePath = path.join(tempRoot, "cache", "model-catalog.json");
+    const shellCmd = vi.fn().mockResolvedValue("{}");
+    const parseJsonFromNoisyOutput = vi.fn(() => ({
+      models: [{ key: "anthropic/claude-opus-4-8", name: "Claude Opus 4.8" }],
+    }));
+    const cache = createModelCatalogCache({
+      cachePath,
+      shellCmd,
+      parseJsonFromNoisyOutput,
+      normalizeOnboardingModels: normalizeModels,
+      readOpenclawVersion: vi.fn(() => "2026.6.10"),
+      fallbackAccessModes: { subscription: {}, gateway: {}, "provider-api": {} },
+    });
+
+    await cache.getCatalogResponse();
+    await flushPromises();
+
+    const fresh = await cache.getCatalogResponse();
+    const modelKeys = fresh.models.map((model) => model.key);
+    expect(fresh.source).toBe("openclaw");
+    expect(modelKeys).toEqual(
+      expect.arrayContaining([
+        "openai/gpt-5.5",
+        "claude-cli/claude-opus-4-8",
+        "vercel-ai-gateway/openai/gpt-5.5",
+      ]),
+    );
+    expect(
+      fresh.models.find((model) => model.key === "openai/gpt-5.5"),
+    ).toMatchObject({
+      accessModes: expect.arrayContaining(["subscription"]),
+    });
+  });
+
   it("serves the bundled catalog without refreshing when dynamic refresh is disabled", async () => {
     const tempRoot = fs.mkdtempSync(
       path.join(os.tmpdir(), "alphaclaw-model-catalog-bootstrap-only-"),
