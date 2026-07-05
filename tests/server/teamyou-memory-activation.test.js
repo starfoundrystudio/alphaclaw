@@ -43,6 +43,11 @@ describe("server/teamyou-memory-activation", () => {
         },
         slots: { memory: "none" },
       },
+      skills: {
+        entries: {
+          teamyou: { enabled: false },
+        },
+      },
       agents: { defaults: { workspace: workspaceDir } },
       gateway: { mode: "local" },
     });
@@ -66,10 +71,11 @@ describe("server/teamyou-memory-activation", () => {
       workspaceDir,
     });
     expect(cfg.plugins.slots.memory).toBe("none");
+    expect(cfg.skills.entries.teamyou.enabled).toBe(false);
     expect(restartGateway).not.toHaveBeenCalled();
   });
 
-  it("repairs a leaked managed TeamYou memory slot while bootstrap is pending", async () => {
+  it("repairs leaked managed TeamYou access while bootstrap is pending", async () => {
     const root = createTempRoot();
     const openclawDir = path.join(root, "openclaw");
     const workspaceDir = path.join(root, "workspace");
@@ -83,6 +89,11 @@ describe("server/teamyou-memory-activation", () => {
           "openclaw-teamyou-memory": { enabled: true },
         },
         slots: { memory: "openclaw-teamyou-memory" },
+      },
+      skills: {
+        entries: {
+          teamyou: { enabled: true },
+        },
       },
       agents: { defaults: { workspace: workspaceDir } },
       gateway: { mode: "local" },
@@ -107,12 +118,111 @@ describe("server/teamyou-memory-activation", () => {
       reason: "bootstrap_pending",
       previousMemorySlot: "openclaw-teamyou-memory",
       previousActiveMemoryEnabled: true,
+      previousTeamyouSkillEnabled: true,
       memorySlot: "none",
       activeMemoryEnabled: false,
+      teamyouSkillEnabled: false,
       workspaceDir,
     });
     expect(cfg.plugins.slots.memory).toBe("none");
     expect(cfg.plugins.entries["active-memory"].config.enabled).toBe(false);
+    expect(cfg.skills.entries.teamyou.enabled).toBe(false);
+    expect(restartGateway).toHaveBeenCalledTimes(1);
+  });
+
+  it("repairs a missing TeamYou skill gate while bootstrap is pending", async () => {
+    const root = createTempRoot();
+    const openclawDir = path.join(root, "openclaw");
+    const workspaceDir = path.join(root, "workspace");
+    fs.mkdirSync(workspaceDir, { recursive: true });
+    fs.writeFileSync(path.join(workspaceDir, "BOOTSTRAP.md"), "bootstrap", "utf8");
+    writeJson(path.join(openclawDir, "openclaw.json"), {
+      plugins: {
+        allow: ["openclaw-teamyou-memory", "active-memory"],
+        entries: {
+          "active-memory": { enabled: true, config: { enabled: false } },
+          "openclaw-teamyou-memory": { enabled: true },
+        },
+        slots: { memory: "none" },
+      },
+      agents: { defaults: { workspace: workspaceDir } },
+      gateway: { mode: "local" },
+    });
+    const restartGateway = vi.fn(async () => {});
+
+    const result = await activateTeamyouMemoryIfBootstrapComplete({
+      fsModule: fs,
+      openclawDir,
+      workspaceDir,
+      restartGateway,
+      logger: { log: vi.fn(), warn: vi.fn() },
+    });
+
+    const cfg = JSON.parse(
+      fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"),
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      activated: false,
+      repaired: true,
+      reason: "bootstrap_pending",
+      previousTeamyouSkillEnabled: true,
+      teamyouSkillEnabled: false,
+      workspaceDir,
+    });
+    expect(cfg.plugins.slots.memory).toBe("none");
+    expect(cfg.plugins.entries["active-memory"].config.enabled).toBe(false);
+    expect(cfg.skills.entries.teamyou.enabled).toBe(false);
+    expect(restartGateway).toHaveBeenCalledTimes(1);
+  });
+
+  it("enables only the TeamYou skill after bootstrap when memory is not configured", async () => {
+    const root = createTempRoot();
+    const openclawDir = path.join(root, "openclaw");
+    const workspaceDir = path.join(root, "workspace");
+    writeJson(path.join(workspaceDir, "openclaw-workspace-state.json"), {
+      version: 1,
+      setupCompletedAt: "2026-07-04T00:01:00.000Z",
+    });
+    writeJson(path.join(openclawDir, "openclaw.json"), {
+      plugins: {
+        allow: [],
+        entries: {},
+        slots: { memory: "none" },
+      },
+      skills: {
+        entries: {
+          teamyou: { enabled: false },
+        },
+      },
+      agents: { defaults: { workspace: workspaceDir } },
+      gateway: { mode: "local" },
+    });
+    const restartGateway = vi.fn(async () => {});
+
+    const result = await activateTeamyouMemoryIfBootstrapComplete({
+      fsModule: fs,
+      openclawDir,
+      workspaceDir,
+      restartGateway,
+      logger: { log: vi.fn(), warn: vi.fn() },
+    });
+
+    const cfg = JSON.parse(
+      fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"),
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      activated: true,
+      reason: "setup_completed_marker",
+      memorySlot: "none",
+      teamyouSkillEnabled: true,
+      workspaceDir,
+    });
+    expect(cfg.plugins.allow).not.toContain("openclaw-teamyou-memory");
+    expect(cfg.plugins.entries["openclaw-teamyou-memory"]).toBeUndefined();
+    expect(cfg.plugins.slots.memory).toBe("none");
+    expect(cfg.skills.entries.teamyou.enabled).toBe(true);
     expect(restartGateway).toHaveBeenCalledTimes(1);
   });
 
@@ -137,6 +247,11 @@ describe("server/teamyou-memory-activation", () => {
         },
         slots: { memory: "none" },
       },
+      skills: {
+        entries: {
+          teamyou: { enabled: false },
+        },
+      },
       agents: { defaults: { workspace: workspaceDir } },
       gateway: { mode: "local" },
     });
@@ -158,6 +273,7 @@ describe("server/teamyou-memory-activation", () => {
       activated: true,
       reason: "setup_completed_marker",
       memorySlot: "openclaw-teamyou-memory",
+      teamyouSkillEnabled: true,
       workspaceDir,
     });
     expect(cfg.plugins.allow).toContain("openclaw-teamyou-memory");
@@ -170,6 +286,7 @@ describe("server/teamyou-memory-activation", () => {
       config: { apiKey: "${TEAMYOU_API_KEY}" },
     });
     expect(cfg.plugins.slots.memory).toBe("openclaw-teamyou-memory");
+    expect(cfg.skills.entries.teamyou.enabled).toBe(true);
     expect(restartGateway).toHaveBeenCalledTimes(1);
     expect(
       fs.existsSync(path.join(openclawDir, ".alphaclaw", "teamyou-memory-activated.json")),
