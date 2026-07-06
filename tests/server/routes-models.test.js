@@ -42,6 +42,10 @@ const createModelDeps = () => {
     readEnvFile: vi.fn(() => []),
     writeEnvFile: vi.fn(),
     reloadEnv: vi.fn(() => true),
+    reconcileOpenclawPlugins: vi.fn(async () => ({ plugins: [] })),
+    rootDir: "/tmp/alphaclaw",
+    openclawDir: "/tmp/openclaw",
+    fsModule: fs,
     authProfiles: {
       getModelConfig: vi.fn(() => ({ primary: null, configuredModels: {} })),
       listProfiles: vi.fn(() => []),
@@ -346,6 +350,55 @@ describe("server/routes/models", () => {
         process.env.GITHUB_WORKSPACE_REPO = previousGithubRepo;
       }
     }
+  });
+
+  it("reconciles managed agent runtime plugins on PUT /api/models/config", async () => {
+    const deps = createModelDeps();
+    deps.shellCmd.mockResolvedValue("");
+    deps.authProfiles.setModelConfig.mockReturnValue({
+      managedPluginIds: ["codex"],
+    });
+    const app = createApp(deps);
+
+    const res = await request(app).put("/api/models/config").send({
+      primary: "openai/gpt-5.5",
+      configuredModels: {
+        "openai/gpt-5.5": { agentRuntime: { id: "codex" } },
+      },
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(deps.reconcileOpenclawPlugins).toHaveBeenCalledWith({
+      rootDir: "/tmp/alphaclaw",
+      openclawDir: "/tmp/openclaw",
+      fsModule: fs,
+      logger: console,
+      env: process.env,
+    });
+  });
+
+  it("returns a helpful error when managed runtime plugin reconciliation fails", async () => {
+    const deps = createModelDeps();
+    deps.authProfiles.setModelConfig.mockReturnValue({
+      managedPluginIds: ["codex"],
+    });
+    deps.reconcileOpenclawPlugins.mockRejectedValue(new Error("npm failed"));
+    const app = createApp(deps);
+
+    const res = await request(app).put("/api/models/config").send({
+      primary: "openai/gpt-5.5",
+      configuredModels: {
+        "openai/gpt-5.5": { agentRuntime: { id: "codex" } },
+      },
+    });
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({
+      ok: false,
+      error:
+        "OpenClaw plugin installation failed. Please retry saving model settings; if it persists, check package registry/network access for OpenClaw plugins.",
+    });
   });
 
   it("skips automatic git-sync when GitHub backup is not configured", async () => {
