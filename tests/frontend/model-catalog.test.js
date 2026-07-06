@@ -25,7 +25,7 @@ describe("frontend/model-catalog", () => {
     ).toBe("anthropic/claude-opus-4-6");
   });
 
-  it("defaults to Claude Opus 4.8 when it is in the catalog", async () => {
+  it("defaults to the recommended subscription model when available", async () => {
     const { getInitialOnboardingModelKey } = await import(
       "../../lib/public/js/lib/model-catalog.js"
     );
@@ -33,15 +33,19 @@ describe("frontend/model-catalog", () => {
     expect(
       getInitialOnboardingModelKey({
         catalog: [
-          { key: "openai/gpt-5.4", label: "GPT-5.4" },
+          {
+            key: "openai/gpt-5.5",
+            label: "GPT-5.5",
+            accessModes: ["subscription", "provider-api"],
+          },
           { key: "anthropic/claude-opus-4-7", label: "Opus 4.7" },
           { key: "anthropic/claude-opus-4-8", label: "Opus 4.8" },
         ],
       }),
-    ).toBe("anthropic/claude-opus-4-8");
+    ).toBe("openai/gpt-5.5");
   });
 
-  it("falls back to the first featured model when Opus 4.8 is unavailable", async () => {
+  it("falls back to the first featured model when no subscription default is available", async () => {
     const { getInitialOnboardingModelKey } = await import(
       "../../lib/public/js/lib/model-catalog.js"
     );
