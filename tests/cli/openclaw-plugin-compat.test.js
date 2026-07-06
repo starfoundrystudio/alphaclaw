@@ -352,6 +352,112 @@ describe("openclaw plugin compatibility manifest", () => {
     );
   });
 
+  it("re-applies the TeamYou bootstrap gate after plugin install mutates config", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        "openclaw-teamyou-memory": {
+          kind: "plugin",
+          package: "@teamyou/openclaw-memory",
+          version: "2026.5.6",
+          pluginId: "openclaw-teamyou-memory",
+          install: {
+            npmSpec: "@teamyou/openclaw-memory",
+            exactNpmSpec: "@teamyou/openclaw-memory@2026.5.6",
+          },
+        },
+      },
+    });
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    const workspaceDir = path.join(openclawDir, "workspace");
+    fs.mkdirSync(workspaceDir, { recursive: true });
+    fs.writeFileSync(path.join(workspaceDir, "BOOTSTRAP.md"), "bootstrap", "utf8");
+    writeOpenclawConfig(openclawDir, {
+      agents: { defaults: { workspace: workspaceDir } },
+      gateway: { mode: "local" },
+      plugins: {
+        allow: ["openclaw-teamyou-memory", "active-memory"],
+        entries: {
+          "active-memory": { enabled: true, config: { enabled: false } },
+          "openclaw-teamyou-memory": {
+            enabled: true,
+            config: { apiKey: "${TEAMYOU_API_KEY}" },
+          },
+        },
+        slots: { memory: "none" },
+      },
+      skills: {
+        entries: {
+          teamyou: { enabled: false },
+        },
+      },
+    });
+    const manifestPath = writeManifest(tmpDir, manifest);
+    const commands = [];
+    const logs = [];
+    let plugins = [];
+    const execSyncImpl = (command) => {
+      commands.push(String(command));
+      if (String(command).includes("'--version'")) {
+        return "2026.5.6\n";
+      }
+      if (String(command).includes("'plugins' 'list' '--json'")) {
+        return JSON.stringify({ plugins });
+      }
+      if (String(command).includes("'plugins' 'install'")) {
+        writeOpenclawConfig(openclawDir, {
+          agents: { defaults: { workspace: workspaceDir } },
+          gateway: { mode: "local" },
+          plugins: {
+            allow: ["openclaw-teamyou-memory", "active-memory", "memory-core"],
+            entries: {
+              "active-memory": {
+                enabled: true,
+                config: {
+                  agents: ["main"],
+                  queryMode: "recent",
+                  toolsAllow: ["teamyou_retrieve_context"],
+                },
+              },
+              "openclaw-teamyou-memory": {
+                enabled: true,
+                config: { apiKey: "${TEAMYOU_API_KEY}" },
+              },
+            },
+            slots: { memory: "openclaw-teamyou-memory" },
+          },
+          skills: { entries: {} },
+        });
+        plugins = [
+          {
+            id: "openclaw-teamyou-memory",
+            name: "@teamyou/openclaw-memory",
+            version: "2026.5.6",
+          },
+        ];
+      }
+      return "";
+    };
+
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: (line) => logs.push(line) },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    const next = readOpenclawConfig(openclawDir);
+    expect(commands.some((cmd) => cmd.includes("'plugins' 'install'"))).toBe(true);
+    expect(logs.join("\n")).toContain("Re-applied pending TeamYou bootstrap gate");
+    expect(next.plugins.slots.memory).toBe("none");
+    expect(next.plugins.entries["active-memory"].config.enabled).toBe(false);
+    expect(next.plugins.entries["openclaw-teamyou-memory"].enabled).toBe(true);
+    expect(next.skills.entries.teamyou).toEqual({ enabled: false });
+  });
+
   it("installs provider plugins when provider config references them", () => {
     const { commands, result } = reconcileFixture({
       tmpDir,

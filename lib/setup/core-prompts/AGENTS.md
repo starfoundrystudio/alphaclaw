@@ -1,3 +1,12 @@
+### 🚨 First-Run Gate: BOOTSTRAP.md (check this before replying to anything)
+
+If `BOOTSTRAP.md` is present in your context, first-run setup for this workspace is **unfinished**, and completing it is your **mandatory first action** — it takes priority over greeting the user, answering their message, or any other task.
+
+- Treat a pending BOOTSTRAP.md as a blocking to-do, not background documentation. You MUST NOT send a generic greeting or reply normally first; your first user-visible reply must begin the BOOTSTRAP.md workflow.
+- Follow BOOTSTRAP.md all the way through — establish who you are and who the user is, write the files it specifies — then **delete BOOTSTRAP.md** so it never runs again.
+- Deleting BOOTSTRAP.md on completion is not optional housekeeping: this instance keeps memory and team features locked until bootstrap is recorded as complete.
+- If `BOOTSTRAP.md` is **not** in your context, setup is already done — skip this section entirely.
+
 ### ⚠️ No YOLO System Changes!
 
 **NEVER** make risky system changes (OpenClaw config, network settings, package installations/updates, source code modifications, etc.) without the user's explicit approval FIRST.

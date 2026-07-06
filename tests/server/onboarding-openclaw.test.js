@@ -160,8 +160,11 @@ describe("server/onboarding/openclaw", () => {
         maxSummaryChars: 220,
         persistTranscripts: false,
         logging: true,
+        enabled: false,
       },
     });
+    expect(next.plugins.slots.memory).toBe("none");
+    expect(next.skills.entries.teamyou).toEqual({ enabled: false });
     expect(next.agents.defaults.heartbeat).toBeUndefined();
     expect(next.agents.defaults.memorySearch).toBeUndefined();
     expect(next.approvals.plugin).toEqual({
@@ -569,8 +572,11 @@ describe("server/onboarding/openclaw", () => {
         maxSummaryChars: 220,
         persistTranscripts: false,
         logging: true,
+        enabled: false,
       },
     });
+    expect(next.plugins.slots.memory).toBe("none");
+    expect(next.skills.entries.teamyou).toEqual({ enabled: false });
     expect(next.agents.defaults.heartbeat).toBeUndefined();
     expect(next.agents.defaults.memorySearch).toBeUndefined();
     expect(next.update.checkOnStart).toBe(false);
@@ -641,6 +647,148 @@ describe("server/onboarding/openclaw", () => {
     expect(next.plugins.entries["cloudflare-ai-gateway"]).toEqual({
       enabled: true,
     });
+  });
+
+  it("disables managed TeamYou memory during fresh bootstrap even when OpenClaw selected it", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: {
+            allow: ["openclaw-teamyou-memory", "active-memory"],
+            load: { paths: [] },
+            entries: {
+              "active-memory": {
+                enabled: true,
+                config: { queryMode: "recent" },
+              },
+              "openclaw-teamyou-memory": {
+                enabled: true,
+                config: { apiKey: "teamyou-live-secret" },
+              },
+            },
+            slots: {
+              memory: "openclaw-teamyou-memory",
+            },
+          },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: { TEAMYOU_API_KEY: "teamyou-live-secret" },
+      requiredPlugins: ["openclaw-teamyou-memory"],
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.plugins.allow).toEqual(
+      expect.arrayContaining([
+        "openclaw-teamyou-memory",
+        "active-memory",
+        "usage-tracker",
+      ]),
+    );
+    expect(next.plugins.entries["openclaw-teamyou-memory"]).toEqual({
+      enabled: false,
+      config: { apiKey: "${TEAMYOU_API_KEY}" },
+    });
+    expect(next.plugins.entries["active-memory"].enabled).toBe(true);
+    expect(next.plugins.entries["active-memory"].config.enabled).toBe(false);
+    expect(next.plugins.slots.memory).toBe("none");
+    expect(next.skills.entries.teamyou).toEqual({ enabled: false });
+  });
+
+  it("keeps TeamYou memory enabled on import when the workspace already completed bootstrap", () => {
+    const openclawDir = createTempOpenclawDir();
+    const workspaceDir = path.join(openclawDir, "workspace");
+    fs.mkdirSync(workspaceDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(workspaceDir, "openclaw-workspace-state.json"),
+      JSON.stringify({
+        version: 1,
+        bootstrapSeededAt: "2026-07-01T00:00:00.000Z",
+        setupCompletedAt: "2026-07-01T00:05:00.000Z",
+      }),
+      "utf8",
+    );
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: {
+            allow: ["openclaw-teamyou-memory", "active-memory"],
+            load: { paths: [] },
+            entries: {
+              "active-memory": { enabled: true, config: { queryMode: "recent" } },
+              "openclaw-teamyou-memory": {
+                enabled: true,
+                config: { apiKey: "${TEAMYOU_API_KEY}" },
+              },
+            },
+            slots: { memory: "openclaw-teamyou-memory" },
+          },
+          skills: { entries: { teamyou: { enabled: true } } },
+          channels: {},
+          agents: { defaults: { workspace: workspaceDir } },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeManagedImportOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.plugins.slots.memory).toBe("openclaw-teamyou-memory");
+    expect(next.plugins.entries["openclaw-teamyou-memory"].enabled).toBe(true);
+    expect(next.plugins.entries["active-memory"].config.enabled).toBeUndefined();
+    expect(next.skills.entries.teamyou).toEqual({ enabled: true });
+  });
+
+  it("preserves a user-selected unmanaged memory slot while gating fresh bootstrap", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: {
+            allow: ["memory-lancedb"],
+            load: { paths: [] },
+            entries: { "memory-lancedb": { enabled: true } },
+            slots: { memory: "memory-lancedb" },
+          },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    writeSanitizedOpenclawConfig({
+      fs,
+      openclawDir,
+      varMap: {},
+    });
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.plugins.slots.memory).toBe("memory-lancedb");
+    expect(next.skills.entries.teamyou).toEqual({ enabled: false });
   });
 
   it("preserves heartbeat settings without forcing a managed heartbeat model", () => {
@@ -737,8 +885,10 @@ describe("server/onboarding/openclaw", () => {
         persistTranscripts: true,
         logging: false,
         model: "anthropic/claude-sonnet-4.6",
+        enabled: false,
       },
     });
+    expect(next.plugins.slots.memory).toBe("none");
   });
 
   it("configures memory embeddings through AI Gateway when the gateway key is provided", () => {
