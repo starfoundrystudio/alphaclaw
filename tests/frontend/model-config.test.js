@@ -2,6 +2,12 @@ const loadModelConfig = async () =>
   import("../../lib/public/js/lib/model-config.js");
 
 describe("frontend/model-config", () => {
+  it("defaults model selection flows to subscription access", async () => {
+    const modelConfig = await loadModelConfig();
+
+    expect(modelConfig.getDefaultModelAccessMode()).toBe("subscription");
+  });
+
   it("maps openai-codex auth provider to openai", async () => {
     const modelConfig = await loadModelConfig();
     expect(modelConfig.getAuthProviderFromModelProvider("openai-codex")).toBe("openai");

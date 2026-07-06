@@ -261,6 +261,24 @@ describe("server/auth-profiles", () => {
     expect(config.gateway.port).toBe(18789);
   });
 
+  it("setModelConfig enables managed agent runtime owner plugins", () => {
+    const result = ap.setModelConfig({
+      primary: "openai/gpt-5.5",
+      configuredModels: {
+        "openai/gpt-5.5": { agentRuntime: { id: "codex" } },
+        "anthropic/claude-opus-4-8": { agentRuntime: { id: "claude-cli" } },
+      },
+    });
+
+    const config = readJson("openclaw.json");
+    expect(result.managedPluginIds).toEqual(["codex", "anthropic"]);
+    expect(config.plugins.allow).toEqual(
+      expect.arrayContaining(["codex", "anthropic"]),
+    );
+    expect(config.plugins.entries.codex).toEqual({ enabled: true });
+    expect(config.plugins.entries.anthropic).toEqual({ enabled: true });
+  });
+
   it("legacy upsertCodexProfile writes oauth and syncs config", () => {
     ap.upsertCodexProfile({
       access: "jwt",

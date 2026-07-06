@@ -128,7 +128,12 @@ describe("frontend/models-tab auth provider mapping", () => {
   it("builds configured model entries for Add Model access routes", async () => {
     const addModelModal = await loadAddModelModal();
     const catalog = [
-      { key: "openai/gpt-5.5", provider: "openai", label: "GPT-5.5" },
+      {
+        key: "openai/gpt-5.5",
+        provider: "openai",
+        label: "GPT-5.5",
+        accessModes: ["subscription", "provider-api"],
+      },
       {
         key: "claude-cli/claude-opus-4-8",
         provider: "claude-cli",
@@ -174,5 +179,108 @@ describe("frontend/models-tab auth provider mapping", () => {
       modelKey: "anthropic/claude-opus-4-8",
       modelConfig: {},
     });
+  });
+
+  it("defaults Add Model opens to the recommended OpenAI subscription model", async () => {
+    const addModelModal = await loadAddModelModal();
+    const catalog = [
+      {
+        key: "claude-cli/claude-opus-4-8",
+        provider: "claude-cli",
+        label: "Claude Opus 4.8",
+      },
+      {
+        key: "openai/gpt-5.5",
+        provider: "openai",
+        label: "GPT-5.5",
+        accessModes: ["subscription", "provider-api"],
+      },
+    ];
+
+    expect(addModelModal.getInitialAddModelState({ catalog })).toEqual({
+      accessMode: "subscription",
+      provider: "openai",
+      modelKey: "openai/gpt-5.5",
+    });
+  });
+
+  it("treats the same model key with a different runtime as not configured", async () => {
+    const addModelModal = await loadAddModelModal();
+    const codexSelection = {
+      modelKey: "openai/gpt-5.5",
+      modelConfig: { agentRuntime: { id: "codex" } },
+    };
+
+    expect(
+      addModelModal.isAddModelSelectionConfigured({
+        selection: codexSelection,
+        configuredModels: {
+          "openai/gpt-5.5": {},
+        },
+      }),
+    ).toBe(false);
+    expect(
+      addModelModal.isAddModelSelectionConfigured({
+        selection: codexSelection,
+        configuredModels: {
+          "openai/gpt-5.5": { agentRuntime: { id: "codex" } },
+        },
+      }),
+    ).toBe(true);
+    expect(
+      addModelModal.isAddModelSelectionConfigured({
+        selection: {
+          modelKey: "openai/gpt-5.5",
+          modelConfig: {},
+        },
+        configuredModels: {
+          "openai/gpt-5.5": {},
+        },
+      }),
+    ).toBe(true);
+  });
+
+  it("explains managed runtime plugin install progress", async () => {
+    const addModelModal = await loadAddModelModal();
+
+    expect(
+      addModelModal.getAddModelProgressMessage({
+        modelConfig: { agentRuntime: { id: "codex" } },
+      }),
+    ).toContain("Codex runtime plugin");
+    expect(
+      addModelModal.getAddModelProgressMessage({
+        modelConfig: { agentRuntime: { id: "claude-cli" } },
+      }),
+    ).toContain("Claude CLI runtime plugin");
+    expect(addModelModal.getAddModelProgressMessage({ modelConfig: {} })).toBe(
+      "Saving model settings...",
+    );
+  });
+
+  it("hides the already-configured warning while an add is in progress", async () => {
+    const addModelModal = await loadAddModelModal();
+
+    expect(
+      addModelModal.shouldShowAlreadyConfiguredMessage({
+        alreadyConfigured: true,
+        adding: false,
+        busy: false,
+      }),
+    ).toBe(true);
+    expect(
+      addModelModal.shouldShowAlreadyConfiguredMessage({
+        alreadyConfigured: true,
+        adding: true,
+        busy: false,
+      }),
+    ).toBe(false);
+    expect(
+      addModelModal.shouldShowAlreadyConfiguredMessage({
+        alreadyConfigured: true,
+        adding: false,
+        busy: true,
+      }),
+    ).toBe(false);
   });
 });
