@@ -130,6 +130,13 @@ describe("frontend/welcome-config", () => {
         {},
         { tailscaleApiToken: "tskey-api-test_123" },
       ),
+    ).toBe("Confirm that Tailscale is installed and signed in on this device.");
+    expect(
+      welcomeConfig.getWelcomeGroupError(
+        welcomeConfig.kTailscaleGroupId,
+        {},
+        { tailscaleApiToken: "tskey-api-test_123", tailscaleClientReady: true },
+      ),
     ).toBe("");
   });
 
