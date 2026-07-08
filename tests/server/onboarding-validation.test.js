@@ -49,6 +49,22 @@ describe("onboarding/validation", () => {
     expect(res.error).toBe("AI_GATEWAY_API_KEY must start with vck_");
   });
 
+  it("ignores stale hidden provider credentials when another provider is selected", () => {
+    const res = validateOnboardingInput({
+      vars: [
+        ...kBaseVars(),
+        { key: "OPENAI_API_KEY", value: "sk-test-123" },
+        { key: "AI_GATEWAY_API_KEY", value: "aigw-stale-hidden-value" },
+        { key: "ANTHROPIC_API_KEY", value: "not-an-anthropic-key" },
+      ],
+      modelKey: "openai/gpt-5.5",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+    });
+    expect(res.ok).toBe(true);
+    expect(res.data.selectedProvider).toBe("openai");
+  });
+
   it("accepts MOONSHOT_API_KEY when the selected model uses the moonshot provider", () => {
     const res = validateOnboardingInput({
       vars: [...kBaseVars(), { key: "MOONSHOT_API_KEY", value: "sk-moonshot" }],
