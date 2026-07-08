@@ -98,6 +98,97 @@ describe("server/usage-tracker-config", () => {
     });
   });
 
+  it("enables web search fallback on boot when the host provides SEARXNG_BASE_URL", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: {
+            allow: ["usage-tracker"],
+            load: { paths: [kUsageTrackerPluginPath] },
+            entries: {
+              "usage-tracker": {
+                enabled: true,
+                hooks: { allowConversationAccess: true },
+              },
+            },
+          },
+          tools: {
+            profile: "full",
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    const changed = ensureUsageTrackerPluginConfig({
+      fsModule: fs,
+      openclawDir,
+      env: {
+        SEARXNG_BASE_URL: "http://127.0.0.1:8888",
+      },
+    });
+
+    expect(changed).toBe(true);
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.tools.web.search).toEqual({
+      enabled: true,
+    });
+    expect(next.plugins.bundledDiscovery).toBe("compat");
+    expect(next.plugins.allow).not.toContain("searxng");
+    expect(next.plugins.entries.searxng).toBeUndefined();
+  });
+
+  it("preserves an explicit web search opt-out when SearXNG is available on boot", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: {
+            allow: ["usage-tracker"],
+            load: { paths: [kUsageTrackerPluginPath] },
+            entries: {
+              "usage-tracker": {
+                enabled: true,
+                hooks: { allowConversationAccess: true },
+              },
+            },
+          },
+          tools: {
+            web: {
+              search: {
+                enabled: false,
+              },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    const changed = ensureUsageTrackerPluginConfig({
+      fsModule: fs,
+      openclawDir,
+      env: {
+        SEARXNG_BASE_URL: "http://127.0.0.1:8888",
+      },
+    });
+
+    expect(changed).toBe(false);
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.tools.web.search).toEqual({
+      enabled: false,
+    });
+  });
+
   it("does not treat an invalid openclaw.json as an empty config", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");

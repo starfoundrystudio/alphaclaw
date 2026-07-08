@@ -355,6 +355,96 @@ describe("server/onboarding/openclaw", () => {
     expect(next.plugins.entries.codex).toBeUndefined();
   });
 
+  it("enables web search fallback without selecting a provider when SearXNG is available", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    const previousSearxngBaseUrl = process.env.SEARXNG_BASE_URL;
+    process.env.SEARXNG_BASE_URL = "http://127.0.0.1:8888";
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: ["usage-tracker"], load: { paths: [] }, entries: {} },
+          channels: {},
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    try {
+      writeSanitizedOpenclawConfig({
+        fs,
+        openclawDir,
+        varMap: {},
+        modelKey: "vercel-ai-gateway/moonshotai/kimi-k2.6",
+      });
+    } finally {
+      if (previousSearxngBaseUrl === undefined) {
+        delete process.env.SEARXNG_BASE_URL;
+      } else {
+        process.env.SEARXNG_BASE_URL = previousSearxngBaseUrl;
+      }
+    }
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.tools.web.search).toEqual({
+      enabled: true,
+    });
+    expect(next.plugins.bundledDiscovery).toBe("compat");
+    expect(next.plugins.allow).not.toContain("searxng");
+    expect(next.plugins.entries.searxng).toBeUndefined();
+  });
+
+  it("does not replace an explicitly configured web search provider with SearXNG fallback", () => {
+    const openclawDir = createTempOpenclawDir();
+    const configPath = path.join(openclawDir, "openclaw.json");
+    const previousSearxngBaseUrl = process.env.SEARXNG_BASE_URL;
+    process.env.SEARXNG_BASE_URL = "http://127.0.0.1:8888";
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(
+        {
+          plugins: { allow: ["brave"], load: { paths: [] }, entries: {} },
+          channels: {},
+          tools: {
+            web: {
+              search: {
+                enabled: true,
+                provider: "brave",
+              },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+
+    try {
+      writeSanitizedOpenclawConfig({
+        fs,
+        openclawDir,
+        varMap: {},
+      });
+    } finally {
+      if (previousSearxngBaseUrl === undefined) {
+        delete process.env.SEARXNG_BASE_URL;
+      } else {
+        process.env.SEARXNG_BASE_URL = previousSearxngBaseUrl;
+      }
+    }
+
+    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.tools.web.search).toEqual({
+      enabled: true,
+      provider: "brave",
+    });
+    expect(next.plugins.bundledDiscovery).toBeUndefined();
+  });
+
   it("preserves imported global web search opt-out when enabling Codex runtime", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
