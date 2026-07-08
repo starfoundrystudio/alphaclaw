@@ -83,17 +83,17 @@ describe("server/doctor/workspace-fingerprint", () => {
     expect(snapshot.scan.warning).toContain("excluded 2 scratch/download directories");
   });
 
-  it("falls back to metadata-only fingerprinting when scan budgets are exceeded", () => {
+  it("falls back to metadata-only fingerprinting when hash budgets are exceeded", () => {
     const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "fingerprint-budget-"));
     fs.writeFileSync(path.join(workspaceRoot, "a.md"), "A", "utf8");
     fs.writeFileSync(path.join(workspaceRoot, "b.md"), "B", "utf8");
 
     const { computeWorkspaceSnapshot } = loadWorkspaceFingerprint();
-    const snapshot = computeWorkspaceSnapshot(workspaceRoot, { maxFiles: 1 });
+    const snapshot = computeWorkspaceSnapshot(workspaceRoot, { maxHashedBytes: 1 });
 
     expect(snapshot.scan.degraded).toBe(true);
-    expect(snapshot.scan.degradedReasons).toContain("max_files");
-    expect(snapshot.scan.warning).toContain("file count exceeded the scan budget");
+    expect(snapshot.scan.degradedReasons).toContain("max_hashed_bytes");
+    expect(snapshot.scan.warning).toContain("hashing exceeded the scan byte budget");
     expect(snapshot.manifest["a.md"].fingerprintMode).toBe("content");
     expect(snapshot.manifest["b.md"]).toEqual(
       expect.objectContaining({
@@ -101,5 +101,25 @@ describe("server/doctor/workspace-fingerprint", () => {
       }),
     );
     expect(snapshot.manifest["b.md"]).not.toHaveProperty("hash");
+  });
+
+  it("stops traversal when file budgets are exceeded", () => {
+    const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "fingerprint-stop-"));
+    const overflowDir = path.join(workspaceRoot, "z-overflow");
+    fs.mkdirSync(overflowDir, { recursive: true });
+    fs.writeFileSync(path.join(workspaceRoot, "a.md"), "A", "utf8");
+    fs.writeFileSync(path.join(overflowDir, "b.md"), "B", "utf8");
+
+    const { computeWorkspaceSnapshot } = loadWorkspaceFingerprint();
+    const readdirSpy = vi.spyOn(fs, "readdirSync");
+    const snapshot = computeWorkspaceSnapshot(workspaceRoot, { maxFiles: 1 });
+
+    expect(snapshot.scan.degraded).toBe(true);
+    expect(snapshot.scan.degradedReasons).toContain("max_files");
+    expect(Object.keys(snapshot.manifest)).toEqual(["a.md"]);
+    expect(readdirSpy).not.toHaveBeenCalledWith(overflowDir, {
+      withFileTypes: true,
+    });
+    readdirSpy.mockRestore();
   });
 });
