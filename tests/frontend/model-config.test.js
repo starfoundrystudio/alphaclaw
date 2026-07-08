@@ -31,6 +31,18 @@ describe("frontend/model-config", () => {
     expect(volcengineKeys.has("VOLCANO_ENGINE_API_KEY")).toBe(true);
   });
 
+  it("describes and validates Vercel AI Gateway key format", async () => {
+    const modelConfig = await loadModelConfig();
+    const [field] = modelConfig.kProviderAuthFields["vercel-ai-gateway"];
+
+    expect(field.placeholder).toBe("vck_...");
+    expect(field.requiredPrefix).toBe("vck_");
+    expect(modelConfig.getAiCredentialFieldError(field, "vck_live_test")).toBe("");
+    expect(modelConfig.getAiCredentialFieldError(field, "not-a-vercel-key")).toBe(
+      "AI Gateway API Key must start with vck_",
+    );
+  });
+
   it("picks featured models in defined preference order", async () => {
     const modelConfig = await loadModelConfig();
     const featured = modelConfig.getFeaturedModels([

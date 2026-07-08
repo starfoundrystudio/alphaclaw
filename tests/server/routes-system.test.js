@@ -267,6 +267,23 @@ describe("server/routes/system", () => {
     expect(deps.syncChannelConfig).not.toHaveBeenCalled();
   });
 
+  it("rejects Vercel AI Gateway keys with the wrong prefix on PUT /api/env", async () => {
+    const deps = createSystemDeps();
+    const app = createApp(deps);
+
+    const res = await request(app).put("/api/env").send({
+      vars: [{ key: "AI_GATEWAY_API_KEY", value: "not-a-vercel-key" }],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "AI_GATEWAY_API_KEY must start with vck_",
+    });
+    expect(deps.writeEnvFile).not.toHaveBeenCalled();
+    expect(deps.syncChannelConfig).not.toHaveBeenCalled();
+  });
+
   it("does not restart gateway when env is unchanged", async () => {
     const deps = createSystemDeps();
     deps.reloadEnv.mockReturnValue(false);

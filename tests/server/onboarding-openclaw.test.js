@@ -53,7 +53,7 @@ describe("server/onboarding/openclaw", () => {
   it("builds Vercel AI Gateway onboarding args for gateway-backed models", () => {
     const args = buildOnboardArgs({
       varMap: {
-        AI_GATEWAY_API_KEY: "aigw_live_test",
+        AI_GATEWAY_API_KEY: "vck_live_test",
         OPENCLAW_GATEWAY_TOKEN: "gw-token",
       },
       selectedProvider: "vercel-ai-gateway",
@@ -64,7 +64,7 @@ describe("server/onboarding/openclaw", () => {
     expect(args).toContain("--auth-choice");
     expect(args).toContain("ai-gateway-api-key");
     expect(args).toContain("--ai-gateway-api-key");
-    expect(args).toContain("aigw_live_test");
+    expect(args).toContain("vck_live_test");
   });
 
   it("prefers existing Codex OAuth over OpenAI API keys for openai-codex onboarding", () => {
@@ -1000,7 +1000,7 @@ describe("server/onboarding/openclaw", () => {
     writeSanitizedOpenclawConfig({
       fs,
       openclawDir,
-      varMap: { AI_GATEWAY_API_KEY: "aigw_live_test" },
+      varMap: { AI_GATEWAY_API_KEY: "vck_live_test" },
     });
 
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
@@ -1048,7 +1048,7 @@ describe("server/onboarding/openclaw", () => {
     writeManagedImportOpenclawConfig({
       fs,
       openclawDir,
-      varMap: { AI_GATEWAY_API_KEY: "aigw_live_test" },
+      varMap: { AI_GATEWAY_API_KEY: "vck_live_test" },
     });
 
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));

@@ -505,6 +505,31 @@ describe("server/routes/models", () => {
     expect(deps.reloadEnv).toHaveBeenCalledTimes(1);
   });
 
+  it("rejects Vercel AI Gateway auth profiles with the wrong prefix", async () => {
+    const deps = createModelDeps();
+    deps.shellCmd.mockResolvedValue("");
+    const app = createApp(deps);
+
+    const res = await request(app).put("/api/models/config").send({
+      profiles: [
+        {
+          id: "vercel-ai-gateway:default",
+          type: "api_key",
+          provider: "vercel-ai-gateway",
+          key: "not-a-vercel-key",
+        },
+      ],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "Vercel AI Gateway API key must start with vck_",
+    });
+    expect(deps.authProfiles.upsertProfile).not.toHaveBeenCalled();
+    expect(deps.writeEnvFile).not.toHaveBeenCalled();
+  });
+
   it("removes API-key env vars when profile key is cleared", async () => {
     const deps = createModelDeps();
     deps.shellCmd.mockResolvedValue("");

@@ -412,7 +412,7 @@ describe("server/routes/onboarding", () => {
     const res = await request(app).post("/api/onboard").send({
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
-      vars: [{ key: "AI_GATEWAY_API_KEY", value: "aigw_test_123456789" }],
+      vars: [{ key: "AI_GATEWAY_API_KEY", value: "vck_test_123456789" }],
     });
 
     expect(res.status).toBe(200);
@@ -420,9 +420,28 @@ describe("server/routes/onboarding", () => {
     expect(
       deps.shellCmd.mock.calls.some(([cmd]) =>
         cmd.includes('"--auth-choice" "ai-gateway-api-key"') &&
-        cmd.includes('"--ai-gateway-api-key" "aigw_test_123456789"'),
+        cmd.includes('"--ai-gateway-api-key" "vck_test_123456789"'),
       ),
     ).toBe(true);
+  });
+
+  it("rejects Vercel AI Gateway keys with the wrong prefix during onboarding", async () => {
+    const deps = createBaseDeps();
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
+      modelKey: "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
+      vars: [{ key: "AI_GATEWAY_API_KEY", value: "not-a-vercel-key" }],
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "AI_GATEWAY_API_KEY must start with vck_",
+    });
+    expect(deps.writeEnvFile).not.toHaveBeenCalled();
+    expect(deps.shellCmd).not.toHaveBeenCalled();
   });
 
   it("allows fresh onboarding without GitHub backup and leaves repo sync disabled", async () => {

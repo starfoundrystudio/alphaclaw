@@ -332,6 +332,45 @@ describe("server/doctor-service", () => {
     expect(nextStatus.changeSummary.hasMeaningfulChanges).toBe(false);
   });
 
+  it("includes workspace scan degradation details in Doctor status", () => {
+    const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-scan-status-"));
+    const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-scan-status-db-"));
+    fs.mkdirSync(path.join(workspaceRoot, "scratch"), { recursive: true });
+    fs.writeFileSync(path.join(workspaceRoot, "scratch", "large.pdf"), Buffer.alloc(1024));
+    fs.writeFileSync(path.join(workspaceRoot, "AGENTS.md"), "# Guidance\n", "utf8");
+
+    const doctorDb = loadManagedDoctorDb();
+    doctorDb.initDoctorDb({ rootDir: dbRoot });
+
+    const { createDoctorService } = loadDoctorService();
+    const doctorService = createDoctorService({
+      clawCmd: vi.fn(),
+      listDoctorRuns: doctorDb.listDoctorRuns,
+      listDoctorCards: doctorDb.listDoctorCards,
+      getInitialWorkspaceBaseline: doctorDb.getInitialWorkspaceBaseline,
+      setInitialWorkspaceBaseline: doctorDb.setInitialWorkspaceBaseline,
+      createDoctorRun: doctorDb.createDoctorRun,
+      completeDoctorRun: doctorDb.completeDoctorRun,
+      insertDoctorCards: doctorDb.insertDoctorCards,
+      getDoctorRun: doctorDb.getDoctorRun,
+      getDoctorCardsByRunId: doctorDb.getDoctorCardsByRunId,
+      getDoctorCard: doctorDb.getDoctorCard,
+      updateDoctorCardStatus: doctorDb.updateDoctorCardStatus,
+      workspaceRoot,
+      managedRoot: workspaceRoot,
+    });
+
+    const status = doctorService.buildStatus();
+
+    expect(status.workspaceScan).toEqual(
+      expect.objectContaining({
+        ignoredDirectoryCount: 1,
+        warning: expect.stringContaining("excluded 1 scratch/download directory"),
+      }),
+    );
+    expect(status.changeSummary.hasBaseline).toBe(true);
+  });
+
   it("reports healthy Project Context files without truncation", () => {
     const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-bootstrap-healthy-"));
     const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-bootstrap-healthy-db-"));

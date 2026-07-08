@@ -28,6 +28,27 @@ describe("onboarding/validation", () => {
     expect(res.ok).toBe(true);
   });
 
+  it("accepts Vercel AI Gateway keys that start with vck_", () => {
+    const res = validateOnboardingInput({
+      vars: [...kBaseVars(), { key: "AI_GATEWAY_API_KEY", value: "vck_test" }],
+      modelKey: "vercel-ai-gateway/openai/gpt-5.5",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+    });
+    expect(res.ok).toBe(true);
+  });
+
+  it("rejects Vercel AI Gateway keys that do not start with vck_", () => {
+    const res = validateOnboardingInput({
+      vars: [...kBaseVars(), { key: "AI_GATEWAY_API_KEY", value: "aigw-test" }],
+      modelKey: "vercel-ai-gateway/openai/gpt-5.5",
+      resolveModelProvider: kResolveProvider,
+      hasCodexOauthProfile: () => false,
+    });
+    expect(res.ok).toBe(false);
+    expect(res.error).toBe("AI_GATEWAY_API_KEY must start with vck_");
+  });
+
   it("accepts MOONSHOT_API_KEY when the selected model uses the moonshot provider", () => {
     const res = validateOnboardingInput({
       vars: [...kBaseVars(), { key: "MOONSHOT_API_KEY", value: "sk-moonshot" }],
