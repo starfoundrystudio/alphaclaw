@@ -274,7 +274,9 @@ describe("server/watchdog", () => {
       autoRepair: true,
       eventLoopLagMonitor,
       fetchImpl: async () => {
-        throw new Error("gateway health request failed");
+        const error = new Error("gateway health request timed out");
+        error.name = "AbortError";
+        throw error;
       },
     });
 
@@ -303,7 +305,7 @@ describe("server/watchdog", () => {
         details: expect.objectContaining({
           skipped: true,
           selfOverloaded: true,
-          failureType: "request_error",
+          failureType: "timeout",
           eventLoopLag: expect.objectContaining({
             overloaded: true,
             p95Ms: 1500,
@@ -314,6 +316,43 @@ describe("server/watchdog", () => {
     );
     watchdog.stop();
     expect(eventLoopLagMonitor.stop).toHaveBeenCalled();
+  });
+
+  it("does not suppress connection failures when event-loop lag is high", async () => {
+    vi.useFakeTimers();
+    const { watchdog, insertWatchdogEvent } = createHarness({
+      autoRepair: false,
+      eventLoopLagMonitor: {
+        sample: vi.fn(() => ({ p95Ms: 1500, maxMs: 4000, meanMs: 900 })),
+        stop: vi.fn(),
+      },
+      fetchImpl: async () => {
+        throw new Error("connect ECONNREFUSED 127.0.0.1:18789");
+      },
+    });
+
+    watchdog.onGatewayLaunch({ startedAt: Date.now() - 60_000 });
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(watchdog.getStatus()).toEqual(
+      expect.objectContaining({
+        lifecycle: "running",
+        health: "degraded",
+      }),
+    );
+    expect(insertWatchdogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "health_check",
+        status: "failed",
+        details: expect.objectContaining({
+          reason: "connect ECONNREFUSED 127.0.0.1:18789",
+        }),
+      }),
+    );
+    expect(
+      insertWatchdogEvent.mock.calls.some((call) => call?.[0]?.details?.selfOverloaded),
+    ).toBe(false);
+    watchdog.stop();
   });
 
   it("does not suppress explicit gateway unhealthy responses when event-loop lag is high", async () => {
