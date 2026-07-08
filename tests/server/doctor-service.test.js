@@ -31,7 +31,7 @@ describe("server/doctor-service", () => {
     }
   });
 
-  it("reuses the previous completed run when the workspace fingerprint is unchanged", () => {
+  it("reuses the previous completed run when the workspace fingerprint is unchanged", async () => {
     const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-workspace-"));
     const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-service-db-"));
     fs.writeFileSync(
@@ -68,7 +68,7 @@ describe("server/doctor-service", () => {
       managedRoot: workspaceRoot,
     });
 
-    const imported = doctorService.importDoctorResult({
+    const imported = await doctorService.importDoctorResult({
       rawOutput: JSON.stringify({
         summary: "Initial findings",
         cards: [
@@ -87,7 +87,7 @@ describe("server/doctor-service", () => {
       }),
     });
 
-    const rerun = doctorService.runDoctor();
+    const rerun = await doctorService.runDoctor();
     const latestRun = doctorDb.getDoctorRun(rerun.runId);
 
     expect(imported.ok).toBe(true);
@@ -137,7 +137,7 @@ describe("server/doctor-service", () => {
       managedRoot: workspaceRoot,
     });
 
-    const result = doctorService.runDoctor();
+    const result = await doctorService.runDoctor();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(result.ok).toBe(true);
@@ -205,7 +205,7 @@ describe("server/doctor-service", () => {
       });
     const doctorService = buildDoctorService();
 
-    const firstRun = doctorService.runDoctor();
+    const firstRun = await doctorService.runDoctor();
     await new Promise((resolve) => setTimeout(resolve, 0));
     const firstRunCards = doctorDb.getDoctorCardsByRunId(firstRun.runId);
     doctorService.setCardStatus({
@@ -215,7 +215,7 @@ describe("server/doctor-service", () => {
 
     fs.writeFileSync(path.join(workspaceRoot, "README.md"), "# Updated docs\n", "utf8");
 
-    const secondRun = buildDoctorService().runDoctor();
+    const secondRun = await buildDoctorService().runDoctor();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(clawCmd).toHaveBeenCalledTimes(2);
@@ -234,7 +234,7 @@ describe("server/doctor-service", () => {
     );
   });
 
-  it("reports meaningful workspace drift only after a stale completed run", () => {
+  it("reports meaningful workspace drift only after a stale completed run", async () => {
     const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-drift-workspace-"));
     const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-drift-db-"));
     fs.writeFileSync(path.join(workspaceRoot, "AGENTS.md"), "# Guidance\n", "utf8");
@@ -270,7 +270,7 @@ describe("server/doctor-service", () => {
 
     const doctorService = buildDoctorService();
 
-    doctorService.importDoctorResult({
+    await doctorService.importDoctorResult({
       rawOutput: JSON.stringify({
         summary: "Baseline findings",
         cards: [],
@@ -282,6 +282,7 @@ describe("server/doctor-service", () => {
     fs.writeFileSync(path.join(workspaceRoot, "skills", "note.md"), "extra guidance\n", "utf8");
 
     const refreshedDoctorService = buildDoctorService();
+    await refreshedDoctorService.refreshWorkspaceSnapshot({ force: true });
     const status = refreshedDoctorService.buildStatus();
 
     expect(status.needsInitialRun).toBe(false);
@@ -292,7 +293,7 @@ describe("server/doctor-service", () => {
     expect(status.changeSummary.deltaScore).toBeGreaterThanOrEqual(4);
   });
 
-  it("uses the persisted initial baseline before the first completed run", () => {
+  it("uses the persisted initial baseline before the first completed run", async () => {
     const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-initial-baseline-"));
     const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-initial-baseline-db-"));
     fs.writeFileSync(path.join(workspaceRoot, "AGENTS.md"), "# Guidance\n", "utf8");
@@ -321,9 +322,12 @@ describe("server/doctor-service", () => {
 
     const doctorService = buildDoctorService();
 
+    await doctorService.refreshWorkspaceSnapshot({ force: true });
     const initialStatus = doctorService.buildStatus();
     fs.writeFileSync(path.join(workspaceRoot, "README.md"), "# Added after baseline\n", "utf8");
-    const nextStatus = buildDoctorService().buildStatus();
+    const nextDoctorService = buildDoctorService();
+    await nextDoctorService.refreshWorkspaceSnapshot({ force: true });
+    const nextStatus = nextDoctorService.buildStatus();
 
     expect(initialStatus.needsInitialRun).toBe(true);
     expect(initialStatus.changeSummary.hasBaseline).toBe(true);
@@ -332,7 +336,7 @@ describe("server/doctor-service", () => {
     expect(nextStatus.changeSummary.hasMeaningfulChanges).toBe(false);
   });
 
-  it("includes workspace scan degradation details in Doctor status", () => {
+  it("includes workspace scan degradation details in Doctor status", async () => {
     const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-scan-status-"));
     const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-scan-status-db-"));
     fs.mkdirSync(path.join(workspaceRoot, "scratch"), { recursive: true });
@@ -360,6 +364,7 @@ describe("server/doctor-service", () => {
       managedRoot: workspaceRoot,
     });
 
+    await doctorService.refreshWorkspaceSnapshot({ force: true });
     const status = doctorService.buildStatus();
 
     expect(status.workspaceScan).toEqual(
@@ -369,6 +374,58 @@ describe("server/doctor-service", () => {
       }),
     );
     expect(status.changeSummary.hasBaseline).toBe(true);
+  });
+
+  it("does not compute a workspace snapshot inline while building status", () => {
+    const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-status-bg-"));
+    const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-status-bg-db-"));
+    fs.writeFileSync(path.join(workspaceRoot, "AGENTS.md"), "# Guidance\n", "utf8");
+
+    const doctorDb = loadManagedDoctorDb();
+    doctorDb.initDoctorDb({ rootDir: dbRoot });
+
+    const workspaceSnapshotManager = {
+      getSnapshot: vi.fn(() => null),
+      getStatus: vi.fn(() => ({
+        refreshing: true,
+        computedAt: null,
+        refreshStartedAt: "2026-01-01T00:00:00.000Z",
+        lastError: null,
+      })),
+      refresh: vi.fn(),
+      triggerRefresh: vi.fn(),
+    };
+
+    const { createDoctorService } = loadDoctorService();
+    const doctorService = createDoctorService({
+      clawCmd: vi.fn(),
+      listDoctorRuns: doctorDb.listDoctorRuns,
+      listDoctorCards: doctorDb.listDoctorCards,
+      getInitialWorkspaceBaseline: doctorDb.getInitialWorkspaceBaseline,
+      setInitialWorkspaceBaseline: doctorDb.setInitialWorkspaceBaseline,
+      createDoctorRun: doctorDb.createDoctorRun,
+      completeDoctorRun: doctorDb.completeDoctorRun,
+      insertDoctorCards: doctorDb.insertDoctorCards,
+      getDoctorRun: doctorDb.getDoctorRun,
+      getDoctorCardsByRunId: doctorDb.getDoctorCardsByRunId,
+      getDoctorCard: doctorDb.getDoctorCard,
+      updateDoctorCardStatus: doctorDb.updateDoctorCardStatus,
+      workspaceRoot,
+      managedRoot: workspaceRoot,
+      workspaceSnapshotManager,
+    });
+
+    const status = doctorService.buildStatus();
+
+    expect(workspaceSnapshotManager.refresh).not.toHaveBeenCalled();
+    expect(workspaceSnapshotManager.triggerRefresh).toHaveBeenCalledTimes(1);
+    expect(status.changeSummary.hasBaseline).toBe(false);
+    expect(status.workspaceScan).toEqual(
+      expect.objectContaining({
+        refreshing: true,
+        refreshStartedAt: "2026-01-01T00:00:00.000Z",
+      }),
+    );
   });
 
   it("reports healthy Project Context files without truncation", () => {
@@ -502,7 +559,7 @@ describe("server/doctor-service", () => {
     );
   });
 
-  it("adds deterministic truncation cards alongside imported Doctor findings", () => {
+  it("adds deterministic truncation cards alongside imported Doctor findings", async () => {
     const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-bootstrap-import-"));
     const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-bootstrap-import-db-"));
     fs.writeFileSync(path.join(workspaceRoot, "AGENTS.md"), repeatText(20001), "utf8");
@@ -528,7 +585,7 @@ describe("server/doctor-service", () => {
       managedRoot: workspaceRoot,
     });
 
-    const imported = doctorService.importDoctorResult({
+    const imported = await doctorService.importDoctorResult({
       rawOutput: JSON.stringify({
         summary: "Imported findings",
         cards: [
