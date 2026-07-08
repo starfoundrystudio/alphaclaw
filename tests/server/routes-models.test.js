@@ -306,6 +306,29 @@ describe("server/routes/models", () => {
     );
   });
 
+  it("rejects Vercel AI Gateway model sets with an invalid env-backed key", async () => {
+    const deps = createModelDeps();
+    deps.shellCmd.mockResolvedValue("");
+    deps.readEnvFile.mockReturnValue([
+      { key: "AI_GATEWAY_API_KEY", value: "not-a-vercel-key" },
+    ]);
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
+      provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
+    );
+    const app = createApp(deps);
+
+    const res = await request(app)
+      .post("/api/models/set")
+      .send({ modelKey: "vercel-ai-gateway/openai/gpt-5.5" });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "AI_GATEWAY_API_KEY must start with vck_",
+    });
+    expect(deps.shellCmd).not.toHaveBeenCalled();
+  });
+
   it("re-syncs auth references on PUT /api/models/config", async () => {
     const previousGithubToken = process.env.GITHUB_TOKEN;
     const previousGithubRepo = process.env.GITHUB_WORKSPACE_REPO;
