@@ -43,6 +43,72 @@ describe("frontend/model-config", () => {
     );
   });
 
+  it("does not validate stale unrelated credentials for model-only saves", async () => {
+    const modelConfig = await loadModelConfig();
+
+    const fields = modelConfig.getAiCredentialFieldsForSave({
+      modelDirty: true,
+      selectedModelProvider: "openai",
+      selectedAuthProvider: "openai",
+      dirtyCredentialKeys: [],
+    });
+
+    expect(fields.map((field) => field.key)).toEqual(["OPENAI_API_KEY"]);
+    expect(
+      modelConfig.getAiCredentialErrorForFields(
+        {
+          OPENAI_API_KEY: "sk-test",
+          AI_GATEWAY_API_KEY: "aigw-stale-hidden-value",
+        },
+        fields,
+      ),
+    ).toBe("");
+  });
+
+  it("validates dirty credentials even when another provider is selected", async () => {
+    const modelConfig = await loadModelConfig();
+
+    const fields = modelConfig.getAiCredentialFieldsForSave({
+      modelDirty: true,
+      selectedModelProvider: "openai",
+      selectedAuthProvider: "openai",
+      dirtyCredentialKeys: ["AI_GATEWAY_API_KEY"],
+    });
+
+    expect(fields.map((field) => field.key)).toEqual([
+      "OPENAI_API_KEY",
+      "AI_GATEWAY_API_KEY",
+    ]);
+    expect(
+      modelConfig.getAiCredentialErrorForFields(
+        {
+          OPENAI_API_KEY: "sk-test",
+          AI_GATEWAY_API_KEY: "aigw-edited-value",
+        },
+        fields,
+      ),
+    ).toBe("AI Gateway API Key must start with vck_");
+  });
+
+  it("validates the selected provider credentials for model changes", async () => {
+    const modelConfig = await loadModelConfig();
+
+    const fields = modelConfig.getAiCredentialFieldsForSave({
+      modelDirty: true,
+      selectedModelProvider: "vercel-ai-gateway",
+      selectedAuthProvider: "vercel-ai-gateway",
+      dirtyCredentialKeys: [],
+    });
+
+    expect(fields.map((field) => field.key)).toEqual(["AI_GATEWAY_API_KEY"]);
+    expect(
+      modelConfig.getAiCredentialErrorForFields(
+        { AI_GATEWAY_API_KEY: "not-a-vercel-key" },
+        fields,
+      ),
+    ).toBe("AI Gateway API Key must start with vck_");
+  });
+
   it("picks featured models in defined preference order", async () => {
     const modelConfig = await loadModelConfig();
     const featured = modelConfig.getFeaturedModels([
