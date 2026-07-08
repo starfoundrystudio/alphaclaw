@@ -101,6 +101,87 @@ describe("server/doctor-service", () => {
     expect(doctorDb.getDoctorCardsByRunId(rerun.runId)).toHaveLength(1);
   });
 
+  it("does not reuse previous findings when the workspace snapshot is degraded", async () => {
+    const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-degraded-reuse-"));
+    const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-degraded-reuse-db-"));
+    fs.writeFileSync(path.join(workspaceRoot, "AGENTS.md"), "# Workspace Guidance\n", "utf8");
+
+    const doctorDb = loadManagedDoctorDb();
+    doctorDb.initDoctorDb({ rootDir: dbRoot });
+
+    const degradedSnapshot = {
+      fingerprint: "same-partial-fingerprint",
+      manifest: {
+        "AGENTS.md": {
+          size: 21,
+          mtimeMs: 1,
+          mode: 33188,
+          fingerprintMode: "metadata",
+        },
+      },
+      scan: {
+        degraded: true,
+        degradedReasons: ["max_files"],
+        warning: "Workspace scan used metadata-only fingerprinting for some files.",
+      },
+    };
+    const workspaceSnapshotManager = {
+      getSnapshot: vi.fn(() => degradedSnapshot),
+      getStatus: vi.fn(() => ({
+        refreshing: false,
+        computedAt: "2026-01-01T00:00:00.000Z",
+        refreshStartedAt: null,
+        lastError: null,
+      })),
+      refresh: vi.fn(async () => degradedSnapshot),
+      triggerRefresh: vi.fn(),
+    };
+    const clawCmd = vi.fn(async () => ({
+      ok: true,
+      stdout: JSON.stringify({
+        summary: "Fresh findings",
+        cards: [],
+      }),
+      stderr: "",
+      code: 0,
+    }));
+    const { createDoctorService } = loadDoctorService();
+    const doctorService = createDoctorService({
+      clawCmd,
+      listDoctorRuns: doctorDb.listDoctorRuns,
+      listDoctorCards: doctorDb.listDoctorCards,
+      getInitialWorkspaceBaseline: doctorDb.getInitialWorkspaceBaseline,
+      setInitialWorkspaceBaseline: doctorDb.setInitialWorkspaceBaseline,
+      createDoctorRun: doctorDb.createDoctorRun,
+      completeDoctorRun: doctorDb.completeDoctorRun,
+      insertDoctorCards: doctorDb.insertDoctorCards,
+      getDoctorRun: doctorDb.getDoctorRun,
+      getDoctorCardsByRunId: doctorDb.getDoctorCardsByRunId,
+      getDoctorCard: doctorDb.getDoctorCard,
+      updateDoctorCardStatus: doctorDb.updateDoctorCardStatus,
+      workspaceRoot,
+      managedRoot: workspaceRoot,
+      workspaceSnapshotManager,
+    });
+
+    const imported = await doctorService.importDoctorResult({
+      rawOutput: JSON.stringify({
+        summary: "Initial findings",
+        cards: [],
+      }),
+    });
+    const rerun = await doctorService.runDoctor();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const latestRun = doctorDb.getDoctorRun(rerun.runId);
+
+    expect(imported.ok).toBe(true);
+    expect(rerun.ok).toBe(true);
+    expect(rerun.reusedPreviousRun).toBeUndefined();
+    expect(clawCmd).toHaveBeenCalledTimes(1);
+    expect(latestRun.engine).toBe("gateway_agent");
+    expect(latestRun.reusedFromRunId).toBe(0);
+  });
+
   it("runs Doctor analysis in a dedicated doctor session", async () => {
     const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-session-workspace-"));
     const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-session-db-"));
