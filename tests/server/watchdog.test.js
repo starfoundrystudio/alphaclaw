@@ -35,6 +35,10 @@ const createHarness = ({
     status: 200,
     text: async () => JSON.stringify({ ok: true, status: "live" }),
   }),
+  eventLoopLagMonitor = {
+    sample: vi.fn(() => ({ p95Ms: 0, maxMs: 0, meanMs: 0 })),
+    stop: vi.fn(),
+  },
   reconcileOpenclawPlugins,
   openclawConfig = { gateway: { mode: "local" } },
 } = {}) => {
@@ -78,6 +82,7 @@ const createHarness = ({
     openclawDir: "/tmp/alphaclaw/.openclaw",
     fsModule,
     reconcileLogger: { log: vi.fn() },
+    eventLoopLagMonitor,
   });
 
   return {
@@ -92,6 +97,7 @@ const createHarness = ({
     reloadEnv,
     reconcileOpenclawPlugins,
     fsModule,
+    eventLoopLagMonitor,
   };
 };
 
@@ -255,6 +261,97 @@ describe("server/watchdog", () => {
         health: "healthy",
       }),
     );
+    watchdog.stop();
+  });
+
+  it("suppresses probe failures and auto-repair when AlphaClaw event-loop lag is high", async () => {
+    vi.useFakeTimers();
+    const eventLoopLagMonitor = {
+      sample: vi.fn(() => ({ p95Ms: 1500, maxMs: 4000, meanMs: 900 })),
+      stop: vi.fn(),
+    };
+    const { watchdog, shellCmd, insertWatchdogEvent } = createHarness({
+      autoRepair: true,
+      eventLoopLagMonitor,
+      fetchImpl: async () => {
+        throw new Error("gateway health request failed");
+      },
+    });
+
+    watchdog.onGatewayLaunch({ startedAt: Date.now() - 60_000 });
+    await vi.advanceTimersByTimeAsync(15_000);
+
+    expect(watchdog.getStatus()).toEqual(
+      expect.objectContaining({
+        lifecycle: "running",
+        health: "unknown",
+        eventLoopLag: expect.objectContaining({
+          overloaded: true,
+          p95Ms: 1500,
+          maxMs: 4000,
+        }),
+      }),
+    );
+    expect(shellCmd).not.toHaveBeenCalledWith(
+      kGuardedDoctorRepairCommand,
+      kExpectedRepairCommandArgs,
+    );
+    expect(insertWatchdogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "health_check",
+        status: "ok",
+        details: expect.objectContaining({
+          skipped: true,
+          selfOverloaded: true,
+          failureType: "request_error",
+          eventLoopLag: expect.objectContaining({
+            overloaded: true,
+            p95Ms: 1500,
+            maxMs: 4000,
+          }),
+        }),
+      }),
+    );
+    watchdog.stop();
+    expect(eventLoopLagMonitor.stop).toHaveBeenCalled();
+  });
+
+  it("does not suppress explicit gateway unhealthy responses when event-loop lag is high", async () => {
+    vi.useFakeTimers();
+    const { watchdog, insertWatchdogEvent } = createHarness({
+      autoRepair: false,
+      eventLoopLagMonitor: {
+        sample: vi.fn(() => ({ p95Ms: 1500, maxMs: 4000, meanMs: 900 })),
+        stop: vi.fn(),
+      },
+      fetchImpl: async () => ({
+        ok: false,
+        status: 503,
+        text: async () => JSON.stringify({ error: "gateway explicitly unhealthy" }),
+      }),
+    });
+
+    watchdog.onGatewayLaunch({ startedAt: Date.now() - 60_000 });
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(watchdog.getStatus()).toEqual(
+      expect.objectContaining({
+        lifecycle: "running",
+        health: "degraded",
+      }),
+    );
+    expect(insertWatchdogEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "health_check",
+        status: "failed",
+        details: expect.objectContaining({
+          reason: "gateway explicitly unhealthy",
+        }),
+      }),
+    );
+    expect(
+      insertWatchdogEvent.mock.calls.some((call) => call?.[0]?.details?.selfOverloaded),
+    ).toBe(false);
     watchdog.stop();
   });
 
