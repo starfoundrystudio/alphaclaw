@@ -329,6 +329,22 @@ describe("server/routes/models", () => {
     expect(deps.shellCmd).not.toHaveBeenCalled();
   });
 
+  it("returns JSON when model-set credential validation reads fail", async () => {
+    const deps = createModelDeps();
+    deps.readEnvFile.mockImplementation(() => {
+      throw new Error("env unreadable");
+    });
+    const app = createApp(deps);
+
+    const res = await request(app)
+      .post("/api/models/set")
+      .send({ modelKey: "vercel-ai-gateway/openai/gpt-5.5" });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ ok: false, error: "env unreadable" });
+    expect(deps.shellCmd).not.toHaveBeenCalled();
+  });
+
   it("re-syncs auth references on PUT /api/models/config", async () => {
     const previousGithubToken = process.env.GITHUB_TOKEN;
     const previousGithubRepo = process.env.GITHUB_WORKSPACE_REPO;
@@ -576,6 +592,28 @@ describe("server/routes/models", () => {
       ok: false,
       error: "AI_GATEWAY_API_KEY must start with vck_",
     });
+    expect(deps.authProfiles.setModelConfig).not.toHaveBeenCalled();
+  });
+
+  it("returns JSON when model-config credential validation reads fail", async () => {
+    const deps = createModelDeps();
+    deps.readEnvFile.mockImplementation(() => {
+      throw new Error("env unreadable");
+    });
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
+      provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).put("/api/models/config").send({
+      primary: "vercel-ai-gateway/openai/gpt-5.5",
+      configuredModels: {
+        "vercel-ai-gateway/openai/gpt-5.5": {},
+      },
+    });
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({ ok: false, error: "env unreadable" });
     expect(deps.authProfiles.setModelConfig).not.toHaveBeenCalled();
   });
 
