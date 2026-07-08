@@ -284,6 +284,29 @@ describe("server/routes/system", () => {
     expect(deps.syncChannelConfig).not.toHaveBeenCalled();
   });
 
+  it("allows unchanged stale AI Gateway keys on unrelated env saves", async () => {
+    const deps = createSystemDeps();
+    deps.readEnvFile.mockReturnValue([
+      { key: "OPENAI_API_KEY", value: "sk-old" },
+      { key: "AI_GATEWAY_API_KEY", value: "aigw-stale-hidden-value" },
+    ]);
+    const app = createApp(deps);
+
+    const res = await request(app).put("/api/env").send({
+      vars: [
+        { key: "OPENAI_API_KEY", value: "sk-new" },
+        { key: "AI_GATEWAY_API_KEY", value: "aigw-stale-hidden-value" },
+      ],
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(deps.writeEnvFile).toHaveBeenCalledWith([
+      { key: "OPENAI_API_KEY", value: "sk-new" },
+      { key: "AI_GATEWAY_API_KEY", value: "aigw-stale-hidden-value" },
+    ]);
+  });
+
   it("does not restart gateway when env is unchanged", async () => {
     const deps = createSystemDeps();
     deps.reloadEnv.mockReturnValue(false);
