@@ -151,6 +151,95 @@ describe("server/doctor-service", () => {
     );
   });
 
+  it("rejects concurrent Doctor starts while the workspace snapshot is refreshing", async () => {
+    const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-concurrent-start-"));
+    const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-concurrent-start-db-"));
+    fs.writeFileSync(path.join(workspaceRoot, "AGENTS.md"), "# Workspace Guidance\n", "utf8");
+
+    const doctorDb = loadManagedDoctorDb();
+    doctorDb.initDoctorDb({ rootDir: dbRoot });
+
+    let resolveSnapshot = null;
+    const snapshotPromise = new Promise((resolve) => {
+      resolveSnapshot = resolve;
+    });
+    let resolveClawCmd = null;
+    const clawCmdPromise = new Promise((resolve) => {
+      resolveClawCmd = resolve;
+    });
+    const workspaceSnapshotManager = {
+      getSnapshot: vi.fn(() => null),
+      getStatus: vi.fn(() => ({
+        refreshing: true,
+        computedAt: null,
+        refreshStartedAt: "2026-01-01T00:00:00.000Z",
+        lastError: null,
+      })),
+      refresh: vi.fn(() => snapshotPromise),
+      triggerRefresh: vi.fn(),
+    };
+    const clawCmd = vi.fn(() => clawCmdPromise);
+    const { createDoctorService } = loadDoctorService();
+    const doctorService = createDoctorService({
+      clawCmd,
+      listDoctorRuns: doctorDb.listDoctorRuns,
+      listDoctorCards: doctorDb.listDoctorCards,
+      getInitialWorkspaceBaseline: doctorDb.getInitialWorkspaceBaseline,
+      setInitialWorkspaceBaseline: doctorDb.setInitialWorkspaceBaseline,
+      createDoctorRun: doctorDb.createDoctorRun,
+      completeDoctorRun: doctorDb.completeDoctorRun,
+      insertDoctorCards: doctorDb.insertDoctorCards,
+      getDoctorRun: doctorDb.getDoctorRun,
+      getDoctorCardsByRunId: doctorDb.getDoctorCardsByRunId,
+      getDoctorCard: doctorDb.getDoctorCard,
+      updateDoctorCardStatus: doctorDb.updateDoctorCardStatus,
+      workspaceRoot,
+      managedRoot: workspaceRoot,
+      workspaceSnapshotManager,
+    });
+
+    const firstStart = doctorService.runDoctor();
+    await Promise.resolve();
+    const secondStart = await doctorService.runDoctor();
+
+    expect(secondStart).toEqual(
+      expect.objectContaining({
+        ok: false,
+        alreadyRunning: true,
+        runId: 0,
+        error: "Doctor run already in progress",
+        status: expect.objectContaining({ runInProgress: true }),
+      }),
+    );
+    expect(workspaceSnapshotManager.refresh).toHaveBeenCalledTimes(1);
+    expect(doctorDb.listDoctorRuns({ limit: 10 })).toHaveLength(0);
+
+    resolveSnapshot({
+      fingerprint: "fingerprint-1",
+      manifest: {},
+      scan: { fileCount: 0 },
+    });
+    const firstResult = await firstStart;
+    expect(firstResult).toEqual(
+      expect.objectContaining({
+        ok: true,
+        runId: expect.any(Number),
+      }),
+    );
+    expect(doctorDb.listDoctorRuns({ limit: 10 })).toHaveLength(1);
+
+    resolveClawCmd({
+      ok: true,
+      stdout: JSON.stringify({
+        summary: "Healthy workspace",
+        cards: [],
+      }),
+      stderr: "",
+      code: 0,
+    });
+    await Promise.resolve();
+  });
+
   it("does not suppress previously fixed findings on later Doctor runs", async () => {
     const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-fixed-rerun-workspace-"));
     const dbRoot = fs.mkdtempSync(path.join(os.tmpdir(), "doctor-fixed-rerun-db-"));
