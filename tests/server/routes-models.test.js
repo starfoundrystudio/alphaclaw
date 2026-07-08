@@ -530,6 +530,68 @@ describe("server/routes/models", () => {
     expect(deps.writeEnvFile).not.toHaveBeenCalled();
   });
 
+  it("rejects model-only Vercel AI Gateway saves with an invalid env-backed key", async () => {
+    const deps = createModelDeps();
+    deps.shellCmd.mockResolvedValue("");
+    deps.readEnvFile.mockReturnValue([
+      { key: "AI_GATEWAY_API_KEY", value: "not-a-vercel-key" },
+    ]);
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
+      provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).put("/api/models/config").send({
+      primary: "vercel-ai-gateway/openai/gpt-5.5",
+      configuredModels: {
+        "vercel-ai-gateway/openai/gpt-5.5": {},
+      },
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "AI_GATEWAY_API_KEY must start with vck_",
+    });
+    expect(deps.authProfiles.setModelConfig).not.toHaveBeenCalled();
+  });
+
+  it("does not reject existing stale gateway keys when switching primary away", async () => {
+    const deps = createModelDeps();
+    deps.shellCmd.mockResolvedValue("");
+    deps.readEnvFile.mockReturnValue([
+      { key: "AI_GATEWAY_API_KEY", value: "not-a-vercel-key" },
+    ]);
+    deps.authProfiles.getModelConfig.mockReturnValue({
+      primary: "vercel-ai-gateway/openai/gpt-5.5",
+      configuredModels: {
+        "vercel-ai-gateway/openai/gpt-5.5": {},
+      },
+    });
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
+      provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).put("/api/models/config").send({
+      primary: "openai/gpt-5.5",
+      configuredModels: {
+        "openai/gpt-5.5": {},
+        "vercel-ai-gateway/openai/gpt-5.5": {},
+      },
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(deps.authProfiles.setModelConfig).toHaveBeenCalledWith({
+      primary: "openai/gpt-5.5",
+      configuredModels: {
+        "openai/gpt-5.5": {},
+        "vercel-ai-gateway/openai/gpt-5.5": {},
+      },
+    });
+  });
+
   it("removes API-key env vars when profile key is cleared", async () => {
     const deps = createModelDeps();
     deps.shellCmd.mockResolvedValue("");
