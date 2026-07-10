@@ -163,7 +163,7 @@ describe("server/onboarding/openclaw", () => {
         enabled: false,
       },
     });
-    expect(next.plugins.slots.memory).toBe("none");
+    expect(next.plugins.slots).toBeUndefined();
     expect(next.skills.entries.teamyou).toEqual({ enabled: false });
     expect(next.agents.defaults.heartbeat).toBeUndefined();
     expect(next.agents.defaults.memorySearch).toBeUndefined();
@@ -665,7 +665,7 @@ describe("server/onboarding/openclaw", () => {
         enabled: false,
       },
     });
-    expect(next.plugins.slots.memory).toBe("none");
+    expect(next.plugins.slots).toBeUndefined();
     expect(next.skills.entries.teamyou).toEqual({ enabled: false });
     expect(next.agents.defaults.heartbeat).toBeUndefined();
     expect(next.agents.defaults.memorySearch).toBeUndefined();
@@ -792,7 +792,9 @@ describe("server/onboarding/openclaw", () => {
     });
     expect(next.plugins.entries["active-memory"].enabled).toBe(true);
     expect(next.plugins.entries["active-memory"].config.enabled).toBe(false);
-    expect(next.plugins.slots.memory).toBe("none");
+    // The slot is owned by clawctl's reconcile (memory-core); alphaclaw
+    // leaves whatever OpenClaw or clawctl wrote untouched.
+    expect(next.plugins.slots.memory).toBe("openclaw-teamyou-memory");
     expect(next.skills.entries.teamyou).toEqual({ enabled: false });
   });
 
@@ -978,10 +980,10 @@ describe("server/onboarding/openclaw", () => {
         enabled: false,
       },
     });
-    expect(next.plugins.slots.memory).toBe("none");
+    expect(next.plugins.slots).toBeUndefined();
   });
 
-  it("configures memory embeddings through AI Gateway when the gateway key is provided", () => {
+  it("does not write managed memorySearch defaults even when the gateway key is provided", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
     fs.writeFileSync(
@@ -1004,19 +1006,23 @@ describe("server/onboarding/openclaw", () => {
     });
 
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.agents.defaults.memorySearch).toEqual({
-      provider: "openai",
-      model: "text-embedding-3-small",
-      remote: {
-        baseUrl: "https://ai-gateway.vercel.sh/v1",
-        apiKey: "${AI_GATEWAY_API_KEY}",
-      },
-    });
+    expect(next.agents.defaults.memorySearch).toBeUndefined();
   });
 
-  it("preserves unrelated memory search settings while forcing AI Gateway embedding defaults", () => {
+  it("leaves imported memory search settings untouched", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
+    const importedMemorySearch = {
+      enabled: true,
+      query: { maxResults: 12 },
+      provider: "gemini",
+      model: "gemini-embedding-001",
+      remote: {
+        baseUrl: "https://example.com/v1",
+        apiKey: "${GEMINI_API_KEY}",
+        headers: { "x-test": "1" },
+      },
+    };
     fs.writeFileSync(
       configPath,
       JSON.stringify(
@@ -1025,17 +1031,7 @@ describe("server/onboarding/openclaw", () => {
           channels: {},
           agents: {
             defaults: {
-              memorySearch: {
-                enabled: true,
-                query: { maxResults: 12 },
-                provider: "gemini",
-                model: "gemini-embedding-001",
-                remote: {
-                  baseUrl: "https://example.com/v1",
-                  apiKey: "${GEMINI_API_KEY}",
-                  headers: { "x-test": "1" },
-                },
-              },
+              memorySearch: importedMemorySearch,
             },
           },
         },
@@ -1052,17 +1048,7 @@ describe("server/onboarding/openclaw", () => {
     });
 
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.agents.defaults.memorySearch).toEqual({
-      enabled: true,
-      query: { maxResults: 12 },
-      provider: "openai",
-      model: "text-embedding-3-small",
-      remote: {
-        baseUrl: "https://ai-gateway.vercel.sh/v1",
-        apiKey: "${AI_GATEWAY_API_KEY}",
-        headers: { "x-test": "1" },
-      },
-    });
+    expect(next.agents.defaults.memorySearch).toEqual(importedMemorySearch);
   });
 
   it('stamps discovery.mdns.mode during fresh onboarding when OPENCLAW_DISCOVERY_MDNS_MODE="off"', () => {

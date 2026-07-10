@@ -80,6 +80,15 @@ Decision:
 - Keep Starfoundry's managed config defaults during fresh onboarding and
   managed import, including active-memory defaults, update checks disabled by
   default, and managed mDNS discovery mode handling.
+- Never write `plugins.slots.memory`. clawctl's reconcile owns the slot
+  (`memory-core` since teamyou-openclaw-memory v0.3.0 dropped `kind: "memory"`),
+  so memory-core file search is active from first boot. The pre-bootstrap
+  TeamYou gate covers the plugin entry's `enabled` flag, the active-memory
+  eligibility flag, and the teamyou skill — not the slot.
+- Do not write managed `agents.defaults.memorySearch` embedding defaults. The
+  fleet no longer provisions `AI_GATEWAY_API_KEY` for embeddings; local
+  embeddings are handled clawctl-side, and user-provided memorySearch settings
+  are preserved as-is.
 - Keep upstream's managed gateway API endpoint and remote MCP config additions,
   but route them through the fork's safe config mutation guardrails.
 - Do not force an AlphaClaw-managed heartbeat model. Leave

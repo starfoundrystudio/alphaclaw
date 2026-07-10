@@ -380,11 +380,11 @@ describe("openclaw plugin compatibility manifest", () => {
         entries: {
           "active-memory": { enabled: true, config: { enabled: false } },
           "openclaw-teamyou-memory": {
-            enabled: true,
+            enabled: false,
             config: { apiKey: "${TEAMYOU_API_KEY}" },
           },
         },
-        slots: { memory: "none" },
+        slots: { memory: "memory-core" },
       },
       skills: {
         entries: {
@@ -452,9 +452,11 @@ describe("openclaw plugin compatibility manifest", () => {
     const next = readOpenclawConfig(openclawDir);
     expect(commands.some((cmd) => cmd.includes("'plugins' 'install'"))).toBe(true);
     expect(logs.join("\n")).toContain("Re-applied pending TeamYou bootstrap gate");
-    expect(next.plugins.slots.memory).toBe("none");
+    // The gate never rewrites the memory slot; whatever the install wrote is
+    // left for clawctl's reconcile to settle.
+    expect(next.plugins.slots.memory).toBe("openclaw-teamyou-memory");
     expect(next.plugins.entries["active-memory"].config.enabled).toBe(false);
-    expect(next.plugins.entries["openclaw-teamyou-memory"].enabled).toBe(true);
+    expect(next.plugins.entries["openclaw-teamyou-memory"].enabled).toBe(false);
     expect(next.skills.entries.teamyou).toEqual({ enabled: false });
   });
 
