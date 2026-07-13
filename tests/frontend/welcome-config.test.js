@@ -2,12 +2,14 @@ const loadWelcomeConfig = async () =>
   import("../../lib/public/js/components/onboarding/welcome-config.js");
 
 describe("frontend/welcome-config", () => {
-  it("does not include GitHub in the initial setup steps", async () => {
+  it("includes only the required initial setup steps", async () => {
     const welcomeConfig = await loadWelcomeConfig();
 
-    expect(welcomeConfig.kWelcomeGroups.map((group) => group.id)).not.toContain(
-      "github",
-    );
+    expect(welcomeConfig.kWelcomeGroups.map((group) => group.id)).toEqual([
+      "ai",
+      "channels",
+      "tailscale",
+    ]);
   });
 
   it("allows skipping GitHub entirely during a fresh setup", async () => {
