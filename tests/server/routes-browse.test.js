@@ -430,6 +430,122 @@ describe("server/routes/browse", () => {
     expect(fs.readFileSync(lockedPath, "utf8")).toBe("before\n");
   });
 
+  it("moves regular workspace files between folders", async () => {
+    const rootDir = createTestRoot();
+    const sourcePath = path.join(rootDir, "workspace", "drafts", "notes.txt");
+    const destinationPath = path.join(rootDir, "workspace", "archive", "notes.txt");
+    fs.mkdirSync(path.dirname(sourcePath), { recursive: true });
+    fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
+    fs.writeFileSync(sourcePath, "move me\n", "utf8");
+    const app = createApp(rootDir);
+
+    const res = await request(app).post("/api/browse/move").send({
+      from: "workspace/drafts/notes.txt",
+      to: "workspace/archive/notes.txt",
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      ok: true,
+      from: "workspace/drafts/notes.txt",
+      to: "workspace/archive/notes.txt",
+    });
+    expect(fs.existsSync(sourcePath)).toBe(false);
+    expect(fs.readFileSync(destinationPath, "utf8")).toBe("move me\n");
+  });
+
+  it.each([
+    "agents/main/agent/openclaw-agent.sqlite",
+    "agents/main/agent/openclaw-agent.sqlite-wal",
+    "agents/main/agent/openclaw-agent.sqlite-shm",
+    "agents/main/agent/openclaw-agent.sqlite-journal",
+    "state/openclaw.sqlite",
+    "state/openclaw.sqlite-wal",
+  ])("rejects moving OpenClaw runtime database state at %s", async (relativePath) => {
+    const rootDir = createTestRoot();
+    const sourcePath = path.join(rootDir, relativePath);
+    fs.mkdirSync(path.dirname(sourcePath), { recursive: true });
+    fs.writeFileSync(sourcePath, "database state", "utf8");
+    const app = createApp(rootDir);
+
+    const res = await request(app).post("/api/browse/move").send({
+      from: relativePath,
+      to: path.basename(relativePath),
+    });
+
+    expect(res.status).toBe(403);
+    expect(res.body.error).toMatch(/protected/i);
+    expect(fs.existsSync(sourcePath)).toBe(true);
+  });
+
+  it("rejects moving a parent directory containing protected runtime state", async () => {
+    const rootDir = createTestRoot();
+    const pairedPath = path.join(rootDir, "devices", "paired.json");
+    fs.mkdirSync(path.dirname(pairedPath), { recursive: true });
+    fs.writeFileSync(pairedPath, "{}\n", "utf8");
+    const app = createApp(rootDir);
+
+    const res = await request(app).post("/api/browse/move").send({
+      from: "devices",
+      to: "moved-devices",
+    });
+
+    expect(res.status).toBe(403);
+    expect(fs.existsSync(pairedPath)).toBe(true);
+    expect(fs.existsSync(path.join(rootDir, "moved-devices"))).toBe(false);
+  });
+
+  it("rejects moving files into runtime-managed subtrees", async () => {
+    const rootDir = createTestRoot();
+    const sourcePath = path.join(rootDir, "workspace", "notes.txt");
+    fs.mkdirSync(path.dirname(sourcePath), { recursive: true });
+    fs.writeFileSync(sourcePath, "keep me\n", "utf8");
+    const app = createApp(rootDir);
+
+    const res = await request(app).post("/api/browse/move").send({
+      from: "workspace/notes.txt",
+      to: "agents/main/agent/notes.txt",
+    });
+
+    expect(res.status).toBe(403);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "Cannot move into a protected path.",
+    });
+    expect(fs.existsSync(sourcePath)).toBe(true);
+  });
+
+  it("anchors workspace roots while allowing moves inside them", async () => {
+    const rootDir = createTestRoot();
+    const workspacePath = path.join(rootDir, "workspace-ops");
+    fs.mkdirSync(workspacePath, { recursive: true });
+    fs.writeFileSync(path.join(workspacePath, "notes.txt"), "notes\n", "utf8");
+    const app = createApp(rootDir);
+
+    const res = await request(app).post("/api/browse/move").send({
+      from: "workspace-ops",
+      to: "renamed-workspace",
+    });
+
+    expect(res.status).toBe(403);
+    expect(fs.existsSync(workspacePath)).toBe(true);
+  });
+
+  it("rejects deleting a parent directory containing protected runtime state", async () => {
+    const rootDir = createTestRoot();
+    const pairedPath = path.join(rootDir, "devices", "paired.json");
+    fs.mkdirSync(path.dirname(pairedPath), { recursive: true });
+    fs.writeFileSync(pairedPath, "{}\n", "utf8");
+    const app = createApp(rootDir);
+
+    const res = await request(app).delete("/api/browse/delete").send({
+      path: "devices",
+    });
+
+    expect(res.status).toBe(403);
+    expect(fs.existsSync(pairedPath)).toBe(true);
+  });
+
   it("deletes regular files", async () => {
     const rootDir = createTestRoot();
     const filePath = path.join(rootDir, "deleteme.txt");

@@ -3,6 +3,33 @@
     "openclaw.json",
     "devices/paired.json"
   ],
+  "anchoredPaths": [
+    "secrets.json",
+    "exec-approvals.json",
+    "plugin-binding-approvals.json",
+    "node.json"
+  ],
+  "anchoredSubtrees": [
+    ".alphaclaw",
+    "agents",
+    "state",
+    "credentials",
+    "identity",
+    "devices",
+    "nodes",
+    "cron",
+    "gogcli",
+    "media",
+    "files",
+    "extensions",
+    "plugins"
+  ],
+  "anchoredRootNames": [
+    "workspace",
+    "workspace-*",
+    "skills",
+    "hooks"
+  ],
   "lockedPaths": [
     "hooks/bootstrap/agents.md",
     "hooks/bootstrap/tools.md",
