@@ -78,6 +78,7 @@ if [[ -z "$REPO" ]]; then
 fi
 
 require_cmd git
+require_cmd find
 
 SOURCE_DIR="$(cd "$(dirname "$SOURCE_DIR")" && pwd)/$(basename "$SOURCE_DIR")"
 
@@ -88,6 +89,14 @@ fi
 
 if [[ ! -f "$SOURCE_DIR/openclaw.json" ]]; then
   echo "Source dir does not look like a prepared migration snapshot: $SOURCE_DIR" >&2
+  exit 1
+fi
+
+UNSAFE_SQLITE_FILE="$(find "$SOURCE_DIR" -type f \( -name '*.sqlite' -o -name '*.sqlite-wal' -o -name '*.sqlite-shm' \) -print -quit)"
+if [[ -n "$UNSAFE_SQLITE_FILE" ]]; then
+  echo "Refusing to publish a snapshot containing live SQLite state:" >&2
+  echo "  $UNSAFE_SQLITE_FILE" >&2
+  echo "Re-run prepare-openclaw-migration.sh to export portable cron/auth JSON." >&2
   exit 1
 fi
 

@@ -120,16 +120,17 @@ describe("frontend/model-config", () => {
       { key: "openai/gpt-5.3-codex", label: "Codex 5.3" },
       { key: "openai/gpt-5.4", label: "GPT-5.4" },
       { key: "openai/gpt-5.5", label: "GPT-5.5" },
+      { key: "openai/gpt-5.6", label: "GPT-5.6" },
     ]);
 
     expect(featured.map((entry) => entry.key)).toEqual([
       "anthropic/claude-opus-4-8",
       "anthropic/claude-sonnet-4-6",
-      "openai/gpt-5.5",
+      "openai/gpt-5.6",
     ]);
     expect(featured[0]?.featuredLabel).toBe("Opus 4.8");
     expect(featured[1]?.featuredLabel).toBe("Sonnet 4.6");
-    expect(featured[2]?.featuredLabel).toBe("GPT-5.5");
+    expect(featured[2]?.featuredLabel).toBe("GPT-5.6");
     expect(featured.some((entry) => entry.featuredLabel === "Gemini 3.1 Pro")).toBe(
       false,
     );
@@ -279,6 +280,8 @@ describe("frontend/model-config", () => {
       })
       .map((model) => model.key);
     expect(subscriptionKeys).toContain("openai/gpt-5.5");
+    expect(subscriptionKeys).toContain("openai/gpt-5.6-sol");
+    expect(subscriptionKeys).not.toContain("openai/gpt-5.6");
     expect(subscriptionKeys).not.toContain("github-copilot/gpt-5.5");
     expect(modelConfig.isSetupReadyAccountLoginProvider("openai")).toBe(true);
     expect(modelConfig.isSetupReadyAccountLoginProvider("claude-cli")).toBe(true);
@@ -293,8 +296,8 @@ describe("frontend/model-config", () => {
         })
         .map((model) => model.key),
     ).toEqual([
-      "openrouter/openai/gpt-5.5",
-      "vercel-ai-gateway/openai/gpt-5.5",
+      "openrouter/openai/gpt-5.6-sol",
+      "vercel-ai-gateway/openai/gpt-5.6-sol",
       "kilocode/openai/gpt-5.5",
     ]);
   });
@@ -350,7 +353,46 @@ describe("frontend/model-config", () => {
         models: catalog,
         provider: "openai",
       }),
-    ).toBe("openai/gpt-5.5");
+    ).toBe("openai/gpt-5.6-sol");
+  });
+
+  it("scopes catalog recommendations to the matching access mode", async () => {
+    const modelConfig = await loadModelConfig();
+    const catalog = [
+      {
+        key: "openai/gpt-5.6",
+        label: "GPT-5.6",
+        accessModes: ["provider-api"],
+        recommendation: "recommended",
+        recommendedAccessModes: ["provider-api"],
+      },
+      {
+        key: "openai/gpt-5.6-sol",
+        label: "GPT-5.6 Sol",
+        accessModes: ["subscription", "provider-api"],
+        recommendation: "recommended",
+        recommendedAccessModes: ["subscription"],
+      },
+    ];
+
+    expect(
+      modelConfig
+        .getRecommendedModelsForAccessModeProvider({
+          models: catalog,
+          accessMode: "subscription",
+          provider: "openai",
+        })
+        .map((model) => model.key),
+    ).toEqual(["openai/gpt-5.6-sol"]);
+    expect(
+      modelConfig
+        .getRecommendedModelsForAccessModeProvider({
+          models: catalog,
+          accessMode: "provider-api",
+          provider: "openai",
+        })
+        .map((model) => model.key),
+    ).toEqual(["openai/gpt-5.6"]);
   });
 
   it("keeps legacy OpenAI Codex PI route mapping available for compatibility", async () => {

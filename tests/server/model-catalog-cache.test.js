@@ -203,15 +203,17 @@ describe("server/model-catalog-cache", () => {
     expect(fresh.source).toBe("openclaw");
     expect(modelKeys).toEqual(
       expect.arrayContaining([
-        "openai/gpt-5.5",
+        "openai/gpt-5.6-sol",
         "claude-cli/claude-opus-4-8",
-        "vercel-ai-gateway/openai/gpt-5.5",
+        "vercel-ai-gateway/openai/gpt-5.6-sol",
       ]),
     );
     expect(
-      fresh.models.find((model) => model.key === "openai/gpt-5.5"),
+      fresh.models.find((model) => model.key === "openai/gpt-5.6-sol"),
     ).toMatchObject({
       accessModes: expect.arrayContaining(["subscription"]),
+      recommendation: "recommended",
+      recommendedAccessModes: ["subscription"],
     });
   });
 
@@ -441,7 +443,7 @@ describe("server/model-catalog-cache", () => {
     err.stdout =
       'prefix\n{"models":[{"key":"anthropic/claude-opus-4-7","name":"Claude Opus 4.7"}]}\n';
     err.stderr =
-      '[plugins] google failed to load from /app/node_modules/openclaw/dist/extensions/google/index.js';
+      '[plugins] google failed to load from /srv/alphaclaw/node_modules/openclaw/dist/extensions/google/index.js';
     const shellCmd = vi.fn().mockRejectedValue(err);
     const parseJsonFromNoisyOutput = vi.fn((raw) =>
       String(raw).includes('"models"')

@@ -23,7 +23,7 @@
   <a href="https://updates.alphaclaw.md/desktop/prod/alphaclaw-mac-latest.dmg"><img height="40" src="https://img.shields.io/badge/Download%20for%20macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS" /></a>
 </p>
 
-> **Platform:** AlphaClaw currently targets Docker/Linux deployments. macOS local development is not yet supported.
+> **Platform:** AlphaClaw's native provisioning path targets clawctl-managed Linux hosts. macOS local development is not yet supported.
 
 ## Features
 
@@ -77,51 +77,12 @@ Set `SETUP_PASSWORD` at deploy time and visit your deployment URL. The welcome w
 
 > **Railway users:** after deploying, upgrade to the **Hobby plan** and redeploy to ensure your service has at least **8 GB of RAM**. The Trial plan's memory limit can cause out-of-memory crashes during normal operation.
 
-### Local / Docker
+### Local development
 
 ```bash
 npm install @starfoundrystudio/alphaclaw
 npx alphaclaw start
 ```
-
-Or with Docker:
-
-```dockerfile
-FROM node:22-slim
-RUN apt-get update && apt-get install -y git curl procps cron tini && rm -rf /var/lib/apt/lists/*
-WORKDIR /app
-COPY package.json ./
-RUN npm install --omit=dev
-ENV PATH="/app/node_modules/.bin:$PATH"
-ENV ALPHACLAW_ROOT_DIR=/data
-EXPOSE 3000
-ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["alphaclaw", "start"]
-```
-
-## Publish A Pinned Image
-
-This repo now includes a production `Dockerfile` plus a GitHub Actions workflow
-that publishes a pinned image to GHCR on tag pushes:
-
-- Image name: `ghcr.io/<owner>/<repo>`
-- Trigger: push a tag like `v0.8.7-starfoundry.1`
-- Published tags:
-  - `ghcr.io/<owner>/<repo>:0.8.7-starfoundry.1`
-  - `ghcr.io/<owner>/<repo>:sha-<gitsha>`
-  - `ghcr.io/<owner>/<repo>:latest` for stable tags without a prerelease suffix
-
-Example release flow:
-
-```bash
-npm test
-git tag v0.8.7-starfoundry.1
-git push origin v0.8.7-starfoundry.1
-```
-
-The workflow in [publish-image.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/.github/workflows/publish-image.yml)
-builds the image, pushes it to GHCR, and records the image digest in the job
-summary.
 
 ## Publish The GitHub Package
 
@@ -135,24 +96,6 @@ Before enabling it, make sure:
 - stable tags should publish the default package version
 - prerelease tags like `v0.8.7-beta.1` should publish with the `beta` dist-tag
 - internal install environments are configured to authenticate to `npm.pkg.github.com`
-
-To deploy from a pinned image instead of building on the VPS, start from
-[docker-compose.ghcr.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/deploy/docker-compose.ghcr.yml)
-and replace the example image reference with your published tag or digest.
-That compose example keeps the runtime env in `./data/.env` so AlphaClaw and
-Docker share a single env source of truth.
-
-For a Hetzner + Tailscale deployment, use
-[bootstrap-hetzner-tailscale.sh](/Users/billk/Development/starfoundrystudio/alphaclaw/deploy/bootstrap-hetzner-tailscale.sh)
-with the setup notes in
-[deploy/README.md](/Users/billk/Development/starfoundrystudio/alphaclaw/deploy/README.md).
-
-Example update flow on the VPS:
-
-```bash
-docker compose -f deploy/docker-compose.ghcr.yml pull
-docker compose -f deploy/docker-compose.ghcr.yml up -d
-```
 
 ## Setup UI
 
@@ -253,7 +196,7 @@ When enabled, the proxy forwards requests to the loopback OpenClaw gateway. Alph
 - Do not hand the gateway token to end-user clients.
 - If your front door is public (Render, Fly, fly-style PaaS), make sure `SETUP_PASSWORD` is strong and that the gateway token is held by exactly one trusted backend.
 
-When `REMOTE_MCP_URL` + `REMOTE_MCP_API_TOKEN` are set, AlphaClaw also registers an `mcp.servers.<REMOTE_MCP_NAME>` block (default key `remote`) in `openclaw.json` so the agent can call back into that remote MCP server. Set `REMOTE_MCP_PROXY_URL` to route those callbacks through a same-host scanning proxy (for example a Pipelock MCP reverse proxy running in the same container).
+When `REMOTE_MCP_URL` + `REMOTE_MCP_API_TOKEN` are set, AlphaClaw also registers an `mcp.servers.<REMOTE_MCP_NAME>` block (default key `remote`) in `openclaw.json` so the agent can call back into that remote MCP server. Set `REMOTE_MCP_PROXY_URL` to route those callbacks through a same-host scanning proxy (for example a Pipelock MCP reverse proxy running alongside AlphaClaw).
 
 ## Private UI + Public Callbacks
 
@@ -300,7 +243,7 @@ npm run test:watch      # Watch mode
 npm run test:coverage   # Coverage report
 ```
 
-**Requirements:** Node.js ≥ 22.19.0
+**Requirements:** Node.js ≥ 24.15.0 is recommended. OpenClaw also supports Node.js ≥ 22.22.3 < 23 and ≥ 25.9.0.
 
 ## License
 

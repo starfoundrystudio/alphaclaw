@@ -209,7 +209,7 @@ describe("server/gateway restart behavior", () => {
 
   it("retries channel plugin preflight after cleaning stale install stages", () => {
     const firstError = new Error(
-      "ENOTEMPTY: directory not empty, rmdir '/app/node_modules/openclaw/dist/extensions/telegram/.openclaw-install-stage/node_modules/typebox/build/type/engine'",
+      "ENOTEMPTY: directory not empty, rmdir '/srv/alphaclaw/node_modules/openclaw/dist/extensions/telegram/.openclaw-install-stage/node_modules/typebox/build/type/engine'",
     );
     const execSyncMock = vi
       .fn()

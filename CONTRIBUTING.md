@@ -43,7 +43,7 @@ For big changes, open an issue describing what you want to build, why, and your 
 
 ### Prerequisites
 
-- Node.js >= 22.19.0
+- Node.js >= 24.15.0 is recommended. OpenClaw also supports Node.js >= 22.22.3 < 23 and >= 25.9.0.
 - Git
 
 ### Setup

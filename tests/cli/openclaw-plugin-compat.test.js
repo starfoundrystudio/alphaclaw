@@ -144,6 +144,7 @@ const reconcileFixture = ({
   tmpDir,
   manifest = baseManifest(),
   config = {},
+  env,
   plugins = [],
   version,
 } = {}) => {
@@ -159,9 +160,10 @@ const reconcileFixture = ({
     openclawCliPath: "/tmp/openclaw.mjs",
     execSyncImpl,
     logger: { log: () => {} },
+    env,
     now: () => "2026-05-14T00:00:00.000Z",
   });
-  return { commands, result };
+  return { commands, openclawDir, result };
 };
 
 describe("openclaw plugin compatibility manifest", () => {
@@ -191,7 +193,7 @@ describe("openclaw plugin compatibility manifest", () => {
       "plugin",
       "provider",
     ]);
-    expect(Object.keys(manifest.managedPlugins).length).toBe(59);
+    expect(Object.keys(manifest.managedPlugins).length).toBe(76);
     expect(manifest.managedPlugins.discord).toMatchObject({
       kind: "channel",
       package: "@openclaw/discord",
@@ -259,6 +261,13 @@ describe("openclaw plugin compatibility manifest", () => {
         tools: ["firecrawl_search", "firecrawl_scrape"],
       },
     });
+    expect(manifest.managedPlugins.searxng).toMatchObject({
+      kind: "plugin",
+      package: "@openclaw/searxng-plugin",
+      version: packageJson.dependencies.openclaw,
+      webSearchProviderIds: ["searxng"],
+      webSearchProviderEnvVars: ["SEARXNG_BASE_URL"],
+    });
   });
 
   it("matches OpenClaw migration version ranges", () => {
@@ -280,6 +289,74 @@ describe("openclaw plugin compatibility manifest", () => {
     expect(commands.some((cmd) => cmd.includes("'plugins' 'install'"))).toBe(
       false,
     );
+  });
+
+  it("installs an env-backed web search plugin without selecting it as the provider", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        searxng: {
+          kind: "plugin",
+          package: "@openclaw/searxng-plugin",
+          version: "2026.5.6",
+          pluginId: "searxng",
+          webSearchProviderIds: ["searxng"],
+          webSearchProviderEnvVars: ["SEARXNG_BASE_URL"],
+          install: {
+            npmSpec: "@openclaw/searxng-plugin",
+            exactNpmSpec: "@openclaw/searxng-plugin@2026.5.6",
+          },
+        },
+      },
+    });
+    const config = { tools: { web: { search: { enabled: true } } } };
+    const { commands, openclawDir, result } = reconcileFixture({
+      tmpDir,
+      manifest,
+      config,
+      env: { ...process.env, SEARXNG_BASE_URL: "http://127.0.0.1:8888" },
+    });
+
+    expect(result.plugins).toEqual([
+      expect.objectContaining({
+        id: "searxng",
+        action: "installed",
+        reasons: ["web-search-env:SEARXNG_BASE_URL"],
+      }),
+    ]);
+    expect(
+      commands.some((cmd) =>
+        cmd.includes("'npm:@openclaw/searxng-plugin@2026.5.6'"),
+      ),
+    ).toBe(true);
+    expect(readOpenclawConfig(openclawDir).tools.web.search.provider).toBeUndefined();
+  });
+
+  it("does not install env-backed web search plugins when web search is disabled", () => {
+    const manifest = baseManifest({
+      managedPlugins: {
+        searxng: {
+          kind: "plugin",
+          package: "@openclaw/searxng-plugin",
+          version: "2026.5.6",
+          pluginId: "searxng",
+          webSearchProviderIds: ["searxng"],
+          webSearchProviderEnvVars: ["SEARXNG_BASE_URL"],
+          install: {
+            npmSpec: "@openclaw/searxng-plugin",
+            exactNpmSpec: "@openclaw/searxng-plugin@2026.5.6",
+          },
+        },
+      },
+    });
+    const { commands, result } = reconcileFixture({
+      tmpDir,
+      manifest,
+      config: { tools: { web: { search: { enabled: false } } } },
+      env: { ...process.env, SEARXNG_BASE_URL: "http://127.0.0.1:8888" },
+    });
+
+    expect(result.plugins).toEqual([]);
+    expect(commands.some((cmd) => cmd.includes("'plugins' 'install'"))).toBe(false);
   });
 
   it("installs the Discord plugin only when Discord is configured", () => {

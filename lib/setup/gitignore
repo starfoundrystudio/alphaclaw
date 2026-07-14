@@ -18,9 +18,13 @@ db/**
 !hooks/transforms/**
 !pages/
 !pages/**
-!cron/
-!cron/jobs.json
-# OpenClaw 2026.4.20+: runtime execution state (job definitions stay in cron/jobs.json).
-cron/jobs-state.json
+# OpenClaw 2026.6.10+ stores cron and other runtime state in SQLite.
+# Runtime databases, WAL files, and legacy cron files must stay local.
+state/
+state/**
+cron/
+cron/**
+agents/*/agent/*.sqlite
+agents/*/agent/*.sqlite-*
 !openclaw.json
 !.gitignore

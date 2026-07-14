@@ -131,6 +131,9 @@ RSYNC_ARGS=(
   --exclude=agents/*/agent/codex-home/home/.teamyou_key
   --exclude=agents/*/agent/codex-home/tmp/
   --exclude=plugin-skills/
+  --exclude=state/
+  --exclude='*.sqlite'
+  --exclude='*.sqlite-*'
   --exclude=cron/runs/
   --exclude=delivery-queue/
   --exclude=logs/
@@ -154,6 +157,116 @@ fi
 
 echo "Copying OpenClaw state from $SOURCE_OPENCLAW_DIR"
 rsync "${RSYNC_ARGS[@]}" "$SOURCE_OPENCLAW_DIR"/ "$TMP_DIR"/
+
+echo "Exporting portable cron and auth state from OpenClaw SQLite databases"
+ALPHACLAW_MIGRATION_DIR="$TMP_DIR" \
+SOURCE_OPENCLAW_DIR="$SOURCE_OPENCLAW_DIR" \
+node <<'NODE'
+const fs = require("fs");
+const path = require("path");
+const { DatabaseSync } = require("node:sqlite");
+
+const sourceRoot = path.resolve(process.env.SOURCE_OPENCLAW_DIR);
+const outputRoot = path.resolve(process.env.ALPHACLAW_MIGRATION_DIR);
+
+const tableExists = (db, tableName) =>
+  Boolean(
+    db
+      .prepare("SELECT 1 AS ok FROM sqlite_master WHERE type = 'table' AND name = ?")
+      .get(tableName),
+  );
+
+const writeJson = (filePath, value) => {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, {
+    encoding: "utf8",
+    mode: 0o600,
+  });
+};
+
+const stateDbPath = path.join(sourceRoot, "state", "openclaw.sqlite");
+if (fs.existsSync(stateDbPath)) {
+  const db = new DatabaseSync(stateDbPath, { readOnly: true });
+  try {
+    db.exec("PRAGMA busy_timeout = 5000; BEGIN;");
+    if (tableExists(db, "cron_jobs")) {
+      const storeRows = db
+        .prepare("SELECT DISTINCT store_key FROM cron_jobs ORDER BY store_key")
+        .all();
+      const expectedStoreKey = path.resolve(sourceRoot, "cron", "jobs.json");
+      const selectedStoreKey = storeRows.some((row) => row.store_key === expectedStoreKey)
+        ? expectedStoreKey
+        : storeRows.length === 1
+          ? storeRows[0].store_key
+          : "";
+      if (!selectedStoreKey && storeRows.length > 0) {
+        throw new Error(
+          `Could not choose a cron store from SQLite (${storeRows.map((row) => row.store_key).join(", ")})`,
+        );
+      }
+      if (selectedStoreKey) {
+        const jobs = db
+          .prepare(
+            "SELECT job_json, state_json FROM cron_jobs WHERE store_key = ? ORDER BY sort_order, updated_at, job_id",
+          )
+          .all(selectedStoreKey)
+          .map((row) => ({
+            ...JSON.parse(row.job_json),
+            state: row.state_json ? JSON.parse(row.state_json) : {},
+          }));
+        writeJson(path.join(outputRoot, "cron", "jobs.json"), { version: 1, jobs });
+      }
+    }
+    db.exec("COMMIT;");
+  } catch (error) {
+    try { db.exec("ROLLBACK;"); } catch {}
+    throw error;
+  } finally {
+    db.close();
+  }
+}
+
+const sourceAgentsDir = path.join(sourceRoot, "agents");
+if (fs.existsSync(sourceAgentsDir)) {
+  for (const entry of fs.readdirSync(sourceAgentsDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const sourceDbPath = path.join(sourceAgentsDir, entry.name, "agent", "openclaw-agent.sqlite");
+    if (!fs.existsSync(sourceDbPath)) continue;
+    const db = new DatabaseSync(sourceDbPath, { readOnly: true });
+    try {
+      db.exec("PRAGMA busy_timeout = 5000; BEGIN;");
+      if (!tableExists(db, "auth_profile_store")) {
+        db.exec("COMMIT;");
+        continue;
+      }
+      const storeRow = db
+        .prepare("SELECT store_json FROM auth_profile_store WHERE store_key = 'primary'")
+        .get();
+      if (!storeRow?.store_json) {
+        db.exec("COMMIT;");
+        continue;
+      }
+      const stateRow = tableExists(db, "auth_profile_state")
+        ? db
+          .prepare("SELECT state_json FROM auth_profile_state WHERE state_key = 'primary'")
+          .get()
+        : null;
+      const store = JSON.parse(storeRow.store_json);
+      const state = stateRow?.state_json ? JSON.parse(stateRow.state_json) : {};
+      writeJson(
+        path.join(outputRoot, "agents", entry.name, "agent", "auth-profiles.json"),
+        { ...store, ...state },
+      );
+      db.exec("COMMIT;");
+    } catch (error) {
+      try { db.exec("ROLLBACK;"); } catch {}
+      throw error;
+    } finally {
+      db.close();
+    }
+  }
+}
+NODE
 
 if [[ -n "$MAIN_WORKSPACE" ]]; then
   echo "Replacing workspace/ with external main workspace from $MAIN_WORKSPACE"
