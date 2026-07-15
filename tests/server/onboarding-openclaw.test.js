@@ -87,7 +87,7 @@ describe("server/onboarding/openclaw", () => {
   it("only scrubs exact secret string values in JSON", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
-    const pluginPath = "/app/node_modules/@starfoundrystudio/alphaclaw/lib/plugin/usage-tracker";
+    const pluginPath = "/srv/alphaclaw/node_modules/@starfoundrystudio/alphaclaw/lib/plugin/usage-tracker";
     fs.writeFileSync(
       configPath,
       JSON.stringify(
@@ -117,7 +117,7 @@ describe("server/onboarding/openclaw", () => {
     expect(next.plugins.allow).toEqual(["memory-core", "usage-tracker"]);
     expect(next.plugins.load.paths).toContain(pluginPath);
     expect(next.plugins.load.paths).not.toContain(
-      "/app/node_modules/@chrysb/${GOG_KEYRING_PASSWORD}/lib/plugin/usage-tracker",
+      "/srv/alphaclaw/node_modules/@chrysb/${GOG_KEYRING_PASSWORD}/lib/plugin/usage-tracker",
     );
   });
 

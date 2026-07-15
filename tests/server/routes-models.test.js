@@ -251,7 +251,7 @@ describe("server/routes/models", () => {
     err.stdout =
       'prefix\n{"resolvedDefault":"openai/gpt-5.1-codex","fallbacks":["anthropic/claude-opus-4-6"],"imageModel":"google/gemini-3.1-pro-preview"}\n';
     err.stderr =
-      '[plugins] google failed to load from /app/node_modules/openclaw/dist/extensions/google/index.js';
+      '[plugins] google failed to load from /srv/alphaclaw/node_modules/openclaw/dist/extensions/google/index.js';
     deps.shellCmd.mockRejectedValue(err);
     deps.parseJsonFromNoisyOutput.mockImplementation((raw) =>
       String(raw).includes("resolvedDefault")

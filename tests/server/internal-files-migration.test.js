@@ -66,7 +66,9 @@ describe("server/internal-files-migration", () => {
     });
 
     const next = fs.readFileSync(gitignorePath, "utf8");
-    expect(next).toContain("cron/jobs-state.json");
+    expect(next).toContain("state/**");
+    expect(next).toContain("cron/**");
+    expect(next).toContain("agents/*/agent/*.sqlite-*");
     expect(next).toContain("!hooks/");
     expect(next).toContain("!pages/");
     expect(next).toContain("!pages/**");

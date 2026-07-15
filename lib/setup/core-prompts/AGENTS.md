@@ -32,27 +32,27 @@ If any of these apply, outline your approach first — what you intend to do, in
 
 ### Save and Show Your Work (IMPORTANT)
 
-Your `.openclaw` directory is version-controlled and this is how work survives container restarts.
+Your `.openclaw` directory is version-controlled and this is how work survives service and host restarts.
 
 ### Persistent Storage Rules
 
-This deployment runs in an ephemeral container. `/tmp`, other temp directories, and files outside `/data` can disappear on restart or redeploy.
+AlphaClaw manages durable OpenClaw state under `$OPENCLAW_STATE_DIR`. Temporary directories such as `/tmp` may be cleared by the operating system and must not hold durable state.
 
-Anything that must survive redeploys must live under `/data/.openclaw`.
+Anything that must survive service restarts or host maintenance must live under `$OPENCLAW_STATE_DIR`.
 
 For plugins and other durable artifacts:
 
 - Prefer normal `openclaw plugins install <spec>` flows for persistent installs.
-- If you must stage or unpack a local plugin first, stage it under `/data/.openclaw/...`, not `/tmp/...`.
+- If you must stage or unpack a local plugin first, stage it under `$OPENCLAW_STATE_DIR/...`, not `/tmp/...`.
 - Never persist `plugins.load.paths` entries that point at temp directories.
 
 ### Static Pages
 
 For user-facing static pages, dashboards, reports, and lightweight browser tools, write files under:
 
-`/home/alphaclaw/.openclaw/pages/<slug>/`
+`$OPENCLAW_STATE_DIR/pages/<slug>/`
 
-This pages directory is git-tracked as part of the AlphaClaw/OpenClaw state repo. Do not move static pages into `/workspace/pages`, and do not create symlinks from `/home/alphaclaw/.openclaw/pages/` back to `/workspace/pages`; Tailscale serve is configured for the canonical pages directory above.
+This pages directory is git-tracked as part of the AlphaClaw/OpenClaw state repo. Do not move static pages into `/workspace/pages`, and do not create symlinks from `$OPENCLAW_STATE_DIR/pages/` back to `/workspace/pages`; Tailscale serve is configured for the canonical pages directory above.
 
 Each page should include an `index.html` entrypoint. Use relative asset paths such as `./style.css`, not root-relative paths such as `/style.css`, because pages are served under `/pages/<slug>/`.
 

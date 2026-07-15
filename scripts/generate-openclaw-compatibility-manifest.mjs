@@ -86,6 +86,9 @@ const buildManagedPluginEntry = ({ catalogKind, entry, openclawVersion }) => {
   const webSearchProviderIds = uniqueStrings(
     (openclaw.webSearchProviders || []).map((provider) => provider.id),
   );
+  const webSearchProviderEnvVars = uniqueStrings(
+    (openclaw.webSearchProviders || []).flatMap((provider) => provider.envVars || []),
+  );
   const contracts = normalizeContracts(openclaw.contracts);
   const npmSpec = openclaw.install?.npmSpec || entry.name;
   const { packageName, version: explicitVersion } = splitNpmSpec(npmSpec);
@@ -102,6 +105,9 @@ const buildManagedPluginEntry = ({ catalogKind, entry, openclawVersion }) => {
       ...(providerIds.length > 0 ? { providerIds } : {}),
       ...(providerAliases.length > 0 ? { providerAliases } : {}),
       ...(webSearchProviderIds.length > 0 ? { webSearchProviderIds } : {}),
+      ...(webSearchProviderEnvVars.length > 0
+        ? { webSearchProviderEnvVars }
+        : {}),
       ...(Object.keys(contracts).length > 0 ? { contracts } : {}),
       ...(entry.description ? { description: entry.description } : {}),
       source: entry.source || "official",

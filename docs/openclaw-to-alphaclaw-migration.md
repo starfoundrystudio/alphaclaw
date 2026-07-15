@@ -14,7 +14,7 @@ OpenClaw root:
 
 - `openclaw.json` at the repository root
 - optional `.env`
-- optional `cron/jobs.json`
+- optional portable `cron/jobs.json` export (generated from SQLite by the helper)
 - optional `memory/`
 - optional workspaces such as `workspace/` and `workspace-personal/`
 - optional custom `skills/`, `hooks/`, and related repo-backed assets
@@ -35,9 +35,8 @@ the contents of `~/.openclaw` instead.
 
 - `openclaw.json`
 - `.env`
-- `auth-profiles.json`
-- cron definitions such as `cron/jobs.json`
-- memory databases in `memory/`
+- portable `agents/<id>/agent/auth-profiles.json` exports
+- portable cron definitions in `cron/jobs.json`
 - custom workspaces
 - custom skills and repo-backed helper scripts
 - hook transform files and other code kept in the repo
@@ -55,6 +54,8 @@ AlphaClaw intentionally normalizes some imported state for safety:
   generated fresh
 - managed bootstrap files are regenerated
 - imported git history is not preserved
+- live OpenClaw SQLite, WAL, and SHM files are rejected rather than copied;
+  SQLite memory indexes and run history are not migrated
 
 Because of that, expect to re-pair users, channels, and devices after import.
 Keep the old `credentials/` files in a separate backup if you may want to
@@ -112,6 +113,10 @@ machine. In most deployments that will be `/home/alphaclaw`.
 What the preparation script does:
 
 - copies `~/.openclaw` into a clean output directory
+- reads the source databases in a consistent read-only transaction and exports
+  cron definitions and agent auth profiles to OpenClaw's legacy portable JSON
+  formats
+- excludes the shared state database, agent databases, and their WAL/SHM files
 - removes common runtime-only folders like logs, media, delivery queue, device
   identity, plugin skill symlinks, Codex temp/auth artifacts, and cron run
   history
@@ -126,6 +131,7 @@ Important defaults:
 
 - `credentials/` is excluded by default because standard AlphaClaw import does
   not preserve trusted pairings anyway
+- raw SQLite files are always excluded; do not add them back to the snapshot
 - `--target-home` is required so the snapshot is always prepared for the
   destination machine explicitly
 - pass `--keep-credentials` only if you intentionally want those files in the
@@ -155,9 +161,8 @@ The root should usually include things like:
 ```text
 ./openclaw.json
 ./.env
-./auth-profiles.json
+./agents/main/agent/auth-profiles.json
 ./cron/jobs.json
-./memory/
 ./workspace/
 ./workspace-personal/
 ```
@@ -210,22 +215,28 @@ Once the snapshot repo is pushed:
 
 If you prefer not to use the helper script, the manual version is:
 
-1. Copy the old `~/.openclaw` tree to a new directory.
-2. Remove runtime-only folders and nested workspace git metadata.
-3. If the main workspace lives elsewhere, copy it into `workspace/` in the
+1. Copy the old `~/.openclaw` tree to a new directory while excluding all
+   SQLite, WAL, and SHM files.
+2. Export `cron_jobs` and agent auth profile stores to portable JSON, or use the
+   preparation helper to do this safely.
+3. Remove runtime-only folders and nested workspace git metadata.
+4. If the main workspace lives elsewhere, copy it into `workspace/` in the
    snapshot.
-4. Rewrite migrated JSON path references so agent workspaces, agent dirs, and
+5. Rewrite migrated JSON path references so agent workspaces, agent dirs, and
    job working directories point to AlphaClaw defaults under
    `~/.alphaclaw/.openclaw/`.
-5. Fail the prep step if stale source-machine path references remain.
-6. Commit the snapshot to a private GitHub repo.
-7. Import it through a new AlphaClaw installation.
+6. Fail the prep step if stale source-machine path references remain.
+7. Commit the snapshot to a private GitHub repo.
+8. Import it through a new AlphaClaw installation.
 
 ## Security Notes
 
 - Use a private repo for migration snapshots.
 - If `.env` is included, secrets will be committed into git history.
-- The same caution applies to `auth-profiles.json`, SQLite memory files, and any
+- The same caution applies to exported `auth-profiles.json` files and any
   custom workspace files that contain sensitive material.
+- Never commit a live `openclaw.sqlite`, `openclaw-agent.sqlite`, `-wal`, or
+  `-shm` file. Besides containing mixed sensitive state, copying a live SQLite
+  file without its matching WAL can silently lose recent data.
 - If you do not want secrets in GitHub at all, remove `.env` before pushing and
   re-enter secrets during AlphaClaw import.

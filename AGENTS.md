@@ -23,7 +23,7 @@ Runtime model:
 
 ### Key Technologies
 
-- Node.js 22.19+ runtime.
+- Node.js 24.15+ is the recommended runtime. The supported engine range is `>=22.22.3 <23 || >=24.15.0 <25 || >=25.9.0`.
 - Express-based HTTP API server.
 - `http-proxy` for gateway proxy behavior.
 - OpenClaw CLI/gateway process orchestration.
@@ -109,25 +109,16 @@ Use this release flow when promoting tested beta builds to production:
    - GitHub Actions publishes stable tags without `-beta.` using the default package dist-tag.
 5. Optionally keep beta branch/tag flows active for next release cycle.
 
-### Runtime Dependency Guardrails (Express 4 vs 5)
+### Runtime Dependency Guardrails
 
-AlphaClaw currently expects Express 4 semantics in its setup API layer. A broken container dependency tree can accidentally resolve `express@5` at `/app/node_modules/express`, which causes subtle request handling regressions (for example body parsing behavior on certain methods).
+AlphaClaw provisioning uses native clawctl-managed Linux hosts and systemd. Dockerfiles, Compose deployments, and container lifecycle shims are unsupported and must not be introduced.
 
-Known root cause pattern:
+AlphaClaw expects Express 4 semantics in its setup API layer. Keep the installed dependency tree consistent with the host application's `package.json`; copy-over or partial installs can hoist an incompatible Express major to the app root.
 
-- Mutating `/app/node_modules` in-place (for example copy-over installs used for emergency package swaps) can leave the runtime tree inconsistent with `/app/package.json`.
-- This can hoist `express@5` to the app root, so `require("express")` inside AlphaClaw resolves the wrong major version.
+Verify runtime resolution after dependency or provisioning changes:
 
-Preferred fix/recovery:
-
-1. Ensure template `package.json` pins the intended `@starfoundrystudio/alphaclaw` version.
-2. Rebuild the `openclaw` container from scratch (no cache) and recreate it:
-   - `docker compose down`
-   - `docker compose build --no-cache openclaw`
-   - `docker compose up -d openclaw`
-3. Verify runtime resolution inside the container:
-   - `node -p "require('express/package.json').version"` should be `4.x`
-   - `npm ls express` should show `@starfoundrystudio/alphaclaw` on `express@4.x` (OpenClaw can still carry its own `express@5` subtree).
+- `node -p "require('express/package.json').version"` should be `4.x`.
+- `npm ls express` should show `@starfoundrystudio/alphaclaw` on `express@4.x` (OpenClaw can still carry its own `express@5` subtree).
 
 ### Telegram Notice Format (AlphaClaw)
 
@@ -156,7 +147,7 @@ Use these conventions for all UI work under `lib/public/js` and `lib/public/css`
 
 - The browser loads the compiled bundle under `lib/public/dist/` (for example `app.bundle.js` and chunk files), produced by `scripts/build-ui.mjs` (esbuild).
 - **After any UI source change** that should ship in production (`lib/public/js`, `lib/public/css`, or other inputs to the build), run **`npm run build:ui`** so `lib/public/dist/` stays in sync. Verify the app in the browser against the rebuilt bundle when the change is non-trivial.
-- **`npm publish`** runs **`prepack`** → **`npm run generate:openclaw-compatibility-manifest && npm run build:ui`**, so published packages always include a fresh OpenClaw compatibility manifest and UI bundle. Local installs, Docker builds from a git checkout, or commits that include `dist/` still require **`npm run build:ui`** when you change UI sources and expect the built assets to match.
+- **`npm publish`** runs **`prepack`** → **`npm run generate:openclaw-compatibility-manifest && npm run build:ui`**, so published packages always include a fresh OpenClaw compatibility manifest and UI bundle. Local installs or commits that include `dist/` still require **`npm run build:ui`** when you change UI sources and expect the built assets to match.
 
 ### Component structure
 

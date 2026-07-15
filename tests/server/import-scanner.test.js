@@ -130,6 +130,36 @@ describe("import-scanner", () => {
     });
   });
 
+  it("rejects live OpenClaw SQLite and WAL files", () => {
+    const fs = createMockFs(
+      {
+        "/tmp/test/openclaw.json": "{}",
+        "/tmp/test/state/openclaw.sqlite": "sqlite",
+        "/tmp/test/agents/main/agent/openclaw-agent.sqlite-wal": "wal",
+      },
+      [
+        "/tmp/test/state",
+        "/tmp/test/agents",
+        "/tmp/test/agents/main",
+        "/tmp/test/agents/main/agent",
+      ],
+    );
+    const result = scanWorkspace({ fs, baseDir: "/tmp/test" });
+    expect(result.sqliteState).toEqual({
+      found: true,
+      files: [
+        "state/openclaw.sqlite",
+        "agents/main/agent/openclaw-agent.sqlite-wal",
+      ],
+    });
+    expect(result.sourceLayout).toEqual({
+      kind: "unsupported-live-sqlite-state",
+      supported: false,
+      error:
+        "This import source contains live OpenClaw SQLite state. Prepare a portable snapshot that exports cron/auth data to JSON and excludes SQLite, WAL, and SHM files.",
+    });
+  });
+
   it("detects .env files", () => {
     const fs = createMockFs({
       "/tmp/test/.env": "FOO=bar",

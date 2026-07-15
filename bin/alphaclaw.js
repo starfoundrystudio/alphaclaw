@@ -6,6 +6,12 @@ const os = require("os");
 const path = require("path");
 const { execSync } = require("child_process");
 const {
+  assertSafeNodeSqliteRuntime,
+} = require("../lib/runtime/node-sqlite-safety");
+
+assertSafeNodeSqliteRuntime();
+
+const {
   normalizeGitSyncFilePath,
   validateGitSyncFilePath,
   resolveRealGitPath,
@@ -98,7 +104,7 @@ Usage: alphaclaw <command> [options]
 
 Commands:
   start     Start the AlphaClaw server (Setup UI + gateway manager)
-  git-sync  Commit and push /data/.openclaw safely using GITHUB_TOKEN
+  git-sync  Commit and push the managed OpenClaw workspace using GITHUB_TOKEN
   migrate   Inspect or apply AlphaClaw-owned upgrade migrations
   openclaw-doctor-guard  Run an OpenClaw command with OAuth-refresh shielding
   reconcile-openclaw-plugins  Install/update AlphaClaw-managed OpenClaw plugins
@@ -192,38 +198,6 @@ if (shouldInitializeManagedRuntime) {
 }
 console.log(`[alphaclaw] Root directory: ${rootDir}`);
 
-// Check for pending update marker (written by the update endpoint before restart).
-// In environments where the container filesystem is ephemeral (Railway, etc.),
-// the npm install from the update endpoint is lost on restart. This re-runs it
-// from the fresh container using the persistent volume marker.
-const pendingUpdateMarker = path.join(rootDir, ".alphaclaw-update-pending");
-if (fs.existsSync(pendingUpdateMarker)) {
-  console.log(
-    "[alphaclaw] Pending update detected, installing @starfoundrystudio/alphaclaw@latest...",
-  );
-  const alphaPkgRoot = path.resolve(__dirname, "..");
-  const nmIndex = alphaPkgRoot.lastIndexOf(
-    `${path.sep}node_modules${path.sep}`,
-  );
-  const installDir =
-    nmIndex >= 0 ? alphaPkgRoot.slice(0, nmIndex) : alphaPkgRoot;
-  try {
-    execSync(
-      "npm install @starfoundrystudio/alphaclaw@latest --omit=dev --prefer-online",
-      {
-        cwd: installDir,
-        stdio: "inherit",
-        timeout: 180000,
-      },
-    );
-    fs.unlinkSync(pendingUpdateMarker);
-    console.log("[alphaclaw] Update applied successfully");
-  } catch (e) {
-    console.log(`[alphaclaw] Update install failed: ${e.message}`);
-    fs.unlinkSync(pendingUpdateMarker);
-  }
-}
-
 // ---------------------------------------------------------------------------
 // 3. Symlink ~/.openclaw -> <root>/.openclaw
 // ---------------------------------------------------------------------------
@@ -305,7 +279,7 @@ const runGitSync = () => {
     return 1;
   }
   if (!fs.existsSync(path.join(openclawDir, ".git"))) {
-    console.error("[alphaclaw] No git repository at /data/.openclaw");
+    console.error(`[alphaclaw] No git repository at ${openclawDir}`);
     return 1;
   }
 
@@ -918,25 +892,7 @@ if (fs.existsSync(configPath)) {
 }
 
 // ---------------------------------------------------------------------------
-// 12. Install systemctl shim if in Docker (no real systemd)
-// ---------------------------------------------------------------------------
-
-try {
-  execSync("command -v systemctl", { stdio: "ignore" });
-} catch {
-  const shimSrc = path.join(__dirname, "..", "lib", "scripts", "systemctl");
-  const shimDest = "/usr/local/bin/systemctl";
-  try {
-    fs.copyFileSync(shimSrc, shimDest);
-    fs.chmodSync(shimDest, 0o755);
-    console.log("[alphaclaw] systemctl shim installed");
-  } catch (e) {
-    console.log(`[alphaclaw] systemctl shim skipped: ${e.message}`);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// 13. Install git auth shim
+// 12. Install git auth shim
 // ---------------------------------------------------------------------------
 
 try {
@@ -968,7 +924,7 @@ try {
 }
 
 // ---------------------------------------------------------------------------
-// 14. Start Express server
+// 13. Start Express server
 // ---------------------------------------------------------------------------
 
 console.log("[alphaclaw] Setup complete -- starting server");

@@ -7,7 +7,6 @@ const {
   kAlphaclawRegistryUrl,
   kNpmPackageRoot,
   kOpenclawUpdateCopyTimeoutMs,
-  kRootDir,
 } = require("../../lib/server/constants");
 const modulePath = require.resolve("../../lib/server/alphaclaw-version");
 const originalExec = childProcess.exec;
@@ -265,7 +264,7 @@ describe("server/alphaclaw-version", () => {
     );
   });
 
-  it("triggers the managed deployment bridge for apex containers", async () => {
+  it("triggers the managed deployment bridge for Apex deployments", async () => {
     const fetchMock = vi.fn(async (url, options = {}) => {
       if (String(url).includes("raw.githubusercontent.com")) {
         return createFetchResponse({
@@ -282,7 +281,7 @@ describe("server/alphaclaw-version", () => {
           body: { sha: "aded043defd05bba6787bca75ac6ed8dffd43c6e" },
         });
       }
-      expect(url).toBe("http://host.docker.internal:3180/update");
+      expect(url).toBe("http://127.0.0.1:3180/update");
       expect(options.method).toBe("POST");
       expect(options.headers.Authorization).toBe("Bearer bridge-token");
       expect(JSON.parse(options.body)).toEqual({
@@ -297,7 +296,7 @@ describe("server/alphaclaw-version", () => {
     });
     const { service } = createService({
       env: {
-        ALPHACLAW_MANAGED_UPDATE_URL: "http://host.docker.internal:3180/update",
+        ALPHACLAW_MANAGED_UPDATE_URL: "http://127.0.0.1:3180/update",
         ALPHACLAW_MANAGED_UPDATE_TOKEN: "bridge-token",
         ALPHACLAW_TEMPLATE_REPO_URL:
           "https://github.com/chrysb/openclaw-apex-template.git",
@@ -365,40 +364,6 @@ describe("server/alphaclaw-version", () => {
         provider: "apex",
         action: "instructions",
         primaryActionLabel: "Done",
-      }),
-    );
-  });
-
-  it("returns container instructions without attempting a registry lookup", async () => {
-    const fetchMock = vi.fn();
-    const { service } = createService({
-      fetchMock,
-      fsImpl: { ...fs, existsSync: vi.fn((target) => target === "/.dockerenv") },
-    });
-
-    const status = await service.getVersionStatus(true);
-
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(status).toEqual(
-      expect.objectContaining({
-        ok: true,
-        latestVersion: null,
-        latestOpenclawVersion: null,
-        hasUpdate: false,
-        updateStrategy: expect.objectContaining({
-          provider: "container",
-          action: "instructions",
-          primaryActionLabel: "Done",
-        }),
-      }),
-    );
-
-    const result = await service.updateAlphaclaw();
-    expect(result.status).toBe(409);
-    expect(result.body.updateStrategy).toEqual(
-      expect.objectContaining({
-        provider: "container",
-        action: "instructions",
       }),
     );
   });
@@ -568,7 +533,7 @@ describe("server/alphaclaw-version", () => {
     expect(result.body.error).toContain("npm ERR!");
   });
 
-  it("writes update marker to kRootDir on successful self-update", async () => {
+  it("does not write a restart marker after a successful native self-update", async () => {
     const execMock = vi.fn().mockImplementation((cmd, opts, callback) => {
       callback(null, "added 1 package", "");
     });
@@ -581,13 +546,10 @@ describe("server/alphaclaw-version", () => {
     const result = await service.updateAlphaclaw();
 
     expect(result.status).toBe(200);
-    const markerPath = path.join(kRootDir, ".alphaclaw-update-pending");
-    const markerCall = fsMock.writeFileSync.mock.calls.find(
-      (call) => call[0] === markerPath,
-    );
-    expect(markerCall).toBeTruthy();
-    const markerData = JSON.parse(markerCall[1]);
-    expect(markerData).toHaveProperty("from");
-    expect(markerData).toHaveProperty("ts");
+    expect(
+      fsMock.writeFileSync.mock.calls.some(
+        ([target]) => path.basename(target) === ".alphaclaw-update-pending",
+      ),
+    ).toBe(false);
   });
 });

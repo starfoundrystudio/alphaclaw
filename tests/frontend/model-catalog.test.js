@@ -34,6 +34,13 @@ describe("frontend/model-catalog", () => {
       getInitialOnboardingModelKey({
         catalog: [
           {
+            key: "openai/gpt-5.6-sol",
+            label: "GPT-5.6 Sol",
+            accessModes: ["subscription", "provider-api"],
+            recommendation: "recommended",
+            recommendedAccessModes: ["subscription"],
+          },
+          {
             key: "openai/gpt-5.5",
             label: "GPT-5.5",
             accessModes: ["subscription", "provider-api"],
@@ -42,10 +49,10 @@ describe("frontend/model-catalog", () => {
           { key: "anthropic/claude-opus-4-8", label: "Opus 4.8" },
         ],
       }),
-    ).toBe("openai/gpt-5.5");
+    ).toBe("openai/gpt-5.6-sol");
   });
 
-  it("falls back to the first featured model when no subscription default is available", async () => {
+  it("uses the current subscription fallback for older catalog payloads", async () => {
     const { getInitialOnboardingModelKey } = await import(
       "../../lib/public/js/lib/model-catalog.js"
     );
@@ -58,7 +65,7 @@ describe("frontend/model-catalog", () => {
           { key: "anthropic/claude-sonnet-4-6", label: "Sonnet 4.6" },
         ],
       }),
-    ).toBe("anthropic/claude-sonnet-4-6");
+    ).toBe("openai/gpt-5.6-sol");
   });
 
   it("reports whether the catalog is still refreshing", async () => {
