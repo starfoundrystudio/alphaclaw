@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-14T23:15:22.217Z",
+  "generatedAt": "2026-07-15T16:19:01.147Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1995,15 +1995,6 @@
               "key": "openrouter/anthropic/claude-sonnet-5",
               "provider": "openrouter",
               "label": "Anthropic: Claude Sonnet 5",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/arcee-ai/coder-large",
-              "provider": "openrouter",
-              "label": "Arcee AI: Coder Large",
               "accessModes": [
                 "gateway"
               ],
@@ -4970,6 +4961,24 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.7-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 4.7 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 4.8 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/anthropic/claude-sonnet-4",
               "provider": "vercel-ai-gateway",
               "label": "Claude Sonnet 4",
@@ -7557,15 +7566,6 @@
       "key": "openrouter/anthropic/claude-sonnet-5",
       "provider": "openrouter",
       "label": "Anthropic: Claude Sonnet 5",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/arcee-ai/coder-large",
-      "provider": "openrouter",
-      "label": "Arcee AI: Coder Large",
       "accessModes": [
         "gateway"
       ],
@@ -10904,6 +10904,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-4.7-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 4.7 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/anthropic/claude-opus-4.8",
       "provider": "vercel-ai-gateway",
       "label": "Claude Opus 4.8",
@@ -10916,6 +10925,15 @@
       "recommendedAccessModes": [
         "gateway"
       ]
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 4.8 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
     },
     {
       "key": "vercel-ai-gateway/anthropic/claude-sonnet-4",
