@@ -2,6 +2,22 @@ const loadWelcomeHook = async () =>
   import("../../lib/public/js/components/welcome/use-welcome.js");
 
 describe("frontend/welcome handoff", () => {
+  it("excludes retired channel credentials from onboarding submissions", async () => {
+    const { buildOnboardingVars } = await loadWelcomeHook();
+
+    expect(
+      buildOnboardingVars({
+        MODEL_KEY: "openai/gpt-5.5",
+        OPENAI_API_KEY: "sk-test",
+        TELEGRAM_BOT_TOKEN: "telegram-secret",
+        DISCORD_BOT_TOKEN: "discord-secret",
+        SLACK_BOT_TOKEN: "xoxb-secret",
+        SLACK_APP_TOKEN: "xapp-secret",
+        WHATSAPP_OWNER_NUMBER: "+15551234567",
+      }),
+    ).toEqual([{ key: "OPENAI_API_KEY", value: "sk-test" }]);
+  });
+
   it("builds a dashboard redirect URL from the final setup URL", async () => {
     const { buildSetupRedirectUrl } = await loadWelcomeHook();
 
