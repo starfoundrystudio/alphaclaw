@@ -295,6 +295,7 @@ const childProcess = require("child_process");
 
 const commandLogPath = ${JSON.stringify(commandLogPath)};
 const commands = [];
+const pluginVersions = { discord: "2026.5.6", acpx: "2026.5.6" };
 const testHome = process.env.ALPHACLAW_TEST_HOME;
 if (testHome) {
   os.homedir = () => testHome;
@@ -310,10 +311,14 @@ childProcess.execSync = (command, options = {}) => {
   if (cmd.includes("'plugins' 'list' '--json'")) {
     return JSON.stringify({
       plugins: [
-        { id: "discord", name: "@openclaw/discord", version: "2026.5.6" },
-        { id: "acpx", name: "@openclaw/acpx", version: "2026.5.6" }
+        { id: "discord", name: "@openclaw/discord", version: pluginVersions.discord },
+        { id: "acpx", name: "@openclaw/acpx", version: pluginVersions.acpx }
       ]
     });
+  }
+  if (cmd.includes("'plugins' 'update'")) {
+    if (cmd.includes("@openclaw/discord@2026.7.1")) pluginVersions.discord = "2026.7.1";
+    if (cmd.includes("@openclaw/acpx@2026.7.1")) pluginVersions.acpx = "2026.7.1";
   }
   return "";
 };

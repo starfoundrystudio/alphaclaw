@@ -6,6 +6,7 @@ const {
   buildInstallSpec,
   compareVersions,
   loadOpenclawCompatibilityManifest,
+  parsePluginList,
   reconcileOpenclawPlugins,
   satisfiesVersionRange,
 } = require("../../lib/cli/openclaw-plugin-compat");
@@ -28,6 +29,16 @@ const writeOpenclawConfig = (openclawDir, config) => {
 
 const readOpenclawConfig = (openclawDir) =>
   JSON.parse(fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"));
+
+const pluginRecordFromMutationCommand = (command) => {
+  const match = String(command).match(
+    /'plugins' '(?:install|update)' '(?:npm:)?([^']+)@([^'@]+)'/,
+  );
+  if (!match) {
+    throw new Error(`Could not parse plugin command: ${command}`);
+  }
+  return { name: match[1], version: match[2] };
+};
 
 const baseManifest = (overrides = {}) => ({
   schemaVersion: 1,
@@ -82,13 +93,28 @@ const baseManifest = (overrides = {}) => ({
 
 const createExecRecorder = ({ version = "2026.5.6", plugins = [] } = {}) => {
   const commands = [];
+  let currentPlugins = plugins;
   const execSyncImpl = (command) => {
     commands.push(String(command));
     if (String(command).includes("'--version'")) {
       return `${version}\n`;
     }
     if (String(command).includes("'plugins' 'list' '--json'")) {
-      return JSON.stringify({ plugins });
+      return JSON.stringify({ plugins: currentPlugins });
+    }
+    if (
+      String(command).includes("'plugins' 'install'") ||
+      String(command).includes("'plugins' 'update'")
+    ) {
+      const installed = pluginRecordFromMutationCommand(command);
+      currentPlugins = [
+        ...currentPlugins.filter(
+          (plugin) =>
+            plugin.name !== installed.name &&
+            plugin.package !== installed.name,
+        ),
+        installed,
+      ];
     }
     return "";
   };
@@ -126,13 +152,7 @@ const createConfigRecoveryExecRecorder = ({
       }
       const nextConfig = mutateOnInstall ? mutateOnInstall(config) : config;
       writeOpenclawConfig(openclawDir, nextConfig);
-      currentPlugins = [
-        {
-          id: "installed-after-recovery",
-          name: "@openclaw/installed-after-recovery",
-          version,
-        },
-      ];
+      currentPlugins = [pluginRecordFromMutationCommand(command)];
       return "";
     }
     return "";
@@ -706,11 +726,12 @@ describe("openclaw plugin compatibility manifest", () => {
       previousVersion: "2026.5.12",
       version: "2026.5.6",
     });
-    expect(commands.some((cmd) => cmd.includes("'npm:@openclaw/discord@2026.5.6'"))).toBe(
+    expect(commands.some((cmd) => cmd.includes("'@openclaw/discord@2026.5.6'"))).toBe(
       true,
     );
-    expect(commands.some((cmd) => cmd.includes("'--pin'"))).toBe(true);
-    expect(commands.some((cmd) => cmd.includes("--force"))).toBe(true);
+    expect(commands.some((cmd) => cmd.includes("'plugins' 'update'"))).toBe(true);
+    expect(commands.some((cmd) => cmd.includes("'--pin'"))).toBe(false);
+    expect(commands.some((cmd) => cmd.includes("--force"))).toBe(false);
     expect(commands.some((cmd) => cmd.includes("latest"))).toBe(false);
   });
 
@@ -722,23 +743,22 @@ describe("openclaw plugin compatibility manifest", () => {
     const commands = [];
     const logs = [];
     let installAttempts = 0;
+    let plugins = [
+      {
+        id: "discord",
+        name: "@openclaw/discord",
+        version: "2026.5.5",
+      },
+    ];
     const execSyncImpl = (command) => {
       commands.push(String(command));
       if (String(command).includes("'--version'")) {
         return "2026.5.6\n";
       }
       if (String(command).includes("'plugins' 'list' '--json'")) {
-        return JSON.stringify({
-          plugins: [
-            {
-              id: "discord",
-              name: "@openclaw/discord",
-              version: "2026.5.5",
-            },
-          ],
-        });
+        return JSON.stringify({ plugins });
       }
-      if (String(command).includes("'plugins' 'install'")) {
+      if (String(command).includes("'plugins' 'update'")) {
         installAttempts += 1;
         if (installAttempts === 1) {
           const error = new Error("[openclaw] Could not start the CLI.");
@@ -748,6 +768,13 @@ describe("openclaw plugin compatibility manifest", () => {
           ].join("\n");
           throw error;
         }
+        plugins = [
+          {
+            id: "discord",
+            name: "@openclaw/discord",
+            version: "2026.5.6",
+          },
+        ];
         return "";
       }
       return "";
@@ -768,10 +795,164 @@ describe("openclaw plugin compatibility manifest", () => {
       action: "updated",
       previousVersion: "2026.5.5",
     });
-    expect(commands.filter((cmd) => cmd.includes("'plugins' 'install'"))).toHaveLength(2);
+    expect(commands.filter((cmd) => cmd.includes("'plugins' 'update'"))).toHaveLength(2);
     expect(logs.join("\n")).toContain(
-      "discord plugin install hit an OpenClaw config write conflict; retrying",
+      "discord plugin update hit an OpenClaw config write conflict; retrying",
     );
+  });
+
+  it("forces the retry when a new plugin install partially succeeds and remains idempotent", () => {
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, { channels: { discord: {} } });
+    const manifestPath = writeManifest(tmpDir, baseManifest());
+    const commands = [];
+    let installAttempts = 0;
+    let plugins = [];
+    const execSyncImpl = (command) => {
+      const text = String(command);
+      commands.push(text);
+      if (text.includes("'--version'")) return "2026.5.6\n";
+      if (text.includes("'plugins' 'list' '--json'")) {
+        return JSON.stringify({ plugins });
+      }
+      if (text.includes("'plugins' 'install'")) {
+        installAttempts += 1;
+        if (installAttempts === 1) {
+          const error = new Error("config changed since last load");
+          error.stderr = "config changed since last load";
+          throw error;
+        }
+        plugins = [
+          {
+            id: "discord",
+            name: "@openclaw/discord",
+            version: "2026.5.6",
+          },
+        ];
+      }
+      return "";
+    };
+
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:01.000Z",
+    });
+
+    const installs = commands.filter((command) =>
+      command.includes("'plugins' 'install'"),
+    );
+    expect(installs).toHaveLength(2);
+    expect(installs[0]).not.toContain("'--force'");
+    expect(installs[1]).toContain("'--force'");
+  });
+
+  it("recovers a partial managed install left by an earlier upgrade attempt", () => {
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, { channels: { discord: {} } });
+    const manifestPath = writeManifest(tmpDir, baseManifest());
+    const commands = [];
+    let installAttempts = 0;
+    let plugins = [];
+    const execSyncImpl = (command) => {
+      const text = String(command);
+      commands.push(text);
+      if (text.includes("'--version'")) return "2026.5.6\n";
+      if (text.includes("'plugins' 'list' '--json'")) {
+        return JSON.stringify({ plugins });
+      }
+      if (text.includes("'plugins' 'install'")) {
+        installAttempts += 1;
+        if (installAttempts === 1) {
+          const error = new Error("plugin already exists");
+          error.stderr =
+            "plugin already exists: /state/npm/projects/discord/node_modules/@openclaw/discord (delete it first)";
+          throw error;
+        }
+        plugins = [
+          {
+            id: "discord",
+            name: "@openclaw/discord",
+            version: "2026.5.6",
+          },
+        ];
+      }
+      return "";
+    };
+
+    reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    const installs = commands.filter((command) =>
+      command.includes("'plugins' 'install'"),
+    );
+    expect(installs).toHaveLength(2);
+    expect(installs[1]).toContain("'--force'");
+  });
+
+  it("fails closed when OpenClaw plugin inventory JSON is malformed", () => {
+    expect(() => parsePluginList("not-json")).toThrow(
+      "OpenClaw plugin inventory returned invalid JSON",
+    );
+    expect(() => parsePluginList(JSON.stringify({ registry: {} }))).toThrow(
+      "OpenClaw plugin inventory is missing the plugins array",
+    );
+  });
+
+  it("surfaces OpenClaw SQLite plugin registry failures instead of treating them as empty", () => {
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, { channels: { discord: {} } });
+    const manifestPath = writeManifest(tmpDir, baseManifest());
+    const commands = [];
+    const execSyncImpl = (command) => {
+      const text = String(command);
+      commands.push(text);
+      if (text.includes("'--version'")) return "2026.5.6\n";
+      if (text.includes("'plugins' 'list' '--json'")) {
+        const error = new Error("OpenClaw state database could not be opened");
+        error.stderr = "SQLITE_CANTOPEN: state/openclaw.sqlite";
+        throw error;
+      }
+      return "";
+    };
+
+    expect(() =>
+      reconcileOpenclawPlugins({
+        rootDir,
+        openclawDir,
+        manifestPath,
+        openclawCliPath: "/tmp/openclaw.mjs",
+        execSyncImpl,
+        logger: { log: () => {} },
+      }),
+    ).toThrow("OpenClaw state database could not be opened");
+    expect(
+      commands.some((command) => command.includes("'plugins' 'install'")),
+    ).toBe(false);
   });
 
   it("keeps already-installed official plugins updated even without current config", () => {
