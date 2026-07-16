@@ -36,6 +36,8 @@ describe("AlphaClaw migrations", () => {
       },
     },
   };
+  const findMigrationResult = (result, migrationId) =>
+    result.results.find((entry) => entry.id === migrationId);
 
   afterEach(() => {
     for (const rootDir of tempRoots) {
@@ -72,7 +74,12 @@ describe("AlphaClaw migrations", () => {
 
     expect(result.ok).toBe(true);
     expect(result.summary.pending).toBe(1);
-    expect(result.results[0]).toMatchObject({
+    expect(
+      findMigrationResult(
+        result,
+        "2026-06-remove-active-memory-model-fallback-policy",
+      ),
+    ).toMatchObject({
       id: "2026-06-remove-active-memory-model-fallback-policy",
       status: "pending",
       scope: "config",
@@ -134,6 +141,128 @@ describe("AlphaClaw migrations", () => {
     ]);
   });
 
+  it("reports legacy OpenClaw 2026.5.6 Codex config without mutating in dry-run mode", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
+      gateway: { mode: "local" },
+      plugins: {
+        entries: {
+          codex: {
+            enabled: true,
+            config: {
+              codexDynamicToolsProfile: "openclaw-compat",
+              codexDynamicToolsExclude: ["web_search"],
+            },
+          },
+        },
+      },
+    });
+
+    const result = runAlphaClawMigrations({ rootDir, openclawDir });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary.pending).toBe(1);
+    expect(
+      findMigrationResult(
+        result,
+        "2026-07-normalize-codex-plugin-compatibility",
+      ),
+    ).toMatchObject({
+      id: "2026-07-normalize-codex-plugin-compatibility",
+      status: "pending",
+      details: {
+        paths: [
+          "plugins.entries.codex.config.codexDynamicToolsProfile",
+        ],
+      },
+    });
+    expect(
+      readOpenclawConfig(openclawDir).plugins.entries.codex.config
+        .codexDynamicToolsProfile,
+    ).toBe("openclaw-compat");
+    expect(fs.existsSync(resolveMigrationLedgerPath({ rootDir }))).toBe(false);
+  });
+
+  it("normalizes every retired Codex setting and remains idempotent", () => {
+    const { rootDir, openclawDir } = createRoot();
+    writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
+      gateway: { mode: "local" },
+      plugins: {
+        entries: {
+          codex: {
+            enabled: true,
+            config: {
+              codexDynamicToolsProfile: "openclaw-compat",
+              codexDynamicToolsExclude: ["web_search"],
+              codexPlugins: {
+                enabled: true,
+                allow_destructive_actions: "on-request",
+                plugins: {
+                  github: {
+                    enabled: true,
+                    allow_destructive_actions: "on-request",
+                  },
+                  linear: {
+                    enabled: true,
+                    allow_destructive_actions: "ask",
+                  },
+                },
+              },
+              appServer: {
+                approvalPolicy: "on-failure",
+                requestTimeoutMs: 90000,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const first = runAlphaClawMigrations({
+      rootDir,
+      openclawDir,
+      fix: true,
+      now: new Date("2026-07-16T23:45:00.000Z"),
+    });
+    const nextConfig = readOpenclawConfig(openclawDir);
+    const codexConfig = nextConfig.plugins.entries.codex.config;
+
+    expect(first.ok).toBe(true);
+    expect(first.summary.fixed).toBe(1);
+    expect(codexConfig.codexDynamicToolsProfile).toBeUndefined();
+    expect(codexConfig.codexDynamicToolsExclude).toEqual(["web_search"]);
+    expect(codexConfig.codexPlugins.allow_destructive_actions).toBe("auto");
+    expect(
+      codexConfig.codexPlugins.plugins.github.allow_destructive_actions,
+    ).toBe("auto");
+    expect(
+      codexConfig.codexPlugins.plugins.linear.allow_destructive_actions,
+    ).toBe("ask");
+    expect(codexConfig.appServer.approvalPolicy).toBe("on-request");
+    expect(codexConfig.appServer.requestTimeoutMs).toBe(90000);
+    expect(readMigrationLedger({ rootDir })).toEqual([
+      expect.objectContaining({
+        timestamp: "2026-07-16T23:45:00.000Z",
+        id: "2026-07-normalize-codex-plugin-compatibility",
+        status: "completed",
+        changed: true,
+      }),
+    ]);
+
+    const second = runAlphaClawMigrations({
+      rootDir,
+      openclawDir,
+      fix: true,
+    });
+
+    expect(second.ok).toBe(true);
+    expect(second.summary.ok).toBe(5);
+    expect(second.summary.fixed || 0).toBe(0);
+    expect(readMigrationLedger({ rootDir })).toHaveLength(1);
+  });
+
   it("is idempotent after the deprecated key has already been removed", () => {
     const { rootDir, openclawDir } = createRoot();
     writeOpenclawConfig(openclawDir, {
@@ -152,7 +281,7 @@ describe("AlphaClaw migrations", () => {
     const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(true);
-    expect(result.summary.ok).toBe(4);
+    expect(result.summary.ok).toBe(5);
     expect(fs.existsSync(resolveMigrationLedgerPath({ rootDir }))).toBe(false);
   });
 
@@ -163,12 +292,16 @@ describe("AlphaClaw migrations", () => {
     const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(false);
-    expect(result.summary.failed).toBe(4);
-    expect(result.results[0]).toMatchObject({
+    expect(result.summary.failed).toBe(5);
+    const activeMemoryResult = findMigrationResult(
+      result,
+      "2026-06-remove-active-memory-model-fallback-policy",
+    );
+    expect(activeMemoryResult).toMatchObject({
       id: "2026-06-remove-active-memory-model-fallback-policy",
       status: "failed",
     });
-    expect(result.results[0].error).toMatch(/JSON/);
+    expect(activeMemoryResult.error).toMatch(/JSON/);
   });
 
   it("reports OpenAI Codex runtime auth order migration without mutating in dry-run mode", () => {
@@ -204,7 +337,12 @@ describe("AlphaClaw migrations", () => {
 
     expect(result.ok).toBe(true);
     expect(result.summary.pending).toBe(1);
-    expect(result.results[1]).toMatchObject({
+    expect(
+      findMigrationResult(
+        result,
+        "2026-06-prefer-codex-cli-openai-auth-profile",
+      ),
+    ).toMatchObject({
       id: "2026-06-prefer-codex-cli-openai-auth-profile",
       status: "pending",
       scope: "config",
@@ -365,7 +503,12 @@ describe("AlphaClaw migrations", () => {
 
     expect(result.ok).toBe(true);
     expect(result.summary.pending).toBe(1);
-    expect(result.results[2]).toMatchObject({
+    expect(
+      findMigrationResult(
+        result,
+        "2026-07-enable-plugin-approval-forwarding",
+      ),
+    ).toMatchObject({
       id: "2026-07-enable-plugin-approval-forwarding",
       status: "pending",
       scope: "config",
@@ -472,7 +615,12 @@ describe("AlphaClaw migrations", () => {
 
     expect(result.ok).toBe(true);
     expect(result.summary.pending).toBe(1);
-    expect(result.results[3]).toMatchObject({
+    expect(
+      findMigrationResult(
+        result,
+        "2026-07-backfill-channel-plugin-approvers",
+      ),
+    ).toMatchObject({
       id: "2026-07-backfill-channel-plugin-approvers",
       status: "pending",
       scope: "config",

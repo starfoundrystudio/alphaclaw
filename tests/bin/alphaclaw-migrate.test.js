@@ -25,6 +25,13 @@ describe("bin/alphaclaw migrate", () => {
                   queryMode: "recent",
                 },
               },
+              codex: {
+                enabled: true,
+                config: {
+                  codexDynamicToolsProfile: "openclaw-compat",
+                  codexDynamicToolsExclude: ["web_search"],
+                },
+              },
             },
           },
         },
@@ -54,9 +61,18 @@ describe("bin/alphaclaw migrate", () => {
 
     expect(output).toContain("AlphaClaw migrations:");
     expect(output).toContain("fixed: 2026-06-remove-active-memory-model-fallback-policy");
+    expect(output).toContain(
+      "fixed: 2026-07-normalize-codex-plugin-compatibility",
+    );
     expect(output).not.toContain("SETUP_PASSWORD is missing");
     expect(
       config.plugins.entries["active-memory"].config.modelFallbackPolicy,
     ).toBeUndefined();
+    expect(
+      config.plugins.entries.codex.config.codexDynamicToolsProfile,
+    ).toBeUndefined();
+    expect(config.plugins.entries.codex.config.codexDynamicToolsExclude).toEqual([
+      "web_search",
+    ]);
   });
 });
