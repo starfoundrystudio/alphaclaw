@@ -348,6 +348,38 @@ childProcess.execSync = (command, options = {}) => {
     expect(output).not.toContain("SETUP_PASSWORD is missing or empty");
   });
 
+  it("verifies OpenClaw startup migration state before startup-only setup checks", () => {
+    const openclawDir = path.join(tmpDir, ".openclaw");
+    const legacyIndexPath = path.join(openclawDir, "plugins", "installs.json");
+    fs.mkdirSync(path.dirname(legacyIndexPath), { recursive: true });
+    fs.writeFileSync(legacyIndexPath, '{"installRecords":{}}\n', "utf8");
+
+    let output = "";
+    let status = 0;
+    try {
+      execSync(
+        `node "${binPath}" --root-dir "${tmpDir}" verify-openclaw-startup-state`,
+        {
+          stdio: "pipe",
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            SETUP_PASSWORD: "",
+            ALPHACLAW_TEST_HOME: tmpHome,
+          },
+        },
+      );
+    } catch (error) {
+      status = error.status;
+      output = `${error.stdout || ""}${error.stderr || ""}`;
+    }
+
+    expect(status).toBe(1);
+    expect(output).toContain("OpenClaw startup state verification failed");
+    expect(output).toContain(legacyIndexPath);
+    expect(output).not.toContain("SETUP_PASSWORD is missing or empty");
+  });
+
   it("creates a gogcli compatibility symlink under the managed home", () => {
     const preloadPath = path.join(tmpDir, "capture-openclaw-env.js");
     fs.writeFileSync(
