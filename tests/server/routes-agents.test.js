@@ -64,6 +64,17 @@ const createAgentsServiceMock = () => ({
     intents: { messageContent: true, guildMembers: true },
     guilds: [{ id: "234567890123456789", name: "Test Server" }],
   })),
+  inspectSlackCredentials: vi.fn(() => ({
+    appId: "A0123456789",
+    appSettingsUrl: "https://api.slack.com/apps/A0123456789",
+    workspace: {
+      id: "T0123456789",
+      name: "Test Workspace",
+      url: "https://test-workspace.slack.com/",
+    },
+    bot: { id: "B0123456789", userId: "U0123456789", name: "Alpha Wolf" },
+    scopes: { checked: true, granted: ["chat:write"], missing: [] },
+  })),
   deleteChannelAccount: vi.fn(() => ({ ok: true })),
   runChannelAccountLogin: vi.fn(() => ({
     ok: true,
@@ -159,6 +170,28 @@ describe("server/routes/agents", () => {
     expect(agentsService.inspectDiscordBotToken).toHaveBeenCalledWith(
       "discord-secret-token-value",
     );
+  });
+
+  it("verifies both Slack tokens without persisting them", async () => {
+    const agentsService = createAgentsServiceMock();
+    const app = createApp(agentsService);
+
+    const response = await request(app)
+      .post("/api/channels/slack/inspect-credentials")
+      .send({ botToken: "xoxb-bot-secret", appToken: "xapp-1-app-secret" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.slack).toEqual(
+      expect.objectContaining({
+        appId: "A0123456789",
+        workspace: expect.objectContaining({ name: "Test Workspace" }),
+        scopes: expect.objectContaining({ checked: true, missing: [] }),
+      }),
+    );
+    expect(agentsService.inspectSlackCredentials).toHaveBeenCalledWith({
+      botToken: "xoxb-bot-secret",
+      appToken: "xapp-1-app-secret",
+    });
   });
 
   it("lists configured channel accounts on GET /api/channels/accounts", async () => {

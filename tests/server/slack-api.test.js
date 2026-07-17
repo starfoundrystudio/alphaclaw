@@ -15,6 +15,9 @@ describe("server/slack-api", () => {
     const api = createSlackApi(() => "test-token");
 
     expect(typeof api.authTest).toBe("function");
+    expect(typeof api.authScopes).toBe("function");
+    expect(typeof api.appsPermissionsInfo).toBe("function");
+    expect(typeof api.openSocketConnection).toBe("function");
     expect(typeof api.postMessage).toBe("function");
     expect(typeof api.postMessageInThread).toBe("function");
     expect(typeof api.addReaction).toBe("function");
@@ -27,6 +30,22 @@ describe("server/slack-api", () => {
     expect(typeof api.unpinMessage).toBe("function");
     expect(typeof api.getUserInfo).toBe("function");
     expect(typeof api.getChannelInfo).toBe("function");
+  });
+
+  it("includes granted OAuth scopes returned in Slack response headers", async () => {
+    global.fetch = async () => ({
+      ok: true,
+      headers: new Headers({
+        "x-oauth-scopes": "chat:write,im:history",
+      }),
+      json: async () => ({ ok: true, bot_id: "B123" }),
+    });
+
+    const api = createSlackApi(() => "xoxb-test-token");
+
+    await expect(api.authTest()).resolves.toMatchObject({
+      response_metadata: { scopes: "chat:write,im:history" },
+    });
   });
 
   it("postMessage requires token", async () => {
