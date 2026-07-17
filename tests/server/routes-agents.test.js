@@ -49,6 +49,21 @@ const createAgentsServiceMock = () => ({
     envKey: "TELEGRAM_BOT_TOKEN",
     token: "123:abc",
   })),
+  inspectTelegramBotToken: vi.fn(() => ({
+    id: "123456789",
+    name: "Alpha Wolf",
+    username: "alpha_wolf_bot",
+    link: "https://t.me/alpha_wolf_bot",
+  })),
+  inspectDiscordBotToken: vi.fn(() => ({
+    id: "123456789012345678",
+    applicationId: "123456789012345678",
+    name: "Alpha Wolf",
+    username: "alpha-wolf",
+    installUrl: "https://discord.com/oauth2/authorize?client_id=123456789012345678",
+    intents: { messageContent: true, guildMembers: true },
+    guilds: [{ id: "234567890123456789", name: "Test Server" }],
+  })),
   deleteChannelAccount: vi.fn(() => ({ ok: true })),
   runChannelAccountLogin: vi.fn(() => ({
     ok: true,
@@ -102,6 +117,50 @@ const createApp = (
 };
 
 describe("server/routes/agents", () => {
+  it("verifies a Telegram bot token without persisting it", async () => {
+    const agentsService = createAgentsServiceMock();
+    const app = createApp(agentsService);
+
+    const response = await request(app)
+      .post("/api/channels/telegram/inspect-token")
+      .send({ token: "123456789:AA-secret-token-value" });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      bot: {
+        id: "123456789",
+        name: "Alpha Wolf",
+        username: "alpha_wolf_bot",
+        link: "https://t.me/alpha_wolf_bot",
+      },
+    });
+    expect(agentsService.inspectTelegramBotToken).toHaveBeenCalledWith(
+      "123456789:AA-secret-token-value",
+    );
+  });
+
+  it("verifies Discord settings and installation without persisting the token", async () => {
+    const agentsService = createAgentsServiceMock();
+    const app = createApp(agentsService);
+
+    const response = await request(app)
+      .post("/api/channels/discord/inspect-token")
+      .send({ token: "discord-secret-token-value" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.bot).toEqual(
+      expect.objectContaining({
+        applicationId: "123456789012345678",
+        intents: { messageContent: true, guildMembers: true },
+        guilds: [{ id: "234567890123456789", name: "Test Server" }],
+      }),
+    );
+    expect(agentsService.inspectDiscordBotToken).toHaveBeenCalledWith(
+      "discord-secret-token-value",
+    );
+  });
+
   it("lists configured channel accounts on GET /api/channels/accounts", async () => {
     const agentsService = createAgentsServiceMock();
     const app = createApp(agentsService);

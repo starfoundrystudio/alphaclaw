@@ -1352,6 +1352,8 @@ describe("server/agents/service", () => {
       accountId: "default",
       token: "discord-token",
       agentId: "main",
+      discordApplicationId: "123456789012345678",
+      discordGuildMembersIntent: true,
     });
 
     expect(result).toEqual({
@@ -1391,6 +1393,8 @@ describe("server/agents/service", () => {
               default: {
                 name: "Discord",
                 token: "${DISCORD_BOT_TOKEN}",
+                applicationId: "123456789012345678",
+                intents: { guildMembers: true },
                 dmPolicy: "pairing",
               },
             },
