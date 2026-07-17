@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-15T16:19:01.147Z",
+  "generatedAt": "2026-07-16T23:46:45.808Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2759,6 +2759,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/meta/muse-spark-1.1",
+              "provider": "openrouter",
+              "label": "Meta: Muse Spark 1.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/microsoft/phi-4",
               "provider": "openrouter",
               "label": "Microsoft: Phi 4",
@@ -3068,6 +3077,15 @@
               "key": "openrouter/moonshotai/kimi-k2.7-code",
               "provider": "openrouter",
               "label": "MoonshotAI: Kimi K2.7 Code",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/moonshotai/kimi-k3",
+              "provider": "openrouter",
+              "label": "MoonshotAI: Kimi K3",
               "accessModes": [
                 "gateway"
               ],
@@ -5808,6 +5826,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/thinkingmachines/inkling",
+              "provider": "vercel-ai-gateway",
+              "label": "Inkling",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/interfaze/interfaze-beta",
               "provider": "vercel-ai-gateway",
               "label": "Interfaze Beta",
@@ -5901,6 +5928,15 @@
               "key": "vercel-ai-gateway/moonshotai/kimi-k2.7-code-highspeed",
               "provider": "vercel-ai-gateway",
               "label": "Kimi K2.7 Code High Speed",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/moonshotai/kimi-k3",
+              "provider": "vercel-ai-gateway",
+              "label": "Kimi K3",
               "accessModes": [
                 "gateway"
               ],
@@ -8344,6 +8380,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/meta/muse-spark-1.1",
+      "provider": "openrouter",
+      "label": "Meta: Muse Spark 1.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/microsoft/phi-4",
       "provider": "openrouter",
       "label": "Microsoft: Phi 4",
@@ -8653,6 +8698,15 @@
       "key": "openrouter/moonshotai/kimi-k2.7-code",
       "provider": "openrouter",
       "label": "MoonshotAI: Kimi K2.7 Code",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/moonshotai/kimi-k3",
+      "provider": "openrouter",
+      "label": "MoonshotAI: Kimi K3",
       "accessModes": [
         "gateway"
       ],
@@ -11792,6 +11846,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/thinkingmachines/inkling",
+      "provider": "vercel-ai-gateway",
+      "label": "Inkling",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/interfaze/interfaze-beta",
       "provider": "vercel-ai-gateway",
       "label": "Interfaze Beta",
@@ -11885,6 +11948,15 @@
       "key": "vercel-ai-gateway/moonshotai/kimi-k2.7-code-highspeed",
       "provider": "vercel-ai-gateway",
       "label": "Kimi K2.7 Code High Speed",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/moonshotai/kimi-k3",
+      "provider": "vercel-ai-gateway",
+      "label": "Kimi K3",
       "accessModes": [
         "gateway"
       ],
