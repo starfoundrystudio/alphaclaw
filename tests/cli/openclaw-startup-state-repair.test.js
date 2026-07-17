@@ -4,9 +4,11 @@ const path = require("path");
 const { DatabaseSync } = require("node:sqlite");
 
 const {
+  finalizeResidualCodexSidecars,
   inspectForeignHarnessCodexSidecars,
   inspectOpenclawStartupState,
   inspectPluginIndexConflict,
+  walkCodexBindingSidecars,
 } = require("../../lib/cli/openclaw-startup-state-repair");
 const {
   runAlphaClawMigrations,
@@ -178,7 +180,7 @@ describe("OpenClaw startup state repair", () => {
     expect(fs.existsSync(`${sidecarPath}.migrated`)).toBe(true);
   });
 
-  it("leaves ambiguous sidecars in place and reports them during verification", () => {
+  it("archives residual sidecars after doctor while preserving reversible copies", () => {
     const sessionsDir = path.join(openclawDir, "agents", "main", "sessions");
     const transcriptName = "shared.jsonl";
     const sidecarPath = path.join(
@@ -204,14 +206,73 @@ describe("OpenClaw startup state repair", () => {
     expect(result.ok).toBe(true);
     expect(fs.existsSync(sidecarPath)).toBe(true);
 
-    const verification = inspectOpenclawStartupState({ openclawDir });
-    expect(verification.ok).toBe(false);
-    expect(verification.blockers).toContainEqual(
-      expect.objectContaining({
-        type: "codex-binding-sidecar",
-        path: sidecarPath,
-      }),
+    const unownedSidecarPath = path.join(
+      sessionsDir,
+      "orphan.jsonl.codex-app-server.json",
     );
+    writeJson(unownedSidecarPath, { threadId: "thread-orphan" });
+    writeJson(`${unownedSidecarPath}.migrated`, { threadId: "older-archive" });
+
+    const finalization = finalizeResidualCodexSidecars({
+      rootDir,
+      openclawDir,
+      now: new Date("2026-07-17T20:00:00.000Z"),
+    });
+
+    expect(finalization).toMatchObject({
+      changed: true,
+      archivedCount: 2,
+      manifestPath: path.join(
+        rootDir,
+        "migrations",
+        "openclaw-residual-codex-sidecars-20260717T200000000Z.json",
+      ),
+    });
+    expect(fs.existsSync(sidecarPath)).toBe(false);
+    expect(fs.existsSync(`${sidecarPath}.migrated`)).toBe(true);
+    expect(fs.existsSync(unownedSidecarPath)).toBe(false);
+    expect(fs.existsSync(`${unownedSidecarPath}.migrated.2`)).toBe(true);
+    const manifest = JSON.parse(
+      fs.readFileSync(finalization.manifestPath, "utf8"),
+    );
+    expect(manifest.archives).toHaveLength(2);
+    expect(fs.statSync(finalization.manifestPath).mode & 0o777).toBe(0o600);
+    expect(inspectOpenclawStartupState({ openclawDir })).toEqual({
+      ok: true,
+      blockers: [],
+    });
+  });
+
+  it("finalizes a large historical Codex sidecar set in one summarized operation", () => {
+    const sessionsDir = path.join(openclawDir, "agents", "main", "sessions");
+    const sidecarPaths = Array.from({ length: 250 }, (_, index) =>
+      path.join(
+        sessionsDir,
+        `session-${String(index).padStart(3, "0")}-topic-1781784723.jsonl.codex-app-server.json`,
+      ),
+    );
+    for (const [index, sidecarPath] of sidecarPaths.entries()) {
+      writeJson(sidecarPath, {
+        schemaVersion: 1,
+        threadId: `thread-${index}`,
+      });
+    }
+
+    const result = finalizeResidualCodexSidecars({
+      rootDir,
+      openclawDir,
+      now: new Date("2026-07-17T20:30:00.000Z"),
+    });
+
+    expect(result.archivedCount).toBe(250);
+    expect(result.changes).toHaveLength(2);
+    expect(walkCodexBindingSidecars({ openclawDir })).toEqual([]);
+    expect(fs.existsSync(`${sidecarPaths[0]}.migrated`)).toBe(true);
+    expect(JSON.parse(fs.readFileSync(`${sidecarPaths[249]}.migrated`, "utf8"))).toMatchObject({
+      threadId: "thread-249",
+    });
+    const manifest = JSON.parse(fs.readFileSync(result.manifestPath, "utf8"));
+    expect(manifest.archives).toHaveLength(250);
   });
 
   it("reports a lingering legacy plugin index as a startup blocker", () => {

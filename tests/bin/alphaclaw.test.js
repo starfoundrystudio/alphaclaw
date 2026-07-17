@@ -380,6 +380,40 @@ childProcess.execSync = (command, options = {}) => {
     expect(output).not.toContain("SETUP_PASSWORD is missing or empty");
   });
 
+  it("archives residual Codex sidecars before verifying finalized startup state", () => {
+    const sessionsDir = path.join(
+      tmpDir,
+      ".openclaw",
+      "agents",
+      "main",
+      "sessions",
+    );
+    const sidecarPath = path.join(
+      sessionsDir,
+      "session.jsonl.codex-app-server.json",
+    );
+    fs.mkdirSync(sessionsDir, { recursive: true });
+    fs.writeFileSync(sidecarPath, '{"schemaVersion":1,"threadId":"thread-1"}\n');
+
+    const output = execSync(
+      `node "${binPath}" --root-dir "${tmpDir}" finalize-openclaw-startup-state`,
+      {
+        stdio: "pipe",
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          SETUP_PASSWORD: "",
+          ALPHACLAW_TEST_HOME: tmpHome,
+        },
+      },
+    );
+
+    expect(output).toContain("Archived 1 residual Codex binding sidecar");
+    expect(fs.existsSync(sidecarPath)).toBe(false);
+    expect(fs.existsSync(`${sidecarPath}.migrated`)).toBe(true);
+    expect(output).not.toContain("SETUP_PASSWORD is missing or empty");
+  });
+
   it("creates a gogcli compatibility symlink under the managed home", () => {
     const preloadPath = path.join(tmpDir, "capture-openclaw-env.js");
     fs.writeFileSync(
