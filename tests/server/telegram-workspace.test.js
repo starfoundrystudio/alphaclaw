@@ -68,10 +68,11 @@ describe("server/telegram-workspace", () => {
       topicRegistry,
       groupId: "-1001234567890",
       requireMention: true,
-      resolvedUserId: "",
     });
 
     const nextConfig = readOpenclawConfig({ dir: openclawDir });
+    expect(nextConfig.channels.telegram.groupPolicy).toBe("open");
+    expect(nextConfig.channels.telegram.groupAllowFrom).toBeUndefined();
     expect(nextConfig.channels.telegram.groups["-1001234567890"].topics).toEqual({
       "1": { agentId: "main" },
       "3": { systemPrompt: "Handle ops requests only.", agentId: "ops" },
@@ -108,12 +109,69 @@ describe("server/telegram-workspace", () => {
       topicRegistry,
       groupId: "-1001234567890",
       requireMention: false,
-      resolvedUserId: "",
     });
 
     const nextConfig = readOpenclawConfig({ dir: openclawDir });
     expect(nextConfig.channels.telegram.groups["-1001234567890"].topics).toEqual({
       "2": { systemPrompt: "Only prompt." },
     });
+  });
+
+  it("preserves explicit room settings during topic-only syncs", () => {
+    writeOpenclawConfig({
+      dir: openclawDir,
+      config: {
+        channels: {
+          telegram: {
+            groupPolicy: "allowlist",
+            groupAllowFrom: ["12345"],
+            groups: {
+              "-1001234567890": {
+                requireMention: false,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const topicRegistry = {
+      getGroup: () => ({ topics: {} }),
+      getTotalTopicCount: () => 0,
+    };
+
+    syncConfigForTelegram({
+      fs,
+      openclawDir,
+      topicRegistry,
+      groupId: "-1001234567890",
+    });
+
+    const telegramConfig = readOpenclawConfig({ dir: openclawDir }).channels
+      .telegram;
+    expect(telegramConfig.groupPolicy).toBe("allowlist");
+    expect(telegramConfig.groupAllowFrom).toEqual(["12345"]);
+    expect(telegramConfig.groups["-1001234567890"].requireMention).toBe(false);
+  });
+
+  it("defaults newly configured groups to mention-only interaction", () => {
+    writeOpenclawConfig({ dir: openclawDir, config: {} });
+
+    const topicRegistry = {
+      getGroup: () => ({ topics: {} }),
+      getTotalTopicCount: () => 0,
+    };
+
+    syncConfigForTelegram({
+      fs,
+      openclawDir,
+      topicRegistry,
+      groupId: "-1001234567890",
+    });
+
+    const telegramConfig = readOpenclawConfig({ dir: openclawDir }).channels
+      .telegram;
+    expect(telegramConfig.groupPolicy).toBe("open");
+    expect(telegramConfig.groups["-1001234567890"].requireMention).toBe(true);
   });
 });
