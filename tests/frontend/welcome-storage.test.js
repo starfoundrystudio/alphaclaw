@@ -32,6 +32,31 @@ describe("frontend/welcome-storage", () => {
     expect(normalized.tailscaleApiToken).toBeUndefined();
   });
 
+  it("drops retired channel setup credentials and pairing state", async () => {
+    const welcomeStorage = await loadWelcomeStorage();
+
+    const normalized = welcomeStorage.normalizeWelcomeStorageState({
+      MODEL_KEY: "openai/gpt-5.5",
+      TELEGRAM_BOT_TOKEN: "telegram-secret",
+      DISCORD_BOT_TOKEN: "discord-secret",
+      SLACK_BOT_TOKEN: "xoxb-secret",
+      SLACK_APP_TOKEN: "xapp-secret",
+      WHATSAPP_OWNER_NUMBER: "+15551234567",
+      _pairingChannel: "telegram",
+    });
+
+    expect(normalized).toEqual({ MODEL_KEY: "openai/gpt-5.5" });
+  });
+
+  it("moves retired channel, setup, and pairing steps to the final form step", async () => {
+    const welcomeStorage = await loadWelcomeStorage();
+
+    expect(welcomeStorage.normalizeWelcomeStep(1, 2)).toBe(1);
+    expect(welcomeStorage.normalizeWelcomeStep(2, 2)).toBe(1);
+    expect(welcomeStorage.normalizeWelcomeStep(3, 2)).toBe(1);
+    expect(welcomeStorage.normalizeWelcomeStep(4, 2)).toBe(1);
+  });
+
   it("drops invalid model access modes from persisted setup state", async () => {
     const welcomeStorage = await loadWelcomeStorage();
 

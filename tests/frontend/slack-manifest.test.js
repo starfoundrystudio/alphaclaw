@@ -90,4 +90,17 @@ describe("frontend/slack-manifest", () => {
       "reaction_removed",
     ]);
   });
+
+  it("builds an official Slack app-creation URL with the manifest embedded", async () => {
+    const { buildSlackManifestUrl } = await loadCreateChannelModalModule();
+
+    const url = new URL(buildSlackManifestUrl("Ops Agent"));
+    const manifest = JSON.parse(url.searchParams.get("manifest_json"));
+
+    expect(url.origin).toBe("https://api.slack.com");
+    expect(url.pathname).toBe("/apps");
+    expect(url.searchParams.get("new_app")).toBe("1");
+    expect(manifest.display_information.name).toBe("Ops Agent");
+    expect(manifest.features.assistant_view).toBeDefined();
+  });
 });

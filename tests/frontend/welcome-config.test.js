@@ -7,7 +7,6 @@ describe("frontend/welcome-config", () => {
 
     expect(welcomeConfig.kWelcomeGroups.map((group) => group.id)).toEqual([
       "ai",
-      "channels",
       "tailscale",
     ]);
   });
@@ -90,23 +89,6 @@ describe("frontend/welcome-config", () => {
         },
       ),
     ).toBe("Add an OpenAI API key or connect Codex OAuth to continue.");
-  });
-
-  it("requires both Slack tokens before the channels step can pass", async () => {
-    const welcomeConfig = await loadWelcomeConfig();
-
-    expect(
-      welcomeConfig.getWelcomeGroupError("channels", {
-        SLACK_BOT_TOKEN: "xoxb-123",
-        SLACK_APP_TOKEN: "",
-      }),
-    ).toBe("Add the Slack app token to continue with Slack.");
-  });
-
-  it("allows skipping channels entirely during onboarding", async () => {
-    const welcomeConfig = await loadWelcomeConfig();
-
-    expect(welcomeConfig.getWelcomeGroupError("channels", {})).toBe("");
   });
 
   it("requires a Tailscale API access token before final setup", async () => {

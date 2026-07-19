@@ -978,6 +978,8 @@ describe("server/agents/service", () => {
                 name: "Telegram",
                 botToken: "${TELEGRAM_BOT_TOKEN}",
                 dmPolicy: "pairing",
+                groupPolicy: "open",
+                groups: { "*": { requireMention: true } },
               },
             },
           },
@@ -1131,6 +1133,8 @@ describe("server/agents/service", () => {
                 name: "Alerts",
                 botToken: "${TELEGRAM_BOT_TOKEN_ALERTS}",
                 dmPolicy: "pairing",
+                groupPolicy: "open",
+                groups: { "*": { requireMention: true } },
               },
             },
           },
@@ -1352,6 +1356,8 @@ describe("server/agents/service", () => {
       accountId: "default",
       token: "discord-token",
       agentId: "main",
+      discordApplicationId: "123456789012345678",
+      discordGuildMembersIntent: true,
     });
 
     expect(result).toEqual({
@@ -1391,7 +1397,12 @@ describe("server/agents/service", () => {
               default: {
                 name: "Discord",
                 token: "${DISCORD_BOT_TOKEN}",
+                applicationId: "123456789012345678",
+                intents: { guildMembers: true },
                 dmPolicy: "pairing",
+                groupPolicy: "open",
+                guilds: { "*": { requireMention: true } },
+                allowBots: "mentions",
               },
             },
           },
@@ -1508,6 +1519,9 @@ describe("server/agents/service", () => {
                 botToken: "${SLACK_BOT_TOKEN}",
                 appToken: "${SLACK_APP_TOKEN}",
                 dmPolicy: "pairing",
+                groupPolicy: "open",
+                channels: { "*": { requireMention: true } },
+                allowBots: "mentions",
               },
             },
           },
@@ -1697,6 +1711,7 @@ describe("server/agents/service", () => {
           slack: {
             enabled: true,
             defaultAccount: "default",
+            allowBots: false,
             accounts: {
               default: {
                 botToken: "${SLACK_BOT_TOKEN}",
@@ -1765,6 +1780,7 @@ describe("server/agents/service", () => {
           slack: {
             enabled: true,
             defaultAccount: "default",
+            allowBots: false,
             accounts: {
               default: {
                 botToken: "${SLACK_BOT_TOKEN}",
@@ -1776,6 +1792,8 @@ describe("server/agents/service", () => {
                 botToken: "${SLACK_BOT_TOKEN_ALERTS}",
                 appToken: "${SLACK_APP_TOKEN_ALERTS}",
                 dmPolicy: "pairing",
+                groupPolicy: "open",
+                channels: { "*": { requireMention: true } },
               },
             },
           },
