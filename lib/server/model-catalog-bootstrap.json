@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-16T23:46:45.808Z",
+  "generatedAt": "2026-07-17T17:16:38.245Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2678,15 +2678,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/meta-llama/llama-3.2-11b-vision-instruct",
-              "provider": "openrouter",
-              "label": "Meta: Llama 3.2 11B Vision Instruct",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/meta-llama/llama-3.2-1b-instruct",
               "provider": "openrouter",
               "label": "Meta: Llama 3.2 1B Instruct",
@@ -3176,15 +3167,6 @@
               "key": "openrouter/nousresearch/hermes-4-70b",
               "provider": "openrouter",
               "label": "Nous: Hermes 4 70B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/nvidia/llama-3.3-nemotron-super-49b-v1.5",
-              "provider": "openrouter",
-              "label": "NVIDIA: Llama 3.3 Nemotron Super 49B V1.5",
               "accessModes": [
                 "gateway"
               ],
@@ -5961,42 +5943,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/meta/llama-3.2-11b",
-              "provider": "vercel-ai-gateway",
-              "label": "Llama 3.2 11B Vision Instruct",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/meta/llama-3.2-1b",
-              "provider": "vercel-ai-gateway",
-              "label": "Llama 3.2 1B Instruct",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/meta/llama-3.2-3b",
-              "provider": "vercel-ai-gateway",
-              "label": "Llama 3.2 3B Instruct",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/meta/llama-3.2-90b",
-              "provider": "vercel-ai-gateway",
-              "label": "Llama 3.2 90B Vision Instruct",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/meta/llama-3.3-70b",
               "provider": "vercel-ai-gateway",
               "label": "Llama 3.3 70B Instruct",
@@ -8299,15 +8245,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/meta-llama/llama-3.2-11b-vision-instruct",
-      "provider": "openrouter",
-      "label": "Meta: Llama 3.2 11B Vision Instruct",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/meta-llama/llama-3.2-1b-instruct",
       "provider": "openrouter",
       "label": "Meta: Llama 3.2 1B Instruct",
@@ -8797,15 +8734,6 @@
       "key": "openrouter/nousresearch/hermes-4-70b",
       "provider": "openrouter",
       "label": "Nous: Hermes 4 70B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/nvidia/llama-3.3-nemotron-super-49b-v1.5",
-      "provider": "openrouter",
-      "label": "NVIDIA: Llama 3.3 Nemotron Super 49B V1.5",
       "accessModes": [
         "gateway"
       ],
@@ -11975,42 +11903,6 @@
       "key": "vercel-ai-gateway/meta/llama-3.1-8b",
       "provider": "vercel-ai-gateway",
       "label": "Llama 3.1 8B Instruct",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/meta/llama-3.2-11b",
-      "provider": "vercel-ai-gateway",
-      "label": "Llama 3.2 11B Vision Instruct",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/meta/llama-3.2-1b",
-      "provider": "vercel-ai-gateway",
-      "label": "Llama 3.2 1B Instruct",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/meta/llama-3.2-3b",
-      "provider": "vercel-ai-gateway",
-      "label": "Llama 3.2 3B Instruct",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/meta/llama-3.2-90b",
-      "provider": "vercel-ai-gateway",
-      "label": "Llama 3.2 90B Vision Instruct",
       "accessModes": [
         "gateway"
       ],

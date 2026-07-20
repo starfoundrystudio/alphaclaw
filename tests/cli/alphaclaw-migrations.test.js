@@ -3,6 +3,7 @@ const os = require("os");
 const path = require("path");
 
 const {
+  kAlphaClawMigrations,
   readMigrationLedger,
   resolveMigrationLedgerPath,
   runAlphaClawMigrations,
@@ -258,7 +259,7 @@ describe("AlphaClaw migrations", () => {
     });
 
     expect(second.ok).toBe(true);
-    expect(second.summary.ok).toBe(5);
+    expect(second.summary.ok).toBe(kAlphaClawMigrations.length);
     expect(second.summary.fixed || 0).toBe(0);
     expect(readMigrationLedger({ rootDir })).toHaveLength(1);
   });
@@ -281,7 +282,7 @@ describe("AlphaClaw migrations", () => {
     const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(true);
-    expect(result.summary.ok).toBe(5);
+    expect(result.summary.ok).toBe(kAlphaClawMigrations.length);
     expect(fs.existsSync(resolveMigrationLedgerPath({ rootDir }))).toBe(false);
   });
 
@@ -293,6 +294,7 @@ describe("AlphaClaw migrations", () => {
 
     expect(result.ok).toBe(false);
     expect(result.summary.failed).toBe(5);
+    expect(result.summary.ok).toBe(2);
     const activeMemoryResult = findMigrationResult(
       result,
       "2026-06-remove-active-memory-model-fallback-policy",

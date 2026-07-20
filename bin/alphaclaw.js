@@ -31,6 +31,10 @@ const {
   runOpenclawDoctorWithOauthGuard,
 } = require("../lib/cli/openclaw-doctor-oauth-guard");
 const {
+  finalizeResidualCodexSidecars,
+  inspectOpenclawStartupState,
+} = require("../lib/cli/openclaw-startup-state-repair");
+const {
   buildManagedPaths,
   migrateManagedInternalFiles,
 } = require("../lib/server/internal-files-migration");
@@ -106,6 +110,8 @@ Commands:
   start     Start the AlphaClaw server (Setup UI + gateway manager)
   git-sync  Commit and push the managed OpenClaw workspace using GITHUB_TOKEN
   migrate   Inspect or apply AlphaClaw-owned upgrade migrations
+  finalize-openclaw-startup-state  Archive residual legacy state after doctor
+  verify-openclaw-startup-state  Fail if doctor left known startup blockers
   openclaw-doctor-guard  Run an OpenClaw command with OAuth-refresh shielding
   reconcile-openclaw-plugins  Install/update AlphaClaw-managed OpenClaw plugins
   telegram topic add  Add/update Telegram topic mapping by thread ID
@@ -144,6 +150,8 @@ Examples:
   alphaclaw git-sync --message "update config" --file "workspace/app/config.json"
   alphaclaw migrate
   alphaclaw migrate --fix
+  alphaclaw finalize-openclaw-startup-state
+  alphaclaw verify-openclaw-startup-state
   alphaclaw openclaw-doctor-guard -- openclaw doctor --non-interactive --fix
   alphaclaw reconcile-openclaw-plugins
   alphaclaw telegram topic add --thread 12 --name "Testing"
@@ -456,6 +464,68 @@ const runMigrate = () => {
 
 if (command === "migrate") {
   process.exit(runMigrate());
+}
+
+const runFinalizeOpenclawStartupState = () => {
+  try {
+    const finalization = finalizeResidualCodexSidecars({
+      fsModule: fs,
+      rootDir,
+      openclawDir,
+    });
+    const verification = inspectOpenclawStartupState({
+      fsModule: fs,
+      openclawDir,
+    });
+    const result = {
+      ok: verification.ok,
+      finalization,
+      blockers: verification.blockers,
+    };
+    if (hasFlag(commandArgs, "--json")) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      for (const change of finalization.changes) {
+        console.log(`[alphaclaw] ${change}`);
+      }
+      if (!result.ok) {
+        console.error("[alphaclaw] OpenClaw startup finalization failed:");
+        for (const blocker of result.blockers) {
+          console.error(`- ${blocker.message} ${blocker.path}`);
+        }
+      }
+    }
+    return result.ok ? 0 : 1;
+  } catch (e) {
+    const details = String(e.stderr || e.stdout || e.message || "").trim();
+    console.error(
+      `[alphaclaw] OpenClaw startup finalization failed: ${details.slice(0, 800)}`,
+    );
+    return 1;
+  }
+};
+
+if (command === "finalize-openclaw-startup-state") {
+  process.exit(runFinalizeOpenclawStartupState());
+}
+
+const runVerifyOpenclawStartupState = () => {
+  const result = inspectOpenclawStartupState({ fsModule: fs, openclawDir });
+  if (hasFlag(commandArgs, "--json")) {
+    console.log(JSON.stringify(result, null, 2));
+  } else if (result.ok) {
+    console.log("[alphaclaw] OpenClaw startup state has no known legacy blockers");
+  } else {
+    console.error("[alphaclaw] OpenClaw startup state verification failed:");
+    for (const blocker of result.blockers) {
+      console.error(`- ${blocker.message} ${blocker.path}`);
+    }
+  }
+  return result.ok ? 0 : 1;
+};
+
+if (command === "verify-openclaw-startup-state") {
+  process.exit(runVerifyOpenclawStartupState());
 }
 
 const runOpenclawDoctorGuard = () => {
