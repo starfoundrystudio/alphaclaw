@@ -808,6 +808,59 @@ if (resolvedGoogleProvider === "gog") {
 }
 
 // ---------------------------------------------------------------------------
+// 8b. Install Composio CLI when it is the active Google provider
+// ---------------------------------------------------------------------------
+
+const commandExists = (name) => {
+  try {
+    execSync(`command -v ${name}`, { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+if (resolvedGoogleProvider === "composio" && !commandExists("composio")) {
+  console.log("[alphaclaw] Installing Composio CLI...");
+  try {
+    execSync("curl -fsSL https://composio.dev/install | bash", {
+      stdio: "inherit",
+      timeout: 120000,
+    });
+    // The install script drops the binary under the home dir; make it
+    // reachable for this process and all children even before a new shell.
+    if (!commandExists("composio")) {
+      const candidateDirs = [
+        path.join(rootDir, ".composio", "bin"),
+        path.join(rootDir, ".local", "bin"),
+      ];
+      for (const dir of candidateDirs) {
+        if (!fs.existsSync(path.join(dir, "composio"))) continue;
+        process.env.PATH = `${dir}:${process.env.PATH || ""}`;
+        try {
+          if (!fs.existsSync("/usr/local/bin/composio")) {
+            fs.symlinkSync(
+              path.join(dir, "composio"),
+              "/usr/local/bin/composio",
+            );
+          }
+        } catch {}
+        break;
+      }
+    }
+    if (commandExists("composio")) {
+      console.log("[alphaclaw] Composio CLI installed");
+    } else {
+      console.log(
+        "[alphaclaw] Composio CLI install finished but binary not found on PATH",
+      );
+    }
+  } catch (e) {
+    console.log(`[alphaclaw] Composio CLI install skipped: ${e.message}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 9. Install/reconcile system cron entry
 // ---------------------------------------------------------------------------
 
