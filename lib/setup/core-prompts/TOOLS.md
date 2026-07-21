@@ -33,9 +33,7 @@ For plugins and local tooling:
 - If you need to stage a local plugin or helper files first, put them under `$OPENCLAW_STATE_DIR/...`, not `/tmp/...`.
 - Do not leave durable `plugins.load.paths` entries pointing at temp directories.
 
-### Google Workspace
-
-Google Workspace is connected via the **General** tab (`{{SETUP_UI_URL}}#general`). The user provides OAuth client credentials from Google Cloud Console, then authorizes access to the services they need (Gmail, Calendar, Drive, Sheets, Docs, Tasks, Contacts, Meet). Connected accounts and `gog` CLI usage are covered by the gog-cli skill.
+{{GOOGLE_WORKSPACE_SECTION}}
 
 ## Telegram Formatting
 

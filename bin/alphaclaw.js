@@ -722,6 +722,25 @@ process.env.GOG_KEYRING_PASSWORD =
 
 process.env.XDG_CONFIG_HOME = openclawDir;
 
+// Resolve the active Google Workspace provider (env override > saved state >
+// default "gog"). When gog is not the provider, skip all gog-specific setup so
+// deployments using e.g. the Composio CLI never get gog installed or linked.
+const resolvedGoogleProvider = (() => {
+  try {
+    const {
+      readGoogleState,
+      resolveGoogleProvider,
+    } = require("../lib/server/google-state");
+    const state = readGoogleState({
+      fs,
+      statePath: path.join(openclawDir, "gogcli", "state.json"),
+    });
+    return resolveGoogleProvider({ state }).provider;
+  } catch {
+    return "gog";
+  }
+})();
+
 const ensureGogCliCompatConfigPath = () => {
   const configDir = path.join(rootDir, ".config");
   const compatPath = path.join(configDir, "gogcli");
@@ -753,33 +772,39 @@ const ensureGogCliCompatConfigPath = () => {
   }
 };
 
-ensureGogCliCompatConfigPath();
+if (resolvedGoogleProvider === "gog") {
+  ensureGogCliCompatConfigPath();
 
-const gogInstalled = (() => {
-  try {
-    execSync("command -v gog", { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
-  }
-})();
+  const gogInstalled = (() => {
+    try {
+      execSync("command -v gog", { stdio: "ignore" });
+      return true;
+    } catch {
+      return false;
+    }
+  })();
 
-if (!gogInstalled) {
-  console.log("[alphaclaw] Installing gog CLI...");
-  try {
-    const gogVersion = process.env.GOG_VERSION || "0.11.0";
-    const platform = os.platform() === "darwin" ? "darwin" : "linux";
-    const arch = os.arch() === "arm64" ? "arm64" : "amd64";
-    const tarball = `gogcli_${gogVersion}_${platform}_${arch}.tar.gz`;
-    const url = `https://github.com/steipete/gogcli/releases/download/v${gogVersion}/${tarball}`;
-    execSync(
-      `curl -fsSL "${url}" -o /tmp/gog.tar.gz && tar -xzf /tmp/gog.tar.gz -C /tmp/ && mv /tmp/gog /usr/local/bin/gog && chmod +x /usr/local/bin/gog && rm -f /tmp/gog.tar.gz`,
-      { stdio: "inherit" },
-    );
-    console.log("[alphaclaw] gog CLI installed");
-  } catch (e) {
-    console.log(`[alphaclaw] gog install skipped: ${e.message}`);
+  if (!gogInstalled) {
+    console.log("[alphaclaw] Installing gog CLI...");
+    try {
+      const gogVersion = process.env.GOG_VERSION || "0.11.0";
+      const platform = os.platform() === "darwin" ? "darwin" : "linux";
+      const arch = os.arch() === "arm64" ? "arm64" : "amd64";
+      const tarball = `gogcli_${gogVersion}_${platform}_${arch}.tar.gz`;
+      const url = `https://github.com/steipete/gogcli/releases/download/v${gogVersion}/${tarball}`;
+      execSync(
+        `curl -fsSL "${url}" -o /tmp/gog.tar.gz && tar -xzf /tmp/gog.tar.gz -C /tmp/ && mv /tmp/gog /usr/local/bin/gog && chmod +x /usr/local/bin/gog && rm -f /tmp/gog.tar.gz`,
+        { stdio: "inherit" },
+      );
+      console.log("[alphaclaw] gog CLI installed");
+    } catch (e) {
+      console.log(`[alphaclaw] gog install skipped: ${e.message}`);
+    }
   }
+} else {
+  console.log(
+    `[alphaclaw] gog CLI setup skipped (google provider: ${resolvedGoogleProvider})`,
+  );
 }
 
 // ---------------------------------------------------------------------------
