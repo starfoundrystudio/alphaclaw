@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-20T22:33:40.894Z",
+  "generatedAt": "2026-07-21T04:23:20.922Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -4508,15 +4508,6 @@
               "key": "openrouter/tencent/hy3",
               "provider": "openrouter",
               "label": "Tencent: Hy3",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/tencent/hy3:free",
-              "provider": "openrouter",
-              "label": "Tencent: Hy3 (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -10061,15 +10052,6 @@
       "key": "openrouter/tencent/hy3",
       "provider": "openrouter",
       "label": "Tencent: Hy3",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/tencent/hy3:free",
-      "provider": "openrouter",
-      "label": "Tencent: Hy3 (free)",
       "accessModes": [
         "gateway"
       ],
