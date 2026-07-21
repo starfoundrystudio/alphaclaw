@@ -132,7 +132,8 @@ describe("server/onboarding/workspace", () => {
       const tools = getWrittenToolsContent(written);
       expect(tools).toContain("### Google Workspace");
       expect(tools).toContain("Composio CLI");
-      expect(tools).toContain("composio tools execute");
+      expect(tools).toContain("composio execute");
+      expect(tools).toContain("composio connections list");
       expect(tools).toContain("Do not use the `gog` CLI");
       expect(tools).not.toContain("gog-cli skill");
       expect(tools).not.toContain("## Available Google Accounts");

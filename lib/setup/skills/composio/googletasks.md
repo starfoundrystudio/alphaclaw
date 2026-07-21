@@ -1,8 +1,8 @@
 ## Tasks (toolkit: `googletasks`)
 
-Common tools (verify with `composio tools list --toolkit googletasks`):
+Common tools (verify slugs with `composio search "..." --toolkits googletasks` or `--get-schema`):
 
 ```bash
-composio tools execute GOOGLETASKS_LIST_TASKS --params-json '{"tasklist": "@default"}'
-composio tools execute GOOGLETASKS_INSERT_TASK --params-json '{"tasklist_id": "@default", "title": "..."}'
+composio execute GOOGLETASKS_LIST_TASKS -d '{"tasklist": "@default"}'
+composio execute GOOGLETASKS_INSERT_TASK -d '{"tasklist_id": "@default", "title": "..."}'
 ```

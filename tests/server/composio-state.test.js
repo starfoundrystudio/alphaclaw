@@ -1,7 +1,7 @@
 const {
   createEmptyComposioState,
   normalizeComposioAccount,
-  parseConnectedAccountsOutput,
+  parseConnectionsListOutput,
   listGoogleWorkspaceAccounts,
   readComposioState,
   writeComposioState,
@@ -50,18 +50,58 @@ describe("server/composio-state", () => {
       }),
     ).toMatchObject({ id: "ca_456", toolkit: "googlecalendar", active: false });
 
+    // Real 0.2.x connections entry: word_id is the identifier, alias the label
+    expect(
+      normalizeComposioAccount({
+        toolkit: "gmail",
+        status: "ACTIVE",
+        alias: "work",
+        word_id: "gmail_trick-stythe",
+        permission_group: null,
+      }),
+    ).toEqual({
+      id: "gmail_trick-stythe",
+      toolkit: "gmail",
+      status: "ACTIVE",
+      active: true,
+      label: "work",
+    });
+
     expect(normalizeComposioAccount({})).toBeNull();
   });
 
-  it("parses list output as bare array or wrapped object", () => {
-    expect(parseConnectedAccountsOutput('[{"id":"a"}]')).toEqual([{ id: "a" }]);
+  it("parses list output as bare array, wrapped object, or toolkit map", () => {
+    expect(parseConnectionsListOutput('[{"id":"a"}]')).toEqual([{ id: "a" }]);
     expect(
-      parseConnectedAccountsOutput('{"items":[{"id":"b"}]}'),
+      parseConnectionsListOutput('{"items":[{"id":"b"}]}'),
     ).toEqual([{ id: "b" }]);
     expect(
-      parseConnectedAccountsOutput('{"data":[{"id":"c"}]}'),
+      parseConnectionsListOutput('{"data":[{"id":"c"}]}'),
     ).toEqual([{ id: "c" }]);
-    expect(parseConnectedAccountsOutput("not json")).toBeNull();
+    expect(
+      parseConnectionsListOutput('{"gmail":"ACTIVE","github":{"status":"EXPIRED"}}'),
+    ).toEqual([
+      { toolkit: "gmail", status: "ACTIVE" },
+      { toolkit: "github", status: "EXPIRED" },
+    ]);
+    // Real 0.2.x CLI output: toolkit -> array of connection entries
+    expect(
+      parseConnectionsListOutput(
+        JSON.stringify({
+          gmail: [
+            { status: "ACTIVE", alias: null, word_id: "gmail_trick-stythe", permission_group: null },
+            { status: "EXPIRED", alias: null, word_id: "gmail_wodge-bedawn", permission_group: null },
+          ],
+        }),
+      ),
+    ).toEqual([
+      { toolkit: "gmail", status: "ACTIVE", alias: null, word_id: "gmail_trick-stythe", permission_group: null },
+      { toolkit: "gmail", status: "EXPIRED", alias: null, word_id: "gmail_wodge-bedawn", permission_group: null },
+    ]);
+    // Real CLI output for "no connections yet" is a bare {}
+    expect(parseConnectionsListOutput("{}")).toEqual([]);
+    expect(parseConnectionsListOutput("not json")).toBeNull();
+    expect(parseConnectionsListOutput("")).toBeNull();
   });
 
   it("filters google workspace accounts to active known toolkits", () => {
@@ -70,9 +110,10 @@ describe("server/composio-state", () => {
         { id: "1", toolkit: "gmail", status: "ACTIVE", active: true },
         { id: "2", toolkit: "slack", status: "ACTIVE", active: true },
         { id: "3", toolkit: "googledrive", status: "EXPIRED", active: false },
+        { id: "4", toolkit: "google_calendar", status: "ACTIVE", active: true },
       ],
     };
-    expect(listGoogleWorkspaceAccounts(state).map((a) => a.id)).toEqual(["1"]);
+    expect(listGoogleWorkspaceAccounts(state).map((a) => a.id)).toEqual(["1", "4"]);
   });
 
   it("round-trips state through write and read", () => {
@@ -118,20 +159,23 @@ describe("server/composio-state", () => {
       expect(state.cliInstalled).toBe(false);
       expect(state.loggedIn).toBe(false);
       expect(composioCmd).toHaveBeenCalledTimes(1);
+      expect(composioCmd).toHaveBeenCalledWith("version", { quiet: true });
     });
 
-    it("stores parsed accounts on successful list", async () => {
+    const kWhoamiJson =
+      '{"account_type":"human","email":"bill@starfoundry.studio","current_org_name":"bill_workspace","enhanced_controls_enabled":null}';
+
+    it("stores whoami identity and parsed accounts on success", async () => {
       const { fs } = createMemFs();
       const composioCmd = vi.fn(async (cmd) => {
-        if (cmd === "--version") return { ok: true, stdout: "1.0.0", stderr: "" };
+        if (cmd === "version") return { ok: true, stdout: "0.2.32", stderr: "" };
+        if (cmd === "whoami") return { ok: true, stdout: kWhoamiJson, stderr: "" };
         return {
           ok: true,
-          stdout: JSON.stringify({
-            items: [
-              { id: "ca_1", toolkit: { slug: "gmail" }, status: "ACTIVE" },
-              { id: "ca_2", toolkit: { slug: "slack" }, status: "ACTIVE" },
-            ],
-          }),
+          stdout: JSON.stringify([
+            { id: "ca_1", toolkit: { slug: "gmail" }, status: "ACTIVE" },
+            { id: "ca_2", toolkit: { slug: "slack" }, status: "ACTIVE" },
+          ]),
           stderr: "",
         };
       });
@@ -140,17 +184,43 @@ describe("server/composio-state", () => {
         statePath: "/openclaw/composio/state.json",
         composioCmd,
       });
+      expect(composioCmd).toHaveBeenCalledWith("whoami", { quiet: true });
+      expect(composioCmd).toHaveBeenCalledWith("connections list", { quiet: true });
       expect(state.cliInstalled).toBe(true);
       expect(state.loggedIn).toBe(true);
+      expect(state.account).toEqual({
+        email: "bill@starfoundry.studio",
+        orgName: "bill_workspace",
+      });
       expect(state.accounts).toHaveLength(2);
       expect(listGoogleWorkspaceAccounts(state)).toHaveLength(1);
     });
 
-    it("marks logged out on auth-flavored list failures", async () => {
+    it("treats a logged-in session with zero connections as logged in", async () => {
+      // Real CLI output: whoami emits JSON, connections list emits {}
       const { fs } = createMemFs();
       const composioCmd = vi.fn(async (cmd) => {
-        if (cmd === "--version") return { ok: true, stdout: "1.0.0", stderr: "" };
-        return { ok: false, stdout: "", stderr: "Error: not logged in. Run composio login." };
+        if (cmd === "version") return { ok: true, stdout: "0.2.32", stderr: "" };
+        if (cmd === "whoami") return { ok: true, stdout: kWhoamiJson, stderr: "" };
+        return { ok: true, stdout: "{}", stderr: "" };
+      });
+      const state = await refreshComposioState({
+        fs,
+        statePath: "/openclaw/composio/state.json",
+        composioCmd,
+      });
+      expect(state.loggedIn).toBe(true);
+      expect(state.accounts).toEqual([]);
+      expect(state.lastError).toBe("");
+    });
+
+    it("treats empty non-TTY whoami output as logged out", async () => {
+      // Real CLI behavior: with no session, commands print nothing to a pipe
+      // and still exit 0.
+      const { fs } = createMemFs();
+      const composioCmd = vi.fn(async (cmd) => {
+        if (cmd === "version") return { ok: true, stdout: "0.2.32", stderr: "" };
+        return { ok: true, stdout: "", stderr: "" };
       });
       const state = await refreshComposioState({
         fs,
@@ -159,7 +229,7 @@ describe("server/composio-state", () => {
       });
       expect(state.cliInstalled).toBe(true);
       expect(state.loggedIn).toBe(false);
-      expect(state.lastError).toContain("not logged in");
+      expect(state.lastError).toContain("composio login");
     });
   });
 });

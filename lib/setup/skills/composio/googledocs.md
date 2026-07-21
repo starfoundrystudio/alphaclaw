@@ -1,11 +1,11 @@
 ## Docs (toolkit: `googledocs`)
 
-Common tools (verify with `composio tools list --toolkit googledocs`):
+Common tools (verify slugs with `composio search "..." --toolkits googledocs` or `--get-schema`):
 
 ```bash
-composio tools execute GOOGLEDOCS_GET_DOCUMENT_BY_ID --params-json '{"id": "..."}'
-composio tools execute GOOGLEDOCS_CREATE_DOCUMENT --params-json '{"title": "...", "text": "..."}'
-composio tools execute GOOGLEDOCS_UPDATE_EXISTING_DOCUMENT --params-json '{"document_id": "...", "editDocs": [...]}'
+composio execute GOOGLEDOCS_GET_DOCUMENT_BY_ID -d '{"id": "..."}'
+composio execute GOOGLEDOCS_CREATE_DOCUMENT -d '{"title": "...", "text": "..."}'
+composio execute GOOGLEDOCS_UPDATE_EXISTING_DOCUMENT -d '{"document_id": "...", "editDocs": [...]}'
 ```
 
 - Find document IDs via the Drive toolkit when the user references a doc by name.

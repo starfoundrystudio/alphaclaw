@@ -820,6 +820,20 @@ const commandExists = (name) => {
   }
 };
 
+// The Composio installer places the binary at $HOME/.composio/composio; make
+// an existing install reachable for this process and all children.
+const ensureComposioOnPath = () => {
+  const composioDir = path.join(rootDir, ".composio");
+  if (!fs.existsSync(path.join(composioDir, "composio"))) return false;
+  const currentPath = String(process.env.PATH || "");
+  if (!currentPath.split(":").includes(composioDir)) {
+    process.env.PATH = `${composioDir}:${currentPath}`;
+  }
+  return true;
+};
+
+ensureComposioOnPath();
+
 if (resolvedGoogleProvider === "composio" && !commandExists("composio")) {
   console.log("[alphaclaw] Installing Composio CLI...");
   try {
@@ -827,27 +841,7 @@ if (resolvedGoogleProvider === "composio" && !commandExists("composio")) {
       stdio: "inherit",
       timeout: 120000,
     });
-    // The install script drops the binary under the home dir; make it
-    // reachable for this process and all children even before a new shell.
-    if (!commandExists("composio")) {
-      const candidateDirs = [
-        path.join(rootDir, ".composio", "bin"),
-        path.join(rootDir, ".local", "bin"),
-      ];
-      for (const dir of candidateDirs) {
-        if (!fs.existsSync(path.join(dir, "composio"))) continue;
-        process.env.PATH = `${dir}:${process.env.PATH || ""}`;
-        try {
-          if (!fs.existsSync("/usr/local/bin/composio")) {
-            fs.symlinkSync(
-              path.join(dir, "composio"),
-              "/usr/local/bin/composio",
-            );
-          }
-        } catch {}
-        break;
-      }
-    }
+    ensureComposioOnPath();
     if (commandExists("composio")) {
       console.log("[alphaclaw] Composio CLI installed");
     } else {

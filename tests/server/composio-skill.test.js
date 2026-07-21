@@ -81,7 +81,7 @@ describe("server/composio-skill", () => {
     });
     expect(content).toContain("name: composio");
     expect(content).toContain("Gmail, Calendar");
-    expect(content).toContain("composio tools execute");
+    expect(content).toContain("composio execute");
     expect(content).toContain("chrys@example.com");
     expect(content).toContain("## Gmail (toolkit: `gmail`)");
     expect(content).toContain("## Calendar (toolkit: `googlecalendar`)");
@@ -105,7 +105,7 @@ describe("server/composio-skill", () => {
       composioState: { cliInstalled: true, loggedIn: true, accounts: [] },
     });
     expect(content).toContain("No Google Workspace accounts are linked yet");
-    expect(content).toContain("connected-accounts link");
+    expect(content).toContain("composio link <toolkit>");
   });
 
   it("installs the skill when provider is composio", () => {

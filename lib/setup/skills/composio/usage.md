@@ -3,17 +3,21 @@
 Composio manages OAuth and token refresh for connected apps — never ask the user for Google Cloud credentials or OAuth client IDs, and do not use the `gog` CLI.
 
 ```bash
-composio connected-accounts list                 # linked accounts + their toolkits
-composio toolkits list                           # available toolkits
-composio tools list --toolkit <toolkit>          # tools in a toolkit (e.g. gmail)
-composio tools info <TOOL_NAME>                  # REQUIRED: inspect input schema first
-composio tools execute <TOOL_NAME> [--params-json '<json>']
-composio connected-accounts link <toolkit>       # link a new account (interactive)
+composio execute <SLUG> -d '{ ... }'   # run a tool (validates inputs + connection)
+composio execute <SLUG> --get-schema   # inspect a tool's input schema
+composio execute <SLUG> --dry-run -d '{ ... }'  # preview without executing
+composio search "<what you want to do>"         # find a tool slug
+composio link <toolkit>                # connect an account (interactive)
+composio connections list              # toolkit connection statuses (JSON)
+composio whoami                        # current Composio session
 ```
 
 Rules:
 
-- Always run `composio tools info <TOOL_NAME>` before the first `execute` of a tool — argument names and required fields vary between versions; trust the schema output over any example here.
-- Tool names follow `TOOLKIT_ACTION` uppercase convention (e.g. `GMAIL_SEND_EMAIL`).
-- If a command fails with an auth error, the account may need relinking — tell the user to relink via `composio connected-accounts link <toolkit>` rather than retrying.
-- If multiple accounts are linked for a toolkit, pass the connected account explicitly (see `composio tools execute --help` for the flag your CLI version uses).
+- Lead with `execute` when you know the slug — it validates inputs and connections and tells you what to fix. Use `search` only when the slug is unknown.
+- Run `composio execute <SLUG> --get-schema` before the first execution of an unfamiliar tool — argument names vary between versions; trust the schema over any example here.
+- Tool slugs follow `TOOLKIT_ACTION` uppercase convention (e.g. `GMAIL_SEND_EMAIL`).
+- `-d` accepts JSON or JS-style object literals, `@file`, or `-` for stdin.
+- If `execute` reports the toolkit is not connected, the user can link it from the AlphaClaw dashboard (General tab) or you can run `composio link <toolkit>` and give them the printed URL.
+- Multiple accounts on one toolkit: select with `--account <alias-or-id>`.
+- For multi-step logic, loops, or chaining, use `composio run '<inline JS with execute()/search()>'`.
