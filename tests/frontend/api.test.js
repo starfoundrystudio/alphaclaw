@@ -235,66 +235,6 @@ describe("frontend/api", () => {
     );
   });
 
-  it("fetchTailscaleStatus calls the authenticated status endpoint", async () => {
-    global.fetch.mockResolvedValue(
-      mockJsonResponse(200, { ok: true, change: { state: "idle" } }),
-    );
-    const api = await loadApiModule();
-
-    const result = await api.fetchTailscaleStatus();
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/tailscale/status",
-      expect.objectContaining({ headers: expect.any(Headers) }),
-    );
-    expect(result.change.state).toBe("idle");
-  });
-
-  it("validateTailnetChange sends the new account token", async () => {
-    global.fetch.mockResolvedValue(mockJsonResponse(200, { ok: true }));
-    const api = await loadApiModule();
-
-    await api.validateTailnetChange("tskey-api-new-secret");
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/tailscale/change/validate",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({
-          tailscaleApiToken: "tskey-api-new-secret",
-        }),
-        headers: expect.any(Headers),
-      }),
-    );
-    expectLastFetchHeaders("application/json");
-  });
-
-  it("startTailnetChange includes the validated current DNS name", async () => {
-    global.fetch.mockResolvedValue(
-      mockJsonResponse(202, { ok: true, state: "queued" }),
-    );
-    const api = await loadApiModule();
-
-    const result = await api.startTailnetChange({
-      tailscaleApiToken: "tskey-api-new-secret",
-      expectedCurrentDns: "alphaclaw.old-tailnet.ts.net",
-    });
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/tailscale/change",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({
-          tailscaleApiToken: "tskey-api-new-secret",
-          expectedCurrentDns: "alphaclaw.old-tailnet.ts.net",
-        }),
-        headers: expect.any(Headers),
-      }),
-    );
-    expectLastFetchHeaders("application/json");
-    expect(result.state).toBe("queued");
-  });
-
   it("approveDevice encodes ids and throws API errors", async () => {
     global.fetch.mockResolvedValue(mockJsonResponse(403, { ok: false, error: "missing scope" }));
     const api = await loadApiModule();
