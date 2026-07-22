@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-21T04:23:20.922Z",
+  "generatedAt": "2026-07-22T21:21:13.333Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2389,6 +2389,24 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/google/gemini-3.5-flash-lite",
+              "provider": "openrouter",
+              "label": "Google: Gemini 3.5 Flash Lite",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/google/gemini-3.6-flash",
+              "provider": "openrouter",
+              "label": "Google: Gemini 3.6 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/google/gemma-2-27b-it",
               "provider": "openrouter",
               "label": "Google: Gemma 2 27B",
@@ -3524,6 +3542,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-5-nano:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5 Nano (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-5-pro",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5 Pro",
@@ -3950,6 +3977,24 @@
               "key": "openrouter/poolside/laguna-m.1:free",
               "provider": "openrouter",
               "label": "Poolside: Laguna M.1 (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/poolside/laguna-s-2.1",
+              "provider": "openrouter",
+              "label": "Poolside: Laguna S 2.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/poolside/laguna-s-2.1:free",
+              "provider": "openrouter",
+              "label": "Poolside: Laguna S 2.1 (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -5186,6 +5231,24 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/google/gemini-3.5-flash-lite",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 3.5 Flash Lite",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/google/gemini-3.6-flash",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 3.6 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/google/gemini-omni-flash-preview",
               "provider": "vercel-ai-gateway",
               "label": "Gemini Omni Flash Preview",
@@ -5772,6 +5835,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/tencent/hy3",
+              "provider": "vercel-ai-gateway",
+              "label": "Hy3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/thinkingmachines/inkling",
               "provider": "vercel-ai-gateway",
               "label": "Inkling",
@@ -5883,6 +5955,24 @@
               "key": "vercel-ai-gateway/moonshotai/kimi-k3",
               "provider": "vercel-ai-gateway",
               "label": "Kimi K3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/poolside/laguna-s-2.1",
+              "provider": "vercel-ai-gateway",
+              "label": "Laguna S 2.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/poolside/laguna-s-2.1-free",
+              "provider": "vercel-ai-gateway",
+              "label": "Laguna S 2.1 Free",
               "accessModes": [
                 "gateway"
               ],
@@ -7920,6 +8010,24 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/google/gemini-3.5-flash-lite",
+      "provider": "openrouter",
+      "label": "Google: Gemini 3.5 Flash Lite",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/google/gemini-3.6-flash",
+      "provider": "openrouter",
+      "label": "Google: Gemini 3.6 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/google/gemma-2-27b-it",
       "provider": "openrouter",
       "label": "Google: Gemma 2 27B",
@@ -9055,6 +9163,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-5-nano:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5 Nano (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-5-pro",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5 Pro",
@@ -9494,6 +9611,24 @@
       "key": "openrouter/poolside/laguna-m.1:free",
       "provider": "openrouter",
       "label": "Poolside: Laguna M.1 (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/poolside/laguna-s-2.1",
+      "provider": "openrouter",
+      "label": "Poolside: Laguna S 2.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/poolside/laguna-s-2.1:free",
+      "provider": "openrouter",
+      "label": "Poolside: Laguna S 2.1 (free)",
       "accessModes": [
         "gateway"
       ],
@@ -11103,6 +11238,24 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/google/gemini-3.5-flash-lite",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 3.5 Flash Lite",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/google/gemini-3.6-flash",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 3.6 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/google/gemini-omni-flash-preview",
       "provider": "vercel-ai-gateway",
       "label": "Gemini Omni Flash Preview",
@@ -11702,6 +11855,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/tencent/hy3",
+      "provider": "vercel-ai-gateway",
+      "label": "Hy3",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/thinkingmachines/inkling",
       "provider": "vercel-ai-gateway",
       "label": "Inkling",
@@ -11813,6 +11975,24 @@
       "key": "vercel-ai-gateway/moonshotai/kimi-k3",
       "provider": "vercel-ai-gateway",
       "label": "Kimi K3",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/poolside/laguna-s-2.1",
+      "provider": "vercel-ai-gateway",
+      "label": "Laguna S 2.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/poolside/laguna-s-2.1-free",
+      "provider": "vercel-ai-gateway",
+      "label": "Laguna S 2.1 Free",
       "accessModes": [
         "gateway"
       ],
