@@ -204,6 +204,100 @@ describe("server/deployment-surface", () => {
     expect(response.status).toBe(404);
   });
 
+  describe("direct loopback requests in strict mode", () => {
+    // The gmail-serve sidecar delivers hooks to 127.0.0.1:<PORT>/hooks/gmail
+    // with no X-Forwarded-* headers. Supertest connects over a real loopback
+    // socket, so leaving the origin headers off reproduces that hop exactly.
+    const kStrictEnv = {
+      ALPHACLAW_SETUP_URL: "https://alphaclaw.tail123.ts.net",
+      ALPHACLAW_PUBLIC_BASE_URL: "https://alphaclaw.tail123.ts.net:8443",
+    };
+
+    it("allows the gmail-serve sidecar hook delivery hop", async () => {
+      const app = createGuardedApp(kStrictEnv);
+
+      const response = await request(app).post("/hooks/gmail");
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ ok: true, route: "/hooks/:name" });
+    });
+
+    it("still blocks loopback connections that claim a proxied origin", async () => {
+      const app = createGuardedApp(kStrictEnv);
+
+      const response = await request(app)
+        .get("/hooks/foo")
+        .set("x-forwarded-host", "unexpected.example.com")
+        .set("x-forwarded-proto", "https");
+
+      expect(response.status).toBe(404);
+    });
+
+    it("does not extend loopback trust when any forwarded header is present", async () => {
+      const app = createGuardedApp(kStrictEnv);
+
+      const response = await request(app)
+        .get("/hooks/foo")
+        .set("x-forwarded-for", "203.0.113.9");
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe("same-host port-split surfaces (real tailnet deployment shape)", () => {
+    // The tailnet change-service writes both URLs on ONE ts.net name: Serve
+    // (private) on implicit 443, Funnel (public callbacks) on :8443.
+    const kStrictEnv = {
+      ALPHACLAW_SETUP_URL: "https://alphaclaw.tail123.ts.net",
+      ALPHACLAW_PUBLIC_BASE_URL: "https://alphaclaw.tail123.ts.net:8443",
+    };
+
+    it("treats the :8443 origin as the public surface", async () => {
+      const app = createGuardedApp(kStrictEnv);
+
+      const allowed = await withOriginHeaders(
+        request(app).post("/gmail-pubsub"),
+        "alphaclaw.tail123.ts.net:8443",
+      );
+      expect(allowed.status).toBe(200);
+
+      const blocked = await withOriginHeaders(
+        request(app).get("/api/private"),
+        "alphaclaw.tail123.ts.net:8443",
+      );
+      expect(blocked.status).toBe(404);
+    });
+
+    it("treats the portless origin as the private surface", async () => {
+      const app = createGuardedApp(kStrictEnv);
+
+      const response = await withOriginHeaders(
+        request(app).get("/api/private"),
+        "alphaclaw.tail123.ts.net",
+      );
+
+      expect(response.status).toBe(200);
+    });
+  });
+
+  describe("isLoopbackAddress", () => {
+    const { isLoopbackAddress } = require("../../lib/server/deployment-surface");
+
+    it("recognizes loopback address forms", () => {
+      expect(isLoopbackAddress("127.0.0.1")).toBe(true);
+      expect(isLoopbackAddress("127.1.2.3")).toBe(true);
+      expect(isLoopbackAddress("::1")).toBe(true);
+      expect(isLoopbackAddress("::ffff:127.0.0.1")).toBe(true);
+    });
+
+    it("rejects non-loopback addresses", () => {
+      expect(isLoopbackAddress("10.0.0.1")).toBe(false);
+      expect(isLoopbackAddress("100.64.0.7")).toBe(false);
+      expect(isLoopbackAddress("::ffff:10.0.0.1")).toBe(false);
+      expect(isLoopbackAddress("")).toBe(false);
+    });
+  });
+
   it("keeps extra public path prefixes blocked by default and allows them when configured", async () => {
     const baseEnv = {
       ALPHACLAW_SETUP_URL: "https://setup.tail123.ts.net",
