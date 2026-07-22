@@ -821,16 +821,15 @@ const commandExists = (name) => {
 };
 
 // The Composio installer places the binary at $HOME/.composio/composio; make
-// an existing install reachable for this process and all children.
-const ensureComposioOnPath = () => {
-  const composioDir = path.join(rootDir, ".composio");
-  if (!fs.existsSync(path.join(composioDir, "composio"))) return false;
-  const currentPath = String(process.env.PATH || "");
-  if (!currentPath.split(":").includes(composioDir)) {
-    process.env.PATH = `${composioDir}:${currentPath}`;
-  }
-  return true;
-};
+// an existing install reachable for this process and all children. The server
+// can also install the CLI at runtime (lib/server/composio-install.js) when
+// the provider is switched to composio from the dashboard; this boot-time path
+// covers fresh provisions where the provider is already composio.
+const {
+  ensureComposioOnPath: ensureComposioOnPathShared,
+} = require("../lib/server/composio-install");
+const ensureComposioOnPath = () =>
+  ensureComposioOnPathShared({ fs, homedir: rootDir });
 
 ensureComposioOnPath();
 

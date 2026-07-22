@@ -19,15 +19,35 @@ const createFakeListenService = () => ({
   checkListenSupport: vi.fn(async () => true),
 });
 
+const createFakeInstaller = ({ installing = false, error = "" } = {}) => ({
+  ensureComposioCliInstalled: vi.fn(() => Promise.resolve({ installed: true })),
+  isComposioInstalling: vi.fn(() => installing),
+  getComposioInstallError: vi.fn(() => error),
+});
+
+const createFakeLoginService = ({ pending = false, error = "" } = {}) => ({
+  start: vi.fn(async () => ({
+    loginUrl: "https://dashboard.composio.dev/?cliKey=fake",
+    startedAt: 1,
+  })),
+  stop: vi.fn(),
+  isPending: vi.fn(() => pending),
+  getError: vi.fn(() => error),
+});
+
 const createApp = ({
   composioCmd,
   files = new Map(),
   listenService = createFakeListenService(),
+  installer = createFakeInstaller(),
+  loginService = createFakeLoginService(),
 } = {}) => {
   const app = express();
   app.use(express.json());
   registerComposioRoutes({
     listenService,
+    installer,
+    loginService,
     app,
     fs: {
       existsSync: (p) => files.has(String(p)),
@@ -132,6 +152,89 @@ describe("server/routes/composio", () => {
     const statusResponse = await request(app).get("/api/composio/status");
     expect(statusResponse.body.cliInstalled).toBe(true);
     expect(statusResponse.body.googleAccounts).toHaveLength(1);
+  });
+
+  describe("automatic CLI install", () => {
+    const kMissingCliCmd = vi.fn(async () => ({ ok: false, stdout: "", stderr: "" }));
+
+    it("refresh starts a background install when provider is composio and CLI missing", async () => {
+      process.env.ALPHACLAW_GOOGLE_PROVIDER = "composio";
+      const installer = createFakeInstaller();
+      const app = createApp({ composioCmd: kMissingCliCmd, installer });
+
+      const response = await request(app).post("/api/composio/refresh");
+
+      expect(installer.ensureComposioCliInstalled).toHaveBeenCalled();
+      expect(response.body.cliInstalled).toBe(false);
+    });
+
+    it("refresh does not install when the provider is gog", async () => {
+      const installer = createFakeInstaller();
+      const app = createApp({ composioCmd: kMissingCliCmd, installer });
+
+      await request(app).post("/api/composio/refresh");
+
+      expect(installer.ensureComposioCliInstalled).not.toHaveBeenCalled();
+    });
+
+    it("refresh does not double-start while an install is running", async () => {
+      process.env.ALPHACLAW_GOOGLE_PROVIDER = "composio";
+      const installer = createFakeInstaller({ installing: true });
+      const app = createApp({ composioCmd: kMissingCliCmd, installer });
+
+      const response = await request(app).post("/api/composio/refresh");
+
+      expect(installer.ensureComposioCliInstalled).not.toHaveBeenCalled();
+      expect(response.body.cliInstalling).toBe(true);
+    });
+
+    it("status surfaces installing and error state", async () => {
+      const installer = createFakeInstaller({ installing: true, error: "boom" });
+      const app = createApp({ installer });
+
+      const response = await request(app).get("/api/composio/status");
+
+      expect(response.body.cliInstalling).toBe(true);
+      expect(response.body.installError).toBe("boom");
+    });
+  });
+
+  describe("sign-in flow", () => {
+    it("login/start returns the login URL from the service", async () => {
+      const loginService = createFakeLoginService();
+      const app = createApp({ loginService });
+
+      const response = await request(app).post("/api/composio/login/start");
+
+      expect(response.body).toEqual({
+        ok: true,
+        loginUrl: "https://dashboard.composio.dev/?cliKey=fake",
+      });
+      expect(loginService.start).toHaveBeenCalled();
+    });
+
+    it("login/start surfaces service errors", async () => {
+      const loginService = createFakeLoginService();
+      loginService.start = vi.fn(async () => {
+        throw new Error("Composio did not return a login URL");
+      });
+      const app = createApp({ loginService });
+
+      const response = await request(app).post("/api/composio/login/start");
+
+      expect(response.body.ok).toBe(false);
+      expect(response.body.error).toContain("did not return a login URL");
+    });
+
+    it("status surfaces login pending and error state", async () => {
+      const loginService = createFakeLoginService({ pending: true, error: "expired" });
+      const app = createApp({ loginService });
+
+      const response = await request(app).get("/api/composio/status");
+
+      expect(response.body.loginPending).toBe(true);
+      expect(response.body.loginError).toBe("expired");
+    });
   });
 
   describe("gmail watch endpoints", () => {
