@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-22T18:19:27.064Z",
+  "generatedAt": "2026-07-22T21:54:26.096Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -3389,6 +3389,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-4.1:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-4.1 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-4.1-mini",
               "provider": "openrouter",
               "label": "OpenAI: GPT-4.1 Mini",
@@ -3398,9 +3407,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-4.1-mini:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-4.1 Mini (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-4.1-nano",
               "provider": "openrouter",
               "label": "OpenAI: GPT-4.1 Nano",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-4.1-nano:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-4.1 Nano (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3443,6 +3470,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-4o:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-4o (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-4o-search-preview",
               "provider": "openrouter",
               "label": "OpenAI: GPT-4o Search Preview",
@@ -3470,6 +3506,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-4o-mini:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-4o-mini (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-4o-mini-search-preview",
               "provider": "openrouter",
               "label": "OpenAI: GPT-4o-mini Search Preview",
@@ -3482,6 +3527,15 @@
               "key": "openrouter/openai/gpt-5",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3533,9 +3587,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-5-mini:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5 Mini (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-5-nano",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5 Nano",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5-nano:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5 Nano (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3554,6 +3626,15 @@
               "key": "openrouter/openai/gpt-5.1",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5.1:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.1 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3605,6 +3686,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-5.2:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.2 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-5.2-chat",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.2 Chat",
@@ -3617,6 +3707,15 @@
               "key": "openrouter/openai/gpt-5.2-pro",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.2 Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5.2-pro:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.2 Pro (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3659,6 +3758,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-5.4:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.4 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-5.4-image-2",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.4 Image 2",
@@ -3677,9 +3785,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-5.4-mini:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.4 Mini (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-5.4-nano",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.4 Nano",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5.4-nano:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.4 Nano (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3695,9 +3821,36 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-5.4-pro:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.4 Pro (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5.5:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.5 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-5.5-pro",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.5 Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5.5-pro:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.5 Pro (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -9001,6 +9154,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-4.1:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-4.1 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-4.1-mini",
       "provider": "openrouter",
       "label": "OpenAI: GPT-4.1 Mini",
@@ -9010,9 +9172,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-4.1-mini:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-4.1 Mini (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-4.1-nano",
       "provider": "openrouter",
       "label": "OpenAI: GPT-4.1 Nano",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-4.1-nano:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-4.1 Nano (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9055,6 +9235,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-4o:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-4o (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-4o-search-preview",
       "provider": "openrouter",
       "label": "OpenAI: GPT-4o Search Preview",
@@ -9082,6 +9271,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-4o-mini:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-4o-mini (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-4o-mini-search-preview",
       "provider": "openrouter",
       "label": "OpenAI: GPT-4o-mini Search Preview",
@@ -9094,6 +9292,15 @@
       "key": "openrouter/openai/gpt-5",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9145,9 +9352,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-5-mini:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5 Mini (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-5-nano",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5 Nano",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5-nano:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5 Nano (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9166,6 +9391,15 @@
       "key": "openrouter/openai/gpt-5.1",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5.1:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.1 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9217,6 +9451,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-5.2:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.2 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-5.2-chat",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.2 Chat",
@@ -9229,6 +9472,15 @@
       "key": "openrouter/openai/gpt-5.2-pro",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.2 Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5.2-pro:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.2 Pro (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9271,6 +9523,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-5.4:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.4 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-5.4-image-2",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.4 Image 2",
@@ -9289,9 +9550,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-5.4-mini:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.4 Mini (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-5.4-nano",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.4 Nano",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5.4-nano:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.4 Nano (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9307,9 +9586,36 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-5.4-pro:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.4 Pro (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5.5:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.5 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-5.5-pro",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.5 Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5.5-pro:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.5 Pro (batch)",
       "accessModes": [
         "gateway"
       ],
