@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-21T20:56:11.203Z",
+  "generatedAt": "2026-07-22T18:19:27.064Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2391,7 +2391,7 @@
             {
               "key": "openrouter/google/gemini-3.5-flash-lite",
               "provider": "openrouter",
-              "label": "Google: Gemini 3.5 Flash-Lite",
+              "label": "Google: Gemini 3.5 Flash Lite",
               "accessModes": [
                 "gateway"
               ],
@@ -5826,6 +5826,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/tencent/hy3",
+              "provider": "vercel-ai-gateway",
+              "label": "Hy3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/thinkingmachines/inkling",
               "provider": "vercel-ai-gateway",
               "label": "Inkling",
@@ -7994,7 +8003,7 @@
     {
       "key": "openrouter/google/gemini-3.5-flash-lite",
       "provider": "openrouter",
-      "label": "Google: Gemini 3.5 Flash-Lite",
+      "label": "Google: Gemini 3.5 Flash Lite",
       "accessModes": [
         "gateway"
       ],
@@ -11822,6 +11831,15 @@
       "key": "vercel-ai-gateway/xai/grok-build-0.1",
       "provider": "vercel-ai-gateway",
       "label": "Grok Build 0.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/tencent/hy3",
+      "provider": "vercel-ai-gateway",
+      "label": "Hy3",
       "accessModes": [
         "gateway"
       ],
