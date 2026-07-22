@@ -109,6 +109,18 @@ Use this release flow when promoting tested beta builds to production:
    - GitHub Actions publishes stable tags without `-beta.` using the default package dist-tag.
 5. Optionally keep beta branch/tag flows active for next release cycle.
 
+### Release Execution Efficiency
+
+Keep release work single-pass and use the repository's existing scripts instead of rebuilding the workflow interactively:
+
+- After bumping the version, prefer one `npm run prepack` invocation as the canonical release-artifact build. It already regenerates the OpenClaw compatibility manifest, regenerates the model catalog bootstrap, and builds the UI. Do not run those commands individually first unless diagnosing a failure or intentionally updating only one artifact.
+- Do not invoke `prepack` a second time through `npm pack` merely to verify packaging. When a package-shape check is useful after a successful `prepack`, use `npm pack --dry-run --ignore-scripts`.
+- Do not rerun a successful install, generator, build, test, or package check unless the working tree changed in a way that can affect its result.
+- Run browser verification only when the release contains non-trivial UI changes. In Codex desktop, use the built-in in-app browser directly; do not try the standalone `agent-browser` CLI first. Skip browser verification for server-only or metadata-only releases.
+- This checkout has both `origin` and `upstream` remotes. For release status and workflow checks, address `starfoundrystudio/alphaclaw` explicitly (for example, `gh run ... -R starfoundrystudio/alphaclaw`) so GitHub CLI does not select the upstream repository.
+- After pushing the tag, monitor the single package-publish workflow through completion and verify the intended package dist-tag. Avoid repeated repository discovery or redundant workflow queries.
+- Keep successful validation output concise; inspect and report detailed logs only when a check fails or emits an actionable warning.
+
 ### Runtime Dependency Guardrails
 
 AlphaClaw provisioning uses native clawctl-managed Linux hosts and systemd. Dockerfiles, Compose deployments, and container lifecycle shims are unsupported and must not be introduced.
@@ -147,7 +159,7 @@ Use these conventions for all UI work under `lib/public/js` and `lib/public/css`
 
 - The browser loads the compiled bundle under `lib/public/dist/` (for example `app.bundle.js` and chunk files), produced by `scripts/build-ui.mjs` (esbuild).
 - **After any UI source change** that should ship in production (`lib/public/js`, `lib/public/css`, or other inputs to the build), run **`npm run build:ui`** so `lib/public/dist/` stays in sync. Verify the app in the browser against the rebuilt bundle when the change is non-trivial.
-- **`npm publish`** runs **`prepack`** → **`npm run generate:openclaw-compatibility-manifest && npm run build:ui`**, so published packages always include a fresh OpenClaw compatibility manifest and UI bundle. Local installs or commits that include `dist/` still require **`npm run build:ui`** when you change UI sources and expect the built assets to match.
+- **`npm publish`** runs **`prepack`** → **`npm run generate:openclaw-compatibility-manifest && npm run generate:model-catalog-bootstrap && npm run build:ui`**, so published packages always include fresh generated release artifacts and the UI bundle. Local installs or commits that include `dist/` still require **`npm run build:ui`** when you change UI sources and expect the built assets to match.
 
 ### Component structure
 
