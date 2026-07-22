@@ -196,6 +196,30 @@ describe("server/composio-state", () => {
       expect(listGoogleWorkspaceAccounts(state)).toHaveLength(1);
     });
 
+    it("preserves AlphaClaw-managed gmailWatch state across refreshes", async () => {
+      const { fs } = createMemFs();
+      const statePath = "/openclaw/composio/state.json";
+      fs.writeFileSync(
+        statePath,
+        JSON.stringify({
+          version: 1,
+          cliInstalled: true,
+          loggedIn: true,
+          accounts: [],
+          gmailWatch: { enabled: true, startedAt: 111, lastEventAt: 222 },
+        }),
+      );
+      const composioCmd = vi.fn(async (cmd) => {
+        if (cmd === "version") return { ok: true, stdout: "0.2.32", stderr: "" };
+        if (cmd === "whoami") return { ok: true, stdout: kWhoamiJson, stderr: "" };
+        return { ok: true, stdout: "{}", stderr: "" };
+      });
+      const state = await refreshComposioState({ fs, statePath, composioCmd });
+      expect(state.gmailWatch.enabled).toBe(true);
+      expect(state.gmailWatch.startedAt).toBe(111);
+      expect(state.gmailWatch.lastEventAt).toBe(222);
+    });
+
     it("treats a logged-in session with zero connections as logged in", async () => {
       // Real CLI output: whoami emits JSON, connections list emits {}
       const { fs } = createMemFs();

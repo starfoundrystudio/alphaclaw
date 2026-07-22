@@ -3,10 +3,31 @@ const request = require("supertest");
 
 const { registerComposioRoutes } = require("../../lib/server/routes/composio");
 
-const createApp = ({ composioCmd, files = new Map() } = {}) => {
+const createFakeListenService = () => ({
+  start: vi.fn(),
+  stop: vi.fn(),
+  enable: vi.fn(async () => ({ ok: true, pid: 4242, running: true })),
+  disable: vi.fn(async () => ({ ok: true })),
+  getStatus: vi.fn(() => ({
+    enabled: false,
+    running: false,
+    pid: null,
+    startedAt: null,
+    lastEventAt: null,
+    lastError: "",
+  })),
+  checkListenSupport: vi.fn(async () => true),
+});
+
+const createApp = ({
+  composioCmd,
+  files = new Map(),
+  listenService = createFakeListenService(),
+} = {}) => {
   const app = express();
   app.use(express.json());
   registerComposioRoutes({
+    listenService,
     app,
     fs: {
       existsSync: (p) => files.has(String(p)),
@@ -111,6 +132,64 @@ describe("server/routes/composio", () => {
     const statusResponse = await request(app).get("/api/composio/status");
     expect(statusResponse.body.cliInstalled).toBe(true);
     expect(statusResponse.body.googleAccounts).toHaveLength(1);
+  });
+
+  describe("gmail watch endpoints", () => {
+    it("enable delegates to the listen service and returns status", async () => {
+      const listenService = createFakeListenService();
+      const app = createApp({ listenService });
+
+      const response = await request(app).post("/api/composio/gmail-watch/enable");
+
+      expect(response.body.ok).toBe(true);
+      expect(listenService.enable).toHaveBeenCalled();
+      expect(response.body.gmailWatch).toBeDefined();
+    });
+
+    it("enable surfaces service errors", async () => {
+      const listenService = createFakeListenService();
+      listenService.enable = vi.fn(async () => {
+        throw new Error(
+          "The installed Composio CLI does not support trigger subscriptions",
+        );
+      });
+      const app = createApp({ listenService });
+
+      const response = await request(app).post("/api/composio/gmail-watch/enable");
+
+      expect(response.body.ok).toBe(false);
+      expect(response.body.error).toContain("does not support trigger");
+    });
+
+    it("disable delegates to the listen service", async () => {
+      const listenService = createFakeListenService();
+      const app = createApp({ listenService });
+
+      const response = await request(app).post("/api/composio/gmail-watch/disable");
+
+      expect(response.body.ok).toBe(true);
+      expect(listenService.disable).toHaveBeenCalled();
+    });
+
+    it("status includes gmailWatch from the listen service", async () => {
+      const listenService = createFakeListenService();
+      listenService.getStatus = vi.fn(() => ({
+        enabled: true,
+        running: true,
+        pid: 4242,
+        lastEventAt: 123,
+        lastError: "",
+      }));
+      const app = createApp({ listenService });
+
+      const response = await request(app).get("/api/composio/status");
+
+      expect(response.body.gmailWatch).toMatchObject({
+        enabled: true,
+        running: true,
+        pid: 4242,
+      });
+    });
   });
 
   describe("link flow", () => {
