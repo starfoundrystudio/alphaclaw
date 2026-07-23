@@ -69,6 +69,20 @@ describe("server/composio-install", () => {
     expect(getComposioInstallError()).toBe("");
   });
 
+  it("keeps the installing flag up until onComplete finishes", async () => {
+    const { execFn } = createExecFake({ installSucceeds: true });
+    let installingDuringComplete = null;
+    const onComplete = vi.fn(async () => {
+      installingDuringComplete = isComposioInstalling();
+    });
+    await ensureComposioCliInstalled({ fs: kNoBinaryFs, execFn, onComplete });
+    // Status polls during the post-install refresh must still see
+    // "installing", or the dashboard stops polling before the refreshed
+    // state is cached.
+    expect(installingDuringComplete).toBe(true);
+    expect(isComposioInstalling()).toBe(false);
+  });
+
   it("records the failure when the install does not produce a binary", async () => {
     const { execFn } = createExecFake({ installSucceeds: false });
     const result = await ensureComposioCliInstalled({ fs: kNoBinaryFs, execFn });

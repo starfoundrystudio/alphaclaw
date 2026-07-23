@@ -274,6 +274,79 @@ describe("server/composio-listen", () => {
       expect(service.getStatus().running).toBe(false);
     });
 
+    it("backs off exponentially when the listener keeps crashing", async () => {
+      vi.useFakeTimers();
+      try {
+        const children = [];
+        const makeChild = () => {
+          const child = new EventEmitter();
+          child.pid = 6000 + children.length;
+          child.stdout = new EventEmitter();
+          child.stderr = new EventEmitter();
+          child.kill = vi.fn(() => child.emit("exit", 0, "SIGTERM"));
+          children.push(child);
+          return child;
+        };
+        const files = new Map([
+          [
+            "/openclaw/composio/state.json",
+            JSON.stringify({
+              version: 1,
+              cliInstalled: true,
+              loggedIn: true,
+              accounts: [
+                { id: "g1", toolkit: "gmail", status: "ACTIVE", active: true },
+              ],
+              gmailWatch: { enabled: false },
+            }),
+          ],
+        ]);
+        const fs = {
+          existsSync: (p) => files.has(String(p)),
+          readFileSync: (p) => {
+            if (!files.has(String(p))) throw new Error("ENOENT");
+            return files.get(String(p));
+          },
+          writeFileSync: (p, data) => files.set(String(p), String(data)),
+          mkdirSync: () => {},
+        };
+        const spawnFn = vi.fn(() => makeChild());
+        const service = createComposioListenService({
+          fs,
+          constants: { OPENCLAW_DIR: "/openclaw", PORT: 3000 },
+          composioCmd: vi.fn(async () => ({
+            ok: true,
+            stdout: "Create a temporary subscription",
+            stderr: "",
+          })),
+          ensureHookWiring: vi.fn(),
+          spawnFn,
+          fetchFn: vi.fn(async () => ({ ok: true, status: 200 })),
+          homedir: "/home/test",
+          now: () => 1784900000000,
+        });
+
+        await service.enable();
+        expect(spawnFn).toHaveBeenCalledTimes(1);
+
+        // First crash: restart after the base 5s delay
+        children[0].emit("exit", 1, null);
+        await vi.advanceTimersByTimeAsync(5000);
+        expect(spawnFn).toHaveBeenCalledTimes(2);
+
+        // Second crash: delay doubles to 10s — nothing at 5s, restart at 10s
+        children[1].emit("exit", 1, null);
+        await vi.advanceTimersByTimeAsync(5000);
+        expect(spawnFn).toHaveBeenCalledTimes(2);
+        await vi.advanceTimersByTimeAsync(5000);
+        expect(spawnFn).toHaveBeenCalledTimes(3);
+
+        await service.stop();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it("records exit errors for unexpected listener death", async () => {
       const { service, child, files } = createHarness();
       await service.enable();

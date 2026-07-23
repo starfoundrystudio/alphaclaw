@@ -333,6 +333,69 @@ describe("server/routes/composio", () => {
       expect(composioCmd).not.toHaveBeenCalled();
     });
 
+    it("parses the JSON output shape and passes --alias for additional accounts", async () => {
+      // Real output captured from `composio link gmail --alias probe-second
+      // --no-browser --no-wait` on CLI 0.2.32
+      const composioCmd = vi.fn(async () => ({
+        ok: true,
+        stdout: JSON.stringify(
+          {
+            status: "pending",
+            message: "Complete authorization by opening the URL",
+            connected_account_id: "ca_QAzvmYOWxn_T",
+            redirect_url: "https://connect.composio.dev/link/lk_-aHM4PDdeXdC",
+            toolkit: "gmail",
+          },
+          null,
+          2,
+        ),
+        stderr: "",
+      }));
+      const app = createApp({ composioCmd });
+
+      const response = await request(app)
+        .post("/api/composio/link")
+        .send({ toolkit: "gmail", alias: "work-2" });
+
+      expect(composioCmd).toHaveBeenCalledWith(
+        'link "gmail" --alias "work-2" --no-browser --no-wait',
+        { quiet: true, timeoutMs: 60000 },
+      );
+      expect(response.body).toEqual({
+        ok: true,
+        toolkit: "gmail",
+        alias: "work-2",
+        redirectUrl: "https://connect.composio.dev/link/lk_-aHM4PDdeXdC",
+      });
+    });
+
+    it("rejects invalid aliases without shelling out", async () => {
+      const composioCmd = vi.fn();
+      const app = createApp({ composioCmd });
+
+      const response = await request(app)
+        .post("/api/composio/link")
+        .send({ toolkit: "gmail", alias: "bad alias!" });
+
+      expect(response.body.ok).toBe(false);
+      expect(response.body.error).toContain("Invalid account alias");
+      expect(composioCmd).not.toHaveBeenCalled();
+    });
+
+    it("explains the already-linked case when the CLI silently returns nothing", async () => {
+      // Real behavior: linking a toolkit that already has an ACTIVE account
+      // without --alias prints nothing to a non-TTY pipe and exits 0
+      const composioCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+      const app = createApp({ composioCmd });
+
+      const response = await request(app)
+        .post("/api/composio/link")
+        .send({ toolkit: "gmail" });
+
+      expect(response.body.ok).toBe(false);
+      expect(response.body.error).toContain("already has a linked account");
+    });
+
     it("surfaces CLI output when no URL is returned", async () => {
       const composioCmd = vi.fn(async () => ({
         ok: true,
@@ -343,7 +406,7 @@ describe("server/routes/composio", () => {
 
       const response = await request(app)
         .post("/api/composio/link")
-        .send({ toolkit: "gmail" });
+        .send({ toolkit: "gmail", alias: "work-2" });
 
       expect(response.body.ok).toBe(false);
       expect(response.body.error).toContain("No authorization URL");
