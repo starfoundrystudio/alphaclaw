@@ -187,6 +187,7 @@ describe("server/composio-state", () => {
       expect(composioCmd).toHaveBeenCalledWith("whoami", { quiet: true });
       expect(composioCmd).toHaveBeenCalledWith("connections list", { quiet: true });
       expect(state.cliInstalled).toBe(true);
+      expect(state.cliVersion).toBe("0.2.32");
       expect(state.loggedIn).toBe(true);
       expect(state.account).toEqual({
         email: "bill@starfoundry.studio",

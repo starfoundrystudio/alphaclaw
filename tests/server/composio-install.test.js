@@ -1,9 +1,16 @@
 const path = require("path");
 const {
   kInstallCommand,
+  composioPlatformToken,
+  composioReleaseAssetUrl,
+  parseComposioVersion,
+  compareComposioVersions,
   ensureComposioOnPath,
   ensureComposioCliInstalled,
+  ensureComposioCliAtVersion,
+  ensureComposioListenFlag,
   isComposioInstalling,
+  isComposioUpgrading,
   getComposioInstallError,
 } = require("../../lib/server/composio-install");
 
@@ -38,6 +45,180 @@ describe("server/composio-install", () => {
 
   afterEach(() => {
     process.env.PATH = kOriginalPath;
+  });
+
+  describe("version helpers", () => {
+    it("parses plain and beta versions", () => {
+      expect(parseComposioVersion("0.2.32").raw).toBe("0.2.32");
+      expect(parseComposioVersion("0.2.33-beta.298")).toMatchObject({
+        numbers: [0, 2, 33],
+        beta: 298,
+      });
+      expect(parseComposioVersion("no version here")).toBeNull();
+    });
+
+    it("compares versions with beta sorting below the release", () => {
+      expect(compareComposioVersions("0.2.32", "0.2.33")).toBe(-1);
+      expect(compareComposioVersions("0.2.33", "0.2.33")).toBe(0);
+      expect(compareComposioVersions("0.2.33-beta.298", "0.2.33")).toBe(-1);
+      expect(compareComposioVersions("0.2.33", "0.2.33-beta.298")).toBe(1);
+      expect(compareComposioVersions("0.2.33-beta.5", "0.2.33-beta.10")).toBe(-1);
+      expect(compareComposioVersions("0.3.0", "0.2.99")).toBe(1);
+    });
+
+    it("builds platform tokens matching the official install script", () => {
+      expect(composioPlatformToken({ platform: "darwin", arch: "arm64" })).toBe("darwin-aarch64");
+      expect(composioPlatformToken({ platform: "linux", arch: "x64" })).toBe("linux-x64");
+      expect(composioPlatformToken({ platform: "linux", arch: "arm64" })).toBe("linux-aarch64");
+      expect(composioReleaseAssetUrl("0.2.33", "linux-x64")).toBe(
+        "https://github.com/ComposioHQ/composio/releases/download/%40composio%2Fcli%400.2.33/composio-linux-x64.zip",
+      );
+    });
+  });
+
+  describe("ensureComposioCliAtVersion", () => {
+    const createUpgradeFake = ({ startVersion = "0.2.32", upgradeSucceeds = true } = {}) => {
+      let version = startVersion;
+      const calls = [];
+      const execFn = (command, _opts, callback) => {
+        calls.push(command);
+        if (command === "command -v composio") return callback(null, "", "");
+        if (command === "composio version") return callback(null, version, "");
+        if (command.includes("releases/download")) {
+          if (upgradeSucceeds) version = "0.2.33";
+          return callback(
+            upgradeSucceeds ? null : new Error("exit 1"),
+            "",
+            upgradeSucceeds ? "" : "curl: (56) connection reset",
+          );
+        }
+        return callback(null, "", "");
+      };
+      return { execFn, calls };
+    };
+
+    it("upgrades an outdated CLI: stops listener, replaces binary, restarts", async () => {
+      const { execFn, calls } = createUpgradeFake();
+      const order = [];
+      const result = await ensureComposioCliAtVersion({
+        fs: kNoBinaryFs,
+        execFn,
+        homedir: "/home/test",
+        targetVersion: "0.2.33",
+        platform: "linux",
+        arch: "x64",
+        tmpdir: "/tmp",
+        stopListener: async () => order.push("stop"),
+        startListener: () => order.push("start"),
+        onComplete: async () => order.push("refresh"),
+      });
+      expect(result).toMatchObject({ upgraded: true, installed: "0.2.33" });
+      const upgradeCommand = calls.find((cmd) => cmd.includes("releases/download"));
+      expect(upgradeCommand).toContain("composio-linux-x64.zip");
+      expect(upgradeCommand).toContain('mv -f "/home/test/.composio/composio.new" "/home/test/.composio/composio"');
+      expect(upgradeCommand).toContain("release-tag.txt");
+      expect(order).toEqual(["stop", "refresh", "start"]);
+    });
+
+    it("no-ops when already at or above the target", async () => {
+      const { execFn, calls } = createUpgradeFake({ startVersion: "0.2.33" });
+      const stopListener = vi.fn();
+      const result = await ensureComposioCliAtVersion({
+        fs: kNoBinaryFs,
+        execFn,
+        homedir: "/home/test",
+        targetVersion: "0.2.33",
+        stopListener,
+      });
+      expect(result).toMatchObject({ upToDate: true });
+      expect(stopListener).not.toHaveBeenCalled();
+      expect(calls.some((cmd) => cmd.includes("releases/download"))).toBe(false);
+    });
+
+    it("leaves install responsibility to the install path when CLI missing", async () => {
+      const execFn = (command, _opts, callback) =>
+        callback(command === "command -v composio" ? new Error("nope") : null, "", "");
+      const result = await ensureComposioCliAtVersion({
+        fs: kNoBinaryFs,
+        execFn,
+        homedir: "/home/test",
+        targetVersion: "0.2.33",
+      });
+      expect(result).toMatchObject({ notInstalled: true });
+    });
+
+    it("records failure and still restarts the listener", async () => {
+      const { execFn } = createUpgradeFake({ upgradeSucceeds: false });
+      const startListener = vi.fn();
+      const result = await ensureComposioCliAtVersion({
+        fs: kNoBinaryFs,
+        execFn,
+        homedir: "/home/test",
+        targetVersion: "0.2.33",
+        platform: "linux",
+        arch: "x64",
+        stopListener: vi.fn(),
+        startListener,
+      });
+      expect(result.upgraded).toBe(false);
+      expect(result.error).toContain("curl: (56)");
+      expect(startListener).toHaveBeenCalled();
+      expect(isComposioUpgrading()).toBe(false);
+      // Recover shared error state for later tests
+      const { execFn: okFn } = createUpgradeFake({ startVersion: "0.2.33" });
+      await ensureComposioCliAtVersion({
+        fs: kNoBinaryFs,
+        execFn: okFn,
+        homedir: "/home/test",
+        targetVersion: "0.2.33",
+      });
+    });
+  });
+
+  describe("ensureComposioListenFlag", () => {
+    const createConfigFs = (initial) => {
+      const files = new Map();
+      if (initial !== undefined) {
+        files.set("/home/test/.composio/config.json", JSON.stringify(initial));
+      }
+      return {
+        files,
+        fs: {
+          readFileSync: (p) => {
+            if (!files.has(String(p))) throw new Error("ENOENT");
+            return files.get(String(p));
+          },
+          writeFileSync: (p, data) => files.set(String(p), String(data)),
+          mkdirSync: () => {},
+          existsSync: (p) => files.has(String(p)),
+        },
+      };
+    };
+
+    it("writes the flag preserving existing config fields", () => {
+      const { fs, files } = createConfigFs({
+        developer: { enabled: true },
+        experimental_features: {},
+        security: "auto",
+      });
+      expect(ensureComposioListenFlag({ fs, homedir: "/home/test" })).toBe(true);
+      const written = JSON.parse(files.get("/home/test/.composio/config.json"));
+      expect(written.experimental_features.listen).toBe(true);
+      expect(written.developer).toEqual({ enabled: true });
+      expect(written.security).toBe("auto");
+    });
+
+    it("is idempotent when the flag is already set", () => {
+      const { fs } = createConfigFs({ experimental_features: { listen: true } });
+      expect(ensureComposioListenFlag({ fs, homedir: "/home/test" })).toBe(false);
+    });
+
+    it("creates the config when missing", () => {
+      const { fs, files } = createConfigFs();
+      expect(ensureComposioListenFlag({ fs, homedir: "/home/test" })).toBe(true);
+      const written = JSON.parse(files.get("/home/test/.composio/config.json"));
+      expect(written.experimental_features.listen).toBe(true);
+    });
   });
 
   it("ensureComposioOnPath prepends the composio dir when the binary exists", () => {

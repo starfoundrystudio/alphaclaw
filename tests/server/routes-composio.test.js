@@ -19,9 +19,12 @@ const createFakeListenService = () => ({
   checkListenSupport: vi.fn(async () => true),
 });
 
-const createFakeInstaller = ({ installing = false, error = "" } = {}) => ({
+const createFakeInstaller = ({ installing = false, updating = false, error = "" } = {}) => ({
   ensureComposioCliInstalled: vi.fn(() => Promise.resolve({ installed: true })),
+  ensureComposioCliAtVersion: vi.fn(() => Promise.resolve({ upgraded: true })),
+  ensureComposioListenFlag: vi.fn(() => false),
   isComposioInstalling: vi.fn(() => installing),
+  isComposioUpgrading: vi.fn(() => updating),
   getComposioInstallError: vi.fn(() => error),
 });
 
@@ -48,6 +51,7 @@ const createApp = ({
     listenService,
     installer,
     loginService,
+    bootReconcile: false,
     app,
     fs: {
       existsSync: (p) => files.has(String(p)),
@@ -65,6 +69,7 @@ const createApp = ({
     constants: {
       OPENCLAW_DIR: "/openclaw",
       WORKSPACE_DIR: "/openclaw/workspace",
+      kComposioCliTargetVersion: "0.2.33",
     },
     composioCmd:
       composioCmd || vi.fn(async () => ({ ok: false, stdout: "", stderr: "" })),
@@ -196,6 +201,66 @@ describe("server/routes/composio", () => {
 
       expect(response.body.cliInstalling).toBe(true);
       expect(response.body.installError).toBe("boom");
+    });
+  });
+
+  describe("CLI version reconciliation", () => {
+    const createInstalledCliCmd = (version) =>
+      vi.fn(async (cmd) => {
+        if (cmd === "version") return { ok: true, stdout: version, stderr: "" };
+        if (cmd === "whoami") {
+          return {
+            ok: true,
+            stdout: '{"email":"bill@starfoundry.studio","current_org_name":"ws"}',
+            stderr: "",
+          };
+        }
+        return { ok: true, stdout: "{}", stderr: "" };
+      });
+
+    it("refresh starts an upgrade when the CLI is below the pinned target", async () => {
+      process.env.ALPHACLAW_GOOGLE_PROVIDER = "composio";
+      const installer = createFakeInstaller();
+      const app = createApp({ composioCmd: createInstalledCliCmd("0.2.32"), installer });
+
+      const response = await request(app).post("/api/composio/refresh");
+
+      expect(installer.ensureComposioListenFlag).toHaveBeenCalled();
+      expect(installer.ensureComposioCliAtVersion).toHaveBeenCalledWith(
+        expect.objectContaining({ targetVersion: "0.2.33" }),
+      );
+      expect(response.body.cliVersion).toBe("0.2.32");
+      expect(response.body.targetCliVersion).toBe("0.2.33");
+    });
+
+    it("refresh does not upgrade when already at the target", async () => {
+      process.env.ALPHACLAW_GOOGLE_PROVIDER = "composio";
+      const installer = createFakeInstaller();
+      const app = createApp({ composioCmd: createInstalledCliCmd("0.2.33"), installer });
+
+      await request(app).post("/api/composio/refresh");
+
+      expect(installer.ensureComposioListenFlag).toHaveBeenCalled();
+      expect(installer.ensureComposioCliAtVersion).not.toHaveBeenCalled();
+    });
+
+    it("refresh does not reconcile for the gog provider", async () => {
+      const installer = createFakeInstaller();
+      const app = createApp({ composioCmd: createInstalledCliCmd("0.2.32"), installer });
+
+      await request(app).post("/api/composio/refresh");
+
+      expect(installer.ensureComposioCliAtVersion).not.toHaveBeenCalled();
+      expect(installer.ensureComposioListenFlag).not.toHaveBeenCalled();
+    });
+
+    it("status surfaces the updating state", async () => {
+      const installer = createFakeInstaller({ updating: true });
+      const app = createApp({ installer });
+
+      const response = await request(app).get("/api/composio/status");
+
+      expect(response.body.cliUpdating).toBe(true);
     });
   });
 
