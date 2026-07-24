@@ -254,6 +254,29 @@ describe("server/routes/composio", () => {
       expect(installer.ensureComposioListenFlag).not.toHaveBeenCalled();
     });
 
+    it("masks stale CLI errors while an update is in progress", async () => {
+      const installer = createFakeInstaller({ updating: true });
+      const files = new Map([
+        [
+          "/openclaw/composio/state.json",
+          JSON.stringify({
+            version: 1,
+            cliInstalled: true,
+            cliVersion: "0.2.27",
+            loggedIn: true,
+            accounts: [],
+            lastError: "ParseError - ConnectedAccountListResponse",
+          }),
+        ],
+      ]);
+      const app = createApp({ installer, files });
+
+      const response = await request(app).get("/api/composio/status");
+
+      expect(response.body.cliUpdating).toBe(true);
+      expect(response.body.lastError).toBe("");
+    });
+
     it("status surfaces the updating state", async () => {
       const installer = createFakeInstaller({ updating: true });
       const app = createApp({ installer });

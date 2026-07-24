@@ -221,6 +221,31 @@ describe("server/composio-state", () => {
       expect(state.gmailWatch.lastEventAt).toBe(222);
     });
 
+    it("strips ANSI codes from CLI errors surfaced in lastError", async () => {
+      const { fs } = createMemFs();
+      const kEsc = "\u001b";
+      const composioCmd = vi.fn(async (cmd) => {
+        if (cmd === "version") return { ok: true, stdout: "0.2.27", stderr: "" };
+        if (cmd === "whoami") return { ok: true, stdout: kWhoamiJson, stderr: "" };
+        // Old-CLI schema validation failure, as seen live on an upgraded
+        // instance still running 0.2.27 against the current backend
+        return {
+          ok: false,
+          stdout: "",
+          stderr: `${kEsc}[2mUpdate available:${kEsc}[22m 0.2.27 ${kEsc}[96m0.2.32${kEsc}[39m ParseError - ConnectedAccountListResponse`,
+        };
+      });
+      const state = await refreshComposioState({
+        fs,
+        statePath: "/openclaw/composio/state.json",
+        composioCmd,
+      });
+      expect(state.lastError).toContain("ParseError");
+      expect(state.lastError).toContain("Update available");
+      expect(state.lastError).not.toContain("[2m");
+      expect(state.lastError).not.toContain(kEsc);
+    });
+
     it("treats a logged-in session with zero connections as logged in", async () => {
       // Real CLI output: whoami emits JSON, connections list emits {}
       const { fs } = createMemFs();
