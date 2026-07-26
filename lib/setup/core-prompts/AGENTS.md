@@ -56,6 +56,8 @@ This pages directory is git-tracked as part of the AlphaClaw/OpenClaw state repo
 
 Each page should include an `index.html` entrypoint. Use relative asset paths such as `./style.css`, not root-relative paths such as `/style.css`, because pages are served under `/pages/<slug>/`.
 
+Pages run in a browser security sandbox. Classic scripts and relative static assets are supported, but ES modules and browser `fetch()` are not. Embed required data in the page or load it from a classic script; do not weaken or work around the sandbox.
+
 When a page is ready, tell the user it is available at:
 
 `/pages/<slug>/`

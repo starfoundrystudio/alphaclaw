@@ -117,6 +117,31 @@ describe("server/onboarding/tailscale-finalizer", () => {
     ]);
   });
 
+  it("grants raw TCP port 22 without adding Tailscale SSH policy in gateway mode", () => {
+    const existingSshRule = {
+      action: "check",
+      src: ["autogroup:member"],
+      dst: ["autogroup:self"],
+      users: ["autogroup:nonroot"],
+    };
+    const result = ensureAlphaClawTailscalePolicy(
+      {
+        grants: [],
+        ssh: [existingSshRule],
+      },
+      { tailscaleSsh: false },
+    );
+
+    expect(result.policy.grants).toEqual([
+      {
+        src: ["autogroup:admin", "cloud-ops@teamyou.ai"],
+        dst: ["tag:openclaw"],
+        ip: ["tcp:443", "tcp:8443", "tcp:22"],
+      },
+    ]);
+    expect(result.policy.ssh).toEqual([existingSshRule]);
+  });
+
   it("runs policy, CLI, env, share, and TeamYou finalization in order", async () => {
     const calls = [];
     const fetchImpl = vi.fn(async (url, opts = {}) => {
@@ -153,7 +178,10 @@ describe("server/onboarding/tailscale-finalizer", () => {
       }
       return "";
     });
-    const readEnvFile = vi.fn(() => [{ key: "OPENAI_API_KEY", value: "sk-test" }]);
+    const readEnvFile = vi.fn(() => [
+      { key: "OPENAI_API_KEY", value: "sk-test" },
+      { key: "TAILSCALE_SERVE_PORT", value: "ignored-in-local-mode" },
+    ]);
     const writeEnvFile = vi.fn((vars) => calls.push(["writeEnv", vars]));
     const reloadEnv = vi.fn(() => calls.push(["reloadEnv"]));
     const finalizer = createTailscaleFinalizer({
@@ -482,5 +510,699 @@ describe("server/onboarding/tailscale-finalizer", () => {
       "sudo -n /usr/local/sbin/alphaclaw-tailscale-expose configure-all",
     ]);
     expect(fetchImpl.mock.calls.some(([url]) => String(url).endsWith("/keys"))).toBe(false);
+  });
+
+  it("configures, records, writes back, seals, and cleans up a security gateway", async () => {
+    const writes = [];
+    const fetchImpl = vi.fn(async (url, opts = {}) => {
+      if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
+        return {
+          ok: true,
+          headers: { get: () => '"etag-gateway"' },
+          text: async () => JSON.stringify({ grants: [] }),
+        };
+      }
+      if (String(url).endsWith("/keys")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ key: "tskey-auth-gateway-secret" }),
+        };
+      }
+      if (String(url).endsWith("/devices")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () =>
+            JSON.stringify({
+              devices: [
+                {
+                  id: "device-gateway-123",
+                  nodeId: "node-gateway-123",
+                  name: "alphaclaw-gateway.tail123.ts.net",
+                },
+              ],
+            }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => "" },
+        text: async () => JSON.stringify({ ok: true }),
+      };
+    });
+    const gatewayTailscaleClient = {
+      status: vi.fn(async () => ({ configured: false, sealed: false })),
+      configure: vi.fn(async () => ({
+        configured: true,
+        sealed: false,
+        dnsName: "alphaclaw-gateway.tail123.ts.net",
+        deviceId: "node-gateway-123",
+      })),
+      seal: vi.fn(async () => ({ sealed: true })),
+      cleanupIdentity: vi.fn(),
+    };
+    const shellCmd = vi.fn();
+    const readEnvFile = vi.fn(() => [
+      { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+      {
+        key: "ALPHACLAW_GATEWAY_SETUP_IDENTITY_FILE",
+        value: "/run/alphaclaw/gateway-setup",
+      },
+    ]);
+    const writeEnvFile = vi.fn((vars) => {
+      writes.push(vars.map((entry) => ({ ...entry })));
+    });
+    const finalizer = createTailscaleFinalizer({
+      shellCmd,
+      readEnvFile,
+      writeEnvFile,
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      gatewayTailscaleClient,
+      env: {
+        OPENCLAW_WEBHOOK_URL: "https://teamyou.example/api/openclaw/webhook",
+        OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
+        OPENCLAW_INSTANCE_ID: "oc_inst_gateway",
+      },
+    });
+
+    const result = await finalizer.finalizeTailscaleOnboarding({
+      tailscaleApiToken: "tskey-api-secret",
+    });
+
+    expect(result).toMatchObject({
+      setupUrl: "https://alphaclaw-gateway.tail123.ts.net",
+      publicBaseUrl: "https://alphaclaw-gateway.tail123.ts.net:8443",
+      dnsName: "alphaclaw-gateway.tail123.ts.net",
+      deviceId: "device-gateway-123",
+    });
+    expect(shellCmd).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.status).toHaveBeenCalledOnce();
+    expect(gatewayTailscaleClient.configure).toHaveBeenCalledWith({
+      authKey: "tskey-auth-gateway-secret",
+      hostname: "alphaclaw",
+      servePort: 443,
+      funnelPort: 8443,
+      enableSshBridge: true,
+    });
+    expect(gatewayTailscaleClient.seal).toHaveBeenCalledOnce();
+    expect(gatewayTailscaleClient.cleanupIdentity).toHaveBeenCalledOnce();
+    expect(writes[0]).toEqual(
+      expect.arrayContaining([
+        {
+          key: "ALPHACLAW_GATEWAY_PENDING_SETUP_URL",
+          value: "https://alphaclaw-gateway.tail123.ts.net",
+        },
+        {
+          key: "ALPHACLAW_GATEWAY_PENDING_PUBLIC_BASE_URL",
+          value: "https://alphaclaw-gateway.tail123.ts.net:8443",
+        },
+        {
+          key: "ALPHACLAW_TAILSCALE_DNS",
+          value: "alphaclaw-gateway.tail123.ts.net",
+        },
+        {
+          key: "ALPHACLAW_TAILSCALE_DEVICE_ID",
+          value: "device-gateway-123",
+        },
+        {
+          key: "ALPHACLAW_TAILSCALE_HOST_ROLE",
+          value: "security_gateway",
+        },
+        {
+          key: "ALPHACLAW_GATEWAY_SETUP_SEALED",
+          value: "false",
+        },
+      ]),
+    );
+    expect(writes[1]).toEqual(
+      expect.arrayContaining([
+        {
+          key: "ALPHACLAW_SETUP_URL",
+          value: "https://alphaclaw-gateway.tail123.ts.net",
+        },
+        {
+          key: "ALPHACLAW_PUBLIC_BASE_URL",
+          value: "https://alphaclaw-gateway.tail123.ts.net:8443",
+        },
+        {
+          key: "ALPHACLAW_GATEWAY_PENDING_SETUP_URL",
+          value: "",
+        },
+        {
+          key: "ALPHACLAW_GATEWAY_PENDING_PUBLIC_BASE_URL",
+          value: "",
+        },
+        { key: "ALPHACLAW_GATEWAY_SETUP_SEALED", value: "true" },
+      ]),
+    );
+    expect(JSON.stringify(writes)).not.toContain("tskey-api-secret");
+    expect(JSON.stringify(writes)).not.toContain(
+      "tskey-auth-gateway-secret",
+    );
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://teamyou.example/api/openclaw/webhook",
+      expect.objectContaining({
+        body: JSON.stringify({
+          type: "instance.network_finalized",
+          instance_id: "oc_inst_gateway",
+          setup_url: "https://alphaclaw-gateway.tail123.ts.net",
+          public_base_url: "https://alphaclaw-gateway.tail123.ts.net:8443",
+          tailscale_dns: "alphaclaw-gateway.tail123.ts.net",
+          tailscale_device_id: "device-gateway-123",
+          tailscale_host_role: "security_gateway",
+        }),
+      }),
+    );
+
+    const policyWrite = fetchImpl.mock.calls.find(
+      ([url, opts]) =>
+        String(url).endsWith("/acl") && opts?.method === "POST",
+    );
+    expect(JSON.parse(policyWrite[1].body).ssh).toBeUndefined();
+  });
+
+  it("keeps the gateway setup channel open when TeamYou writeback fails", async () => {
+    const writes = [];
+    const fetchImpl = vi.fn(async (url, opts = {}) => {
+      if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ grants: [] }),
+        };
+      }
+      if (String(url).endsWith("/keys")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ key: "tskey-auth-gateway-secret" }),
+        };
+      }
+      if (String(url).endsWith("/devices")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () =>
+            JSON.stringify({
+              devices: [
+                {
+                  id: "device-gateway-123",
+                  name: "alphaclaw.tail123.ts.net",
+                },
+              ],
+            }),
+        };
+      }
+      if (String(url).includes("teamyou.example")) {
+        return {
+          ok: false,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ error: "failed" }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => "" },
+        text: async () => JSON.stringify({ ok: true }),
+      };
+    });
+    const gatewayTailscaleClient = {
+      status: vi.fn(async () => ({ configured: false })),
+      configure: vi.fn(async () => ({
+        configured: true,
+        dnsName: "alphaclaw.tail123.ts.net",
+        deviceId: "device-gateway-123",
+      })),
+      seal: vi.fn(),
+      cleanupIdentity: vi.fn(),
+    };
+    const finalizer = createTailscaleFinalizer({
+      shellCmd: vi.fn(),
+      readEnvFile: vi.fn(() => [
+        { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+      ]),
+      writeEnvFile: vi.fn((vars) =>
+        writes.push(vars.map((entry) => ({ ...entry }))),
+      ),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      gatewayTailscaleClient,
+      env: {
+        OPENCLAW_WEBHOOK_URL: "https://teamyou.example/webhook",
+        OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
+        OPENCLAW_INSTANCE_ID: "oc_inst_gateway",
+      },
+    });
+
+    await expect(
+      finalizer.finalizeTailscaleOnboarding({
+        tailscaleApiToken: "tskey-api-secret",
+      }),
+    ).rejects.toThrow("TeamYou writeback failed");
+    expect(gatewayTailscaleClient.seal).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.cleanupIdentity).not.toHaveBeenCalled();
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toEqual(
+      expect.arrayContaining([
+        {
+          key: "ALPHACLAW_GATEWAY_PENDING_SETUP_URL",
+          value: "https://alphaclaw.tail123.ts.net",
+        },
+      ]),
+    );
+    expect(writes[0]).not.toEqual(
+      expect.arrayContaining([
+        {
+          key: "ALPHACLAW_SETUP_URL",
+          value: "https://alphaclaw.tail123.ts.net",
+        },
+      ]),
+    );
+  });
+
+  it("reuses sealed gateway identity metadata without reopening the setup channel", async () => {
+    const fetchImpl = vi.fn(async (url, opts = {}) => {
+      if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ grants: [] }),
+        };
+      }
+      if (String(url).endsWith("/devices")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () =>
+            JSON.stringify({
+              devices: [
+                {
+                  id: "device-gateway-123",
+                  name: "alphaclaw.tail123.ts.net",
+                },
+              ],
+            }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => "" },
+        text: async () => JSON.stringify({ ok: true }),
+      };
+    });
+    const gatewayTailscaleClient = {
+      status: vi.fn(),
+      configure: vi.fn(),
+      seal: vi.fn(),
+      cleanupIdentity: vi.fn(),
+    };
+    const finalizer = createTailscaleFinalizer({
+      shellCmd: vi.fn(),
+      readEnvFile: vi.fn(() => [
+        { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+        {
+          key: "ALPHACLAW_SETUP_URL",
+          value: "https://alphaclaw.tail123.ts.net",
+        },
+        {
+          key: "ALPHACLAW_PUBLIC_BASE_URL",
+          value: "https://alphaclaw.tail123.ts.net:8443",
+        },
+        {
+          key: "ALPHACLAW_TAILSCALE_DNS",
+          value: "alphaclaw.tail123.ts.net",
+        },
+        {
+          key: "ALPHACLAW_TAILSCALE_DEVICE_ID",
+          value: "device-gateway-123",
+        },
+        { key: "ALPHACLAW_GATEWAY_SETUP_SEALED", value: "true" },
+      ]),
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      gatewayTailscaleClient,
+      env: {
+        OPENCLAW_WEBHOOK_URL: "https://teamyou.example/webhook",
+        OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
+        OPENCLAW_INSTANCE_ID: "oc_inst_gateway",
+      },
+    });
+
+    await finalizer.finalizeTailscaleOnboarding({
+      tailscaleApiToken: "tskey-api-secret",
+    });
+
+    expect(gatewayTailscaleClient.status).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.configure).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.seal).not.toHaveBeenCalled();
+    expect(
+      fetchImpl.mock.calls.some(([url]) => String(url).endsWith("/keys")),
+    ).toBe(false);
+  });
+
+  it("retries from pending gateway metadata without changing active ingress", async () => {
+    const writes = [];
+    const fetchImpl = vi.fn(async (url, opts = {}) => {
+      if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ grants: [] }),
+        };
+      }
+      if (String(url).endsWith("/devices")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () =>
+            JSON.stringify({
+              devices: [
+                {
+                  id: "device-gateway-123",
+                  name: "alphaclaw.tail123.ts.net",
+                },
+              ],
+            }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => "" },
+        text: async () => JSON.stringify({ ok: true }),
+      };
+    });
+    const gatewayTailscaleClient = {
+      status: vi.fn(),
+      configure: vi.fn(),
+      seal: vi.fn(async () => ({ sealed: true })),
+      cleanupIdentity: vi.fn(),
+    };
+    const finalizer = createTailscaleFinalizer({
+      shellCmd: vi.fn(),
+      readEnvFile: vi.fn(() => [
+        { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+        {
+          key: "ALPHACLAW_GATEWAY_PENDING_SETUP_URL",
+          value: "https://alphaclaw.tail123.ts.net",
+        },
+        {
+          key: "ALPHACLAW_GATEWAY_PENDING_PUBLIC_BASE_URL",
+          value: "https://alphaclaw.tail123.ts.net:8443",
+        },
+        {
+          key: "ALPHACLAW_TAILSCALE_DNS",
+          value: "alphaclaw.tail123.ts.net",
+        },
+        {
+          key: "ALPHACLAW_TAILSCALE_DEVICE_ID",
+          value: "device-gateway-123",
+        },
+        {
+          key: "ALPHACLAW_GATEWAY_SETUP_IDENTITY_FILE",
+          value: "/run/alphaclaw/gateway-setup",
+        },
+        { key: "ALPHACLAW_GATEWAY_SETUP_SEALED", value: "false" },
+      ]),
+      writeEnvFile: vi.fn((vars) =>
+        writes.push(vars.map((entry) => ({ ...entry }))),
+      ),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      gatewayTailscaleClient,
+      env: {
+        OPENCLAW_WEBHOOK_URL: "https://teamyou.example/webhook",
+        OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
+        OPENCLAW_INSTANCE_ID: "oc_inst_gateway",
+      },
+    });
+
+    await finalizer.finalizeTailscaleOnboarding({
+      tailscaleApiToken: "tskey-api-secret",
+    });
+
+    expect(gatewayTailscaleClient.status).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.configure).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.seal).toHaveBeenCalledOnce();
+    expect(gatewayTailscaleClient.cleanupIdentity).toHaveBeenCalledOnce();
+    expect(
+      fetchImpl.mock.calls.some(([url]) => String(url).endsWith("/keys")),
+    ).toBe(false);
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toEqual(
+      expect.arrayContaining([
+        {
+          key: "ALPHACLAW_SETUP_URL",
+          value: "https://alphaclaw.tail123.ts.net",
+        },
+        {
+          key: "ALPHACLAW_GATEWAY_PENDING_SETUP_URL",
+          value: "",
+        },
+        { key: "ALPHACLAW_GATEWAY_SETUP_SEALED", value: "true" },
+      ]),
+    );
+  });
+
+  it("durably records a gateway that reports itself already sealed", async () => {
+    const writes = [];
+    const fetchImpl = vi.fn(async (url, opts = {}) => {
+      if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ grants: [] }),
+        };
+      }
+      if (String(url).endsWith("/devices")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () =>
+            JSON.stringify({
+              devices: [
+                {
+                  id: "device-gateway-123",
+                  name: "alphaclaw.tail123.ts.net",
+                },
+              ],
+            }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => "" },
+        text: async () => JSON.stringify({ ok: true }),
+      };
+    });
+    const gatewayTailscaleClient = {
+      status: vi.fn(async () => ({
+        configured: true,
+        sealed: true,
+        dnsName: "alphaclaw.tail123.ts.net",
+        deviceId: "device-gateway-123",
+      })),
+      configure: vi.fn(),
+      seal: vi.fn(),
+      cleanupIdentity: vi.fn(),
+    };
+    const finalizer = createTailscaleFinalizer({
+      shellCmd: vi.fn(),
+      readEnvFile: vi.fn(() => [
+        { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+        {
+          key: "ALPHACLAW_GATEWAY_SETUP_IDENTITY_FILE",
+          value: "/run/alphaclaw/gateway-setup",
+        },
+      ]),
+      writeEnvFile: vi.fn((vars) =>
+        writes.push(vars.map((entry) => ({ ...entry }))),
+      ),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      gatewayTailscaleClient,
+      env: {
+        OPENCLAW_WEBHOOK_URL: "https://teamyou.example/webhook",
+        OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
+        OPENCLAW_INSTANCE_ID: "oc_inst_gateway",
+      },
+    });
+
+    await finalizer.finalizeTailscaleOnboarding({
+      tailscaleApiToken: "tskey-api-secret",
+    });
+
+    expect(writes[0]).toEqual(
+      expect.arrayContaining([
+        { key: "ALPHACLAW_GATEWAY_SETUP_SEALED", value: "true" },
+      ]),
+    );
+    expect(gatewayTailscaleClient.seal).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.cleanupIdentity).toHaveBeenCalledOnce();
+  });
+
+  it("does not persist a gateway outside the requested tailnet", async () => {
+    const fetchImpl = vi.fn(async (url, opts = {}) => {
+      if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ grants: [] }),
+        };
+      }
+      if (String(url).endsWith("/devices")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () =>
+            JSON.stringify({
+              devices: [
+                {
+                  id: "device-foreign-123",
+                  name: "different-device.requested-tailnet.ts.net",
+                },
+              ],
+            }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => "" },
+        text: async () => JSON.stringify({ ok: true }),
+      };
+    });
+    const writeEnvFile = vi.fn();
+    const gatewayTailscaleClient = {
+      status: vi.fn(async () => ({
+        configured: true,
+        sealed: false,
+        dnsName: "alphaclaw.foreign-tailnet.ts.net",
+        deviceId: "device-foreign-123",
+      })),
+      configure: vi.fn(),
+      seal: vi.fn(),
+      cleanupIdentity: vi.fn(),
+    };
+    const finalizer = createTailscaleFinalizer({
+      shellCmd: vi.fn(),
+      readEnvFile: vi.fn(() => [
+        { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+      ]),
+      writeEnvFile,
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      gatewayTailscaleClient,
+      env: {
+        OPENCLAW_WEBHOOK_URL: "https://teamyou.example/webhook",
+        OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
+        OPENCLAW_INSTANCE_ID: "oc_inst_gateway",
+      },
+    });
+
+    await expect(
+      finalizer.finalizeTailscaleOnboarding({
+        tailscaleApiToken: "tskey-api-secret",
+      }),
+    ).rejects.toThrow("does not belong to the requested Tailscale tailnet");
+
+    expect(writeEnvFile).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.seal).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.cleanupIdentity).not.toHaveBeenCalled();
+  });
+
+  it("requires TeamYou writeback before mutating a security gateway", async () => {
+    const gatewayTailscaleClient = {
+      status: vi.fn(),
+      configure: vi.fn(),
+      seal: vi.fn(),
+      cleanupIdentity: vi.fn(),
+    };
+    const fetchImpl = vi.fn();
+    const finalizer = createTailscaleFinalizer({
+      shellCmd: vi.fn(),
+      readEnvFile: vi.fn(() => [
+        { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+      ]),
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      gatewayTailscaleClient,
+      env: {},
+    });
+
+    await expect(
+      finalizer.finalizeTailscaleOnboarding({
+        tailscaleApiToken: "tskey-api-secret",
+      }),
+    ).rejects.toThrow(
+      "TeamYou writeback is required for security gateway onboarding",
+    );
+
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.status).not.toHaveBeenCalled();
+  });
+
+  it("rejects a nonstandard security gateway Serve port before configuration", async () => {
+    const gatewayTailscaleClient = {
+      status: vi.fn(),
+      configure: vi.fn(),
+      seal: vi.fn(),
+      cleanupIdentity: vi.fn(),
+    };
+    const fetchImpl = vi.fn();
+    const finalizer = createTailscaleFinalizer({
+      shellCmd: vi.fn(),
+      readEnvFile: vi.fn(() => [
+        { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+        { key: "TAILSCALE_SERVE_PORT", value: "9443" },
+      ]),
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      gatewayTailscaleClient,
+      env: {},
+    });
+
+    await expect(
+      finalizer.finalizeTailscaleOnboarding({
+        tailscaleApiToken: "tskey-api-secret",
+      }),
+    ).rejects.toThrow("Tailscale Serve port must be 443");
+
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.status).not.toHaveBeenCalled();
+  });
+
+  it("rejects a nonstandard security gateway Funnel port before configuration", async () => {
+    const gatewayTailscaleClient = {
+      status: vi.fn(),
+      configure: vi.fn(),
+      seal: vi.fn(),
+      cleanupIdentity: vi.fn(),
+    };
+    const fetchImpl = vi.fn();
+    const finalizer = createTailscaleFinalizer({
+      shellCmd: vi.fn(),
+      readEnvFile: vi.fn(() => [
+        { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+        { key: "TAILSCALE_FUNNEL_PORT", value: "9443" },
+      ]),
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      gatewayTailscaleClient,
+      env: {},
+    });
+
+    await expect(
+      finalizer.finalizeTailscaleOnboarding({
+        tailscaleApiToken: "tskey-api-secret",
+      }),
+    ).rejects.toThrow("Tailscale Funnel port must be 8443");
+
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(gatewayTailscaleClient.status).not.toHaveBeenCalled();
   });
 });
