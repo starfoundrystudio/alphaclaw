@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-23T20:18:14.826Z",
+  "generatedAt": "2026-07-27T00:13:11.541Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2110,6 +2110,24 @@
               "accessLabel": "via OpenRouter"
             },
             {
+              "key": "openrouter/anthropic/claude-opus-5",
+              "provider": "openrouter",
+              "label": "Claude Opus 5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-opus-5-fast",
+              "provider": "openrouter",
+              "label": "Claude Opus 5 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/cohere/command-a",
               "provider": "openrouter",
               "label": "Cohere: Command A",
@@ -2618,24 +2636,6 @@
               "key": "openrouter/inclusionai/ring-2.6-1t",
               "provider": "openrouter",
               "label": "inclusionAI: Ring-2.6-1T",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/inflection/inflection-3-pi",
-              "provider": "openrouter",
-              "label": "Inflection: Inflection 3 Pi",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/inflection/inflection-3-productivity",
-              "provider": "openrouter",
-              "label": "Inflection: Inflection 3 Productivity",
               "accessModes": [
                 "gateway"
               ],
@@ -4970,18 +4970,27 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/anthropic/claude-opus-4.7-fast",
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-fast",
               "provider": "vercel-ai-gateway",
-              "label": "Claude Opus 4.7 (Fast)",
+              "label": "Claude Opus 4.8 (Fast)",
               "accessModes": [
                 "gateway"
               ],
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-fast",
+              "key": "vercel-ai-gateway/anthropic/claude-opus-5",
               "provider": "vercel-ai-gateway",
-              "label": "Claude Opus 4.8 (Fast)",
+              "label": "Claude Opus 5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-5-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 5 (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -5204,15 +5213,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/google/gemini-3.1-flash-lite-preview",
-              "provider": "vercel-ai-gateway",
-              "label": "Gemini 3.1 Flash Lite Preview",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/google/gemini-3.1-pro-preview",
               "provider": "vercel-ai-gateway",
               "label": "Gemini 3.1 Pro Preview",
@@ -5420,15 +5420,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/openai/gpt-5-chat",
-              "provider": "vercel-ai-gateway",
-              "label": "GPT 5 Chat",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/openai/gpt-5.1-codex-max",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.1 Codex Max",
@@ -5468,15 +5459,6 @@
               "key": "vercel-ai-gateway/openai/gpt-5.2-pro",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.2",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/openai/gpt-5.2-chat",
-              "provider": "vercel-ai-gateway",
-              "label": "GPT 5.2 Chat",
               "accessModes": [
                 "gateway"
               ],
@@ -7726,6 +7708,24 @@
       "accessLabel": "via OpenRouter"
     },
     {
+      "key": "openrouter/anthropic/claude-opus-5",
+      "provider": "openrouter",
+      "label": "Claude Opus 5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-opus-5-fast",
+      "provider": "openrouter",
+      "label": "Claude Opus 5 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/anthropic/claude-sonnet-4.6",
       "provider": "openrouter",
       "label": "Claude Sonnet 4.6",
@@ -8248,24 +8248,6 @@
       "key": "openrouter/inclusionai/ring-2.6-1t",
       "provider": "openrouter",
       "label": "inclusionAI: Ring-2.6-1T",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/inflection/inflection-3-pi",
-      "provider": "openrouter",
-      "label": "Inflection: Inflection 3 Pi",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/inflection/inflection-3-productivity",
-      "provider": "openrouter",
-      "label": "Inflection: Inflection 3 Productivity",
       "accessModes": [
         "gateway"
       ],
@@ -10958,15 +10940,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/anthropic/claude-opus-4.7-fast",
-      "provider": "vercel-ai-gateway",
-      "label": "Claude Opus 4.7 (Fast)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/anthropic/claude-opus-4.8",
       "provider": "vercel-ai-gateway",
       "label": "Claude Opus 4.8",
@@ -10984,6 +10957,24 @@
       "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-fast",
       "provider": "vercel-ai-gateway",
       "label": "Claude Opus 4.8 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-5",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-5-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 5 (Fast)",
       "accessModes": [
         "gateway"
       ],
@@ -11220,15 +11211,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/google/gemini-3.1-flash-lite-preview",
-      "provider": "vercel-ai-gateway",
-      "label": "Gemini 3.1 Flash Lite Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/google/gemini-3.1-pro-preview",
       "provider": "vercel-ai-gateway",
       "label": "Gemini 3.1 Pro Preview",
@@ -11436,15 +11418,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/openai/gpt-5-chat",
-      "provider": "vercel-ai-gateway",
-      "label": "GPT 5 Chat",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/openai/gpt-5.1-codex-max",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.1 Codex Max",
@@ -11484,15 +11457,6 @@
       "key": "vercel-ai-gateway/openai/gpt-5.2-pro",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.2",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/openai/gpt-5.2-chat",
-      "provider": "vercel-ai-gateway",
-      "label": "GPT 5.2 Chat",
       "accessModes": [
         "gateway"
       ],
