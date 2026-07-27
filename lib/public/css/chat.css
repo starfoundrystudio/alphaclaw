@@ -61,8 +61,8 @@
 
 .chat-bubble.is-user {
   align-self: flex-end;
-  background: rgba(99, 235, 255, 0.06);
-  border-color: rgba(99, 235, 255, 0.24);
+  background: rgba(49, 238, 136, 0.06);
+  border-color: rgba(49, 238, 136, 0.24);
 }
 
 .chat-bubble.is-assistant {

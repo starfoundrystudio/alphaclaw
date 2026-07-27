@@ -8,6 +8,34 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // TeamYou brand scales — mirrored from the teamyou repo's
+        // tailwind.config.ts / DESIGN.md. Sync when the brand changes.
+        "teamyou-green": {
+          50: "#effef4",
+          100: "#d8ffea",
+          200: "#b4fed5",
+          300: "#7afbb5",
+          400: "#31ee88",
+          500: "#10d76c",
+          600: "#06b357",
+          700: "#098c47",
+          800: "#0d6e3b",
+          900: "#0d5a33",
+          950: "#00331a",
+        },
+        "teamyou-cobalt": {
+          50: "#e6f2f8",
+          100: "#cce5f1",
+          200: "#99cbe3",
+          300: "#66b1d5",
+          400: "#3397c7",
+          500: "#007db9",
+          600: "#006494",
+          700: "#004b6f",
+          800: "#023544",
+          900: "#012a3a",
+          950: "#000d15",
+        },
         surface: "var(--bg-sidebar)",
         border: "var(--border)",
         body: "var(--text)",
@@ -36,7 +64,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        mono: ["'JetBrains Mono'", "monospace"],
+        sans: ["'Geist'", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["'Geist Mono'", "ui-monospace", "monospace"],
       },
     },
   },

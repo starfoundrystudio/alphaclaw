@@ -29,8 +29,8 @@
 
 .sidebar-tab.active {
   color: #b9f5ff;
-  background: rgba(99, 235, 255, 0.05);
-  /* box-shadow: 0 0 8px rgba(99, 235, 255, 0.16); */
+  background: rgba(49, 238, 136, 0.05);
+  /* box-shadow: 0 0 8px rgba(49, 238, 136, 0.16); */
 }
 
 .sidebar-tab-icon {
@@ -78,7 +78,7 @@
 
 .sidebar-browse-resizer:hover::before,
 .sidebar-browse-resizer.is-resizing::before {
-  background: rgba(99, 235, 255, 0.55);
+  background: rgba(49, 238, 136, 0.55);
 }
 
 .sidebar-browse-bottom {
@@ -487,8 +487,8 @@
 }
 
 .file-tree-search-input:focus {
-  border-color: rgba(99, 235, 255, 0.45);
-  box-shadow: 0 0 0 1px rgba(99, 235, 255, 0.18);
+  border-color: rgba(49, 238, 136, 0.45);
+  box-shadow: 0 0 0 1px rgba(49, 238, 136, 0.18);
 }
 
 .file-tree-scroll::-webkit-scrollbar {
@@ -540,7 +540,7 @@
 }
 
 .tree-item > a.soft-active:not(.active) {
-  background: rgba(99, 235, 255, 0.06);
+  background: rgba(49, 238, 136, 0.06);
   color: var(--text);
 }
 
@@ -713,7 +713,7 @@
   min-width: 0;
   height: 22px;
   border-radius: 4px;
-  border: 1px solid rgba(99, 235, 255, 0.45);
+  border: 1px solid rgba(49, 238, 136, 0.45);
   background: rgba(0, 0, 0, 0.3);
   color: var(--text);
   font-size: 12px;
@@ -727,7 +727,7 @@
 }
 
 .tree-create-input:focus {
-  box-shadow: 0 0 0 1px rgba(99, 235, 255, 0.18);
+  box-shadow: 0 0 0 1px rgba(49, 238, 136, 0.18);
 }
 
 .tree-create-icon {
@@ -804,7 +804,7 @@
 .tree-folder.is-drop-target {
   outline: 1px dashed var(--accent);
   outline-offset: -1px;
-  background: rgba(99, 235, 255, 0.06);
+  background: rgba(49, 238, 136, 0.06);
 }
 
 .tree-children {
@@ -935,7 +935,7 @@
   height: 7px;
   border-radius: 999px;
   background: var(--accent);
-  box-shadow: 0 0 10px rgba(99, 235, 255, 0.55);
+  box-shadow: 0 0 10px rgba(49, 238, 136, 0.55);
   margin-left: 2px;
   flex-shrink: 0;
 }
@@ -976,7 +976,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
-  background: rgba(99, 235, 255, 0.025);
+  background: rgba(49, 238, 136, 0.025);
 }
 
 .frontmatter-title {
@@ -1174,8 +1174,8 @@
 }
 
 .file-viewer-diff-line.is-added {
-  color: #86efac;
-  background: rgba(34, 197, 94, 0.1);
+  color: #7afbb5;
+  background: rgba(49, 238, 136, 0.1);
 }
 
 .file-viewer-diff-line.is-removed {
@@ -1225,7 +1225,7 @@
   overflow-y: auto;
   background: transparent;
   color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', ui-monospace, monospace;
   font-size: 13px;
   line-height: 22px;
   padding: 16px 20px 112px 0;
@@ -1246,7 +1246,7 @@
   overflow: hidden;
   pointer-events: none;
   background: transparent;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', ui-monospace, monospace;
   font-size: 13px;
   line-height: 22px;
   color: var(--text);
@@ -1275,7 +1275,7 @@
 }
 
 .file-viewer-editor-overlay::selection {
-  background: rgba(99, 235, 255, 0.25);
+  background: rgba(49, 238, 136, 0.25);
 }
 
 .file-viewer-preview {
@@ -1579,8 +1579,8 @@
 }
 
 .file-viewer-sqlite-card.is-active {
-  border-color: rgba(99, 235, 255, 0.45);
-  background: rgba(99, 235, 255, 0.08);
+  border-color: rgba(49, 238, 136, 0.45);
+  background: rgba(49, 238, 136, 0.08);
 }
 
 .file-viewer-sqlite-title {
@@ -1692,8 +1692,8 @@
   letter-spacing: 0.08em;
   color: var(--accent);
   text-shadow:
-    0 0 12px rgba(99, 235, 255, 0.38),
-    0 0 22px rgba(99, 235, 255, 0.2);
+    0 0 12px rgba(49, 238, 136, 0.38),
+    0 0 22px rgba(49, 238, 136, 0.2);
 }
 
 .file-viewer-empty-title {
@@ -1884,7 +1884,7 @@
 }
 
 .sidebar-git-change-row.is-modified .sidebar-git-change-status {
-  color: #63ebff;
+  color: #31ee88;
 }
 
 .sidebar-git-change-row.is-deleted .sidebar-git-change-status {
@@ -1972,8 +1972,8 @@
 }
 
 [data-theme="light"] .sidebar-tab.active {
-  color: #0e7490;
-  background: rgba(8, 145, 178, 0.1);
+  color: #098c47;
+  background: rgba(6, 179, 87, 0.1);
 }
 
 [data-theme="light"] .file-viewer-protected-banner {
