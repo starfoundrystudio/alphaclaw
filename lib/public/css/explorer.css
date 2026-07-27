@@ -28,9 +28,8 @@
 }
 
 .sidebar-tab.active {
-  color: #b9f5ff;
+  color: var(--accent);
   background: rgba(49, 238, 136, 0.05);
-  /* box-shadow: 0 0 8px rgba(49, 238, 136, 0.16); */
 }
 
 .sidebar-tab-icon {
@@ -663,8 +662,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #2de2ff;
-  box-shadow: 0 0 6px rgba(45, 226, 255, 0.75);
+  background: var(--accent);
 }
 
 .tree-lock-icon {
@@ -935,7 +933,6 @@
   height: 7px;
   border-radius: 999px;
   background: var(--accent);
-  box-shadow: 0 0 10px rgba(49, 238, 136, 0.55);
   margin-left: 2px;
   flex-shrink: 0;
 }
@@ -1691,9 +1688,6 @@
   font-weight: 500;
   letter-spacing: 0.08em;
   color: var(--accent);
-  text-shadow:
-    0 0 12px rgba(49, 238, 136, 0.38),
-    0 0 22px rgba(49, 238, 136, 0.2);
 }
 
 .file-viewer-empty-title {

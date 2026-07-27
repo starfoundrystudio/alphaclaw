@@ -147,12 +147,10 @@ Shared treatments live in `theme.css` (`ac-*` classes) and
 
 ### Buttons
 
-- **Primary / brand action** (create, connect, start, save): the green accent
-  button — `ac-btn-cyan` (legacy class name; now renders TeamYou green). One
-  per surface.
-- **Confirm / go** (`ac-btn-green`) is now visually redundant with the
-  primary treatment — these two will be consolidated into one primary class
-  during the markup sweep; don't introduce new uses of `ac-btn-green`.
+- **Primary / brand action** (create, connect, start, save): `ac-btn-primary`
+  (TeamYou green). One per surface. The former `ac-btn-cyan` and
+  `ac-btn-green` classes are gone — both consolidated into `ac-btn-primary`
+  (the `ActionButton` variants `primary` and `success` both resolve to it).
 - **Secondary / neutral**: `ac-btn-secondary` (bordered, quiet).
 - **Ghost / low-emphasis**: `ac-btn-ghost`.
 - **Destructive**: `ac-btn-danger` (red text treatment, confirm before acting).
@@ -203,7 +201,7 @@ choreography; glow effects are being reduced, don't add new ones.
 
 ## Migration status
 
-Done (token layer):
+Done — token layer:
 
 - `theme.css` dark + light variables remapped to TeamYou values.
 - Cyan accent family → teamyou-green across all CSS (`theme`, `shell`,
@@ -214,14 +212,22 @@ Done (token layer):
 - `tailwind.config.cjs`: Geist font stacks + `teamyou-green` /
   `teamyou-cobalt` scales available to components.
 
-Pending (markup sweep):
+Done — markup sweep:
 
-- ~23 hardcoded `*-cyan-*` Tailwind classes in `lib/public/js/components/`
-  (light-theme overrides in `theme.css` bridge some of these; dark theme
-  still shows cyan until replaced).
-- Consolidate `ac-btn-cyan` + `ac-btn-green` into one primary class with an
-  honest name (e.g. `ac-btn-primary`).
-- Reduce glow shadows; normalize 10px radii to 8px.
-- Replace `.ac-small-heading` uppercase labels with sentence case.
-- Decide fate of the `body::before` grid texture (default: remove).
-- Consider 13px → 14px base font size after the sweep settles.
+- All `*-cyan-*` Tailwind classes replaced with `teamyou-cobalt` equivalents
+  (they were info accents); inline cyan link styles → `var(--accent-link)`;
+  chart palette and terminal cursor de-cyaned.
+- `ac-btn-cyan` / `ac-btn-green` consolidated into `ac-btn-primary`.
+- Grid texture (`body::before`) removed.
+- Decorative outer glows removed (buttons, toggles, cards, dots); status-dot
+  pulse animations kept. Cron trend colors moved onto the status palette.
+- Uppercase/tracked labels sentence-cased (`.sidebar-label`,
+  `.ac-small-heading`, inline `uppercase` classes). The `uppercase` class on
+  the env-var name input is functional (normalizes input) and stays.
+
+Remaining:
+
+- Legacy `tone="cyan"` / `cyan` variant *keys* in `badge.js`,
+  `usage-tab/constants.js`, and doctor helpers — they render cobalt now;
+  rename to `info` opportunistically when touching those files.
+- Consider 13px → 14px base font size once the restyle has settled.

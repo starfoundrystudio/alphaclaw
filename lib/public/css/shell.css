@@ -200,13 +200,12 @@
   gap: 8px;
 }
 
+/* Sentence-case per DESIGN.md — no uppercase/tracked labels. */
 .sidebar-label {
   padding: 12px 16px 6px;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
   user-select: none;
 }
 

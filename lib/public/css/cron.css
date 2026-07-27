@@ -464,7 +464,7 @@
   height: 2px;
   border-radius: 999px;
   background: rgba(248, 113, 113, 0.95);
-  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.18), 0 0 8px rgba(239, 68, 68, 0.55);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.18);
   pointer-events: none;
   z-index: 1;
 }
@@ -659,18 +659,18 @@
 }
 
 .cron-runs-trend-segment-ok {
-  background: rgba(34, 255, 170, 0.82);
-  box-shadow: inset 0 0 0 1px rgba(34, 255, 170, 0.28), 0 0 8px rgba(34, 255, 170, 0.24);
+  background: rgba(49, 238, 136, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(49, 238, 136, 0.28);
 }
 
 .cron-runs-trend-segment-error {
-  background: rgba(255, 74, 138, 0.84);
-  box-shadow: inset 0 0 0 1px rgba(255, 74, 138, 0.32), 0 0 8px rgba(255, 74, 138, 0.24);
+  background: rgba(248, 113, 113, 0.84);
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.32);
 }
 
 .cron-runs-trend-segment-skipped {
-  background: rgba(255, 214, 64, 0.82);
-  box-shadow: inset 0 0 0 1px rgba(255, 214, 64, 0.28), 0 0 8px rgba(255, 214, 64, 0.22);
+  background: rgba(251, 191, 36, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.28);
 }
 
 .cron-runs-trend-label {
@@ -701,16 +701,13 @@
 }
 
 .cron-runs-trend-legend-dot.is-ok {
-  background: rgba(34, 255, 170, 0.98);
-  box-shadow: 0 0 8px rgba(34, 255, 170, 0.6);
+  background: rgba(49, 238, 136, 0.98);
 }
 
 .cron-runs-trend-legend-dot.is-error {
-  background: rgba(255, 74, 138, 0.98);
-  box-shadow: 0 0 8px rgba(255, 74, 138, 0.58);
+  background: rgba(248, 113, 113, 0.98);
 }
 
 .cron-runs-trend-legend-dot.is-skipped {
-  background: rgba(255, 214, 64, 0.98);
-  box-shadow: 0 0 8px rgba(255, 214, 64, 0.5);
+  background: rgba(251, 191, 36, 0.98);
 }
