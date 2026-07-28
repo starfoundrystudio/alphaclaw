@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-27T00:13:11.541Z",
+  "generatedAt": "2026-07-28T02:48:03.053Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -3452,15 +3452,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/gpt-4o-search-preview",
-              "provider": "openrouter",
-              "label": "OpenAI: GPT-4o Search Preview",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/openai/gpt-4o-mini",
               "provider": "openrouter",
               "label": "OpenAI: GPT-4o-mini",
@@ -3479,27 +3470,9 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/gpt-4o-mini-search-preview",
-              "provider": "openrouter",
-              "label": "OpenAI: GPT-4o-mini Search Preview",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/openai/gpt-5",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/openai/gpt-5-chat",
-              "provider": "openrouter",
-              "label": "OpenAI: GPT-5 Chat",
               "accessModes": [
                 "gateway"
               ],
@@ -4400,6 +4373,15 @@
               "key": "openrouter/qwen/qwen3.6-plus",
               "provider": "openrouter",
               "label": "Qwen: Qwen3.6 Plus",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/qwen/qwen3.7-flash",
+              "provider": "openrouter",
+              "label": "Qwen: Qwen3.7 Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -5937,6 +5919,15 @@
               "key": "vercel-ai-gateway/moonshotai/kimi-k3",
               "provider": "vercel-ai-gateway",
               "label": "Kimi K3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/moonshotai/kimi-k3-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "Kimi K3 Fast",
               "accessModes": [
                 "gateway"
               ],
@@ -9064,15 +9055,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/openai/gpt-4o-search-preview",
-      "provider": "openrouter",
-      "label": "OpenAI: GPT-4o Search Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/openai/gpt-4o-mini",
       "provider": "openrouter",
       "label": "OpenAI: GPT-4o-mini",
@@ -9091,27 +9073,9 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/openai/gpt-4o-mini-search-preview",
-      "provider": "openrouter",
-      "label": "OpenAI: GPT-4o-mini Search Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/openai/gpt-5",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/openai/gpt-5-chat",
-      "provider": "openrouter",
-      "label": "OpenAI: GPT-5 Chat",
       "accessModes": [
         "gateway"
       ],
@@ -10025,6 +9989,15 @@
       "key": "openrouter/qwen/qwen3.6-plus",
       "provider": "openrouter",
       "label": "Qwen: Qwen3.6 Plus",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/qwen/qwen3.7-flash",
+      "provider": "openrouter",
+      "label": "Qwen: Qwen3.7 Flash",
       "accessModes": [
         "gateway"
       ],
@@ -11948,6 +11921,15 @@
       "key": "vercel-ai-gateway/moonshotai/kimi-k3",
       "provider": "vercel-ai-gateway",
       "label": "Kimi K3",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/moonshotai/kimi-k3-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "Kimi K3 Fast",
       "accessModes": [
         "gateway"
       ],
