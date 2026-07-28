@@ -165,6 +165,7 @@ describe("server/agent-vault", () => {
     const { createAgentVaultService } = require(
       "../../lib/server/agent-vault/service"
     );
+    const onRuntimeRestartRequired = vi.fn(async () => {});
     const service = createAgentVaultService({
       env: {},
       readEnvFile: () => envVars,
@@ -173,13 +174,16 @@ describe("server/agent-vault", () => {
       openclawDir,
       fetchImpl,
       gatewayTailscaleClientFactory: () => gatewayClient,
+      onRuntimeRestartRequired,
     });
 
     await expect(service.claimRuntimeToken()).resolves.toMatchObject({
       ready: true,
       claimed: true,
-      restartRequired: true,
+      restartRequired: false,
+      restarted: true,
     });
+    expect(onRuntimeRestartRequired).toHaveBeenCalledOnce();
     expect(gatewayClient.acknowledgeAgentVaultRuntimeToken).toHaveBeenCalledWith({
       tokenSha256:
         "6911998848aa2dcce7f20c89d81d63b6233537aad4997d0ae0e188d9861dfb35",
@@ -635,6 +639,202 @@ describe("server/agent-vault", () => {
         user_message: "Fetch the current weather directly",
       });
       expect(global.fetch).not.toHaveBeenCalled();
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+      for (const [key, value] of Object.entries(previousEnv)) {
+        const envKey =
+          key === "address"
+            ? "AGENT_VAULT_ADDR"
+            : key === "token"
+              ? "AGENT_VAULT_TOKEN"
+              : key === "vault"
+                ? "AGENT_VAULT_VAULT"
+                : key === "operatorUrl"
+                  ? "AGENT_VAULT_OPERATOR_URL"
+                  : "TEAMYOU_AGENT_VAULT_ENTRY_URL";
+        if (value === undefined) delete process.env[envKey];
+        else process.env[envKey] = value;
+      }
+    }
+  });
+
+  it("returns the TeamYou setup link instead of suggesting an environment variable", async () => {
+    const previousEnv = {
+      address: process.env.AGENT_VAULT_ADDR,
+      token: process.env.AGENT_VAULT_TOKEN,
+      vault: process.env.AGENT_VAULT_VAULT,
+      entryUrl: process.env.TEAMYOU_AGENT_VAULT_ENTRY_URL,
+    };
+    try {
+      delete process.env.AGENT_VAULT_ADDR;
+      delete process.env.AGENT_VAULT_TOKEN;
+      delete process.env.AGENT_VAULT_VAULT;
+      process.env.TEAMYOU_AGENT_VAULT_ENTRY_URL =
+        "https://www.teamyou.com/openclaw/agent-vault/inst_test123";
+      const plugin = require("../../lib/plugin/agent-vault");
+      let tool;
+      const hooks = {};
+      plugin.register({
+        on: (name, handler) => {
+          hooks[name] = handler;
+        },
+        registerTool: (registered) => {
+          tool = registered;
+        },
+      });
+
+      const result = await tool.execute("call-setup", {
+        service: {
+          name: "openweathermap",
+          host: "api.openweathermap.org",
+          auth: { type: "passthrough" },
+          substitutions: [
+            {
+              key: "OPENWEATHERMAP_API_KEY",
+              in: ["query"],
+            },
+          ],
+        },
+        credentials: [
+          {
+            key: "OPENWEATHERMAP_API_KEY",
+            description: "OpenWeatherMap API key",
+          },
+        ],
+        reason: "Fetch current weather directly",
+      });
+
+      expect(JSON.parse(result.content[0].text)).toEqual({
+        status: "setup_required",
+        setup_url:
+          "https://www.teamyou.com/openclaw/agent-vault/inst_test123",
+        instruction:
+          "Return setup_url to the user and ask them to open it to initialize Agent Vault. Do not tell the user to add an environment variable or send a credential in chat. After setup completes, call ensure_service_access again.",
+      });
+      expect(result).not.toHaveProperty("isError");
+
+      expect(
+        hooks.before_agent_finalize({
+          runId: "weather-run",
+          lastAssistantMessage:
+            "No API key is configured. Add an `OPENWEATHER_API_KEY` environment variable, then ask me to retry.",
+        }),
+      ).toEqual({
+        action: "revise",
+        reason: "Agent Vault must broker third-party credentials",
+        retry: {
+          instruction:
+            "Your draft incorrectly directs the user to configure a third-party credential in an environment variable. Do not send that response. Call ensure_service_access now with the complete service rule and value-less credential metadata. If it returns setup_required or proposal_created, return its exact setup_url or approval_url to the user. Never fall back to Envars or Runtime Configuration.",
+          idempotencyKey: "agent-vault-credential-policy:weather-run",
+          maxAttempts: 2,
+        },
+      });
+      expect(
+        hooks.reply_payload_sending({
+          kind: "final",
+          payload: {
+            text: "Add an OPENWEATHER_API_KEY environment variable.",
+          },
+        }),
+      ).toEqual({
+        payload: {
+          text:
+            "Agent Vault needs to be initialized before I can request this service credential. Open https://www.teamyou.com/openclaw/agent-vault/inst_test123, then ask me to retry. I will use the Agent Vault approval workflow instead of an environment variable.",
+        },
+      });
+      expect(
+        hooks.before_agent_finalize({
+          lastAssistantMessage:
+            "Never add OPENWEATHER_API_KEY as an environment variable; use Agent Vault.",
+        }),
+      ).toBeUndefined();
+      expect(
+        hooks.before_agent_finalize({
+          lastAssistantMessage:
+            "Configure OPENAI_API_KEY as an environment variable for the selected model provider.",
+        }),
+      ).toBeUndefined();
+    } finally {
+      for (const [key, value] of Object.entries(previousEnv)) {
+        const envKey =
+          key === "address"
+            ? "AGENT_VAULT_ADDR"
+            : key === "token"
+              ? "AGENT_VAULT_TOKEN"
+              : key === "vault"
+                ? "AGENT_VAULT_VAULT"
+                : "TEAMYOU_AGENT_VAULT_ENTRY_URL";
+        if (value === undefined) delete process.env[envKey];
+        else process.env[envKey] = value;
+      }
+    }
+  });
+
+  it("reports the safe stage and status for Agent Vault HTTP failures", async () => {
+    const previousEnv = {
+      address: process.env.AGENT_VAULT_ADDR,
+      token: process.env.AGENT_VAULT_TOKEN,
+      vault: process.env.AGENT_VAULT_VAULT,
+      operatorUrl: process.env.AGENT_VAULT_OPERATOR_URL,
+      entryUrl: process.env.TEAMYOU_AGENT_VAULT_ENTRY_URL,
+    };
+    const server = http.createServer((_req, res) => {
+      const body = JSON.stringify({ error: "Invalid URL" });
+      res.writeHead(400, {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body),
+        Connection: "close",
+      });
+      res.end(body);
+    });
+    await new Promise((resolve, reject) => {
+      server.once("error", reject);
+      server.listen(14321, "127.0.0.1", resolve);
+    });
+    try {
+      process.env.AGENT_VAULT_ADDR = "http://127.0.0.1:14321";
+      process.env.AGENT_VAULT_TOKEN = "av_agt_runtime_token_123456789";
+      process.env.AGENT_VAULT_VAULT = "default";
+      process.env.AGENT_VAULT_OPERATOR_URL =
+        "https://agent-vault-test.tail123.ts.net";
+      process.env.TEAMYOU_AGENT_VAULT_ENTRY_URL =
+        "https://www.teamyou.com/openclaw/agent-vault/inst_test123";
+      const plugin = require("../../lib/plugin/agent-vault");
+      let tool;
+      plugin.register({
+        registerTool: (registered) => {
+          tool = registered;
+        },
+      });
+
+      const result = await tool.execute("call-error", {
+        service: {
+          name: "openweathermap",
+          host: "api.openweathermap.org",
+          auth: { type: "passthrough" },
+          substitutions: [
+            {
+              key: "OPENWEATHERMAP_API_KEY",
+              in: ["query"],
+            },
+          ],
+        },
+        credentials: [
+          {
+            key: "OPENWEATHERMAP_API_KEY",
+            description: "OpenWeatherMap API key",
+          },
+        ],
+        reason: "Fetch current weather directly",
+      });
+
+      expect(JSON.parse(result.content[0].text)).toEqual({
+        status: "error",
+        stage: "discovery",
+        http_status: 400,
+        error: "Invalid URL",
+      });
+      expect(result.isError).toBe(true);
     } finally {
       await new Promise((resolve) => server.close(resolve));
       for (const [key, value] of Object.entries(previousEnv)) {

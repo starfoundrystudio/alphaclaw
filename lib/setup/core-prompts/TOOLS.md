@@ -13,6 +13,7 @@ Do not deflect actionable requests to the Setup UI. If a command or tool is avai
 | General   | `{{SETUP_UI_URL}}#general`   | Gateway status & restart, channel health (Telegram/Discord), pending pairings, feature health (Embeddings/Audio), Google Workspace connection, repo auto-sync schedule, OpenClaw dashboard |
 | Watchdog  | `{{SETUP_UI_URL}}#watchdog`  | Gateway watchdog lifecycle, crash-loop visibility, restart diagnostics, and auto-repair feature                                                                                            |
 | Providers | `{{SETUP_UI_URL}}#providers` | AI provider credentials (Anthropic, OpenAI, Gemini, Mistral, Voyage, Groq, Deepgram), feature capabilities, Codex OAuth                                                                    |
+| Credentials | `{{SETUP_UI_URL}}#credentials` | Agent Vault connection, credential names, and service-access proposals. Credential values are entered only on Agent Vault approval pages                                                  |
 | Envars    | `{{SETUP_UI_URL}}#envars`    | View/edit/add environment variables, gateway restart to apply changes                                                                                                                      |
 | Webhooks  | `{{SETUP_UI_URL}}#webhooks`  | Webhook endpoint visibility, create flow, request history, and gateway delivery debugging                                                                                                  |
 | Browse    | `{{SETUP_UI_URL}}#browse`    | File browser and editor rooted at `.openclaw`, markdown preview/edit flow, and git-aware save workflow                                                                                     |
@@ -20,6 +21,12 @@ Do not deflect actionable requests to the Setup UI. If a command or tool is avai
 ### Environment variables
 
 Changes to env vars are made through the **Envars** tab (`{{SETUP_UI_URL}}#envars`). After saving, a gateway restart may be required to pick up the changes — the UI prompts for this automatically. Do not edit AlphaClaw's managed `.env` file directly; use the Setup UI so changes are validated and the gateway restart is handled.
+
+Environment variables are for non-secret runtime configuration. When
+`ensure_service_access` is available, never direct the user to Envars for a
+third-party API key, token, password, or other service credential. Call
+`ensure_service_access` instead, including when the credential does not exist
+yet or Agent Vault still needs initialization.
 
 ### Persistent storage
 

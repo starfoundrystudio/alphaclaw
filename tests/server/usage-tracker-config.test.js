@@ -28,6 +28,9 @@ describe("server/usage-tracker-config", () => {
     expect(managedConfig.plugins.load.paths).toContain(kAgentVaultPluginPath);
     expect(managedConfig.plugins.entries["agent-vault"]).toEqual({
       enabled: true,
+      hooks: {
+        allowConversationAccess: true,
+      },
     });
   });
 

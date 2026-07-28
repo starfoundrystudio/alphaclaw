@@ -54,6 +54,15 @@ describe("server/onboarding/workspace", () => {
       "You MUST NOT send a generic greeting or reply normally first",
     );
     expect(agentsPrompt).toContain("**delete BOOTSTRAP.md**");
+    expect(agentsPrompt).toContain(
+      "The absence of a configured API key is the reason to call",
+    );
+    expect(agentsPrompt).toMatch(
+      /Never tell the user to add an API\s+key environment variable/,
+    );
+    expect(agentsPrompt).toContain(
+      "If the tool returns `setup_required`, show its exact `setup_url`",
+    );
   });
 
   const kOriginalRailwayPublicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
