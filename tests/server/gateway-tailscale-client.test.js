@@ -63,6 +63,8 @@ describe("server/onboarding/gateway-tailscale-client", () => {
         sealed: false,
         tailscale_dns: "alpha.tail123.ts.net.",
         tailscale_device_id: "device-123",
+        agent_vault_operator_url:
+          "https://agent-vault-test.tail123.ts.net",
       },
     });
     const client = createGatewayTailscaleClient({
@@ -78,6 +80,7 @@ describe("server/onboarding/gateway-tailscale-client", () => {
       servePort: 443,
       funnelPort: 8443,
       enableSshBridge: true,
+      agentVaultServiceName: "svc:agent-vault-test",
     });
 
     expect(result).toEqual({
@@ -86,6 +89,8 @@ describe("server/onboarding/gateway-tailscale-client", () => {
       dnsName: "alpha.tail123.ts.net",
       deviceId: "device-123",
       tailnet: "",
+      agentVaultOperatorUrl:
+        "https://agent-vault-test.tail123.ts.net",
     });
     expect(spawned.calls[0].command).toBe("ssh");
     expect(spawned.calls[0].args).toEqual(
@@ -114,6 +119,7 @@ describe("server/onboarding/gateway-tailscale-client", () => {
         serve_port: 443,
         funnel_port: 8443,
         enable_ssh_bridge: true,
+        agent_vault_service_name: "svc:agent-vault-test",
       },
     ]);
 
@@ -232,6 +238,63 @@ describe("server/onboarding/gateway-tailscale-client", () => {
 
     expect(fs.existsSync(credentials.identityFile)).toBe(false);
     expect(fs.existsSync(credentials.knownHostsFile)).toBe(true);
+    fs.rmSync(credentials.root, { recursive: true, force: true });
+  });
+
+  it("claims and acknowledges the Agent Vault runtime token over stdin", async () => {
+    const credentials = createTempCredentials();
+    const claimSpawn = createSpawn({
+      response: {
+        schema_version: 1,
+        operation: "agent_vault_runtime_token",
+        ok: true,
+        configured: true,
+        sealed: true,
+        runtime_token_ready: true,
+        runtime_token: "av_runtime_token_123456789",
+      },
+    });
+    const claimClient = createGatewayTailscaleClient({
+      host: "10.0.0.2",
+      identityFile: credentials.identityFile,
+      knownHostsFile: credentials.knownHostsFile,
+      spawnImpl: claimSpawn.spawnImpl,
+    });
+
+    await expect(claimClient.claimAgentVaultRuntimeToken()).resolves.toEqual({
+      ready: true,
+      token: "av_runtime_token_123456789",
+    });
+    expect(claimSpawn.requests[0]).toEqual({
+      schema_version: 1,
+      operation: "agent_vault_runtime_token",
+    });
+
+    const ackSpawn = createSpawn({
+      response: {
+        schema_version: 1,
+        operation: "agent_vault_runtime_token_ack",
+        ok: true,
+        configured: true,
+        sealed: true,
+        acknowledged: true,
+      },
+    });
+    const ackClient = createGatewayTailscaleClient({
+      host: "10.0.0.2",
+      identityFile: credentials.identityFile,
+      knownHostsFile: credentials.knownHostsFile,
+      spawnImpl: ackSpawn.spawnImpl,
+    });
+    const tokenSha256 = "a".repeat(64);
+    await expect(
+      ackClient.acknowledgeAgentVaultRuntimeToken({ tokenSha256 }),
+    ).resolves.toEqual({ acknowledged: true });
+    expect(ackSpawn.requests[0]).toEqual({
+      schema_version: 1,
+      operation: "agent_vault_runtime_token_ack",
+      token_sha256: tokenSha256,
+    });
     fs.rmSync(credentials.root, { recursive: true, force: true });
   });
 });

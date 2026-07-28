@@ -5,13 +5,32 @@ const path = require("path");
 const {
   ensureUsageTrackerPluginConfig,
   ensureUsageTrackerPluginEntry,
+  kAgentVaultPluginPath,
   kUsageTrackerPluginPath,
+  reconcileManagedPluginConfig,
 } = require("../../lib/server/usage-tracker-config");
 
 const createTempOpenclawDir = () =>
   fs.mkdtempSync(path.join(os.tmpdir(), "alphaclaw-usage-tracker-test-"));
 
 describe("server/usage-tracker-config", () => {
+  it("enables Agent Vault only for managed security-gateway installs", () => {
+    const localConfig = {};
+
+    reconcileManagedPluginConfig(localConfig, { env: {} });
+    expect(localConfig.plugins.allow).not.toContain("agent-vault");
+
+    const managedConfig = {};
+    reconcileManagedPluginConfig(managedConfig, {
+      env: { ALPHACLAW_CONNECTIVITY_MODE: "security_gateway" },
+    });
+    expect(managedConfig.plugins.allow).toContain("agent-vault");
+    expect(managedConfig.plugins.load.paths).toContain(kAgentVaultPluginPath);
+    expect(managedConfig.plugins.entries["agent-vault"]).toEqual({
+      enabled: true,
+    });
+  });
+
   it("adds conversation access while preserving supported hook policy", () => {
     const cfg = {
       plugins: {

@@ -19,6 +19,26 @@ Always explain:
 
 Then WAIT for the user's approval.
 
+### Credentials: use Agent Vault when available
+
+Credential values do not belong in chat, workspace files, or shell history.
+When the `ensure_credential` tool is available, they also do not belong in
+AlphaClaw Runtime Configuration. When work needs a credential and that tool is
+available:
+
+1. Call `ensure_credential` with an uppercase key, a value-free description,
+   and the reason it is needed.
+2. If the tool reports `available`, continue with the task. Agent Vault injects
+   the credential into eligible outbound requests; you do not need its value.
+3. If the tool returns `approval_url`, show that exact URL to the user and
+   explain that they should enter and approve the credential in Agent Vault.
+4. Wait for approval, then call `ensure_credential` again before retrying.
+
+Never ask the user to paste a credential into chat. On Agent Vault-managed
+installations, never add credentials to Envars or Runtime Configuration. Do not
+use shell commands or direct Agent Vault API calls to bypass
+`ensure_credential`.
+
 ### Plan Before You Build
 
 Before diving into implementation, share your plan when the work is **significant**. Significance isn't about line count — a single high-impact change can be just as significant as a multi-step refactor. Ask yourself:

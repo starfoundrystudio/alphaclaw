@@ -512,7 +512,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
     expect(fetchImpl.mock.calls.some(([url]) => String(url).endsWith("/keys"))).toBe(false);
   });
 
-  it("configures, records, writes back, seals, and cleans up a security gateway", async () => {
+  it("configures, records, writes back, and seals a security gateway", async () => {
     const writes = [];
     const fetchImpl = vi.fn(async (url, opts = {}) => {
       if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
@@ -605,9 +605,10 @@ describe("server/onboarding/tailscale-finalizer", () => {
       servePort: 443,
       funnelPort: 8443,
       enableSshBridge: true,
+      agentVaultServiceName: expect.stringMatching(/^svc:agent-vault-/),
     });
     expect(gatewayTailscaleClient.seal).toHaveBeenCalledOnce();
-    expect(gatewayTailscaleClient.cleanupIdentity).toHaveBeenCalledOnce();
+    expect(gatewayTailscaleClient.cleanupIdentity).not.toHaveBeenCalled();
     expect(writes[0]).toEqual(
       expect.arrayContaining([
         {
@@ -672,6 +673,8 @@ describe("server/onboarding/tailscale-finalizer", () => {
           tailscale_dns: "alphaclaw-gateway.tail123.ts.net",
           tailscale_device_id: "device-gateway-123",
           tailscale_host_role: "security_gateway",
+          agent_vault_operator_url:
+            "https://agent-vault-oc-inst-gateway-f7f907ce57.tail123.ts.net",
         }),
       }),
     );
@@ -946,7 +949,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
     expect(gatewayTailscaleClient.status).not.toHaveBeenCalled();
     expect(gatewayTailscaleClient.configure).not.toHaveBeenCalled();
     expect(gatewayTailscaleClient.seal).toHaveBeenCalledOnce();
-    expect(gatewayTailscaleClient.cleanupIdentity).toHaveBeenCalledOnce();
+    expect(gatewayTailscaleClient.cleanupIdentity).not.toHaveBeenCalled();
     expect(
       fetchImpl.mock.calls.some(([url]) => String(url).endsWith("/keys")),
     ).toBe(false);
@@ -1040,7 +1043,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
       ]),
     );
     expect(gatewayTailscaleClient.seal).not.toHaveBeenCalled();
-    expect(gatewayTailscaleClient.cleanupIdentity).toHaveBeenCalledOnce();
+    expect(gatewayTailscaleClient.cleanupIdentity).not.toHaveBeenCalled();
   });
 
   it("does not persist a gateway outside the requested tailnet", async () => {
