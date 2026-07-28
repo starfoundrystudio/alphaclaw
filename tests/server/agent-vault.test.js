@@ -96,7 +96,38 @@ describe("server/agent-vault", () => {
         return Response.json({
           vault: "default",
           services: [],
-          available_credentials: ["STRIPE_API_KEY"],
+          available_credentials: [
+            "STRIPE_API_KEY",
+            {
+              key: "OPENAI_API_KEY",
+              type: "static",
+              created_at: "2026-07-20T12:30:00Z",
+              updated_at: "2026-07-21T14:45:00Z",
+            },
+          ],
+        });
+      }
+      if (String(url).endsWith("/v1/proposals/7")) {
+        return Response.json({
+          id: 7,
+          status: "pending",
+          services: [
+            {
+              action: "set",
+              name: "github",
+              host: "api.github.com",
+              auth: { type: "bearer", token: "GITHUB_TOKEN" },
+            },
+          ],
+          credentials: [
+            {
+              action: "set",
+              key: "GITHUB_TOKEN",
+              description: "GitHub API token",
+            },
+          ],
+          message: "Publish the requested release",
+          created_at: "2026-07-27T20:15:00Z",
         });
       }
       if (String(url).endsWith("/v1/proposals")) {
@@ -167,33 +198,231 @@ describe("server/agent-vault", () => {
       ).proxy.enabled,
     ).toBe(true);
 
+    await expect(service.listCredentials()).resolves.toEqual({
+      vault: "default",
+      credentials: ["OPENAI_API_KEY", "STRIPE_API_KEY"],
+      credentialDetails: [
+        {
+          key: "OPENAI_API_KEY",
+          vault: "default",
+          status: "available",
+          type: "static",
+          createdAt: "2026-07-20T12:30:00.000Z",
+          updatedAt: "2026-07-21T14:45:00.000Z",
+        },
+        {
+          key: "STRIPE_API_KEY",
+          vault: "default",
+          status: "available",
+          type: "",
+          createdAt: "",
+          updatedAt: "",
+        },
+      ],
+      services: [],
+    });
+
     await expect(
-      service.ensureCredential({
-        key: "github_token",
-        description: "GitHub API token",
+      service.ensureServiceAccess({
+        service: {
+          name: "github",
+          host: "api.github.com",
+          auth: { type: "bearer", token: "GITHUB_TOKEN" },
+        },
+        credentials: [
+          {
+            key: "github_token",
+            description: "GitHub API token",
+          },
+        ],
         reason: "Publish the requested release",
       }),
     ).resolves.toMatchObject({
       status: "proposal_created",
-      key: "GITHUB_TOKEN",
+      service: {
+        name: "github",
+        host: "api.github.com",
+      },
+      credentialKeys: ["GITHUB_TOKEN"],
       proposal: {
         id: 7,
         approvalUrl:
           "https://www.teamyou.com/openclaw/agent-vault/inst_test123?return_to=%2Fapprove%2F7%3Ftoken%3Donce",
+        service: {
+          name: "github",
+          host: "api.github.com",
+          authType: "bearer",
+        },
+        credentialKeys: ["GITHUB_TOKEN"],
+        key: "GITHUB_TOKEN",
+        description: "GitHub API token",
+        reason: "Publish the requested release",
       },
     });
     const proposalRequest = requests.find(({ url }) =>
       url.endsWith("/v1/proposals"),
     );
     const proposalBody = JSON.parse(proposalRequest.options.body);
+    expect(proposalBody.services).toEqual([
+      {
+        action: "set",
+        name: "github",
+        host: "api.github.com",
+        auth: { type: "bearer", token: "GITHUB_TOKEN" },
+      },
+    ]);
     expect(proposalBody.credentials).toEqual([
       {
         action: "set",
         key: "GITHUB_TOKEN",
+        type: "static",
         description: "GitHub API token",
       },
     ]);
     expect(proposalBody.credentials[0]).not.toHaveProperty("value");
+
+    await expect(service.getProposal(7)).resolves.toMatchObject({
+      id: 7,
+      status: "pending",
+      service: {
+        name: "github",
+        host: "api.github.com",
+        authType: "bearer",
+      },
+      key: "GITHUB_TOKEN",
+      description: "GitHub API token",
+      reason: "Publish the requested release",
+      createdAt: "2026-07-27T20:15:00.000Z",
+    });
+  });
+
+  it("plans only the missing pieces of an atomic service access request", () => {
+    const {
+      normalizeAgentVaultAccessRequest,
+      planAgentVaultAccess,
+    } = require("../../lib/agent-vault-access");
+    const access = normalizeAgentVaultAccessRequest({
+      service: {
+        name: "openweathermap",
+        host: "api.openweathermap.org",
+        auth: { type: "passthrough" },
+        substitutions: [
+          {
+            key: "OPENWEATHER_API_KEY",
+            in: ["query"],
+          },
+        ],
+      },
+      credentials: [
+        {
+          key: "OPENWEATHER_API_KEY",
+          description: "OpenWeather API key",
+        },
+      ],
+      reason: "Fetch current weather",
+      requestInstructions:
+        "Set the appid query parameter to __openweather_api_key__.",
+    });
+
+    expect(access.service.substitutions).toEqual([
+      {
+        key: "OPENWEATHER_API_KEY",
+        placeholder: "__openweather_api_key__",
+        in: ["query"],
+      },
+    ]);
+    expect(
+      planAgentVaultAccess(access, {
+        services: [],
+        available_credentials: ["OPENWEATHER_API_KEY"],
+      }),
+    ).toMatchObject({
+      status: "proposal_required",
+      serviceAvailable: false,
+      missingCredentialKeys: [],
+      proposal: {
+        services: [
+          {
+            action: "set",
+            name: "openweathermap",
+            host: "api.openweathermap.org",
+          },
+        ],
+        credentials: [],
+      },
+    });
+    expect(
+      planAgentVaultAccess(access, {
+        services: [
+          {
+            name: "openweathermap",
+            host: "api.openweathermap.org",
+          },
+        ],
+        available_credentials: ["OPENWEATHER_API_KEY"],
+      }),
+    ).toMatchObject({
+      status: "available",
+      serviceAvailable: true,
+      missingCredentialKeys: [],
+    });
+  });
+
+  it("rejects secret values and incomplete service credential references", () => {
+    const { containsCredentialValue } = require(
+      "../../lib/server/routes/agent-vault"
+    );
+    const {
+      normalizeAgentVaultAccessRequest,
+      planAgentVaultAccess,
+    } = require("../../lib/agent-vault-access");
+
+    expect(
+      containsCredentialValue({
+        credentials: [
+          {
+            key: "EXAMPLE_API_KEY",
+            value: "must-not-enter-alpha-claw",
+          },
+        ],
+      }),
+    ).toBe(true);
+    expect(
+      containsCredentialValue({
+        service: {
+          auth: { type: "bearer", token: "EXAMPLE_API_KEY" },
+        },
+      }),
+    ).toBe(false);
+    expect(() =>
+      normalizeAgentVaultAccessRequest({
+        service: {
+          name: "example--api",
+          host: "api.example.com",
+          auth: { type: "passthrough" },
+        },
+        credentials: [],
+        reason: "Call the example API",
+      }),
+    ).toThrow("Service name must be a 3-64 character lowercase slug");
+
+    const access = normalizeAgentVaultAccessRequest({
+      service: {
+        name: "example-api",
+        host: "api.example.com",
+        auth: { type: "bearer", token: "EXAMPLE_API_KEY" },
+      },
+      credentials: [],
+      reason: "Call the example API",
+    });
+    expect(() =>
+      planAgentVaultAccess(access, {
+        services: [],
+        available_credentials: [],
+      }),
+    ).toThrow(
+      "Credential EXAMPLE_API_KEY is not available and needs a credential slot",
+    );
   });
 
   it("keeps plugin control-plane calls off the managed HTTP proxy", async () => {
@@ -206,19 +435,61 @@ describe("server/agent-vault", () => {
     };
     const received = [];
     const server = http.createServer((req, res) => {
-      received.push({
-        url: req.url,
-        authorization: req.headers.authorization,
-        vault: req.headers["x-vault"],
+      const chunks = [];
+      req.on("data", (chunk) => chunks.push(chunk));
+      req.on("end", () => {
+        received.push({
+          url: req.url,
+          authorization: req.headers.authorization,
+          vault: req.headers["x-vault"],
+          body: Buffer.concat(chunks).toString("utf8"),
+        });
+        let responded = false;
+        const respondToHalfClose = () => {
+          if (responded) return;
+          responded = true;
+          res.writeHead(200, {
+            "Content-Length": "0",
+            Connection: "close",
+          });
+          res.end();
+        };
+        req.socket.once("end", respondToHalfClose);
+
+        // Model the SSH forward used in production: a client-side half-close
+        // can terminate the forwarded response before Agent Vault's JSON body
+        // reaches the plugin.
+        setTimeout(() => {
+          if (responded) return;
+          responded = true;
+          req.socket.off("end", respondToHalfClose);
+          res.setHeader("Content-Type", "application/json");
+          if (req.url === "/v1/proposals") {
+            res.statusCode = 201;
+            res.end(
+              JSON.stringify({
+                id: 12,
+                status: "pending",
+                approval_url:
+                  "https://agent-vault-test.tail123.ts.net/approve/12?token=once",
+              }),
+            );
+            return;
+          }
+          res.end(
+            JSON.stringify({
+              vault: "default",
+              services: [
+                {
+                  name: "github",
+                  host: "api.github.com",
+                },
+              ],
+              available_credentials: [{ key: "GITHUB_TOKEN", type: "static" }],
+            }),
+          );
+        }, 10);
       });
-      res.setHeader("Content-Type", "application/json");
-      res.end(
-        JSON.stringify({
-          vault: "default",
-          services: [],
-          available_credentials: ["GITHUB_TOKEN"],
-        }),
-      );
     });
     await new Promise((resolve, reject) => {
       server.once("error", reject);
@@ -247,22 +518,122 @@ describe("server/agent-vault", () => {
       });
 
       const result = await tool.execute("call-1", {
-        key: "GITHUB_TOKEN",
-        description: "GitHub API credential",
+        service: {
+          name: "github",
+          host: "api.github.com",
+          auth: { type: "bearer", token: "GITHUB_TOKEN" },
+        },
+        credentials: [
+          {
+            key: "GITHUB_TOKEN",
+            description: "GitHub API credential",
+          },
+        ],
         reason: "Publish a release",
       });
 
       expect(JSON.parse(result.content[0].text)).toEqual({
         status: "available",
-        key: "GITHUB_TOKEN",
+        service: {
+          name: "github",
+          host: "api.github.com",
+        },
+        credential_keys: ["GITHUB_TOKEN"],
+        request_instructions: [
+          "Do not supply an Authorization credential when calling api.github.com; Agent Vault injects it at the proxy.",
+        ],
       });
       expect(received).toEqual([
         {
           url: "/discover",
           authorization: "Bearer av_agt_runtime_token_123456789",
           vault: "default",
+          body: "",
         },
       ]);
+
+      const proposalResult = await tool.execute("call-2", {
+        service: {
+          name: "openweathermap",
+          host: "api.openweathermap.org",
+          auth: { type: "passthrough" },
+          substitutions: [
+            {
+              key: "OPENWEATHERMAP_API_KEY",
+              in: ["query"],
+            },
+          ],
+        },
+        credentials: [
+          {
+            key: "OPENWEATHERMAP_API_KEY",
+            description: "OpenWeatherMap API key",
+          },
+        ],
+        reason: "Fetch the current weather directly",
+        requestInstructions:
+          "Set the appid query parameter to __openweathermap_api_key__.",
+      });
+
+      expect(JSON.parse(proposalResult.content[0].text)).toEqual({
+        status: "proposal_created",
+        service: {
+          name: "openweathermap",
+          host: "api.openweathermap.org",
+        },
+        credential_keys: ["OPENWEATHERMAP_API_KEY"],
+        request_instructions: [
+          "Set the appid query parameter to __openweathermap_api_key__.",
+          "Use the exact placeholder __openweathermap_api_key__ wherever OPENWEATHERMAP_API_KEY belongs in the query portion of requests to api.openweathermap.org.",
+        ],
+        proposed_changes: {
+          service: true,
+          credentials: ["OPENWEATHERMAP_API_KEY"],
+        },
+        proposal_id: 12,
+        approval_url:
+          "https://www.teamyou.com/openclaw/agent-vault/inst_test123?return_to=%2Fapprove%2F12%3Ftoken%3Donce",
+        instruction:
+          "Return approval_url to the user. Do not ask the user to send credential values in chat. After approval, call ensure_service_access again, then follow request_instructions exactly.",
+      });
+      expect(proposalResult).not.toHaveProperty("isError");
+      expect(received).toHaveLength(3);
+      expect(received[1]).toMatchObject({
+        url: "/discover",
+        body: "",
+      });
+      expect(received[2]).toMatchObject({
+        url: "/v1/proposals",
+        authorization: "Bearer av_agt_runtime_token_123456789",
+        vault: "default",
+      });
+      expect(JSON.parse(received[2].body)).toEqual({
+        services: [
+          {
+            action: "set",
+            name: "openweathermap",
+            host: "api.openweathermap.org",
+            auth: { type: "passthrough" },
+            substitutions: [
+              {
+                key: "OPENWEATHERMAP_API_KEY",
+                placeholder: "__openweathermap_api_key__",
+                in: ["query"],
+              },
+            ],
+          },
+        ],
+        credentials: [
+          {
+            action: "set",
+            key: "OPENWEATHERMAP_API_KEY",
+            type: "static",
+            description: "OpenWeatherMap API key",
+          },
+        ],
+        message: "Fetch the current weather directly",
+        user_message: "Fetch the current weather directly",
+      });
       expect(global.fetch).not.toHaveBeenCalled();
     } finally {
       await new Promise((resolve) => server.close(resolve));

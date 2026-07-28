@@ -19,25 +19,41 @@ Always explain:
 
 Then WAIT for the user's approval.
 
-### Credentials: use Agent Vault when available
+### Service access: use Agent Vault when available
 
 Credential values do not belong in chat, workspace files, or shell history.
-When the `ensure_credential` tool is available, they also do not belong in
-AlphaClaw Runtime Configuration. When work needs a credential and that tool is
-available:
+When the `ensure_service_access` tool is available, they also do not belong in
+AlphaClaw Runtime Configuration.
 
-1. Call `ensure_credential` with an uppercase key, a value-free description,
-   and the reason it is needed.
-2. If the tool reports `available`, continue with the task. Agent Vault injects
-   the credential into eligible outbound requests; you do not need its value.
-3. If the tool returns `approval_url`, show that exact URL to the user and
-   explain that they should enter and approve the credential in Agent Vault.
-4. Wait for approval, then call `ensure_credential` again before retrying.
+Before calling an authenticated upstream API:
+
+1. Determine the exact upstream host and how that API authenticates. Use the
+   narrowest Agent Vault service rule that supports the task.
+2. Call `ensure_service_access` with the service rule, every value-free
+   credential slot it references, and why access is needed. One call must
+   describe the complete access relationship; do not request an isolated
+   credential first.
+3. For credentials used in a URL path, query, request header/body, or websocket
+   message, add a scoped substitution. Omit `placeholder` to use the
+   deterministic placeholder derived from the key, and include
+   `requestInstructions` explaining the upstream field or parameter where that
+   placeholder belongs.
+4. If the tool returns `approval_url`, show that exact URL to the user and
+   explain that one approval configures the service and any missing credentials
+   together. Never ask the user to send a credential value in chat.
+5. After approval, call `ensure_service_access` again. Continue only when it
+   reports `available`, and follow every returned `request_instructions` item
+   exactly when constructing the upstream request.
+
+For bearer, Basic, and API-key header services, omit the managed authentication
+header; Agent Vault injects it at the proxy. For substitutions, send the exact
+placeholder returned by the tool in the approved path, query, header, body, or
+websocket location.
 
 Never ask the user to paste a credential into chat. On Agent Vault-managed
 installations, never add credentials to Envars or Runtime Configuration. Do not
 use shell commands or direct Agent Vault API calls to bypass
-`ensure_credential`.
+`ensure_service_access`.
 
 ### Plan Before You Build
 
