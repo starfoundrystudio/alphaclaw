@@ -15,6 +15,18 @@ const writeJson = (filePath, value) => {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 };
 
+const installTeamyouMemoryPlugin = ({ openclawDir }) => {
+  writeJson(
+    path.join(
+      openclawDir,
+      "extensions",
+      "openclaw-teamyou-memory",
+      "openclaw.plugin.json",
+    ),
+    { id: "openclaw-teamyou-memory" },
+  );
+};
+
 describe("server/teamyou-memory-activation", () => {
   it("treats a workspace with BOOTSTRAP.md as pending", () => {
     const root = createTempRoot();
@@ -298,6 +310,7 @@ describe("server/teamyou-memory-activation", () => {
       agents: { defaults: { workspace: workspaceDir } },
       gateway: { mode: "local" },
     });
+    installTeamyouMemoryPlugin({ openclawDir });
     const restartGateway = vi.fn(async () => {});
 
     const result = await activateTeamyouMemoryIfBootstrapComplete({
@@ -366,6 +379,7 @@ describe("server/teamyou-memory-activation", () => {
       agents: { defaults: { workspace: workspaceDir } },
       gateway: { mode: "local" },
     });
+    installTeamyouMemoryPlugin({ openclawDir });
     const before = fs.readFileSync(configPath, "utf8");
     const restartGateway = vi.fn(async () => {});
 
@@ -408,6 +422,7 @@ describe("server/teamyou-memory-activation", () => {
       agents: { defaults: { workspace: workspaceDir } },
       gateway: { mode: "local" },
     });
+    installTeamyouMemoryPlugin({ openclawDir });
     const restartGateway = vi.fn(async () => {});
 
     const result = await activateTeamyouMemoryIfBootstrapComplete({
@@ -469,6 +484,7 @@ describe("server/teamyou-memory-activation", () => {
         agents: { defaults: { workspace: workspaceDir } },
         gateway: { mode: "local" },
       });
+      installTeamyouMemoryPlugin({ openclawDir });
       await vi.advanceTimersByTimeAsync(1000);
       expect(restartGateway).not.toHaveBeenCalled();
 
@@ -499,5 +515,72 @@ describe("server/teamyou-memory-activation", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("repairs false-positive activation while the TeamYou memory plugin is missing", async () => {
+    const root = createTempRoot();
+    const openclawDir = path.join(root, "openclaw");
+    const workspaceDir = path.join(root, "workspace");
+    writeJson(path.join(workspaceDir, "openclaw-workspace-state.json"), {
+      version: 1,
+      setupCompletedAt: "2026-07-29T20:00:00.000Z",
+    });
+    writeJson(path.join(openclawDir, "openclaw.json"), {
+      plugins: {
+        allow: ["openclaw-teamyou-memory", "active-memory"],
+        entries: {
+          "active-memory": { enabled: true, config: { enabled: true } },
+          "openclaw-teamyou-memory": {
+            enabled: true,
+            config: { apiKey: "${TEAMYOU_API_KEY}" },
+          },
+        },
+        slots: { memory: "openclaw-teamyou-memory" },
+      },
+      skills: { entries: { teamyou: { enabled: true } } },
+      agents: { defaults: { workspace: workspaceDir } },
+      gateway: { mode: "local" },
+    });
+    writeJson(
+      path.join(openclawDir, ".alphaclaw", "teamyou-memory-activated.json"),
+      { activated: true },
+    );
+    const restartGateway = vi.fn(async () => {});
+    const logger = { log: vi.fn(), warn: vi.fn() };
+
+    const result = await activateTeamyouMemoryIfBootstrapComplete({
+      fsModule: fs,
+      openclawDir,
+      workspaceDir,
+      restartGateway,
+      logger,
+    });
+
+    const cfg = JSON.parse(
+      fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"),
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      activated: false,
+      repaired: true,
+      reason: "teamyou_memory_plugin_missing",
+      teamyouPluginEnabled: false,
+      activeMemoryEnabled: false,
+      teamyouSkillEnabled: false,
+      memorySlot: "memory-core",
+    });
+    expect(cfg.plugins.entries["openclaw-teamyou-memory"].enabled).toBe(false);
+    expect(cfg.plugins.entries["active-memory"].config.enabled).toBe(false);
+    expect(cfg.skills.entries.teamyou.enabled).toBe(false);
+    expect(cfg.plugins.slots.memory).toBe("memory-core");
+    expect(
+      fs.existsSync(
+        path.join(openclawDir, ".alphaclaw", "teamyou-memory-activated.json"),
+      ),
+    ).toBe(false);
+    expect(restartGateway).toHaveBeenCalledTimes(1);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining("is not installed"),
+    );
   });
 });

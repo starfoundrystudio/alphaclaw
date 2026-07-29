@@ -31,6 +31,10 @@ const {
   runOpenclawDoctorWithOauthGuard,
 } = require("../lib/cli/openclaw-doctor-oauth-guard");
 const {
+  buildOpenclawRuntimeEnv,
+  runOpenclawRuntimeCommand,
+} = require("../lib/cli/openclaw-runtime-command");
+const {
   finalizeResidualCodexSidecars,
   inspectOpenclawStartupState,
 } = require("../lib/cli/openclaw-startup-state-repair");
@@ -100,7 +104,16 @@ if (
   process.exit(0);
 }
 
-if (!command || command === "help" || args.includes("--help")) {
+const isOpenclawPassthroughCommand =
+  command === "openclaw-runtime" || command === "openclaw-doctor-guard";
+if (
+  !command ||
+  command === "help" ||
+  (!isOpenclawPassthroughCommand && commandArgs.includes("--help")) ||
+  (isOpenclawPassthroughCommand &&
+    commandArgs.length === 2 &&
+    commandArgs[1] === "--help")
+) {
   console.log(`
 alphaclaw v${pkg.version}
 
@@ -112,6 +125,7 @@ Commands:
   migrate   Inspect or apply AlphaClaw-owned upgrade migrations
   finalize-openclaw-startup-state  Archive residual legacy state after doctor
   verify-openclaw-startup-state  Fail if doctor left known startup blockers
+  openclaw-runtime  Run a command with the managed OpenClaw runtime environment
   openclaw-doctor-guard  Run an OpenClaw command with OAuth-refresh shielding
   reconcile-openclaw-plugins  Install/update AlphaClaw-managed OpenClaw plugins
   telegram topic add  Add/update Telegram topic mapping by thread ID
@@ -135,6 +149,9 @@ migrate options:
   --json                   Print machine-readable JSON
   --force-retry <id|all>   Retry a migration after repeated failures
 
+openclaw-runtime options:
+  -- <command...>           Command to run with Agent Vault and OpenClaw runtime environment
+
 openclaw-doctor-guard options:
   -- <command...>           Command to run while OAuth auth profiles are shielded
 
@@ -152,6 +169,7 @@ Examples:
   alphaclaw migrate --fix
   alphaclaw finalize-openclaw-startup-state
   alphaclaw verify-openclaw-startup-state
+  alphaclaw openclaw-runtime -- openclaw plugins list
   alphaclaw openclaw-doctor-guard -- openclaw doctor --non-interactive --fix
   alphaclaw reconcile-openclaw-plugins
   alphaclaw telegram topic add --thread 12 --name "Testing"
@@ -190,6 +208,17 @@ if (portFlag) {
 // ---------------------------------------------------------------------------
 
 const openclawDir = path.join(rootDir, ".openclaw");
+const buildCliOpenclawBaseEnv = () => ({
+  ...process.env,
+  OPENCLAW_HOME: rootDir,
+  OPENCLAW_CONFIG_PATH: path.join(openclawDir, "openclaw.json"),
+  OPENCLAW_STATE_DIR: openclawDir,
+  XDG_CONFIG_HOME: openclawDir,
+});
+const buildCliOpenclawRuntimeEnv = () =>
+  buildOpenclawRuntimeEnv({
+    env: buildCliOpenclawBaseEnv(),
+  });
 const onboardingMarkerPath = path.join(rootDir, "onboarded.json");
 const shouldInitializeManagedRuntime = shouldInitializeManagedOpenclawRuntime({
   fs,
@@ -543,7 +572,7 @@ const runOpenclawDoctorGuard = () => {
       rootDir,
       openclawDir,
       commandArgs: guardedCommandArgs,
-      env: process.env,
+      env: buildCliOpenclawRuntimeEnv(),
       cwd: process.cwd(),
       stdio: "inherit",
       logger: console,
@@ -561,6 +590,36 @@ if (command === "openclaw-doctor-guard") {
   process.exit(runOpenclawDoctorGuard());
 }
 
+const runManagedOpenclawRuntimeCommand = () => {
+  const separatorIndex = commandArgs.indexOf("--");
+  const runtimeCommandArgs =
+    separatorIndex >= 0 ? commandArgs.slice(separatorIndex + 1) : commandArgs.slice(1);
+  if (runtimeCommandArgs.length === 0) {
+    console.error(
+      "[alphaclaw] Missing command for openclaw-runtime. Use: alphaclaw openclaw-runtime -- openclaw plugins list",
+    );
+    return 1;
+  }
+  try {
+    return runOpenclawRuntimeCommand({
+      commandArgs: runtimeCommandArgs,
+      env: buildCliOpenclawBaseEnv(),
+      cwd: process.cwd(),
+      stdio: "inherit",
+      logger: console,
+    });
+  } catch (e) {
+    console.error(
+      `[alphaclaw] Managed OpenClaw runtime command failed: ${e.message || e}`,
+    );
+    return 1;
+  }
+};
+
+if (command === "openclaw-runtime") {
+  process.exit(runManagedOpenclawRuntimeCommand());
+}
+
 const runReconcileOpenclawPlugins = () => {
   try {
     reconcileOpenclawPlugins({
@@ -569,7 +628,7 @@ const runReconcileOpenclawPlugins = () => {
       fsModule: fs,
       execSyncImpl: execSync,
       logger: console,
-      env: process.env,
+      env: buildCliOpenclawRuntimeEnv(),
     });
     return 0;
   } catch (e) {
