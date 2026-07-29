@@ -62,6 +62,7 @@ describe("server/agent-vault", () => {
     expect(env.AGENT_VAULT_OPERATOR_URL).toBe(
       "https://agent-vault-test.tail123.ts.net",
     );
+    expect(env.TEAMYOU_API_KEY).toBe("__agent_vault_teamyou_api_key__");
     expect(fs.statSync(kAgentVaultRuntimePath).mode & 0o077).toBe(0);
     expect(fs.statSync(kAgentVaultCaPath).mode & 0o077).toBe(0);
   });

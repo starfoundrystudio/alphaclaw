@@ -53,6 +53,7 @@ describe("bin/alphaclaw openclaw-runtime", () => {
   args: process.argv.slice(2),
   proxy: process.env.OPENCLAW_PROXY_URL,
   ca: process.env.SSL_CERT_FILE,
+  teamyouApiKey: process.env.TEAMYOU_API_KEY,
 }) + "\\n");\n`,
     );
 
@@ -78,6 +79,7 @@ describe("bin/alphaclaw openclaw-runtime", () => {
       args: ["--help"],
       proxy: "http://av_abcdefghijklmnop:default@127.0.0.1:14322/",
       ca: caPath,
+      teamyouApiKey: "__agent_vault_teamyou_api_key__",
     });
 
     const guardedOutput = execFileSync(
@@ -101,6 +103,7 @@ describe("bin/alphaclaw openclaw-runtime", () => {
       args: ["--help"],
       proxy: "http://av_abcdefghijklmnop:default@127.0.0.1:14322/",
       ca: caPath,
+      teamyouApiKey: "__agent_vault_teamyou_api_key__",
     });
   });
 });
