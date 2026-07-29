@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-29T00:28:00.591Z",
+  "generatedAt": "2026-07-29T20:34:39.042Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -6332,7 +6332,7 @@
             {
               "key": "vercel-ai-gateway/minimax/minimax-m2.7",
               "provider": "vercel-ai-gateway",
-              "label": "MiniMax M2.7",
+              "label": "Minimax M2.7",
               "accessModes": [
                 "gateway"
               ],
@@ -6693,6 +6693,15 @@
               "key": "vercel-ai-gateway/alibaba/qwen3.6-plus",
               "provider": "vercel-ai-gateway",
               "label": "Qwen 3.6 Plus",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/alibaba/qwen3.7-flash",
+              "provider": "vercel-ai-gateway",
+              "label": "Qwen 3.7 Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -12559,7 +12568,7 @@
     {
       "key": "vercel-ai-gateway/minimax/minimax-m2.7",
       "provider": "vercel-ai-gateway",
-      "label": "MiniMax M2.7",
+      "label": "Minimax M2.7",
       "accessModes": [
         "gateway"
       ],
@@ -12920,6 +12929,15 @@
       "key": "vercel-ai-gateway/alibaba/qwen3.6-plus",
       "provider": "vercel-ai-gateway",
       "label": "Qwen 3.6 Plus",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/alibaba/qwen3.7-flash",
+      "provider": "vercel-ai-gateway",
+      "label": "Qwen 3.7 Flash",
       "accessModes": [
         "gateway"
       ],
