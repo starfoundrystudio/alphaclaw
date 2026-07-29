@@ -89,6 +89,7 @@ const createBaseDeps = ({
         dnsName: "alphaclaw.tail123.ts.net",
       })),
     },
+    prepareAgentVaultRuntime: vi.fn(async () => ({ ready: true })),
     runOnboardedBootSequence: vi.fn(),
   };
 };
@@ -379,6 +380,62 @@ describe("server/routes/onboarding", () => {
       expect.any(String),
     );
     expect(deps.ensureGatewayProxyConfig).not.toHaveBeenCalled();
+    expect(deps.runOnboardedBootSequence).not.toHaveBeenCalled();
+  });
+
+  it("prepares the Agent Vault runtime before completing security-gateway onboarding", async () => {
+    const deps = createBaseDeps();
+    deps.tailscaleFinalizer.finalizeTailscaleOnboarding.mockResolvedValueOnce({
+      setupUrl: "https://alphaclaw.tail123.ts.net",
+      publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
+      dnsName: "alphaclaw.tail123.ts.net",
+      agentVaultOperatorUrl:
+        "https://agent-vault-inst-test.tail123.ts.net",
+    });
+    mockGithubVerifyAndCreate();
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send(makeValidBody());
+
+    expect(res.status).toBe(200);
+    expect(deps.prepareAgentVaultRuntime).toHaveBeenCalledOnce();
+    const markerWrite = deps.fs.writeFileSync.mock.calls.findIndex(
+      ([targetPath]) => targetPath === "/tmp/alphaclaw/onboarded.json",
+    );
+    expect(markerWrite).toBeGreaterThan(-1);
+    expect(
+      deps.prepareAgentVaultRuntime.mock.invocationCallOrder[0],
+    ).toBeLessThan(
+      deps.fs.writeFileSync.mock.invocationCallOrder[markerWrite],
+    );
+  });
+
+  it("does not complete onboarding when automatic Agent Vault initialization is pending", async () => {
+    const deps = createBaseDeps();
+    deps.tailscaleFinalizer.finalizeTailscaleOnboarding.mockResolvedValueOnce({
+      setupUrl: "https://alphaclaw.tail123.ts.net",
+      publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
+      dnsName: "alphaclaw.tail123.ts.net",
+      agentVaultOperatorUrl:
+        "https://agent-vault-inst-test.tail123.ts.net",
+    });
+    deps.prepareAgentVaultRuntime.mockResolvedValueOnce({
+      ready: false,
+      reason: "owner_pending",
+    });
+    mockGithubVerifyAndCreate();
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send(makeValidBody());
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe(
+      "Automatic Agent Vault initialization did not complete",
+    );
+    expect(deps.fs.writeFileSync).not.toHaveBeenCalledWith(
+      "/tmp/alphaclaw/onboarded.json",
+      expect.any(String),
+    );
     expect(deps.runOnboardedBootSequence).not.toHaveBeenCalled();
   });
 
