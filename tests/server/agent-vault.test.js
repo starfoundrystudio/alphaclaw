@@ -301,6 +301,68 @@ describe("server/agent-vault", () => {
     });
   });
 
+  it("only removes legacy credentials with a complete runtime replacement", async () => {
+    const {
+      writeAgentVaultRuntime,
+    } = require("../../lib/server/agent-vault/runtime-store");
+    writeAgentVaultRuntime({
+      token: "av_runtime_token_123456789",
+      vault: "default",
+      mode: "brokered",
+      operatorUrl: "https://agent-vault-test.tail123.ts.net",
+    });
+    let services = [];
+    const fetchImpl = vi.fn(async (url) => {
+      expect(String(url)).toMatch(/\/discover$/);
+      return Response.json({
+        vault: "default",
+        available_credentials: ["TEAMYOU_API_KEY", "GITHUB_TOKEN"],
+        services,
+      });
+    });
+    const envVars = [
+      { key: "TEAMYOU_API_KEY", value: "ty_legacy" },
+      { key: "GITHUB_TOKEN", value: "ghp_host_owned" },
+    ];
+    const writeEnvFile = vi.fn();
+    const reloadEnv = vi.fn();
+    const { createAgentVaultService } = require(
+      "../../lib/server/agent-vault/service"
+    );
+    const service = createAgentVaultService({
+      readEnvFile: () => envVars,
+      writeEnvFile,
+      reloadEnv,
+      fetchImpl,
+    });
+
+    await expect(service.reconcileLegacyCredentials()).resolves.toEqual({
+      removedKeys: [],
+      restartRequired: false,
+    });
+    expect(writeEnvFile).not.toHaveBeenCalled();
+
+    services = [
+      {
+        name: "teamyou-external-api",
+        host: "www.teamyou.com/api/external/v1/*",
+      },
+      {
+        name: "github",
+        host: "api.github.com",
+        auth: { type: "bearer", token: "GITHUB_TOKEN" },
+      },
+    ];
+    await expect(service.reconcileLegacyCredentials()).resolves.toEqual({
+      removedKeys: ["TEAMYOU_API_KEY"],
+      restartRequired: true,
+    });
+    expect(writeEnvFile).toHaveBeenCalledWith([
+      { key: "GITHUB_TOKEN", value: "ghp_host_owned" },
+    ]);
+    expect(reloadEnv).toHaveBeenCalledOnce();
+  });
+
   it("plans only the missing pieces of an atomic service access request", () => {
     const {
       normalizeAgentVaultAccessRequest,
@@ -370,6 +432,25 @@ describe("server/agent-vault", () => {
       status: "available",
       serviceAvailable: true,
       missingCredentialKeys: [],
+    });
+    expect(
+      planAgentVaultAccess(access, {
+        services: [
+          {
+            name: "openweathermap-other",
+            host: "api.openweathermap.org",
+          },
+        ],
+        available_credentials: ["OPENWEATHER_API_KEY"],
+      }),
+    ).toMatchObject({
+      status: "available",
+      serviceAvailable: true,
+      matchedService: {
+        name: "openweathermap-other",
+        host: "api.openweathermap.org",
+      },
+      proposal: { services: [] },
     });
   });
 
@@ -488,6 +569,7 @@ describe("server/agent-vault", () => {
                 {
                   name: "github",
                   host: "api.github.com",
+                  auth: { type: "bearer", token: "GITHUB_TOKEN" },
                 },
               ],
               available_credentials: [{ key: "GITHUB_TOKEN", type: "static" }],

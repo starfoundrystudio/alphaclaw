@@ -56,7 +56,7 @@ describe("server/onboarding/gateway-tailscale-client", () => {
     const credentials = createTempCredentials();
     const spawned = createSpawn({
       response: {
-        schema_version: 1,
+        schema_version: 2,
         operation: "configure",
         ok: true,
         configured: true,
@@ -112,7 +112,7 @@ describe("server/onboarding/gateway-tailscale-client", () => {
     });
     expect(spawned.requests).toEqual([
       {
-        schema_version: 1,
+        schema_version: 2,
         operation: "configure",
         auth_key: "tskey-auth-secret",
         hostname: "alphaclaw",
@@ -203,7 +203,7 @@ describe("server/onboarding/gateway-tailscale-client", () => {
     expect(() =>
       normalizeGatewayStatus(
         {
-          schema_version: 2,
+          schema_version: 3,
           operation: "status",
           ok: true,
         },
@@ -213,7 +213,7 @@ describe("server/onboarding/gateway-tailscale-client", () => {
     expect(() =>
       normalizeGatewayStatus(
         {
-          schema_version: 1,
+          schema_version: 2,
           operation: "status",
           ok: true,
           configured: true,
@@ -223,6 +223,23 @@ describe("server/onboarding/gateway-tailscale-client", () => {
         "status",
       ),
     ).toThrow("DNS name is invalid");
+  });
+
+  it("rejects legacy schema-v1 gateways before Agent Vault onboarding", () => {
+    expect(() =>
+      normalizeGatewayStatus(
+        {
+          schema_version: 1,
+          operation: "status",
+          ok: true,
+          configured: true,
+          sealed: false,
+          tailscale_dns: "alpha.tail123.ts.net.",
+          tailscale_device_id: "device-123",
+        },
+        "status",
+      ),
+    ).toThrow("schema version is incompatible");
   });
 
   it("removes the one-time private identity after sealing", () => {
@@ -245,7 +262,7 @@ describe("server/onboarding/gateway-tailscale-client", () => {
     const credentials = createTempCredentials();
     const claimSpawn = createSpawn({
       response: {
-        schema_version: 1,
+        schema_version: 2,
         operation: "agent_vault_runtime_token",
         ok: true,
         configured: true,
@@ -266,13 +283,13 @@ describe("server/onboarding/gateway-tailscale-client", () => {
       token: "av_runtime_token_123456789",
     });
     expect(claimSpawn.requests[0]).toEqual({
-      schema_version: 1,
+      schema_version: 2,
       operation: "agent_vault_runtime_token",
     });
 
     const ackSpawn = createSpawn({
       response: {
-        schema_version: 1,
+        schema_version: 2,
         operation: "agent_vault_runtime_token_ack",
         ok: true,
         configured: true,
@@ -291,7 +308,7 @@ describe("server/onboarding/gateway-tailscale-client", () => {
       ackClient.acknowledgeAgentVaultRuntimeToken({ tokenSha256 }),
     ).resolves.toEqual({ acknowledged: true });
     expect(ackSpawn.requests[0]).toEqual({
-      schema_version: 1,
+      schema_version: 2,
       operation: "agent_vault_runtime_token_ack",
       token_sha256: tokenSha256,
     });
