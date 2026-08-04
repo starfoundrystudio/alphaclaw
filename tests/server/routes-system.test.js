@@ -224,6 +224,33 @@ describe("server/routes/system", () => {
     expect(res.body.restartRequired).toBe(false);
   });
 
+  it("hides and blocks credentials as soon as security-gateway provisioning is active", async () => {
+    const deps = createSystemDeps();
+    deps.readEnvFile.mockReturnValue([
+      { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+      { key: "OPENAI_API_KEY", value: "legacy-value" },
+      { key: "CUSTOM_FLAG", value: "1" },
+    ]);
+    const app = createApp(deps);
+
+    const read = await request(app).get("/api/env");
+    expect(read.status).toBe(200);
+    expect(read.body.agentVaultManaged).toBe(true);
+    expect(read.body.legacyCredentialKeys).toEqual(["OPENAI_API_KEY"]);
+    expect(read.body.vars.some((entry) => entry.key === "OPENAI_API_KEY")).toBe(
+      false,
+    );
+
+    const write = await request(app)
+      .put("/api/env")
+      .send({ vars: [{ key: "NEW_SERVICE_TOKEN", value: "secret" }] });
+    expect(write.status).toBe(400);
+    expect(write.body.error).toContain(
+      "Credentials must be requested through Agent Vault",
+    );
+    expect(deps.writeEnvFile).not.toHaveBeenCalled();
+  });
+
   it("rejects reserved vars on PUT /api/env", async () => {
     const deps = createSystemDeps();
     deps.reloadEnv.mockReturnValue(true);

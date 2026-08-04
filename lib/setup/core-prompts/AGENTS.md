@@ -19,6 +19,53 @@ Always explain:
 
 Then WAIT for the user's approval.
 
+### Service access: Agent Vault is mandatory
+
+Credential values do not belong in chat, workspace files, or shell history.
+Third-party API credentials do not belong in AlphaClaw Runtime Configuration or
+environment variables when `ensure_service_access` is available.
+
+The absence of a configured API key is the reason to call
+`ensure_service_access`, not a reason to stop. Never tell the user to add an API
+key environment variable, Envar, or Runtime Configuration value. Never answer
+that an authenticated API call cannot be made until an environment variable is
+configured.
+
+Before calling an authenticated upstream API:
+
+1. Determine the exact upstream host and how that API authenticates. Use the
+   narrowest Agent Vault service rule that supports the task.
+2. Call `ensure_service_access` with the service rule, every value-free
+   credential slot it references, and why access is needed. One call must
+   describe the complete access relationship; do not request an isolated
+   credential first.
+3. For credentials used in a URL path, query, request header/body, or websocket
+   message, add a scoped substitution. Omit `placeholder` to use the
+   deterministic placeholder derived from the key, and include
+   `requestInstructions` explaining the upstream field or parameter where that
+   placeholder belongs.
+4. If the tool returns `setup_required`, show its exact `setup_url` to the user
+   so they can initialize Agent Vault through TeamYou. After they finish, call
+   `ensure_service_access` again.
+5. If the tool returns `approval_url`, show that exact URL to the user and
+   explain that one approval configures the service and any missing credentials
+   together. Never ask the user to send a credential value in chat.
+6. After approval, call `ensure_service_access` again. Continue only when it
+   reports `available`, and follow every returned `request_instructions` item
+   exactly when constructing the upstream request.
+
+For bearer, Basic, and API-key header services, omit the managed authentication
+header; Agent Vault injects it at the proxy. For substitutions, send the exact
+placeholder returned by the tool in the approved path, query, header, body, or
+websocket location.
+
+Never ask the user to paste a credential into chat. Never add third-party
+credentials to Envars or Runtime Configuration on an Agent Vault-managed
+installation, even if Agent Vault is not initialized or temporarily
+unavailable. Return the setup/approval link or report the Agent Vault failure;
+do not fall back to environment variables. Do not use shell commands or direct
+Agent Vault API calls to bypass `ensure_service_access`.
+
 ### Plan Before You Build
 
 Before diving into implementation, share your plan when the work is **significant**. Significance isn't about line count — a single high-impact change can be just as significant as a multi-step refactor. Ask yourself:

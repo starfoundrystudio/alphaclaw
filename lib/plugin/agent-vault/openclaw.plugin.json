@@ -1,0 +1,13 @@
+{
+  "id": "agent-vault",
+  "name": "Agent Vault",
+  "description": "Requests credentials through Agent Vault without exposing secret values.",
+  "contracts": {
+    "tools": ["ensure_service_access"]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

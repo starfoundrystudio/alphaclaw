@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-07-27T00:13:11.541Z",
+  "generatedAt": "2026-07-29T22:52:49.325Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1884,6 +1884,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/anthropic/claude-fable-5:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Fable 5 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/~anthropic/claude-fable-latest",
               "provider": "openrouter",
               "label": "Anthropic: Claude Fable Latest",
@@ -1896,6 +1905,15 @@
               "key": "openrouter/anthropic/claude-haiku-4.5",
               "provider": "openrouter",
               "label": "Anthropic: Claude Haiku 4.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-haiku-4.5:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Haiku 4.5 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -1920,9 +1938,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/anthropic/claude-opus-4.1:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Opus 4.1 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/anthropic/claude-opus-4.5",
               "provider": "openrouter",
               "label": "Anthropic: Claude Opus 4.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-opus-4.5:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Opus 4.5 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -1938,6 +1974,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/anthropic/claude-opus-4.6:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Opus 4.6 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/anthropic/claude-opus-4.7",
               "provider": "openrouter",
               "label": "Anthropic: Claude Opus 4.7",
@@ -1947,9 +1992,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/anthropic/claude-opus-4.7:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Opus 4.7 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/anthropic/claude-opus-4.7-fast",
               "provider": "openrouter",
               "label": "Anthropic: Claude Opus 4.7 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-opus-4.8:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Opus 4.8 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -1992,9 +2055,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/anthropic/claude-sonnet-4.5:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Sonnet 4.5 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/anthropic/claude-sonnet-5",
               "provider": "openrouter",
               "label": "Anthropic: Claude Sonnet 5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-sonnet-5:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Sonnet 5 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -2317,6 +2398,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/google/gemini-2.5-flash:batch",
+              "provider": "openrouter",
+              "label": "Google: Gemini 2.5 Flash (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/google/gemini-2.5-flash-lite",
               "provider": "openrouter",
               "label": "Google: Gemini 2.5 Flash Lite",
@@ -2326,9 +2416,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/google/gemini-2.5-flash-lite:batch",
+              "provider": "openrouter",
+              "label": "Google: Gemini 2.5 Flash Lite (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/google/gemini-2.5-pro",
               "provider": "openrouter",
               "label": "Google: Gemini 2.5 Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/google/gemini-2.5-pro:batch",
+              "provider": "openrouter",
+              "label": "Google: Gemini 2.5 Pro (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -2362,9 +2470,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/google/gemini-3-flash-preview:batch",
+              "provider": "openrouter",
+              "label": "Google: Gemini 3 Flash Preview (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/google/gemini-3.1-flash-lite",
               "provider": "openrouter",
               "label": "Google: Gemini 3.1 Flash Lite",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/google/gemini-3.1-flash-lite:batch",
+              "provider": "openrouter",
+              "label": "Google: Gemini 3.1 Flash Lite (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -2389,6 +2515,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/google/gemini-3.1-pro-preview:batch",
+              "provider": "openrouter",
+              "label": "Google: Gemini 3.1 Pro Preview (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/google/gemini-3.1-pro-preview-customtools",
               "provider": "openrouter",
               "label": "Google: Gemini 3.1 Pro Preview Custom Tools",
@@ -2407,6 +2542,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/google/gemini-3.5-flash:batch",
+              "provider": "openrouter",
+              "label": "Google: Gemini 3.5 Flash (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/google/gemini-3.5-flash-lite",
               "provider": "openrouter",
               "label": "Google: Gemini 3.5 Flash Lite",
@@ -2416,9 +2560,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/google/gemini-3.5-flash-lite:batch",
+              "provider": "openrouter",
+              "label": "Google: Gemini 3.5 Flash Lite (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/google/gemini-3.6-flash",
               "provider": "openrouter",
               "label": "Google: Gemini 3.6 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/google/gemini-3.6-flash:batch",
+              "provider": "openrouter",
+              "label": "Google: Gemini 3.6 Flash (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -2852,6 +3014,15 @@
               "key": "openrouter/minimax/minimax-m3",
               "provider": "openrouter",
               "label": "MiniMax: MiniMax M3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/minimax/minimax-m3:batch",
+              "provider": "openrouter",
+              "label": "MiniMax: MiniMax M3 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3452,15 +3623,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/gpt-4o-search-preview",
-              "provider": "openrouter",
-              "label": "OpenAI: GPT-4o Search Preview",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/openai/gpt-4o-mini",
               "provider": "openrouter",
               "label": "OpenAI: GPT-4o-mini",
@@ -3479,15 +3641,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/gpt-4o-mini-search-preview",
-              "provider": "openrouter",
-              "label": "OpenAI: GPT-4o-mini Search Preview",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/openai/gpt-5",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5",
@@ -3497,9 +3650,9 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/gpt-5-chat",
+              "key": "openrouter/openai/gpt-5:batch",
               "provider": "openrouter",
-              "label": "OpenAI: GPT-5 Chat",
+              "label": "OpenAI: GPT-5 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3542,9 +3695,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-5-mini:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5 Mini (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-5-nano",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5 Nano",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5-nano:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5 Nano (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3563,6 +3734,15 @@
               "key": "openrouter/openai/gpt-5.1",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5.1:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.1 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3608,6 +3788,15 @@
               "key": "openrouter/openai/gpt-5.2",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.2",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5.2:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.2 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3668,6 +3857,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-5.4:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.4 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-5.4-image-2",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.4 Image 2",
@@ -3686,6 +3884,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-5.4-mini:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.4 Mini (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-5.4-nano",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.4 Nano",
@@ -3695,9 +3902,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-5.4-nano:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.4 Nano (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-5.4-pro",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.4 Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-5.5:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-5.5 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3959,24 +4184,6 @@
               "key": "openrouter/perplexity/sonar-reasoning-pro",
               "provider": "openrouter",
               "label": "Perplexity: Sonar Reasoning Pro",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/poolside/laguna-m.1",
-              "provider": "openrouter",
-              "label": "Poolside: Laguna M.1",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/poolside/laguna-m.1:free",
-              "provider": "openrouter",
-              "label": "Poolside: Laguna M.1 (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -4400,6 +4607,15 @@
               "key": "openrouter/qwen/qwen3.6-plus",
               "provider": "openrouter",
               "label": "Qwen: Qwen3.6 Plus",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/qwen/qwen3.7-flash",
+              "provider": "openrouter",
+              "label": "Qwen: Qwen3.7 Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -5162,15 +5378,6 @@
               "key": "vercel-ai-gateway/google/gemini-3-flash",
               "provider": "vercel-ai-gateway",
               "label": "Gemini 3 Flash",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/google/gemini-3-pro-preview",
-              "provider": "vercel-ai-gateway",
-              "label": "Gemini 3 Pro Preview",
               "accessModes": [
                 "gateway"
               ],
@@ -5943,6 +6150,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/moonshotai/kimi-k3-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "Kimi K3 Fast",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/poolside/laguna-s-2.1",
               "provider": "vercel-ai-gateway",
               "label": "Laguna S 2.1",
@@ -6116,7 +6332,7 @@
             {
               "key": "vercel-ai-gateway/minimax/minimax-m2.7",
               "provider": "vercel-ai-gateway",
-              "label": "MiniMax M2.7",
+              "label": "Minimax M2.7",
               "accessModes": [
                 "gateway"
               ],
@@ -6477,6 +6693,15 @@
               "key": "vercel-ai-gateway/alibaba/qwen3.6-plus",
               "provider": "vercel-ai-gateway",
               "label": "Qwen 3.6 Plus",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/alibaba/qwen3.7-flash",
+              "provider": "vercel-ai-gateway",
+              "label": "Qwen 3.7 Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -7482,6 +7707,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/anthropic/claude-fable-5:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Fable 5 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/~anthropic/claude-fable-latest",
       "provider": "openrouter",
       "label": "Anthropic: Claude Fable Latest",
@@ -7494,6 +7728,15 @@
       "key": "openrouter/anthropic/claude-haiku-4.5",
       "provider": "openrouter",
       "label": "Anthropic: Claude Haiku 4.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-haiku-4.5:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Haiku 4.5 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -7518,9 +7761,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/anthropic/claude-opus-4.1:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Opus 4.1 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/anthropic/claude-opus-4.5",
       "provider": "openrouter",
       "label": "Anthropic: Claude Opus 4.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-opus-4.5:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Opus 4.5 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -7536,6 +7797,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/anthropic/claude-opus-4.6:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Opus 4.6 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/anthropic/claude-opus-4.7",
       "provider": "openrouter",
       "label": "Anthropic: Claude Opus 4.7",
@@ -7545,9 +7815,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/anthropic/claude-opus-4.7:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Opus 4.7 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/anthropic/claude-opus-4.7-fast",
       "provider": "openrouter",
       "label": "Anthropic: Claude Opus 4.7 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-opus-4.8:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Opus 4.8 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -7590,9 +7878,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/anthropic/claude-sonnet-4.5:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Sonnet 4.5 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/anthropic/claude-sonnet-5",
       "provider": "openrouter",
       "label": "Anthropic: Claude Sonnet 5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-sonnet-5:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Sonnet 5 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -7929,6 +8235,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/google/gemini-2.5-flash:batch",
+      "provider": "openrouter",
+      "label": "Google: Gemini 2.5 Flash (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/google/gemini-2.5-flash-lite",
       "provider": "openrouter",
       "label": "Google: Gemini 2.5 Flash Lite",
@@ -7938,9 +8253,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/google/gemini-2.5-flash-lite:batch",
+      "provider": "openrouter",
+      "label": "Google: Gemini 2.5 Flash Lite (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/google/gemini-2.5-pro",
       "provider": "openrouter",
       "label": "Google: Gemini 2.5 Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/google/gemini-2.5-pro:batch",
+      "provider": "openrouter",
+      "label": "Google: Gemini 2.5 Pro (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -7974,9 +8307,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/google/gemini-3-flash-preview:batch",
+      "provider": "openrouter",
+      "label": "Google: Gemini 3 Flash Preview (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/google/gemini-3.1-flash-lite",
       "provider": "openrouter",
       "label": "Google: Gemini 3.1 Flash Lite",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/google/gemini-3.1-flash-lite:batch",
+      "provider": "openrouter",
+      "label": "Google: Gemini 3.1 Flash Lite (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -8001,6 +8352,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/google/gemini-3.1-pro-preview:batch",
+      "provider": "openrouter",
+      "label": "Google: Gemini 3.1 Pro Preview (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/google/gemini-3.1-pro-preview-customtools",
       "provider": "openrouter",
       "label": "Google: Gemini 3.1 Pro Preview Custom Tools",
@@ -8019,6 +8379,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/google/gemini-3.5-flash:batch",
+      "provider": "openrouter",
+      "label": "Google: Gemini 3.5 Flash (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/google/gemini-3.5-flash-lite",
       "provider": "openrouter",
       "label": "Google: Gemini 3.5 Flash Lite",
@@ -8028,9 +8397,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/google/gemini-3.5-flash-lite:batch",
+      "provider": "openrouter",
+      "label": "Google: Gemini 3.5 Flash Lite (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/google/gemini-3.6-flash",
       "provider": "openrouter",
       "label": "Google: Gemini 3.6 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/google/gemini-3.6-flash:batch",
+      "provider": "openrouter",
+      "label": "Google: Gemini 3.6 Flash (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -8464,6 +8851,15 @@
       "key": "openrouter/minimax/minimax-m3",
       "provider": "openrouter",
       "label": "MiniMax: MiniMax M3",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/minimax/minimax-m3:batch",
+      "provider": "openrouter",
+      "label": "MiniMax: MiniMax M3 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9064,15 +9460,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/openai/gpt-4o-search-preview",
-      "provider": "openrouter",
-      "label": "OpenAI: GPT-4o Search Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/openai/gpt-4o-mini",
       "provider": "openrouter",
       "label": "OpenAI: GPT-4o-mini",
@@ -9091,15 +9478,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/openai/gpt-4o-mini-search-preview",
-      "provider": "openrouter",
-      "label": "OpenAI: GPT-4o-mini Search Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/openai/gpt-5",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5",
@@ -9109,9 +9487,9 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/openai/gpt-5-chat",
+      "key": "openrouter/openai/gpt-5:batch",
       "provider": "openrouter",
-      "label": "OpenAI: GPT-5 Chat",
+      "label": "OpenAI: GPT-5 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9154,9 +9532,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-5-mini:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5 Mini (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-5-nano",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5 Nano",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5-nano:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5 Nano (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9175,6 +9571,15 @@
       "key": "openrouter/openai/gpt-5.1",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5.1:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.1 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9220,6 +9625,15 @@
       "key": "openrouter/openai/gpt-5.2",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.2",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5.2:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.2 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9280,6 +9694,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-5.4:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.4 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-5.4-image-2",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.4 Image 2",
@@ -9298,6 +9721,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-5.4-mini:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.4 Mini (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-5.4-nano",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.4 Nano",
@@ -9307,9 +9739,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-5.4-nano:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.4 Nano (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-5.4-pro",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.4 Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-5.5:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-5.5 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9584,24 +10034,6 @@
       "key": "openrouter/perplexity/sonar-reasoning-pro",
       "provider": "openrouter",
       "label": "Perplexity: Sonar Reasoning Pro",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/poolside/laguna-m.1",
-      "provider": "openrouter",
-      "label": "Poolside: Laguna M.1",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/poolside/laguna-m.1:free",
-      "provider": "openrouter",
-      "label": "Poolside: Laguna M.1 (free)",
       "accessModes": [
         "gateway"
       ],
@@ -10025,6 +10457,15 @@
       "key": "openrouter/qwen/qwen3.6-plus",
       "provider": "openrouter",
       "label": "Qwen: Qwen3.6 Plus",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/qwen/qwen3.7-flash",
+      "provider": "openrouter",
+      "label": "Qwen: Qwen3.7 Flash",
       "accessModes": [
         "gateway"
       ],
@@ -11166,15 +11607,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/google/gemini-3-pro-preview",
-      "provider": "vercel-ai-gateway",
-      "label": "Gemini 3 Pro Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/google/gemini-3.1-flash-image",
       "provider": "vercel-ai-gateway",
       "label": "Gemini 3.1 Flash Image (Nano Banana 2)",
@@ -11954,6 +12386,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/moonshotai/kimi-k3-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "Kimi K3 Fast",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/poolside/laguna-s-2.1",
       "provider": "vercel-ai-gateway",
       "label": "Laguna S 2.1",
@@ -12127,7 +12568,7 @@
     {
       "key": "vercel-ai-gateway/minimax/minimax-m2.7",
       "provider": "vercel-ai-gateway",
-      "label": "MiniMax M2.7",
+      "label": "Minimax M2.7",
       "accessModes": [
         "gateway"
       ],
@@ -12488,6 +12929,15 @@
       "key": "vercel-ai-gateway/alibaba/qwen3.6-plus",
       "provider": "vercel-ai-gateway",
       "label": "Qwen 3.6 Plus",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/alibaba/qwen3.7-flash",
+      "provider": "vercel-ai-gateway",
+      "label": "Qwen 3.7 Flash",
       "accessModes": [
         "gateway"
       ],
