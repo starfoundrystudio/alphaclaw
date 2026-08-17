@@ -80,8 +80,8 @@
 }
 
 .cron-tab-selector-toggle.is-open {
-  border-color: rgba(99, 235, 255, 0.55);
-  background: rgba(99, 235, 255, 0.08);
+  border-color: rgba(49, 238, 136, 0.55);
+  background: rgba(49, 238, 136, 0.08);
 }
 
 .cron-tab-selector-title {
@@ -148,8 +148,8 @@
 }
 
 .cron-list-search-input:focus {
-  border-color: rgba(99, 235, 255, 0.45);
-  box-shadow: 0 0 0 1px rgba(99, 235, 255, 0.18);
+  border-color: rgba(49, 238, 136, 0.45);
+  box-shadow: 0 0 0 1px rgba(49, 238, 136, 0.18);
 }
 
 .cron-list-separator {
@@ -211,8 +211,8 @@
 }
 
 .cron-list-item.is-selected {
-  border-color: rgba(99, 235, 255, 0.55);
-  background: rgba(99, 235, 255, 0.08);
+  border-color: rgba(49, 238, 136, 0.55);
+  background: rgba(49, 238, 136, 0.08);
   color: var(--text);
 }
 
@@ -374,7 +374,7 @@
 }
 
 .cron-calendar-day-header.is-today {
-  background: rgba(99, 235, 255, 0.08);
+  background: rgba(49, 238, 136, 0.08);
 }
 
 .cron-calendar-hour-cell {
@@ -454,7 +454,7 @@
 }
 
 .cron-calendar-grid-cell.is-today {
-  background: rgba(99, 235, 255, 0.04);
+  background: rgba(49, 238, 136, 0.04);
 }
 
 .cron-calendar-now-indicator {
@@ -464,7 +464,7 @@
   height: 2px;
   border-radius: 999px;
   background: rgba(248, 113, 113, 0.95);
-  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.18), 0 0 8px rgba(239, 68, 68, 0.55);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.18);
   pointer-events: none;
   z-index: 1;
 }
@@ -503,8 +503,8 @@
 }
 
 .cron-calendar-slot-tier-low {
-  background: rgba(34, 211, 238, 0.14);
-  border-color: rgba(34, 211, 238, 0.38);
+  background: rgba(51, 151, 199, 0.14);
+  border-color: rgba(51, 151, 199, 0.38);
   color: #c8f6ff;
 }
 
@@ -547,7 +547,7 @@
 }
 
 .cron-calendar-slot-ok {
-  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.38);
+  box-shadow: inset 0 0 0 1px rgba(49, 238, 136, 0.38);
 }
 
 .cron-calendar-slot-error {
@@ -659,18 +659,18 @@
 }
 
 .cron-runs-trend-segment-ok {
-  background: rgba(34, 255, 170, 0.82);
-  box-shadow: inset 0 0 0 1px rgba(34, 255, 170, 0.28), 0 0 8px rgba(34, 255, 170, 0.24);
+  background: rgba(49, 238, 136, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(49, 238, 136, 0.28);
 }
 
 .cron-runs-trend-segment-error {
-  background: rgba(255, 74, 138, 0.84);
-  box-shadow: inset 0 0 0 1px rgba(255, 74, 138, 0.32), 0 0 8px rgba(255, 74, 138, 0.24);
+  background: rgba(248, 113, 113, 0.84);
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.32);
 }
 
 .cron-runs-trend-segment-skipped {
-  background: rgba(255, 214, 64, 0.82);
-  box-shadow: inset 0 0 0 1px rgba(255, 214, 64, 0.28), 0 0 8px rgba(255, 214, 64, 0.22);
+  background: rgba(251, 191, 36, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.28);
 }
 
 .cron-runs-trend-label {
@@ -701,16 +701,13 @@
 }
 
 .cron-runs-trend-legend-dot.is-ok {
-  background: rgba(34, 255, 170, 0.98);
-  box-shadow: 0 0 8px rgba(34, 255, 170, 0.6);
+  background: rgba(49, 238, 136, 0.98);
 }
 
 .cron-runs-trend-legend-dot.is-error {
-  background: rgba(255, 74, 138, 0.98);
-  box-shadow: 0 0 8px rgba(255, 74, 138, 0.58);
+  background: rgba(248, 113, 113, 0.98);
 }
 
 .cron-runs-trend-legend-dot.is-skipped {
-  background: rgba(255, 214, 64, 0.98);
-  box-shadow: 0 0 8px rgba(255, 214, 64, 0.5);
+  background: rgba(251, 191, 36, 0.98);
 }

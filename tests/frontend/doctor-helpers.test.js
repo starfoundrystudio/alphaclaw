@@ -108,7 +108,7 @@ describe("frontend/doctor helpers", () => {
       helpers.buildDoctorRunMarkers({
         status: "running",
       }),
-    ).toEqual([{ tone: "cyan", count: 0, label: "Running" }]);
+    ).toEqual([{ tone: "info", count: 0, label: "Running" }]);
     expect(helpers.getDoctorRunPillDetail({ status: "failed" })).toBe("Failed");
     expect(
       helpers.getDoctorRunPillDetail({ status: "completed", cardCount: 0 }),
