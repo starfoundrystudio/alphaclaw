@@ -117,7 +117,7 @@ Keep release work single-pass and use the repository's existing scripts instead 
 - Do not invoke `prepack` a second time through `npm pack` merely to verify packaging. When a package-shape check is useful after a successful `prepack`, use `npm pack --dry-run --ignore-scripts`.
 - Do not rerun a successful install, generator, build, test, or package check unless the working tree changed in a way that can affect its result.
 - Run browser verification only when the release contains non-trivial UI changes. In Codex desktop, use the built-in in-app browser directly; do not try the standalone `agent-browser` CLI first. Skip browser verification for server-only or metadata-only releases.
-- This checkout has both `origin` and `upstream` remotes. For release status and workflow checks, address `starfoundrystudio/alphaclaw` explicitly (for example, `gh run ... -R starfoundrystudio/alphaclaw`) so GitHub CLI does not select the upstream repository.
+- For release status and workflow checks, address `starfoundrystudio/alphaclaw` explicitly (for example, `gh run ... -R starfoundrystudio/alphaclaw`) so GitHub CLI does not select the wrong repository if the checkout carries extra remotes.
 - After pushing the tag, monitor the single package-publish workflow through completion and verify the intended package dist-tag. Avoid repeated repository discovery or redundant workflow queries.
 - Keep successful validation output concise; inspect and report detailed logs only when a check fails or emits an actionable warning.
 

@@ -86,7 +86,7 @@ npx alphaclaw start
 
 ## Publish The GitHub Package
 
-This fork also includes [publish-npm.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/.github/workflows/publish-npm.yml)
+This repository includes [publish-npm.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/.github/workflows/publish-npm.yml)
 for publishing `@starfoundrystudio/alphaclaw` to GitHub Packages on tag pushes.
 
 Before enabling it, make sure:
