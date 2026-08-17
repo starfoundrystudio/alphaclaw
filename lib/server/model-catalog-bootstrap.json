@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-17T18:52:35.791Z",
+  "generatedAt": "2026-08-17T23:28:32.940Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -6095,6 +6095,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5.1-thinking-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.1 Thinking (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5.2",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.2",
@@ -6107,6 +6116,15 @@
               "key": "vercel-ai-gateway/openai/gpt-5.2-pro",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.2",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5.2-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.2 (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -6131,6 +6149,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5.3-codex-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.3 Codex (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5.4",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.4",
@@ -6140,9 +6167,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5.4-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.4 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5.4-mini",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.4 Mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5.4-mini-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.4 Mini (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -6167,6 +6212,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5.5-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.5 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5.5-pro",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.5 Pro",
@@ -6185,9 +6239,36 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5.6-luna-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.6 Luna (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5.6-sol-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.6 Sol (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5.6-terra",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.6 Terra",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5.6-terra-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.6 Terra (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -6248,9 +6329,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-4.1-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-4.1 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-4.1-mini",
               "provider": "vercel-ai-gateway",
               "label": "GPT-4.1 mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-4.1-mini-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-4.1 mini (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -6266,9 +6365,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-4.1-nano-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-4.1 nano (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-4o",
               "provider": "vercel-ai-gateway",
               "label": "GPT-4o",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-4o-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-4o (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -6284,6 +6401,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-4o-mini-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-4o mini (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5",
               "provider": "vercel-ai-gateway",
               "label": "GPT-5",
@@ -6293,9 +6419,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-5 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5-mini",
               "provider": "vercel-ai-gateway",
               "label": "GPT-5 mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5-mini-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-5 mini (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -7059,6 +7203,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/o3-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "o3 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/o3-pro",
               "provider": "vercel-ai-gateway",
               "label": "o3 Pro",
@@ -7089,6 +7242,15 @@
               "key": "vercel-ai-gateway/openai/o4-mini",
               "provider": "vercel-ai-gateway",
               "label": "o4-mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/o4-mini-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "o4-mini (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -12831,6 +12993,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5.1-thinking-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.1 Thinking (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5.2",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.2",
@@ -12843,6 +13014,15 @@
       "key": "vercel-ai-gateway/openai/gpt-5.2-pro",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.2",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-5.2-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.2 (Fast)",
       "accessModes": [
         "gateway"
       ],
@@ -12867,6 +13047,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5.3-codex-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.3 Codex (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5.4",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.4",
@@ -12876,9 +13065,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5.4-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.4 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5.4-mini",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.4 Mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-5.4-mini-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.4 Mini (Fast)",
       "accessModes": [
         "gateway"
       ],
@@ -12903,6 +13110,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5.5-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.5 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5.5-pro",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.5 Pro",
@@ -12915,6 +13131,15 @@
       "key": "vercel-ai-gateway/openai/gpt-5.6-luna",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.6 Luna",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-5.6-luna-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.6 Luna (Fast)",
       "accessModes": [
         "gateway"
       ],
@@ -12934,9 +13159,27 @@
       ]
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5.6-sol-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.6 Sol (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5.6-terra",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.6 Terra",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-5.6-terra-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.6 Terra (Fast)",
       "accessModes": [
         "gateway"
       ],
@@ -12997,9 +13240,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-4.1-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-4.1 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-4.1-mini",
       "provider": "vercel-ai-gateway",
       "label": "GPT-4.1 mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-4.1-mini-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-4.1 mini (Fast)",
       "accessModes": [
         "gateway"
       ],
@@ -13015,9 +13276,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-4.1-nano-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-4.1 nano (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-4o",
       "provider": "vercel-ai-gateway",
       "label": "GPT-4o",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-4o-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-4o (Fast)",
       "accessModes": [
         "gateway"
       ],
@@ -13033,6 +13312,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-4o-mini-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-4o mini (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5",
       "provider": "vercel-ai-gateway",
       "label": "GPT-5",
@@ -13042,9 +13330,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-5 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5-mini",
       "provider": "vercel-ai-gateway",
       "label": "GPT-5 mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-5-mini-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-5 mini (Fast)",
       "accessModes": [
         "gateway"
       ],
@@ -13808,6 +14114,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/o3-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "o3 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/o3-pro",
       "provider": "vercel-ai-gateway",
       "label": "o3 Pro",
@@ -13838,6 +14153,15 @@
       "key": "vercel-ai-gateway/openai/o4-mini",
       "provider": "vercel-ai-gateway",
       "label": "o4-mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/o4-mini-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "o4-mini (Fast)",
       "accessModes": [
         "gateway"
       ],
