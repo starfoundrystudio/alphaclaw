@@ -112,7 +112,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
 }
 

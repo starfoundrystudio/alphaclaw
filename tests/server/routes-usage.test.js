@@ -105,25 +105,25 @@ describe("server/routes/usage", () => {
     expect(response.body.ok).toBe(true);
     expect(deps.getSessionsList).toHaveBeenCalledWith({ limit: 25 });
     expect(response.body.sessions[0].labels).toEqual([
-      { label: "Main", tone: "cyan" },
+      { label: "Main", tone: "info" },
       { label: "Workspace Name", tone: "purple" },
       { label: "Topic Name", tone: "gray" },
     ]);
     expect(response.body.sessions[1].labels).toEqual([
-      { label: "Main", tone: "cyan" },
+      { label: "Main", tone: "info" },
       { label: "Telegram Direct", tone: "blue" },
     ]);
     expect(response.body.sessions[2].labels).toEqual([
-      { label: "Main", tone: "cyan" },
+      { label: "Main", tone: "info" },
       { label: "Hook", tone: "purple" },
     ]);
     expect(response.body.sessions[3].labels).toEqual([
-      { label: "Main", tone: "cyan" },
+      { label: "Main", tone: "info" },
       { label: "Hook", tone: "purple" },
       { label: "Gmail", tone: "gray" },
     ]);
     expect(response.body.sessions[4].labels).toEqual([
-      { label: "Main", tone: "cyan" },
+      { label: "Main", tone: "info" },
       { label: "Cron", tone: "blue" },
     ]);
   });

@@ -117,8 +117,8 @@ Never invent new status hues; route new meanings through these four.
 - **Geist** (sans) for all UI text; **Geist Mono** for code, logs, paths,
   tokens, and terminal content. Both load from Google Fonts in `setup.html` /
   `login.html`. The xterm terminal keeps a system monospace stack.
-- Base body size is 13px (dense operator console; TeamYou proper uses 14px —
-  acceptable divergence for this surface).
+- Base body size is 14px, matching TeamYou proper. Dense surfaces (tables,
+  logs, terminal) may step down locally via explicit sizes.
 - Headings are sentence case, weight 500–600. The legacy uppercase
   letter-spaced label style (`.ac-small-heading`) is deprecated — prefer
   sentence-case muted labels as markup is migrated.
@@ -225,9 +225,9 @@ Done — markup sweep:
   `.ac-small-heading`, inline `uppercase` classes). The `uppercase` class on
   the env-var name input is functional (normalizes input) and stays.
 
-Remaining:
+- Legacy `cyan` tone/variant keys renamed to `info` everywhere (`badge.js`,
+  `usage-tab/constants.js`, doctor helpers, `routes/usage.js`); the Badge
+  `info` tone now renders cobalt (the old blue treatment is gone).
+- Base body size bumped 13px → 14px to match TeamYou proper.
 
-- Legacy `tone="cyan"` / `cyan` variant *keys* in `badge.js`,
-  `usage-tab/constants.js`, and doctor helpers — they render cobalt now;
-  rename to `info` opportunistically when touching those files.
-- Consider 13px → 14px base font size once the restyle has settled.
+Remaining: none — new work should follow the rules above.
