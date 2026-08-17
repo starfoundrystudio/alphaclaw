@@ -12,6 +12,18 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev:ui"],
       "port": 3001
+    },
+    {
+      "name": "teamyou-beta-worktree",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "/Users/billk/Development/starfoundrystudio/teamyou-beta-channel",
+        "run",
+        "dev:workflow"
+      ],
+      "port": 49999,
+      "autoPort": false
     }
   ]
 }

@@ -157,6 +157,45 @@ describe("server/bootstrap-kickoff", () => {
     expect(deps.delay).toHaveBeenCalledTimes(2);
   });
 
+  it("holds the kickoff until the gateway connection has been stable", async () => {
+    const deps = createDeps();
+    // Simulates a reconnect after a mid-boot gateway restart: the connection
+    // is young on the first two checks, then old enough.
+    const ages = [5000, 45000, 120000];
+    const getGatewayConnectionAgeMs = vi.fn(() => ages.shift() ?? 120000);
+    const service = createBootstrapKickoffService({
+      ...deps,
+      getGatewayConnectionAgeMs,
+      minGatewayStableMs: 90000,
+    });
+
+    const result = await service.maybeRunBootstrapKickoff();
+
+    expect(result).toMatchObject({ ok: true, reason: "kickoff_sent" });
+    expect(getGatewayConnectionAgeMs).toHaveBeenCalledTimes(3);
+    expect(deps.delay).toHaveBeenCalledTimes(2);
+    expect(
+      deps.requestGateway.mock.calls.filter(([method]) => method === "chat.send"),
+    ).toHaveLength(1);
+  });
+
+  it("gives up without a marker when the gateway never stabilizes", async () => {
+    const deps = createDeps();
+    const service = createBootstrapKickoffService({
+      ...deps,
+      getGatewayConnectionAgeMs: () => 1000,
+      maxAttempts: 3,
+    });
+
+    const result = await service.maybeRunBootstrapKickoff();
+
+    expect(result).toEqual({ ok: false, reason: "gave_up" });
+    expect(deps.fs.writeFileSync).not.toHaveBeenCalled();
+    expect(
+      deps.requestGateway.mock.calls.filter(([method]) => method === "chat.send"),
+    ).toHaveLength(0);
+  });
+
   it("gives up without a marker so the next boot can retry", async () => {
     const deps = createDeps();
     deps.requestGateway.mockRejectedValue(new Error("gateway down"));
