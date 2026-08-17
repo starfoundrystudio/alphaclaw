@@ -174,6 +174,59 @@ describe("server/startup", () => {
     ]);
   });
 
+  it("starts the bootstrap kickoff after gateway startup without blocking boot", async () => {
+    const callOrder = [];
+    const ensureManagedExecDefaults = vi.fn(() =>
+      callOrder.push("ensureManagedExecDefaults"),
+    );
+    const ensureUsageTrackerPluginConfig = vi.fn(() =>
+      callOrder.push("ensureUsageTrackerPluginConfig"),
+    );
+    const doSyncPromptFiles = vi.fn(() => callOrder.push("doSyncPromptFiles"));
+    const reloadEnv = vi.fn(() => callOrder.push("reloadEnv"));
+    const ensureGatewayProxyConfig = vi.fn(() => callOrder.push("ensureGatewayProxyConfig"));
+    const ensureManagedGatewayDevice = vi.fn(() =>
+      callOrder.push("ensureManagedGatewayDevice"),
+    );
+    const resolveSetupUrl = vi.fn(() => "https://setup.example.com");
+    const startGateway = vi.fn(async () => callOrder.push("startGateway"));
+    const bootstrapKickoff = {
+      maybeRunBootstrapKickoff: vi.fn(() => {
+        callOrder.push("bootstrapKickoff.maybeRunBootstrapKickoff");
+        // Never resolves: the boot sequence must not await the kickoff.
+        return new Promise(() => {});
+      }),
+    };
+    const watchdog = {
+      start: vi.fn(() => callOrder.push("watchdog.start")),
+    };
+    const gmailWatchService = {
+      start: vi.fn(() => callOrder.push("gmailWatchService.start")),
+    };
+
+    await runOnboardedBootSequence({
+      ensureManagedExecDefaults,
+      ensureUsageTrackerPluginConfig,
+      doSyncPromptFiles,
+      reloadEnv,
+      ensureGatewayProxyConfig,
+      ensureManagedGatewayDevice,
+      resolveSetupUrl,
+      startGateway,
+      bootstrapKickoff,
+      watchdog,
+      gmailWatchService,
+    });
+
+    expect(bootstrapKickoff.maybeRunBootstrapKickoff).toHaveBeenCalledTimes(1);
+    expect(callOrder.slice(-4)).toEqual([
+      "startGateway",
+      "bootstrapKickoff.maybeRunBootstrapKickoff",
+      "watchdog.start",
+      "gmailWatchService.start",
+    ]);
+  });
+
   it("delegates invalid config repair to doctor before retrying config boot steps", async () => {
     const callOrder = [];
     const configError = new Error("Could not read valid openclaw.json: bad json");
