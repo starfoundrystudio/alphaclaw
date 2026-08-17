@@ -17,10 +17,6 @@
 
 <p align="center"><em>First deploy to first message in under five minutes.</em></p>
 
-<p align="center">
-  <a href="https://updates.alphaclaw.md/desktop/prod/alphaclaw-mac-latest.dmg"><img height="40" src="https://img.shields.io/badge/Download%20for%20macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS" /></a>
-</p>
-
 > **Platform:** AlphaClaw's native provisioning path targets clawctl-managed Linux hosts. macOS local development is not yet supported.
 
 ## Features
