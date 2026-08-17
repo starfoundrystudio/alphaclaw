@@ -87,7 +87,7 @@ Keep them clear and concise. Prefix with the area when it helps:
 ```text
 watchdog: recover from port conflict on restart
 setup-ui: fix credential validation for Gemini provider
-docs: clarify Railway deployment steps
+docs: clarify deployment steps
 ```
 
 ### Code Style
