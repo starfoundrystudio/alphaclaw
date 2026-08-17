@@ -78,9 +78,9 @@ AlphaClaw-managed repo.
 
 This repo includes two scripts for the workflow:
 
-- [scripts/prepare-openclaw-migration.sh](/Users/billk/Development/starfoundrystudio/alphaclaw/scripts/prepare-openclaw-migration.sh)
+- [scripts/prepare-openclaw-migration.sh](../scripts/prepare-openclaw-migration.sh)
   builds a curated import snapshot
-- [scripts/publish-openclaw-migration.sh](/Users/billk/Development/starfoundrystudio/alphaclaw/scripts/publish-openclaw-migration.sh)
+- [scripts/publish-openclaw-migration.sh](../scripts/publish-openclaw-migration.sh)
   initializes git and pushes the snapshot to GitHub
 
 ### Prepare The Snapshot
