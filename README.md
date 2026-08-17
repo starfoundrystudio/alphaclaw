@@ -57,12 +57,12 @@ AlphaClaw simply wraps OpenClaw, it's not a dependency. Remove AlphaClaw and you
 If you have an older standalone OpenClaw instance and want to move it into a
 fresh AlphaClaw installation, use the migration guide:
 
-- [OpenClaw To AlphaClaw Migration](/Users/billk/Development/starfoundrystudio/alphaclaw/docs/openclaw-to-alphaclaw-migration.md)
+- [OpenClaw To AlphaClaw Migration](docs/openclaw-to-alphaclaw-migration.md)
 
 The repo also includes helper scripts to automate most of the prep work:
 
-- [scripts/prepare-openclaw-migration.sh](/Users/billk/Development/starfoundrystudio/alphaclaw/scripts/prepare-openclaw-migration.sh)
-- [scripts/publish-openclaw-migration.sh](/Users/billk/Development/starfoundrystudio/alphaclaw/scripts/publish-openclaw-migration.sh)
+- [scripts/prepare-openclaw-migration.sh](scripts/prepare-openclaw-migration.sh)
+- [scripts/publish-openclaw-migration.sh](scripts/publish-openclaw-migration.sh)
 
 ## Quick Start
 
@@ -79,7 +79,7 @@ npx alphaclaw start
 
 ## Publish The GitHub Package
 
-This repository includes [publish-npm.yml](/Users/billk/Development/starfoundrystudio/alphaclaw/.github/workflows/publish-npm.yml)
+This repository includes [publish-npm.yml](.github/workflows/publish-npm.yml)
 for publishing `@starfoundrystudio/alphaclaw` to GitHub Packages on tag pushes.
 
 Before enabling it, make sure:
