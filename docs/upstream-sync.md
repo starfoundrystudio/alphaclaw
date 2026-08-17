@@ -6,7 +6,7 @@ while keeping fork-specific changes reviewable.
 
 Companion document:
 
-- [`docs/fork-deviations.md`](/Users/billk/Development/starfoundrystudio/alphaclaw/docs/fork-deviations.md)
+- [`docs/fork-deviations.md`](fork-deviations.md)
   tracks the intentional fork-only behaviors that still differ from upstream.
 
 ## Goals
@@ -148,7 +148,7 @@ Use this branch for code review and discussion of any deliberate deviations
 from upstream.
 
 Before merging the integration branch back into `main`, update
-[`docs/fork-deviations.md`](/Users/billk/Development/starfoundrystudio/alphaclaw/docs/fork-deviations.md)
+[`docs/fork-deviations.md`](fork-deviations.md)
 to:
 
 - add any new intentional divergence introduced during the sync
@@ -194,5 +194,5 @@ When resolving a sync:
 - If upstream now covers one of our old workarounds, remove the workaround in
   the sync branch rather than carrying duplicate logic forward.
 - Document any intentional post-merge divergence in
-  [`docs/fork-deviations.md`](/Users/billk/Development/starfoundrystudio/alphaclaw/docs/fork-deviations.md)
+  [`docs/fork-deviations.md`](fork-deviations.md)
   and reference it in the PR description when relevant.
