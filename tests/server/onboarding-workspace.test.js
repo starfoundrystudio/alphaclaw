@@ -65,21 +65,13 @@ describe("server/onboarding/workspace", () => {
     );
   });
 
-  const kOriginalRailwayPublicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
-
-  afterEach(() => {
-    if (typeof kOriginalRailwayPublicDomain === "undefined") {
-      delete process.env.RAILWAY_PUBLIC_DOMAIN;
-      return;
-    }
-    process.env.RAILWAY_PUBLIC_DOMAIN = kOriginalRailwayPublicDomain;
+  it("falls back to localhost when no explicit base URL is provided", () => {
+    expect(resolveSetupUiUrl("")).toBe("http://localhost:3000");
   });
 
-  it("falls back to Railway public domain when no explicit base URL is provided", () => {
-    process.env.RAILWAY_PUBLIC_DOMAIN = "alphaclaw-production.up.railway.app";
-
-    expect(resolveSetupUiUrl("")).toBe(
-      "https://alphaclaw-production.up.railway.app",
+  it("normalizes trailing slashes on the configured base URL", () => {
+    expect(resolveSetupUiUrl("https://claw.example.com/")).toBe(
+      "https://claw.example.com",
     );
   });
 
