@@ -1,5 +1,6 @@
 const {
   normalizeHistoryMessages,
+  isConnectionLevelError,
   kAlphaclawSystemNotePrefix,
 } = require("../../lib/server/chat-ws");
 const { kBootstrapKickoffMessage } = require("../../lib/server/bootstrap-kickoff");
@@ -35,6 +36,24 @@ describe("server/chat-ws normalizeHistoryMessages", () => {
 
     expect(messages).toHaveLength(1);
     expect(messages[0].content).toBe("hello from telegram");
+  });
+
+  it("classifies gateway-reachability failures as connection-level", () => {
+    expect(
+      isConnectionLevelError(new Error("connect ECONNREFUSED 127.0.0.1:18789")),
+    ).toBe(true);
+    expect(
+      isConnectionLevelError(new Error("OpenClaw gateway is not connected")),
+    ).toBe(true);
+    expect(
+      isConnectionLevelError(new Error("OpenClaw chat.history request timed out")),
+    ).toBe(true);
+    expect(
+      isConnectionLevelError(new Error("gateway request failed: bad params")),
+    ).toBe(false);
+    expect(isConnectionLevelError(new Error("Something went wrong."))).toBe(
+      false,
+    );
   });
 
   it("does not hide assistant messages that quote the marker", () => {
