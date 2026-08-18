@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-18T00:02:38.093Z",
+  "generatedAt": "2026-08-18T22:35:28.216Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -5459,6 +5459,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/z-ai/glm-5.3",
+              "provider": "openrouter",
+              "label": "Z.ai: GLM 5.3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/z-ai/glm-5v-turbo",
               "provider": "openrouter",
               "label": "Z.ai: GLM 5V Turbo",
@@ -6017,6 +6026,15 @@
               "key": "vercel-ai-gateway/zai/glm-5.2-fast",
               "provider": "vercel-ai-gateway",
               "label": "GLM 5.2 Fast",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/zai/glm-5.3",
+              "provider": "vercel-ai-gateway",
+              "label": "GLM 5.3",
               "accessModes": [
                 "gateway"
               ],
@@ -11984,6 +12002,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/z-ai/glm-5.3",
+      "provider": "openrouter",
+      "label": "Z.ai: GLM 5.3",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/z-ai/glm-5v-turbo",
       "provider": "openrouter",
       "label": "Z.ai: GLM 5V Turbo",
@@ -12915,6 +12942,15 @@
       "key": "vercel-ai-gateway/zai/glm-5.2-fast",
       "provider": "vercel-ai-gateway",
       "label": "GLM 5.2 Fast",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/zai/glm-5.3",
+      "provider": "vercel-ai-gateway",
+      "label": "GLM 5.3",
       "accessModes": [
         "gateway"
       ],
