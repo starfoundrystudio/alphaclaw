@@ -51,6 +51,26 @@
   margin-top: 24px;
 }
 
+/* First-run: bootstrap ritual is running and the greeting hasn't landed
+   yet; pairs the explanatory empty state with the same typing bubble used
+   for in-conversation replies. */
+.chat-agent-waking {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.chat-agent-waking .chat-empty-state {
+  margin-top: 24px;
+}
+
+/* Three classes: must out-rank the later .chat-bubble.is-assistant
+   alignment rule, which ties a two-class selector and wins on order. */
+.chat-agent-waking .chat-bubble.chat-typing-indicator {
+  align-self: center;
+}
+
 .chat-bubble {
   max-width: 86%;
   border-radius: 10px;
