@@ -1049,6 +1049,34 @@ describe("server/routes/system", () => {
     });
   });
 
+  it("synthesizes the default agent main session when no sessions exist", async () => {
+    const deps = createSystemDeps();
+    deps.clawCmd.mockResolvedValue({
+      ok: true,
+      stdout: JSON.stringify({ sessions: [] }),
+    });
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/agent/sessions");
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.sessions).toEqual([
+      {
+        key: "agent:main:main",
+        sessionId: "",
+        updatedAt: 0,
+        agentId: "main",
+        agentLabel: "Main Agent",
+        channel: "",
+        groupName: "",
+        topicName: "",
+        replyChannel: "",
+        replyTo: "",
+      },
+    ]);
+  });
+
   it("returns raw session metadata on GET /api/agent/sessions", async () => {
     const deps = createSystemDeps();
     deps.fs.readFileSync.mockImplementation((targetPath) => {

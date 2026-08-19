@@ -171,7 +171,50 @@ describe("server/routes/onboarding", () => {
     const res = await request(app).get("/api/onboard/status");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ onboarded: true });
+    expect(res.body).toEqual({
+      onboarded: true,
+      workspaceBootstrap: { complete: false, reason: "workspace_missing" },
+    });
+  });
+
+  it("reports a pending workspace bootstrap on the status endpoint", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.existsSync.mockImplementation((targetPath) =>
+      [
+        deps.constants.kOnboardingMarkerPath,
+        deps.constants.WORKSPACE_DIR,
+        path.join(deps.constants.WORKSPACE_DIR, "BOOTSTRAP.md"),
+      ].includes(targetPath),
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/onboard/status");
+
+    expect(res.status).toBe(200);
+    expect(res.body.workspaceBootstrap).toEqual({
+      complete: false,
+      reason: "bootstrap_pending",
+    });
+  });
+
+  it("reports a completed workspace bootstrap on the status endpoint", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.existsSync.mockImplementation((targetPath) =>
+      [
+        deps.constants.kOnboardingMarkerPath,
+        deps.constants.WORKSPACE_DIR,
+        path.join(deps.constants.WORKSPACE_DIR, "IDENTITY.md"),
+      ].includes(targetPath),
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/onboard/status");
+
+    expect(res.status).toBe(200);
+    expect(res.body.workspaceBootstrap).toEqual({
+      complete: true,
+      reason: "bootstrap_file_absent",
+    });
   });
 
   it("returns final setup details from the onboarding marker", async () => {
@@ -191,6 +234,7 @@ describe("server/routes/onboarding", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
       onboarded: true,
+      workspaceBootstrap: { complete: false, reason: "workspace_missing" },
       setupUrl: "https://alphaclaw.tail123.ts.net",
       publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
       tailscaleDns: "alphaclaw.tail123.ts.net",
