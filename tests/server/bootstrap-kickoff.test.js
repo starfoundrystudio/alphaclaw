@@ -15,11 +15,17 @@ const kConstants = {
 
 const kBootstrapPath = path.join(kConstants.WORKSPACE_DIR, "BOOTSTRAP.md");
 
+const kMarkedAtMs = Date.parse("2026-08-18T12:00:00.000Z");
+
 const createDeps = ({
   onboarded = true,
   kickoffMarker = false,
   bootstrapPending = true,
   workspaceSeeded = true,
+  hostFinalizationScheduled = true,
+  // Default: this process was born after onboarding completed (i.e. the
+  // post-finalization-restart process), which is allowed to kick off.
+  processStartedAtMs = kMarkedAtMs + 30000,
 } = {}) => {
   const existingPaths = new Set();
   if (onboarded) existingPaths.add(kConstants.kOnboardingMarkerPath);
@@ -29,16 +35,26 @@ const createDeps = ({
     if (bootstrapPending) existingPaths.add(kBootstrapPath);
     else existingPaths.add(path.join(kConstants.WORKSPACE_DIR, "IDENTITY.md"));
   }
+  const onboardingMarker = {
+    onboarded: true,
+    markedAt: new Date(kMarkedAtMs).toISOString(),
+    hostFinalizationScheduled,
+  };
   return {
+    onboardingMarker,
     fs: {
       existsSync: vi.fn((targetPath) => existingPaths.has(targetPath)),
-      readFileSync: vi.fn(() => {
+      readFileSync: vi.fn((targetPath) => {
+        if (targetPath === kConstants.kOnboardingMarkerPath) {
+          return JSON.stringify(onboardingMarker);
+        }
         throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
       }),
       writeFileSync: vi.fn(),
       mkdirSync: vi.fn(),
     },
     constants: kConstants,
+    getProcessStartedAtMs: vi.fn(() => processStartedAtMs),
     requestGateway: vi.fn(async (method) => {
       if (method === "sessions.list") return { sessions: [] };
       if (method === "chat.send") return { runId: "run-1" };
@@ -157,43 +173,72 @@ describe("server/bootstrap-kickoff", () => {
     expect(deps.delay).toHaveBeenCalledTimes(2);
   });
 
-  it("holds the kickoff until the gateway connection has been stable", async () => {
-    const deps = createDeps();
-    // Simulates a reconnect after a mid-boot gateway restart: the connection
-    // is young on the first two checks, then old enough.
-    const ages = [5000, 45000, 120000];
-    const getGatewayConnectionAgeMs = vi.fn(() => ages.shift() ?? 120000);
-    const service = createBootstrapKickoffService({
-      ...deps,
-      getGatewayConnectionAgeMs,
-      minGatewayStableMs: 90000,
+  it("defers in the process that completed onboarding when a finalization restart is scheduled", async () => {
+    const deps = createDeps({ processStartedAtMs: kMarkedAtMs - 60000 });
+    const service = createBootstrapKickoffService({ ...deps, maxAttempts: 3 });
+
+    const result = await service.maybeRunBootstrapKickoff();
+
+    expect(result).toEqual({ ok: false, reason: "gave_up" });
+    expect(deps.requestGateway).not.toHaveBeenCalled();
+    expect(deps.fs.writeFileSync).not.toHaveBeenCalled();
+    expect(deps.logger.log).toHaveBeenCalledWith(
+      expect.stringContaining("host finalization restart pending"),
+    );
+  });
+
+  it("fires immediately in a process born after onboarding completed", async () => {
+    const deps = createDeps({ processStartedAtMs: kMarkedAtMs + 5000 });
+    const service = createBootstrapKickoffService(deps);
+
+    const result = await service.maybeRunBootstrapKickoff();
+
+    expect(result).toMatchObject({ ok: true, reason: "kickoff_sent" });
+    expect(deps.delay).not.toHaveBeenCalled();
+  });
+
+  it("fires in the completing process when no finalization restart was scheduled", async () => {
+    const deps = createDeps({
+      hostFinalizationScheduled: false,
+      processStartedAtMs: kMarkedAtMs - 60000,
+    });
+    const service = createBootstrapKickoffService(deps);
+
+    const result = await service.maybeRunBootstrapKickoff();
+
+    expect(result).toMatchObject({ ok: true, reason: "kickoff_sent" });
+    expect(deps.delay).not.toHaveBeenCalled();
+  });
+
+  it("fires when an older marker has no hostFinalizationScheduled field", async () => {
+    const deps = createDeps({ processStartedAtMs: kMarkedAtMs - 60000 });
+    delete deps.onboardingMarker.hostFinalizationScheduled;
+    const service = createBootstrapKickoffService(deps);
+
+    const result = await service.maybeRunBootstrapKickoff();
+
+    expect(result).toMatchObject({ ok: true, reason: "kickoff_sent" });
+  });
+
+  it("recovers mid-loop when onboarding clears the scheduled flag after a failed restart", async () => {
+    const deps = createDeps({ processStartedAtMs: kMarkedAtMs - 60000 });
+    const service = createBootstrapKickoffService({ ...deps, maxAttempts: 5 });
+    let reads = 0;
+    deps.fs.readFileSync.mockImplementation((targetPath) => {
+      if (targetPath === kConstants.kOnboardingMarkerPath) {
+        reads += 1;
+        return JSON.stringify({
+          ...deps.onboardingMarker,
+          hostFinalizationScheduled: reads < 3,
+        });
+      }
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
     });
 
     const result = await service.maybeRunBootstrapKickoff();
 
     expect(result).toMatchObject({ ok: true, reason: "kickoff_sent" });
-    expect(getGatewayConnectionAgeMs).toHaveBeenCalledTimes(3);
     expect(deps.delay).toHaveBeenCalledTimes(2);
-    expect(
-      deps.requestGateway.mock.calls.filter(([method]) => method === "chat.send"),
-    ).toHaveLength(1);
-  });
-
-  it("gives up without a marker when the gateway never stabilizes", async () => {
-    const deps = createDeps();
-    const service = createBootstrapKickoffService({
-      ...deps,
-      getGatewayConnectionAgeMs: () => 1000,
-      maxAttempts: 3,
-    });
-
-    const result = await service.maybeRunBootstrapKickoff();
-
-    expect(result).toEqual({ ok: false, reason: "gave_up" });
-    expect(deps.fs.writeFileSync).not.toHaveBeenCalled();
-    expect(
-      deps.requestGateway.mock.calls.filter(([method]) => method === "chat.send"),
-    ).toHaveLength(0);
   });
 
   it("gives up without a marker so the next boot can retry", async () => {
