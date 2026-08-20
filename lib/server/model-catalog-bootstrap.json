@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-19T21:47:49.887Z",
+  "generatedAt": "2026-08-20T22:40:45.703Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -3191,6 +3191,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/mistralai/ministral-8b",
+              "provider": "openrouter",
+              "label": "Mistral: Ministral 8B",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/mistralai/mistral-large-2512",
               "provider": "openrouter",
               "label": "Mistral: Mistral Large 3 2512",
@@ -4442,6 +4451,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/stealth/ox-alpha",
+              "provider": "openrouter",
+              "label": "Ox Alpha",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openrouter/pareto-code",
               "provider": "openrouter",
               "label": "Pareto Code Router",
@@ -5165,6 +5183,24 @@
               "key": "openrouter/tencent/hunyuan-a13b-instruct",
               "provider": "openrouter",
               "label": "Tencent: Hunyuan A13B Instruct",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/tencent/hy-mt2-1.8b",
+              "provider": "openrouter",
+              "label": "Tencent: Hy-MT2-1.8B",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/tencent/hy-mt2-30b-a3b",
+              "provider": "openrouter",
+              "label": "Tencent: Hy-MT2-30B-A3B",
               "accessModes": [
                 "gateway"
               ],
@@ -6483,7 +6519,7 @@
               "accessLabel": "via Vercel AI Gateway"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.1-fast-non-reasoning",
+              "key": "vercel-ai-gateway/spacexai/grok-4.1-fast-non-reasoning",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.1 Fast Non-Reasoning",
               "accessModes": [
@@ -6492,7 +6528,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.1-fast-reasoning",
+              "key": "vercel-ai-gateway/spacexai/grok-4.1-fast-reasoning",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.1 Fast Reasoning",
               "accessModes": [
@@ -6501,7 +6537,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.20-non-reasoning-beta",
+              "key": "vercel-ai-gateway/spacexai/grok-4.20-non-reasoning-beta",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.20 Beta Non-Reasoning",
               "accessModes": [
@@ -6510,7 +6546,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.20-reasoning-beta",
+              "key": "vercel-ai-gateway/spacexai/grok-4.20-reasoning-beta",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.20 Beta Reasoning",
               "accessModes": [
@@ -6519,7 +6555,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.20-multi-agent-beta",
+              "key": "vercel-ai-gateway/spacexai/grok-4.20-multi-agent-beta",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.20 Multi Agent Beta",
               "accessModes": [
@@ -6528,7 +6564,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.20-multi-agent",
+              "key": "vercel-ai-gateway/spacexai/grok-4.20-multi-agent",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.20 Multi-Agent",
               "accessModes": [
@@ -6537,7 +6573,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.20-non-reasoning",
+              "key": "vercel-ai-gateway/spacexai/grok-4.20-non-reasoning",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.20 Non-Reasoning",
               "accessModes": [
@@ -6546,7 +6582,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.20-reasoning",
+              "key": "vercel-ai-gateway/spacexai/grok-4.20-reasoning",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.20 Reasoning",
               "accessModes": [
@@ -6555,7 +6591,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.3",
+              "key": "vercel-ai-gateway/spacexai/grok-4.3",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.3",
               "accessModes": [
@@ -6564,7 +6600,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.5",
+              "key": "vercel-ai-gateway/spacexai/grok-4.5",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.5",
               "accessModes": [
@@ -6573,7 +6609,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-4.6",
+              "key": "vercel-ai-gateway/spacexai/grok-4.6",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.6",
               "accessModes": [
@@ -6582,7 +6618,7 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/xai/grok-build-0.1",
+              "key": "vercel-ai-gateway/spacexai/grok-build-0.1",
               "provider": "vercel-ai-gateway",
               "label": "Grok Build 0.1",
               "accessModes": [
@@ -9694,6 +9730,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/mistralai/ministral-8b",
+      "provider": "openrouter",
+      "label": "Mistral: Ministral 8B",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/mistralai/mistral-large-2512",
       "provider": "openrouter",
       "label": "Mistral: Mistral Large 3 2512",
@@ -10958,6 +11003,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/stealth/ox-alpha",
+      "provider": "openrouter",
+      "label": "Ox Alpha",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openrouter/pareto-code",
       "provider": "openrouter",
       "label": "Pareto Code Router",
@@ -11681,6 +11735,24 @@
       "key": "openrouter/tencent/hunyuan-a13b-instruct",
       "provider": "openrouter",
       "label": "Tencent: Hunyuan A13B Instruct",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/tencent/hy-mt2-1.8b",
+      "provider": "openrouter",
+      "label": "Tencent: Hy-MT2-1.8B",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/tencent/hy-mt2-30b-a3b",
+      "provider": "openrouter",
+      "label": "Tencent: Hy-MT2-30B-A3B",
       "accessModes": [
         "gateway"
       ],
@@ -13385,7 +13457,7 @@
       "accessLabel": "via Vercel AI Gateway"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.1-fast-non-reasoning",
+      "key": "vercel-ai-gateway/spacexai/grok-4.1-fast-non-reasoning",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.1 Fast Non-Reasoning",
       "accessModes": [
@@ -13394,7 +13466,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.1-fast-reasoning",
+      "key": "vercel-ai-gateway/spacexai/grok-4.1-fast-reasoning",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.1 Fast Reasoning",
       "accessModes": [
@@ -13403,7 +13475,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.20-non-reasoning-beta",
+      "key": "vercel-ai-gateway/spacexai/grok-4.20-non-reasoning-beta",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.20 Beta Non-Reasoning",
       "accessModes": [
@@ -13412,7 +13484,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.20-reasoning-beta",
+      "key": "vercel-ai-gateway/spacexai/grok-4.20-reasoning-beta",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.20 Beta Reasoning",
       "accessModes": [
@@ -13421,7 +13493,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.20-multi-agent-beta",
+      "key": "vercel-ai-gateway/spacexai/grok-4.20-multi-agent-beta",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.20 Multi Agent Beta",
       "accessModes": [
@@ -13430,7 +13502,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.20-multi-agent",
+      "key": "vercel-ai-gateway/spacexai/grok-4.20-multi-agent",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.20 Multi-Agent",
       "accessModes": [
@@ -13439,7 +13511,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.20-non-reasoning",
+      "key": "vercel-ai-gateway/spacexai/grok-4.20-non-reasoning",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.20 Non-Reasoning",
       "accessModes": [
@@ -13448,7 +13520,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.20-reasoning",
+      "key": "vercel-ai-gateway/spacexai/grok-4.20-reasoning",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.20 Reasoning",
       "accessModes": [
@@ -13457,7 +13529,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.3",
+      "key": "vercel-ai-gateway/spacexai/grok-4.3",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.3",
       "accessModes": [
@@ -13466,7 +13538,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.5",
+      "key": "vercel-ai-gateway/spacexai/grok-4.5",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.5",
       "accessModes": [
@@ -13475,7 +13547,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-4.6",
+      "key": "vercel-ai-gateway/spacexai/grok-4.6",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.6",
       "accessModes": [
@@ -13484,7 +13556,7 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/xai/grok-build-0.1",
+      "key": "vercel-ai-gateway/spacexai/grok-build-0.1",
       "provider": "vercel-ai-gateway",
       "label": "Grok Build 0.1",
       "accessModes": [
