@@ -1,6 +1,6 @@
 # Egress Program Status
 
-**Updated:** 2026-08-24 (late) — maintained by Claude; ask for "the egress status board" in any session.
+**Updated:** 2026-08-24 (night) — maintained by Claude; ask for "the egress status board" in any session.
 
 ## Live infrastructure
 
@@ -14,13 +14,13 @@
 | Thread | State | Owner | Next action |
 | --- | --- | --- | --- |
 | Egress Phases 0–2 (spec, spike, mediated, enforced flip) | **Done & live-validated** on branches | — | — |
-| clawctl `claude/egress-phase1` (5 commits incl. spec-era docs) | Pushed, unmerged | **Bill** | Review, merge to `main` |
+| clawctl egress branch | **Merged to `main`** 2026-08-24 (0fb72df, 431/431 tests + tsc clean on merged main) | — | — |
 | teamyou PR #791 (Phase 1+2) | Open, mergeable into `development` | **Bill** | Review, merge |
 | Attestation workflow (continuous firewall verification + Slack drift alerts) | Blueprint ready, not started | Claude | Build after the branches merge |
 | Setup-completion readiness gate | **Shipped by Bill** in `0.9.18-starfoundry.18-beta.1` (merged to alphaclaw main) | **Bill** | Live test: fresh TeamYou-admin provision with channel=beta |
 | Flow-log inventory report (Phase 3 input) | Ready to run — a focused exercise session beats passive soak time | Claude | Drive scoped agent usage via the gateway private path, then harvest `alphaclaw-natgw-new` logs into the destination report |
-| Host-asset bundle env bump in teamyou Vercel (`ed1ac144`, supersedes 46a2406b) | Safe any time (bundle defaults to direct) | Bill | Optional now; required before TeamYou-provisioned mediated/enforced instances |
-| Loopback-through-proxy class (web_search et al.) | **Fixed generically 2026-08-24** via the vault proxy shim on alphaclaw main (fadc521): loopback targets dial locally, everything else relays to the vault untouched. Live-validated on the enforced instance (SearXNG 20 results through the previously-failing shape; SSE streams; external egress via gateway). No upstream change needed; vault plaintext-sniff rejected as security-weakening | Bill | Include in next alphaclaw release (enforced instance is hot-patched) |
+| Host-asset bundle env bump in teamyou Vercel (`ed1ac144`) | **Deliberately deferred** (owner call 2026-08-24): a customer is mid-onboarding; bump waits until the coast is clear. (Note: the bundle URL/SHA is read once at stage-zero claim, so in-flight instances keep their bundle — the bump only affects future claims. Recorded so the timing decision has full context.) | Bill | Bump when comfortable; required before TeamYou-provisioned mediated/enforced instances |
+| Loopback-through-proxy class (web_search et al.) | **Fixed generically 2026-08-24** via the vault proxy shim on alphaclaw main (fadc521); live-validated on the enforced instance. Vault plaintext-sniff rejected; no upstream change needed | Bill | Ships in the next alphaclaw release — **deferred by owner until needed for testing** (enforced instance is hot-patched meanwhile) |
 | Mediated route lost on DHCP renewal | **Fixed 2026-08-24** (clawctl 2a27d05): bootstrap writes a netplan drop-in so networkd owns the route + policy rule; the old oneshot became a probe/repair alarm on a 5-min timer ("alphaclaw-egress-alarm" journal token). Live-applied to the enforced instance and proven: route survives forced networkctl reconfigure; strip-and-repair drill passes | Bill | Rides the branch merge; bundle republished as ed1ac144 |
 | Vault-env plugin-install bug | **Fixed on alphaclaw main** (6b769a2); rides the next release. Live instance manually unblocked (vercel-ai-gateway plugin installed by hand) | Bill | Include in next alphaclaw release |
 
