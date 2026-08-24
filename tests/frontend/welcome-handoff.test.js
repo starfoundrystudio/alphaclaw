@@ -72,37 +72,101 @@ describe("frontend/welcome handoff", () => {
     );
   });
 
-  it("probes the redirect target without requiring CORS", async () => {
-    const { probeSetupRedirectTarget } = await loadWelcomeHook();
-    const fetchImpl = vi.fn(async () => ({}));
+  it("builds a cache-busted probe URL on the final origin", async () => {
+    const { buildInstanceProbeUrl } = await loadWelcomeHook();
 
-    await expect(
-      probeSetupRedirectTarget("https://alphaclaw.tail123.ts.net/#/general", {
-        fetchImpl,
-        timeoutMs: 0,
-      }),
-    ).resolves.toBe(true);
-    expect(fetchImpl).toHaveBeenCalledWith(
-      "https://alphaclaw.tail123.ts.net/#/general",
-      expect.objectContaining({
-        mode: "no-cors",
-        cache: "no-store",
-      }),
+    expect(buildInstanceProbeUrl("https://alphaclaw.tail123.ts.net", 3)).toBe(
+      "https://alphaclaw.tail123.ts.net/img/logo.svg?ready-probe=3",
     );
+    expect(buildInstanceProbeUrl("not a url")).toBe("");
   });
 
-  it("keeps the transition screen available when probing fails", async () => {
-    const { probeSetupRedirectTarget } = await loadWelcomeHook();
-    const fetchImpl = vi.fn(async () => {
-      throw new Error("not reachable");
+  it("treats a decodable image as the only readiness signal", async () => {
+    const { probeInstanceReady } = await loadWelcomeHook();
+    const makeImage = (fire) => () => {
+      const image = {};
+      Object.defineProperty(image, "src", {
+        set() {
+          queueMicrotask(() => image[fire]?.());
+        },
+      });
+      return image;
+    };
+
+    await expect(
+      probeInstanceReady("https://alphaclaw.tail123.ts.net", {
+        createImage: makeImage("onload"),
+      }),
+    ).resolves.toBe(true);
+    // A 502 error page or a closed connection both fail image decoding.
+    await expect(
+      probeInstanceReady("https://alphaclaw.tail123.ts.net", {
+        createImage: makeImage("onerror"),
+      }),
+    ).resolves.toBe(false);
+    await expect(
+      probeInstanceReady("not a url", {
+        createImage: makeImage("onload"),
+      }),
+    ).resolves.toBe(false);
+  });
+
+  it("times out unanswered probes", async () => {
+    const { probeInstanceReady } = await loadWelcomeHook();
+
+    await expect(
+      probeInstanceReady("https://alphaclaw.tail123.ts.net", {
+        createImage: () => ({}),
+        timeoutMs: 1,
+      }),
+    ).resolves.toBe(false);
+  });
+
+  it("requires consecutive successful probes before declaring readiness", async () => {
+    const { waitForInstanceReady } = await loadWelcomeHook();
+    const probe = vi
+      .fn()
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(true);
+
+    await expect(
+      waitForInstanceReady({
+        setupUrl: "https://alphaclaw.tail123.ts.net",
+        probe,
+        waitMs: async () => {},
+        initialDelayMs: 0,
+        intervalMs: 0,
+        requiredSuccesses: 2,
+      }),
+    ).resolves.toBe(true);
+    expect(probe).toHaveBeenCalledTimes(4);
+  });
+
+  it("switches to the tailnet hint once, then keeps polling until cancelled", async () => {
+    const { waitForInstanceReady } = await loadWelcomeHook();
+    const onTailnetHint = vi.fn();
+    let calls = 0;
+    const probe = vi.fn(async () => {
+      calls += 1;
+      return false;
     });
 
     await expect(
-      probeSetupRedirectTarget("https://alphaclaw.tail123.ts.net/#/general", {
-        fetchImpl,
-        timeoutMs: 0,
+      waitForInstanceReady({
+        setupUrl: "https://alphaclaw.tail123.ts.net",
+        probe,
+        waitMs: async () => {},
+        initialDelayMs: 0,
+        intervalMs: 0,
+        tailnetHintDelayMs: 0,
+        onTailnetHint,
+        isCancelled: () => calls >= 5,
       }),
     ).resolves.toBe(false);
+    expect(onTailnetHint).toHaveBeenCalledTimes(1);
+    expect(probe).toHaveBeenCalledTimes(5);
   });
 
   it("recognizes interrupted final onboarding responses as recoverable", async () => {
