@@ -1,6 +1,6 @@
 # Egress Program Status
 
-**Updated:** 2026-08-24 — maintained by Claude; ask for "the egress status board" in any session.
+**Updated:** 2026-08-24 (evening) — maintained by Claude; ask for "the egress status board" in any session.
 
 ## Live infrastructure
 
@@ -21,7 +21,8 @@
 | Setup-completion readiness gate | **Shipped by Bill** in `0.9.18-starfoundry.18-beta.1` (merged to alphaclaw main) | **Bill** | Live test: fresh TeamYou-admin provision with channel=beta |
 | Flow-log inventory report (Phase 3 input) | Ready to run — a focused exercise session beats passive soak time | Claude | Drive scoped agent usage via the gateway private path, then harvest `alphaclaw-natgw-new` logs into the destination report |
 | Host-asset bundle env bump in teamyou Vercel (`46a2406b`) | Safe any time (bundle defaults to direct) | Bill | Optional now; required before TeamYou-provisioned mediated/enforced instances |
-| web_search broken on vault instances (upstream) | **Root-caused 2026-08-23**: openclaw's searxng plugin routes its loopback fetch through the vault proxy (no configured-local-origin bypass); vault kills the plaintext CONNECT. No config workaround; fix is upstream in @openclaw/searxng-plugin | **Bill** | Decide: prepare upstream openclaw patch (standing rule: nothing filed upstream without approval). Interim: Brave API key for web_search |
+| Loopback-through-proxy class (web_search et al.) | **Fixed generically 2026-08-24** via the vault proxy shim on alphaclaw main (fadc521): loopback targets dial locally, everything else relays to the vault untouched. Live-validated on the enforced instance (SearXNG 20 results through the previously-failing shape; SSE streams; external egress via gateway). No upstream change needed; vault plaintext-sniff rejected as security-weakening | Bill | Include in next alphaclaw release (enforced instance is hot-patched) |
+| **Mediated route lost on DHCP renewal (NEW)** | Found 2026-08-24 on the first long-lived enforced instance: systemd-networkd strips the foreign default-via-fabric route on lease renewal (~23h in), silently blackholing direct traffic under the deny; restored via unit restart. Reboot tests could not catch this | Claude | Durable fix in clawctl bootstrap: make networkd own the route + policy rule (netplan drop-in) instead of runtime ip commands; fold in the post-flip egress probe/alarm |
 | Vault-env plugin-install bug | **Fixed on alphaclaw main** (6b769a2); rides the next release. Live instance manually unblocked (vercel-ai-gateway plugin installed by hand) | Bill | Include in next alphaclaw release |
 
 ## Explicitly parked (no one is working on these)
