@@ -233,11 +233,20 @@ To see inside TLS you must terminate it — physics, not architecture.
 
 ## 5. Verification (the "verifiable" in verifiable isolation)
 
-1. **Ruleset attestation (authoritative).** A TeamYou reconcile job reads the
-   workload firewall via the Hetzner API on a schedule, canonicalizes and hashes
-   the rules, compares against the policy stored with instance metadata, alerts
-   and auto-repairs drift. Drift is the only way isolation silently fails, and
-   the agent has no lever over it.
+1. **Ruleset attestation (authoritative).** A TeamYou job periodically reads
+   the shared outbound-deny firewalls via the Hetzner API, verifies the exact
+   sentinel ruleset and that every enforced workload is attached, and repairs
+   + Slack-alerts on drift. **Threat model corrected 2026-08-24 (owner
+   review):** the root agent *cannot* cause drift — no Hetzner credential
+   exists on workload or gateway (the keystone invariant) — so attestation's
+   honest job is catching *our own* future mistakes: tooling bugs and human
+   error against a shared resource whose loss is perfectly symptomless
+   (routing keeps working; only the guarantee evaporates). Right-sized
+   accordingly: hourly cadence, one `GET /firewalls` call for the whole fleet
+   (shared firewalls selected by their `egress_enforced_outbound_deny`
+   purpose label, covering both provisioning paths), ~zero cost. A
+   compromised control plane is out of scope — it holds the same token the
+   checker uses.
 2. **Enforcement-flip proof.** At flip time the control plane: (a) confirms the
    API-side ruleset; (b) port-scans the workload public IP from outside expecting
    silence (v4 and v6); (c) runs a before/after direct-egress probe through the
