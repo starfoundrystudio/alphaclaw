@@ -17,7 +17,6 @@
 | clawctl `claude/egress-phase1` (5 commits incl. spec-era docs) | Pushed, unmerged | **Bill** | Review, merge to `main` |
 | teamyou PR #791 (Phase 1+2) | Open, mergeable into `development` | **Bill** | Review, merge |
 | Attestation workflow (continuous firewall verification + Slack drift alerts) | Blueprint ready, not started | Claude | Build after the branches merge |
-| Post-flip egress probe hardening (`alphaclaw-egress-route` alarms if dark) | Noted in spec follow-ups | Claude | Small; fold into next clawctl change |
 | Setup-completion readiness gate | **Shipped by Bill** in `0.9.18-starfoundry.18-beta.1` (merged to alphaclaw main) | **Bill** | Live test: fresh TeamYou-admin provision with channel=beta |
 | Flow-log inventory report (Phase 3 input) | Ready to run — a focused exercise session beats passive soak time | Claude | Drive scoped agent usage via the gateway private path, then harvest `alphaclaw-natgw-new` logs into the destination report |
 | Host-asset bundle env bump in teamyou Vercel (`ed1ac144`, supersedes 46a2406b) | Safe any time (bundle defaults to direct) | Bill | Optional now; required before TeamYou-provisioned mediated/enforced instances |
