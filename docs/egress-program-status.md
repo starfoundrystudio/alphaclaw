@@ -1,12 +1,12 @@
 # Egress Program Status
 
-**Updated:** 2026-08-23 (evening) — maintained by Claude; ask for "the egress status board" in any session.
+**Updated:** 2026-08-24 — maintained by Claude; ask for "the egress status board" in any session.
 
 ## Live infrastructure
 
 | What | Where | State |
 | --- | --- | --- |
-| `alphaclaw-egress-enforced-1` (+ gateway) | Dedicated test Hetzner project | **Enforced**, onboarded, healthy. Current soak: gateway flow logs are accumulating the Phase 3 traffic inventory. **Action: use the agent normally — that IS the data gathering.** |
+| `alphaclaw-egress-enforced-1` (+ gateway) | Dedicated test Hetzner project | **Enforced**, onboarded, healthy. Dashboard: `https://alphaclaw-egress-enforced-1.tail2cd802.ts.net/` (tailnet-only; password in Doppler `SETUP_PASSWORD__INST_8ADB16F0…`). **No time required from Bill**: Claude drives a scoped agent-exercise session (web search, browsing, memory — no external accounts) via the gateway's private path to generate the Phase 3 flow-log inventory. |
 | `alphaclaw-egress-soak-1` (mediated) | — | Destroyed 2026-08-23; teardown test passed clean. Residue: dead node(s) in the tailnet admin console (manual cleanup, cosmetic). |
 
 ## Threads
@@ -19,8 +19,10 @@
 | Attestation workflow (continuous firewall verification + Slack drift alerts) | Blueprint ready, not started | Claude | Build after the branches merge |
 | Post-flip egress probe hardening (`alphaclaw-egress-route` alarms if dark) | Noted in spec follow-ups | Claude | Small; fold into next clawctl change |
 | Setup-completion readiness gate | **Shipped by Bill** in `0.9.18-starfoundry.18-beta.1` (merged to alphaclaw main) | **Bill** | Live test: fresh TeamYou-admin provision with channel=beta |
-| Flow-log inventory report (Phase 3 input) | Waiting on ~1 week of soak usage | Claude | Harvest `alphaclaw-natgw-new` logs, produce destination report |
+| Flow-log inventory report (Phase 3 input) | Ready to run — a focused exercise session beats passive soak time | Claude | Drive scoped agent usage via the gateway private path, then harvest `alphaclaw-natgw-new` logs into the destination report |
 | Host-asset bundle env bump in teamyou Vercel (`46a2406b`) | Safe any time (bundle defaults to direct) | Bill | Optional now; required before TeamYou-provisioned mediated/enforced instances |
+
+| Vault-env plugin-install bug | **Fixed on alphaclaw main** (6b769a2); rides the next release. Live instance manually unblocked (vercel-ai-gateway plugin installed by hand) | Bill | Include in next alphaclaw release |
 
 ## Explicitly parked (no one is working on these)
 
