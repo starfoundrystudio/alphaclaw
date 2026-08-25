@@ -35,41 +35,38 @@ describe("frontend/general-helpers", () => {
     ).toBe(false);
   });
 
-  it("enables recurring pairings polling only when a prior fetch found real pending requests", async () => {
+  it("keeps recurring pairings polling on while an unpaired channel awaits its first DM", async () => {
     const { shouldEnableRecurringPairingsPolling } = await loadGeneralHelpers();
 
+    // Polls even with zero pending requests — a new request arriving from
+    // the user's first DM is exactly what the poll exists to discover.
     expect(
       shouldEnableRecurringPairingsPolling({
+        isActive: true,
         hasUnpaired: true,
         gatewayStatus: "running",
-        pairingsPollingEnabled: true,
       }),
     ).toBe(true);
     expect(
       shouldEnableRecurringPairingsPolling({
+        isActive: false,
         hasUnpaired: true,
         gatewayStatus: "running",
-        pairingsPollingEnabled: false,
       }),
     ).toBe(false);
     expect(
       shouldEnableRecurringPairingsPolling({
+        isActive: true,
+        hasUnpaired: false,
+        gatewayStatus: "running",
+      }),
+    ).toBe(false);
+    expect(
+      shouldEnableRecurringPairingsPolling({
+        isActive: true,
         hasUnpaired: true,
         gatewayStatus: "stopped",
-        pairingsPollingEnabled: true,
       }),
     ).toBe(false);
-  });
-
-  it("turns recurring pairings polling on only when the latest fetch returns pending requests", async () => {
-    const { derivePairingsPollingEnabled } = await loadGeneralHelpers();
-
-    expect(derivePairingsPollingEnabled([])).toBe(false);
-    expect(derivePairingsPollingEnabled(null)).toBe(false);
-    expect(
-      derivePairingsPollingEnabled([
-        { id: "req-1", channel: "telegram" },
-      ]),
-    ).toBe(true);
   });
 });
