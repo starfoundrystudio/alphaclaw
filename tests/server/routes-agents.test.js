@@ -680,3 +680,103 @@ describe("server/routes/agents", () => {
     });
   });
 });
+
+describe("server/routes/agents vault-token", () => {
+  const createApp = ({ agentVaultService } = {}) => {
+    const app = express();
+    app.use(express.json());
+    registerAgentRoutes({
+      app,
+      agentsService: createAgentsServiceMock(),
+      agentVaultService,
+    });
+    return app;
+  };
+
+  it("rejects unsupported providers and missing vault service", async () => {
+    const app = createApp();
+
+    const unsupported = await request(app)
+      .post("/api/channels/vault-token")
+      .send({ provider: "whatsapp" });
+    expect(unsupported.status).toBe(400);
+
+    const noVault = await request(app)
+      .post("/api/channels/vault-token")
+      .send({ provider: "telegram" });
+    expect(noVault.status).toBe(409);
+  });
+
+  it("returns active with the account-scoped placeholders when available", async () => {
+    const ensureChannelProviderAccess = vi.fn(async () => ({
+      status: "available",
+      provider: "telegram",
+      accountId: "work",
+      slots: [
+        {
+          envKey: "TELEGRAM_BOT_TOKEN_WORK",
+          placeholder: "__agent_vault_telegram_bot_token_work__",
+        },
+      ],
+    }));
+    const app = createApp({
+      agentVaultService: { ensureChannelProviderAccess },
+    });
+
+    const res = await request(app)
+      .post("/api/channels/vault-token")
+      .send({ provider: "telegram", accountId: "work" });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      ok: true,
+      status: "active",
+      provider: "telegram",
+      accountId: "work",
+      slots: [
+        expect.objectContaining({ envKey: "TELEGRAM_BOT_TOKEN_WORK" }),
+      ],
+    });
+    expect(ensureChannelProviderAccess).toHaveBeenCalledWith(
+      "telegram",
+      "work",
+    );
+  });
+
+  it("returns the pending proposal and propagates vault errors", async () => {
+    const app = createApp({
+      agentVaultService: {
+        ensureChannelProviderAccess: vi.fn(async () => ({
+          status: "proposal_created",
+          provider: "slack",
+          accountId: "default",
+          slots: [],
+          proposal: { id: 3, approvalUrl: "https://x" },
+        })),
+      },
+    });
+    const pending = await request(app)
+      .post("/api/channels/vault-token")
+      .send({ provider: "slack" });
+    expect(pending.status).toBe(201);
+    expect(pending.body).toMatchObject({
+      status: "pending",
+      proposal: { id: 3 },
+    });
+
+    const failing = createApp({
+      agentVaultService: {
+        ensureChannelProviderAccess: vi.fn(async () => {
+          throw Object.assign(
+            new Error("Agent Vault owner enrollment is not complete"),
+            { status: 409 },
+          );
+        }),
+      },
+    });
+    const failed = await request(failing)
+      .post("/api/channels/vault-token")
+      .send({ provider: "discord" });
+    expect(failed.status).toBe(409);
+  });
+});

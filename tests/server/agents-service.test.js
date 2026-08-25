@@ -3007,3 +3007,185 @@ describe("server/agents/service", () => {
     ).rejects.toThrow("Channel token already exists in TELEGRAM_BOT_TOKEN");
   });
 });
+
+describe("server/agents/service vault-brokered channels", () => {
+  const kTelegramPlaceholder = "__agent_vault_telegram_bot_token__";
+
+  const buildVaultDeps = () => {
+    const fsMock = buildFsMock({
+      initialConfig: {
+        agents: { list: [{ id: "main", default: true }] },
+      },
+    });
+    let envVars = [];
+    return {
+      fsMock,
+      readEnvFile: vi.fn(() => envVars),
+      writeEnvFile: vi.fn((next) => {
+        envVars = next;
+      }),
+      reloadEnv: vi.fn(),
+      clawCmd: vi.fn(async () => ({ ok: true, stdout: "", stderr: "" })),
+      reconcileOpenclawPlugins: vi.fn(async () => ({ plugins: [] })),
+      hasVaultRuntime: vi.fn(() => true),
+      createVaultProbeFetch: vi.fn(() => async () => {
+        throw new Error("probe fetch should be exercised via probeChannelToken");
+      }),
+      probeChannelToken: vi.fn(async () => ({ ok: true })),
+    };
+  };
+
+  const buildService = (deps) =>
+    createAgentsService({
+      fs: deps.fsMock,
+      OPENCLAW_DIR: "/tmp/openclaw",
+      rootDir: "/tmp",
+      readEnvFile: deps.readEnvFile,
+      writeEnvFile: deps.writeEnvFile,
+      reloadEnv: deps.reloadEnv,
+      reconcileOpenclawPlugins: deps.reconcileOpenclawPlugins,
+      clawCmd: deps.clawCmd,
+      hasVaultRuntime: deps.hasVaultRuntime,
+      createVaultProbeFetch: deps.createVaultProbeFetch,
+      probeChannelToken: deps.probeChannelToken,
+    });
+
+  it("rejects raw tokens for brokered channels once the vault runtime is claimed", async () => {
+    const deps = buildVaultDeps();
+    const service = buildService(deps);
+
+    await expect(
+      service.createChannelAccount({
+        provider: "telegram",
+        accountId: "default",
+        token: "123456789:raw-token-value-here-abc",
+        agentId: "main",
+      }),
+    ).rejects.toThrow("managed by Agent Vault");
+    expect(deps.writeEnvFile).not.toHaveBeenCalled();
+    expect(deps.probeChannelToken).not.toHaveBeenCalled();
+  });
+
+  it("rejects a placeholder that belongs to a different account", async () => {
+    const deps = buildVaultDeps();
+    const service = buildService(deps);
+
+    await expect(
+      service.createChannelAccount({
+        provider: "telegram",
+        accountId: "work",
+        token: kTelegramPlaceholder,
+        agentId: "main",
+      }),
+    ).rejects.toThrow("does not match channel account");
+  });
+
+  it("creates a brokered channel from placeholders after a passing probe", async () => {
+    const deps = buildVaultDeps();
+    const service = buildService(deps);
+
+    const result = await service.createChannelAccount({
+      provider: "telegram",
+      name: "Telegram",
+      accountId: "default",
+      token: kTelegramPlaceholder,
+      agentId: "main",
+    });
+
+    expect(result.account.envKey).toBe("TELEGRAM_BOT_TOKEN");
+    expect(deps.probeChannelToken).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: "telegram",
+        token: kTelegramPlaceholder,
+      }),
+    );
+    expect(deps.writeEnvFile).toHaveBeenCalledWith([
+      { key: "TELEGRAM_BOT_TOKEN", value: kTelegramPlaceholder },
+    ]);
+    expect(
+      deps.fsMock.readConfig().channels.telegram.accounts.default.botToken,
+    ).toBe("${TELEGRAM_BOT_TOKEN}");
+  });
+
+  it("blocks the flow when the post-approval probe fails (D5)", async () => {
+    const deps = buildVaultDeps();
+    deps.probeChannelToken.mockRejectedValue(
+      new Error("Telegram rejected the vaulted token"),
+    );
+    const service = buildService(deps);
+
+    await expect(
+      service.createChannelAccount({
+        provider: "telegram",
+        accountId: "default",
+        token: kTelegramPlaceholder,
+        agentId: "main",
+      }),
+    ).rejects.toThrow("Telegram rejected the vaulted token");
+    expect(deps.writeEnvFile).not.toHaveBeenCalled();
+    expect(deps.clawCmd).not.toHaveBeenCalled();
+  });
+
+  it("writes the discord managed proxy env-ref and fills applicationId from the probe", async () => {
+    const deps = buildVaultDeps();
+    deps.probeChannelToken.mockResolvedValue({ applicationId: "1541896507" });
+    const service = buildService(deps);
+
+    await service.createChannelAccount({
+      provider: "discord",
+      name: "Discord",
+      accountId: "default",
+      token: "__agent_vault_discord_bot_token__",
+      agentId: "main",
+    });
+
+    const discordConfig = deps.fsMock.readConfig().channels.discord;
+    expect(discordConfig.proxy).toBe("${OPENCLAW_PROXY_URL}");
+    expect(discordConfig.accounts.default.applicationId).toBe("1541896507");
+    expect(discordConfig.accounts.default.token).toBe("${DISCORD_BOT_TOKEN}");
+  });
+
+  it("keeps the raw path unchanged when the vault runtime is absent", async () => {
+    const deps = buildVaultDeps();
+    deps.hasVaultRuntime.mockReturnValue(false);
+    const service = buildService(deps);
+
+    const result = await service.createChannelAccount({
+      provider: "telegram",
+      name: "Telegram",
+      accountId: "default",
+      token: "123456789:raw-token-value-here-abc",
+      agentId: "main",
+    });
+
+    expect(result.account.envKey).toBe("TELEGRAM_BOT_TOKEN");
+    expect(deps.probeChannelToken).not.toHaveBeenCalled();
+  });
+
+  it("rejects raw token rotation through updateChannelAccount on managed instances", () => {
+    const deps = buildVaultDeps();
+    deps.fsMock.writeFileSync(
+      "/tmp/openclaw/openclaw.json",
+      JSON.stringify({
+        agents: { list: [{ id: "main", default: true }] },
+        channels: {
+          telegram: {
+            enabled: true,
+            accounts: { default: { name: "Telegram" } },
+          },
+        },
+      }),
+    );
+    const service = buildService(deps);
+
+    expect(() =>
+      service.updateChannelAccount({
+        provider: "telegram",
+        accountId: "default",
+        name: "Telegram",
+        agentId: "main",
+        token: "123456789:new-raw-token-value-abc",
+      }),
+    ).toThrow("Rotate the credential from the Agent Vault console");
+  });
+});

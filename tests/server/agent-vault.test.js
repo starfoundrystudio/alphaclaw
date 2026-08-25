@@ -574,6 +574,211 @@ describe("server/agent-vault", () => {
     });
   });
 
+  it("brokers channel providers via one merged multi-slot proposal", async () => {
+    const {
+      writeAgentVaultRuntime,
+    } = require("../../lib/server/agent-vault/runtime-store");
+    writeAgentVaultRuntime({
+      token: "av_runtime_token_123456789",
+      vault: "default",
+      mode: "brokered",
+      operatorUrl: "https://agent-vault-test.tail123.ts.net",
+    });
+    let discoverPayload = {
+      vault: "default",
+      available_credentials: [],
+      services: [],
+    };
+    const requests = [];
+    const fetchImpl = vi.fn(async (url, options = {}) => {
+      requests.push({ url: String(url), options });
+      if (String(url).endsWith("/discover")) {
+        return Response.json(discoverPayload);
+      }
+      if (String(url).endsWith("/v1/proposals")) {
+        return Response.json({
+          id: 21,
+          status: "pending",
+          vault: "default",
+          approval_url:
+            "https://agent-vault-test.tail123.ts.net/approve/21?token=once",
+        });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    const envVars = [
+      {
+        key: "TEAMYOU_AGENT_VAULT_ENTRY_URL",
+        value: "https://www.teamyou.com/openclaw/agent-vault/inst_test123",
+      },
+    ];
+    const { createAgentVaultService } = require(
+      "../../lib/server/agent-vault/service"
+    );
+    const service = createAgentVaultService({
+      env: {},
+      readEnvFile: () => envVars,
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+    });
+
+    await expect(
+      service.ensureChannelProviderAccess("whatsapp"),
+    ).rejects.toMatchObject({ status: 400 });
+
+    const created = await service.ensureChannelProviderAccess("slack", "work");
+    expect(created).toMatchObject({
+      status: "proposal_created",
+      provider: "slack",
+      accountId: "work",
+      slots: [
+        {
+          envKey: "SLACK_BOT_TOKEN_WORK",
+          placeholder: "__agent_vault_slack_bot_token_work__",
+        },
+        {
+          envKey: "SLACK_APP_TOKEN_WORK",
+          placeholder: "__agent_vault_slack_app_token_work__",
+        },
+      ],
+      proposal: {
+        id: 21,
+        approvalUrl:
+          "https://www.teamyou.com/openclaw/agent-vault/inst_test123?return_to=%2Fapprove%2F21%3Ftoken%3Donce",
+      },
+    });
+    const proposalBody = JSON.parse(
+      requests.find(({ url }) => url.endsWith("/v1/proposals")).options.body,
+    );
+    expect(proposalBody.services).toHaveLength(1);
+    expect(proposalBody.services[0].substitutions).toHaveLength(2);
+    expect(proposalBody.credentials.map((credential) => credential.key)).toEqual(
+      ["SLACK_BOT_TOKEN_WORK", "SLACK_APP_TOKEN_WORK"],
+    );
+
+    // Discord: two services, one deduped credential slot.
+    requests.length = 0;
+    const discord = await service.ensureChannelProviderAccess("discord");
+    expect(discord.status).toBe("proposal_created");
+    const discordBody = JSON.parse(
+      requests.find(({ url }) => url.endsWith("/v1/proposals")).options.body,
+    );
+    expect(discordBody.services.map((entry) => entry.host)).toEqual([
+      "discord.com",
+      "gateway.discord.gg",
+    ]);
+    expect(discordBody.credentials).toHaveLength(1);
+
+    discoverPayload = {
+      vault: "default",
+      available_credentials: ["DISCORD_BOT_TOKEN"],
+      services: [
+        { name: "channel-discord", host: "discord.com" },
+        { name: "channel-discord-2", host: "gateway.discord.gg" },
+      ],
+    };
+    await expect(
+      service.ensureChannelProviderAccess("discord"),
+    ).resolves.toMatchObject({ status: "available", provider: "discord" });
+  });
+
+  it("flips brokered channel tokens to placeholders and sweeps config backups", async () => {
+    const {
+      writeAgentVaultRuntime,
+    } = require("../../lib/server/agent-vault/runtime-store");
+    writeAgentVaultRuntime({
+      token: "av_runtime_token_123456789",
+      vault: "default",
+      mode: "brokered",
+      operatorUrl: "https://agent-vault-test.tail123.ts.net",
+    });
+    const openclawDir = path.join(rootDir, ".openclaw");
+    fs.mkdirSync(openclawDir, { recursive: true });
+    const rawToken = "888172:raw-telegram-token-value";
+    fs.writeFileSync(
+      path.join(openclawDir, "openclaw.json"),
+      JSON.stringify(
+        {
+          gateway: { mode: "local" },
+          channels: {
+            telegram: {
+              enabled: true,
+              accounts: { default: { botToken: rawToken } },
+            },
+            discord: { enabled: true, accounts: {} },
+          },
+          plugins: { allow: ["telegram"] },
+        },
+        null,
+        2,
+      ),
+    );
+    fs.writeFileSync(
+      path.join(openclawDir, "openclaw.json.bak"),
+      JSON.stringify({ channels: { telegram: { botToken: rawToken } } }),
+    );
+    fs.writeFileSync(
+      path.join(openclawDir, "openclaw.json.bak.1"),
+      JSON.stringify({ channels: {} }),
+    );
+    let envVars = [{ key: "TELEGRAM_BOT_TOKEN", value: rawToken }];
+    const writeEnvFile = vi.fn((next) => {
+      envVars = next;
+    });
+    const fetchImpl = vi.fn(async () =>
+      Response.json({
+        vault: "default",
+        available_credentials: ["TELEGRAM_BOT_TOKEN"],
+        services: [{ name: "channel-telegram", host: "api.telegram.org" }],
+      }),
+    );
+    const { createAgentVaultService } = require(
+      "../../lib/server/agent-vault/service"
+    );
+    const service = createAgentVaultService({
+      readEnvFile: () => envVars,
+      writeEnvFile,
+      reloadEnv: vi.fn(),
+      openclawDir,
+      fetchImpl,
+    });
+
+    const result = await service.reconcileLegacyCredentials();
+    expect(result.flippedKeys).toContain("TELEGRAM_BOT_TOKEN");
+    expect(result.restartRequired).toBe(true);
+    expect(envVars).toEqual([
+      {
+        key: "TELEGRAM_BOT_TOKEN",
+        value: "__agent_vault_telegram_bot_token__",
+      },
+    ]);
+    const config = JSON.parse(
+      fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"),
+    );
+    // Raw secret swept out of the config file into the env reference.
+    expect(config.channels.telegram.accounts.default.botToken).toBe(
+      "${TELEGRAM_BOT_TOKEN}",
+    );
+    // The backup holding the raw secret is removed; clean backups stay.
+    expect(fs.existsSync(path.join(openclawDir, "openclaw.json.bak"))).toBe(
+      false,
+    );
+    expect(fs.existsSync(path.join(openclawDir, "openclaw.json.bak.1"))).toBe(
+      true,
+    );
+    // D6: unclassified catalog channels are denied; classified ones are not.
+    expect(config.plugins.deny).toContain("msteams");
+    expect(config.plugins.deny).not.toContain("telegram");
+    // Discord channel config present -> managed proxy env-ref written.
+    expect(config.channels.discord.proxy).toBe("${OPENCLAW_PROXY_URL}");
+
+    // Second pass is idempotent: nothing left to change.
+    const second = await service.reconcileLegacyCredentials();
+    expect(second.flippedKeys).toEqual([]);
+    expect(second.restartRequired).toBe(false);
+  });
+
   it("plans only the missing pieces of an atomic service access request", () => {
     const {
       normalizeAgentVaultAccessRequest,
