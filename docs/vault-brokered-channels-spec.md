@@ -1,6 +1,6 @@
 # Vault-Brokered Channel Credentials — Spec
 
-**Status:** Draft v2 for review (2026-08-25). v1 excluded WhatsApp/Signal; owner rejected exclusion-by-fiat. v2 replaces the exclusion list with a credential taxonomy that classifies **every** channel in the OpenClaw catalog (26 plugins + the 4 core channels alphaclaw manages today) and assigns each credential class a defined protection tier — including the classes substitution cannot serve. No code yet: spec before code.
+**Status:** v2 **approved with decisions recorded 2026-08-25** (§9): gateway-held KEK for Tier C · hard block for unclassified channels · per-account slots · inbound webhooks stay supported via Tailscale funnel (msteams unblocked) · probe failure blocks the flow · deny-list default-closed. Next: Phase A verification on the enforced instance (needs owner-provided test channel credentials — see §8). v1 excluded WhatsApp/Signal; owner rejected exclusion-by-fiat; v2 classifies **every** channel in the OpenClaw catalog (26 plugins + the 4 core channels) into protection tiers — including the classes substitution cannot serve.
 **Companion:** `docs/vault-brokered-model-keys-spec.md` (Phases A+B shipped); the placeholder machinery, proposal flow, reconcile mode, and UI states from that work are reused here for Tier S.
 
 ## 1. Problem
@@ -25,7 +25,7 @@ Classify each credential by **where the secret must appear for the integration t
 
 Honest threat-model statement, since this is the class v1 hand-waved: **runtime confidentiality from the agent is not achievable for Tier C** — the gateway process the agent operates in must hold the plaintext in memory to function; a sufficiently capable agent can read its own process. What *is* achievable, and what Tier C requires:
 
-1. **Sealed at-rest custody (C1, target).** Keystores envelope-encrypted on disk; the KEK lives off-instance and the plaintext exists only in gateway memory/tmpfs after an unwrap at boot. Two candidate KEK holders: **(a) the security gateway** — unwrap over the existing gateway private path at service start; needs clawctl work but **no new TeamYou/vault feature**; **(b) the Agent Vault** — needs a new unwrap primitive, deliberately absent from today's proposal-only runtime token; TeamYou roadmap item. Recommendation: (a) first; (b) can supersede. Either way a stolen disk/backup/snapshot yields ciphertext, and revocation = KEK denial + provider-side unlink.
+1. **Sealed at-rest custody (C1, target — mechanism decided 2026-08-25: gateway-held KEK).** Keystores envelope-encrypted on disk; the KEK lives on the security gateway and the plaintext exists only in gateway-process memory/tmpfs after an unwrap over the existing gateway private path at service start. clawctl work; **no new TeamYou/vault feature**. (A future vault unwrap primitive may supersede the KEK holder without changing the on-instance contract.) A stolen disk/backup/snapshot yields ciphertext; revocation = KEK denial + provider-side unlink.
 2. **Custody hygiene (C0, interim — shippable now).** Keystore paths enumerated per channel in the registry; enforced: 0600/0700 modes, excluded from git-sync and any backup/export path, excluded from the agent-browsable workspace, never mirrored into env or `openclaw.json`.
 3. **Flow visibility.** Tier C transports still transit proxyline/NAT and are Phase-3 scannable; exfil of the keystore to an unexpected destination is a detectable flow, which is the compensating control for the runtime-confidentiality gap.
 4. **Revocation runbook per channel.** Every Tier C registry entry documents the provider-side revocation act (WhatsApp: unlink device; Signal: remove linked device; Nostr: key rotation + relay note), so incident response never depends on remembering provider mechanics.
@@ -47,7 +47,7 @@ Catalog plugins, classified provisionally (each entry is **verified against the 
 
 | Channel | Expected credential(s) | Tier |
 | --- | --- | --- |
-| msteams | Bot Framework `appId` + `appPassword` (client secret), tenant | **S/te** (body substitution on `login.microsoftonline.com`; Bot Connector/Graph bearer is Tier D). Note: Bot Framework requires a public inbound messaging endpoint — an ingress-posture question independent of credentials (§9 Q4) |
+| msteams | Bot Framework `appId` + `appPassword` (client secret), tenant | **S/te** (body substitution on `login.microsoftonline.com`; Bot Connector/Graph bearer is Tier D). Inbound messaging endpoint served via the standard Tailscale-funnel webhook path (§9 D4) |
 | feishu / wecom / qqbot / zalo / line / twitch / googlechat | app/client secrets, bot tokens; LINE adds a webhook-HMAC channel secret | S or S/te for tokens/secrets; LINE's HMAC secret is **C** (in-process signature verification) |
 | sms (Twilio) | `TWILIO_AUTH_TOKEN` etc. | S (`header` basic-auth uses base64 — **verify**: if the plugin base64-encodes SID:token, verbatim substitution fails and Twilio needs the vault's `basic` auth-injection mode instead of substitution) |
 | clickclack / mattermost / synology-chat / nextcloud-talk / irc | bot tokens / passwords to arbitrary or self-hosted hosts | S when the configured host is public; **L** when loopback/LAN |
@@ -65,7 +65,7 @@ The channel registry (`lib/server/agent-vault/channel-provider-services.js`) bec
 2. Does any secret feed in-process crypto (signing, HMAC, pairing)? → Tier C entry + keystore paths + revocation runbook.
 3. Which hosts terminate the traffic, and do they transit proxyline (empirical check)? Public → S/S-te service defs; local → L.
 4. What derived secrets exist and where are they cached? → Tier D policy check (no durable plaintext).
-5. What is the inbound-ingress posture (webhook needs)? → flag if it conflicts with outbound-only doctrine.
+5. What is the inbound-ingress posture (webhook needs)? Inbound webhooks are a **supported** pattern — served through the standard Tailscale-funnel path (the same mechanism as Composio triggers today), never a raw public port. The classification records which funnel routes the channel needs and which Tier C/D secrets verify inbound payloads (HMAC secrets, JWT validation). Known caveat to design around: the funnel path has an open strict-ingress issue (the Gmail webhook loopback-hop 404 class) — new webhook channels must be verified against strict routing, not assumed.
 
 Worked example — the checklist applied to msteams — ships in the registry as the template entry. This is also the answer to "what about channels we want to support later": adding Teams support *is* running this checklist and landing the registry entry; the mechanics (S/te body substitution) already exist from the model-keys machinery.
 
@@ -109,14 +109,16 @@ Tier S: as the models spec (fails closed to 401 off-proxy; vault-down = no new b
 5. `openclaw channels add` CLI probes transit via inherited proxyline so placeholder adds validate; otherwise sequence proxy config before add.
 6. WhatsApp/Signal keystore inventory: enumerate on-disk paths, confirm current permissions, confirm git-sync/backup exclusion status (C0 baseline facts).
 
-## 9. Open questions for Bill
+Owner dependency: items 1–3 need **throwaway test credentials** (a scratch Discord bot, Slack app, Telegram bot) — the enforced test instance deliberately has no external accounts. Item 4–6 need none.
 
-1. **Tier C mechanism**: gateway-held KEK over the existing private path (clawctl work, no TeamYou change — recommended first step), vault unwrap primitive (TeamYou roadmap), or C0-only for now with C1 as a scheduled follow-up?
-2. **Unclassified-channel gate**: hard block on managed instances (spec) or warn-and-allow?
-3. Per-account slots vs shared slots (spec: per-account, matching the env convention) — carried over from v1.
-4. **msteams ingress**: Bot Framework needs a public inbound endpoint, which cuts against the outbound-only Phase 3 posture. Classify-and-allow with a documented ingress exception, or hold Teams until the Phase 3 ingress design lands?
-5. Post-approval probe failure: block the flow (spec) or activate with warning — carried over from v1.
-6. **Deny-list posture** (§5a): deny every catalog channel plugin not in the classification registry (default-closed, spec recommendation), or deny only channels explicitly marked restricted (default-open)? Default-closed makes the §5 gate real against the Control UI; default-open keeps Control UI parity with a stock openclaw install.
+## 9. Decisions (owner, 2026-08-25)
+
+1. **D1 — Tier C mechanism: gateway-held KEK** over the existing gateway private path (clawctl work item; no TeamYou change). A vault unwrap primitive may later replace the KEK holder without changing the on-instance contract.
+2. **D2 — Unclassified-channel gate: hard block** on managed instances.
+3. **D3 — Per-account slots**, matching the `DISCORD_BOT_TOKEN_<ACCOUNT>` env convention.
+4. **D4 — Inbound webhooks remain fully supported** — for msteams and beyond (Composio triggers are the existing precedent). The standard mechanism is the Tailscale-funnel webhook path; ingress posture is therefore *not* a reason to hold any channel. Classification duty: record the funnel routes and the payload-verification secrets (Tier C/D) per channel, and verify each new webhook channel against strict routing (the Gmail-webhook loopback-hop 404 class is a known open issue on that path).
+5. **D5 — Post-approval probe failure blocks the flow** (no activate-with-warning).
+6. **D6 — Deny-list default-closed**: every catalog channel plugin not in the classification registry is denied on managed instances.
 
 ## 10. Rollout
 
@@ -124,6 +126,6 @@ Tier S: as the models spec (fails closed to 401 off-proxy; vault-down = no new b
 - **Phase B — Tier S server**: channel registry with tier field + classification gate · `ensureChannelProviderAccess` · placeholder plumbing · raw-token gates · reconcile channel mode · vault-aware probe fetch · `plugins.deny` derivation + reconcile re-assert and the raw-secret sweep (§5a layers 2–3).
 - **Phase C — UI**: vault states for S-tier channels · migrate banners · honest Tier C/L labeling · placeholder-aware readback.
 - **Phase D — doctrine**: one AGENTS.md update covering model keys + channel tokens + the Tier C statement ("pairing credentials are custody-protected, not vault-brokered; never write them to Envars either").
-- **Phase E — Tier C sealed custody (C1)**: KEK mechanism per §9 Q1; WhatsApp + Signal first, then LINE HMAC/Nostr keys as those channels are enabled. Independent track; C0 hygiene lands in Phase B.
+- **Phase E — Tier C sealed custody (C1)**: gateway-held KEK per §9 D1 (clawctl work item); WhatsApp + Signal first, then LINE HMAC/Nostr keys as those channels are enabled. Independent track; C0 hygiene lands in Phase B.
 
-Release sequencing: Phases B+C ride the same beta line as the model-keys work; Phase E is decoupled and gated on the §9 Q1 decision.
+Release sequencing: Phases B+C ride the same beta line as the model-keys work; Phase E (clawctl KEK) is decoupled and does not block the beta.
