@@ -1,6 +1,6 @@
 # Vault-Brokered Channel Credentials — Spec
 
-**Status:** v2 **approved with decisions recorded 2026-08-25** (§9): gateway-held KEK for Tier C · hard block for unclassified channels · per-account slots · inbound webhooks stay supported via Tailscale funnel (msteams unblocked) · probe failure blocks the flow · deny-list default-closed. Next: Phase A verification on the enforced instance (needs owner-provided test channel credentials — see §8). v1 excluded WhatsApp/Signal; owner rejected exclusion-by-fiat; v2 classifies **every** channel in the OpenClaw catalog (26 plugins + the 4 core channels) into protection tiers — including the classes substitution cannot serve.
+**Status:** Phases A (verification, §8) **and B+C implemented on `main` 2026-08-25** (0150048 server, 175610e wizard) per owner approval and decisions D1–D6. Remaining: Phase D (AGENTS.md doctrine, one edit with the model-keys Phase C) and Phase E (Tier C sealed custody via gateway-held KEK, clawctl track). v1 excluded WhatsApp/Signal; owner rejected exclusion-by-fiat; v2 classifies **every** channel in the OpenClaw catalog (26 plugins + the 4 core channels) into protection tiers — including the classes substitution cannot serve.
 **Companion:** `docs/vault-brokered-model-keys-spec.md` (Phases A+B shipped); the placeholder machinery, proposal flow, reconcile mode, and UI states from that work are reused here for Tier S.
 
 ## 1. Problem
