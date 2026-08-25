@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-25T05:24:53.228Z",
+  "generatedAt": "2026-08-25T21:25:44.310Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -3128,6 +3128,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/minimax/minimax-m3:free",
+              "provider": "openrouter",
+              "label": "MiniMax: MiniMax M3 (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/minimax/minimax-01",
               "provider": "openrouter",
               "label": "MiniMax: MiniMax-01",
@@ -4535,15 +4544,6 @@
               "key": "openrouter/qwen/qwen-plus-2025-07-28",
               "provider": "openrouter",
               "label": "Qwen: Qwen Plus 0728",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/qwen/qwen-plus-2025-07-28:thinking",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen Plus 0728 (thinking)",
               "accessModes": [
                 "gateway"
               ],
@@ -9685,6 +9685,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/minimax/minimax-m3:free",
+      "provider": "openrouter",
+      "label": "MiniMax: MiniMax M3 (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/minimax/minimax-01",
       "provider": "openrouter",
       "label": "MiniMax: MiniMax-01",
@@ -11105,15 +11114,6 @@
       "key": "openrouter/qwen/qwen-plus-2025-07-28",
       "provider": "openrouter",
       "label": "Qwen: Qwen Plus 0728",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/qwen/qwen-plus-2025-07-28:thinking",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen Plus 0728 (thinking)",
       "accessModes": [
         "gateway"
       ],
