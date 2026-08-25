@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-21T00:29:37.421Z",
+  "generatedAt": "2026-08-25T05:24:53.228Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2281,15 +2281,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/deepcogito/cogito-v2.1-671b",
-              "provider": "openrouter",
-              "label": "Deep Cogito: Cogito v2.1 671B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/~deepseek/deepseek-v4-flash-latest",
               "provider": "openrouter",
               "label": "DeepSeek V4 Flash Latest",
@@ -2365,6 +2356,15 @@
               "key": "openrouter/deepseek/deepseek-v4-flash-0731",
               "provider": "openrouter",
               "label": "DeepSeek: DeepSeek V4 Flash 0731",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/deepseek/deepseek-v4-flash-vision-exp",
+              "provider": "openrouter",
+              "label": "DeepSeek: DeepSeek V4 Flash Vision Exp",
               "accessModes": [
                 "gateway"
               ],
@@ -2858,33 +2858,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/inclusionai/ling-2.6-1t",
-              "provider": "openrouter",
-              "label": "inclusionAI: Ling-2.6-1T",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/inclusionai/ling-2.6-flash",
-              "provider": "openrouter",
-              "label": "inclusionAI: Ling-2.6-flash",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/inclusionai/ring-2.6-1t",
-              "provider": "openrouter",
-              "label": "inclusionAI: Ring-2.6-1T",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/kwaipilot/kat-coder-air-v2.5",
               "provider": "openrouter",
               "label": "Kwaipilot: KAT-Coder-Air V2.5",
@@ -3056,6 +3029,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/meta/muse-spark-1.2-contributor",
+              "provider": "openrouter",
+              "label": "Meta: Muse Spark 1.2 Contributor",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/microsoft/phi-4",
               "provider": "openrouter",
               "label": "Microsoft: Phi 4",
@@ -3119,6 +3101,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/minimax/minimax-m2.7:free",
+              "provider": "openrouter",
+              "label": "MiniMax: MiniMax M2.7 (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/minimax/minimax-m3",
               "provider": "openrouter",
               "label": "MiniMax: MiniMax M3",
@@ -3167,6 +3158,15 @@
               "key": "openrouter/mistralai/codestral-2508",
               "provider": "openrouter",
               "label": "Mistral: Codestral 2508",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/mistralai/devstral-2512",
+              "provider": "openrouter",
+              "label": "Mistral: Devstral 2 2512",
               "accessModes": [
                 "gateway"
               ],
@@ -3488,15 +3488,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/nvidia/nemotron-3-nano-30b-a3b:free",
-              "provider": "openrouter",
-              "label": "NVIDIA: Nemotron 3 Nano 30B A3B (free)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
               "provider": "openrouter",
               "label": "NVIDIA: Nemotron 3 Nano Omni (free)",
@@ -3572,24 +3563,6 @@
               "key": "openrouter/nvidia/nemotron-3.5-lightning:free",
               "provider": "openrouter",
               "label": "NVIDIA: Nemotron 3.5 Lightning (free)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/nvidia/nemotron-nano-12b-v2-vl:free",
-              "provider": "openrouter",
-              "label": "NVIDIA: Nemotron Nano 12B 2 VL (free)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/nvidia/nemotron-nano-9b-v2:free",
-              "provider": "openrouter",
-              "label": "NVIDIA: Nemotron Nano 9B V2 (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -4274,15 +4247,6 @@
               "key": "openrouter/openai/gpt-oss-20b",
               "provider": "openrouter",
               "label": "OpenAI: gpt-oss-20b",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/openai/gpt-oss-20b:free",
-              "provider": "openrouter",
-              "label": "OpenAI: gpt-oss-20b (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -5216,6 +5180,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/tencent/hy-mt2-7b",
+              "provider": "openrouter",
+              "label": "Tencent: Hy-MT2-7B",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/tencent/hy3",
               "provider": "openrouter",
               "label": "Tencent: Hy3",
@@ -5288,9 +5261,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/thinkingmachines/inkling:free",
+              "provider": "openrouter",
+              "label": "Thinking Machines: Inkling (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/thinkingmachines/inkling-small",
               "provider": "openrouter",
               "label": "Thinking Machines: Inkling Small",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/thinkingmachines/inkling-small:free",
+              "provider": "openrouter",
+              "label": "Thinking Machines: Inkling Small (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -5771,6 +5762,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/deepseek/deepseek-v4-flash-vision-exp",
+              "provider": "vercel-ai-gateway",
+              "label": "DeepSeek V4 Flash Vision Exp",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/deepseek/deepseek-v4-pro",
               "provider": "vercel-ai-gateway",
               "label": "DeepSeek V4 Pro",
@@ -6095,15 +6095,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/openai/gpt-4o-mini-search-preview",
-              "provider": "vercel-ai-gateway",
-              "label": "GPT 4o Mini Search Preview",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/openai/gpt-5.1-codex-max",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.1 Codex Max",
@@ -6323,6 +6314,15 @@
               "key": "vercel-ai-gateway/openai/gpt-oss-20b",
               "provider": "vercel-ai-gateway",
               "label": "GPT OSS 20B",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-oss-safeguard-120b",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT OSS Safeguard 120B",
               "accessModes": [
                 "gateway"
               ],
@@ -6852,24 +6852,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/mistral/magistral-medium",
-              "provider": "vercel-ai-gateway",
-              "label": "Magistral Medium 2509",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/mistral/magistral-small",
-              "provider": "vercel-ai-gateway",
-              "label": "Magistral Small 2509",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/inception/mercury-2",
               "provider": "vercel-ai-gateway",
               "label": "Mercury 2",
@@ -6960,6 +6942,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/minimax/minimax-m2.7-free",
+              "provider": "vercel-ai-gateway",
+              "label": "Minimax M2.7 (Free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/minimax/minimax-m2.7-highspeed",
               "provider": "vercel-ai-gateway",
               "label": "MiniMax M2.7 High Speed",
@@ -6972,6 +6963,15 @@
               "key": "vercel-ai-gateway/minimax/minimax-m3",
               "provider": "vercel-ai-gateway",
               "label": "MiniMax M3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/minimax/minimax-m3-free",
+              "provider": "vercel-ai-gateway",
+              "label": "MiniMax M3 (Free)",
               "accessModes": [
                 "gateway"
               ],
@@ -7251,15 +7251,6 @@
               "key": "vercel-ai-gateway/openai/o3-pro",
               "provider": "vercel-ai-gateway",
               "label": "o3 Pro",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/openai/o3-deep-research",
-              "provider": "vercel-ai-gateway",
-              "label": "o3-deep-research",
               "accessModes": [
                 "gateway"
               ],
@@ -7617,18 +7608,36 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/arcee-ai/trinity-large-thinking",
+              "key": "vercel-ai-gateway/tencent/hy-mt2-lite",
               "provider": "vercel-ai-gateway",
-              "label": "Trinity Large Thinking",
+              "label": "Tencent Hy-MT2-Lite",
               "accessModes": [
                 "gateway"
               ],
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/arcee-ai/trinity-mini",
+              "key": "vercel-ai-gateway/tencent/hy-mt2-plus",
               "provider": "vercel-ai-gateway",
-              "label": "Trinity Mini",
+              "label": "Tencent Hy-MT2-Plus",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/tencent/hy-mt2-pro",
+              "provider": "vercel-ai-gateway",
+              "label": "Tencent Hy-MT2-Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/arcee-ai/trinity-large-thinking",
+              "provider": "vercel-ai-gateway",
+              "label": "Trinity Large Thinking",
               "accessModes": [
                 "gateway"
               ],
@@ -8829,15 +8838,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/deepcogito/cogito-v2.1-671b",
-      "provider": "openrouter",
-      "label": "Deep Cogito: Cogito v2.1 671B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/~deepseek/deepseek-v4-flash-latest",
       "provider": "openrouter",
       "label": "DeepSeek V4 Flash Latest",
@@ -8913,6 +8913,15 @@
       "key": "openrouter/deepseek/deepseek-v4-flash-0731",
       "provider": "openrouter",
       "label": "DeepSeek: DeepSeek V4 Flash 0731",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/deepseek/deepseek-v4-flash-vision-exp",
+      "provider": "openrouter",
+      "label": "DeepSeek: DeepSeek V4 Flash Vision Exp",
       "accessModes": [
         "gateway"
       ],
@@ -9406,33 +9415,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/inclusionai/ling-2.6-1t",
-      "provider": "openrouter",
-      "label": "inclusionAI: Ling-2.6-1T",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/inclusionai/ling-2.6-flash",
-      "provider": "openrouter",
-      "label": "inclusionAI: Ling-2.6-flash",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/inclusionai/ring-2.6-1t",
-      "provider": "openrouter",
-      "label": "inclusionAI: Ring-2.6-1T",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/kwaipilot/kat-coder-air-v2.5",
       "provider": "openrouter",
       "label": "Kwaipilot: KAT-Coder-Air V2.5",
@@ -9604,6 +9586,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/meta/muse-spark-1.2-contributor",
+      "provider": "openrouter",
+      "label": "Meta: Muse Spark 1.2 Contributor",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/microsoft/phi-4",
       "provider": "openrouter",
       "label": "Microsoft: Phi 4",
@@ -9667,6 +9658,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/minimax/minimax-m2.7:free",
+      "provider": "openrouter",
+      "label": "MiniMax: MiniMax M2.7 (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/minimax/minimax-m3",
       "provider": "openrouter",
       "label": "MiniMax: MiniMax M3",
@@ -9715,6 +9715,15 @@
       "key": "openrouter/mistralai/codestral-2508",
       "provider": "openrouter",
       "label": "Mistral: Codestral 2508",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/mistralai/devstral-2512",
+      "provider": "openrouter",
+      "label": "Mistral: Devstral 2 2512",
       "accessModes": [
         "gateway"
       ],
@@ -10036,15 +10045,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/nvidia/nemotron-3-nano-30b-a3b:free",
-      "provider": "openrouter",
-      "label": "NVIDIA: Nemotron 3 Nano 30B A3B (free)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
       "provider": "openrouter",
       "label": "NVIDIA: Nemotron 3 Nano Omni (free)",
@@ -10120,24 +10120,6 @@
       "key": "openrouter/nvidia/nemotron-3.5-lightning:free",
       "provider": "openrouter",
       "label": "NVIDIA: Nemotron 3.5 Lightning (free)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/nvidia/nemotron-nano-12b-v2-vl:free",
-      "provider": "openrouter",
-      "label": "NVIDIA: Nemotron Nano 12B 2 VL (free)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/nvidia/nemotron-nano-9b-v2:free",
-      "provider": "openrouter",
-      "label": "NVIDIA: Nemotron Nano 9B V2 (free)",
       "accessModes": [
         "gateway"
       ],
@@ -10835,15 +10817,6 @@
       "key": "openrouter/openai/gpt-oss-20b",
       "provider": "openrouter",
       "label": "OpenAI: gpt-oss-20b",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/openai/gpt-oss-20b:free",
-      "provider": "openrouter",
-      "label": "OpenAI: gpt-oss-20b (free)",
       "accessModes": [
         "gateway"
       ],
@@ -11777,6 +11750,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/tencent/hy-mt2-7b",
+      "provider": "openrouter",
+      "label": "Tencent: Hy-MT2-7B",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/tencent/hy3",
       "provider": "openrouter",
       "label": "Tencent: Hy3",
@@ -11849,9 +11831,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/thinkingmachines/inkling:free",
+      "provider": "openrouter",
+      "label": "Thinking Machines: Inkling (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/thinkingmachines/inkling-small",
       "provider": "openrouter",
       "label": "Thinking Machines: Inkling Small",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/thinkingmachines/inkling-small:free",
+      "provider": "openrouter",
+      "label": "Thinking Machines: Inkling Small (free)",
       "accessModes": [
         "gateway"
       ],
@@ -12705,6 +12705,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/deepseek/deepseek-v4-flash-vision-exp",
+      "provider": "vercel-ai-gateway",
+      "label": "DeepSeek V4 Flash Vision Exp",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/deepseek/deepseek-v4-pro",
       "provider": "vercel-ai-gateway",
       "label": "DeepSeek V4 Pro",
@@ -13029,15 +13038,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/openai/gpt-4o-mini-search-preview",
-      "provider": "vercel-ai-gateway",
-      "label": "GPT 4o Mini Search Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/openai/gpt-5.1-codex-max",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.1 Codex Max",
@@ -13270,6 +13270,15 @@
       "key": "vercel-ai-gateway/openai/gpt-oss-20b",
       "provider": "vercel-ai-gateway",
       "label": "GPT OSS 20B",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-oss-safeguard-120b",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT OSS Safeguard 120B",
       "accessModes": [
         "gateway"
       ],
@@ -13799,24 +13808,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/mistral/magistral-medium",
-      "provider": "vercel-ai-gateway",
-      "label": "Magistral Medium 2509",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/mistral/magistral-small",
-      "provider": "vercel-ai-gateway",
-      "label": "Magistral Small 2509",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/inception/mercury-2",
       "provider": "vercel-ai-gateway",
       "label": "Mercury 2",
@@ -13907,6 +13898,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/minimax/minimax-m2.7-free",
+      "provider": "vercel-ai-gateway",
+      "label": "Minimax M2.7 (Free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/minimax/minimax-m2.7-highspeed",
       "provider": "vercel-ai-gateway",
       "label": "MiniMax M2.7 High Speed",
@@ -13919,6 +13919,15 @@
       "key": "vercel-ai-gateway/minimax/minimax-m3",
       "provider": "vercel-ai-gateway",
       "label": "MiniMax M3",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/minimax/minimax-m3-free",
+      "provider": "vercel-ai-gateway",
+      "label": "MiniMax M3 (Free)",
       "accessModes": [
         "gateway"
       ],
@@ -14198,15 +14207,6 @@
       "key": "vercel-ai-gateway/openai/o3-pro",
       "provider": "vercel-ai-gateway",
       "label": "o3 Pro",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/openai/o3-deep-research",
-      "provider": "vercel-ai-gateway",
-      "label": "o3-deep-research",
       "accessModes": [
         "gateway"
       ],
@@ -14564,18 +14564,36 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/arcee-ai/trinity-large-thinking",
+      "key": "vercel-ai-gateway/tencent/hy-mt2-lite",
       "provider": "vercel-ai-gateway",
-      "label": "Trinity Large Thinking",
+      "label": "Tencent Hy-MT2-Lite",
       "accessModes": [
         "gateway"
       ],
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/arcee-ai/trinity-mini",
+      "key": "vercel-ai-gateway/tencent/hy-mt2-plus",
       "provider": "vercel-ai-gateway",
-      "label": "Trinity Mini",
+      "label": "Tencent Hy-MT2-Plus",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/tencent/hy-mt2-pro",
+      "provider": "vercel-ai-gateway",
+      "label": "Tencent Hy-MT2-Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/arcee-ai/trinity-large-thinking",
+      "provider": "vercel-ai-gateway",
+      "label": "Trinity Large Thinking",
       "accessModes": [
         "gateway"
       ],
