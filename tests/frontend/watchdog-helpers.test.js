@@ -10,7 +10,7 @@ describe("frontend/watchdog-helpers", () => {
       generatedAt: new Date("2026-03-22T23:15:00.000Z"),
     });
 
-    expect(text).toContain("# AlphaClaw Watchdog Export");
+    expect(text).toContain("# Clawbridge Watchdog Export");
     expect(text).toContain("Generated at: 2026-03-22T23:15:00.000Z");
     expect(text).toContain("## Gateway Logs");
     expect(text).toContain("line 1\nline 2");

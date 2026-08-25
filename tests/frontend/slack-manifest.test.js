@@ -13,11 +13,11 @@ describe("frontend/slack-manifest", () => {
 
     expect(manifest.display_information).toMatchObject({
       name: "Ops Agent",
-      description: "Slack connector for AlphaClaw",
+      description: "Slack connector for Clawbridge",
     });
     expect(manifest.features.agent_view).toBeUndefined();
     expect(manifest.features.assistant_view).toMatchObject({
-      assistant_description: "AlphaClaw connects Slack assistant threads to OpenClaw agents.",
+      assistant_description: "Clawbridge connects Slack assistant threads to OpenClaw agents.",
       suggested_prompts: [
         {
           title: "What can you do?",
@@ -41,7 +41,7 @@ describe("frontend/slack-manifest", () => {
     expect(manifest.features.slash_commands).toEqual([
       {
         command: "/openclaw",
-        description: "Send a message to AlphaClaw",
+        description: "Send a message to Clawbridge",
         should_escape: false,
       },
     ]);
