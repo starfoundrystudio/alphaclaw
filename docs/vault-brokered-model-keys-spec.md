@@ -101,6 +101,19 @@ New module `lib/server/agent-vault/model-provider-services.js`: provider id → 
 3. If the vault already has service+credential → server immediately writes the placeholder profile + env, syncs config refs, returns `{status:"active"}`.
 4. Otherwise a proposal is created; the UI shows the TeamYou approval link (reuse the credentials page's `pending-proposal` component) and polls. The **owner enters the actual key in TeamYou** during approval — the key never touches alphaclaw. On availability, server writes placeholders as in step 3 and marks the model catalog stale.
 
+**A½. What the Models screen shows** (`provider-auth-card.js` + models-tab "Needs auth" chip):
+
+Everything up to credential entry is unchanged — model rows, the "Needs auth" chip, and the per-provider Authentication card all render as today. Only the card's interior changes, and only when the vault runtime is connected:
+
+| Card state | Renders | Badge |
+| --- | --- | --- |
+| Not configured | "Store key in Agent Vault" button (no `SecretInput` at all) + the existing "Get" console link → `POST /api/models/vault-key` | "Not configured" |
+| Pending approval | The credentials page's `PendingProposal` block (slot, host, "Review proposal" → TeamYou, where the **owner enters the key value during approval**); card polls proposal status | "Approval pending" |
+| Active | Passive state; note that rotation happens in TeamYou | "Connected · Agent Vault" |
+| Raw key on-box (pre-vault/onboarding) | Today's connected card + migrate banner → same flow as Not configured; reconcile overwrites raw with placeholder on completion | "Connected" + banner |
+
+The "Needs auth" chip clears through the existing `hasCredentialValue` path — the placeholder *is* the profile value — and the UI tells brokered from raw purely via `isVaultPlaceholderValue`, so migrated providers render correctly with no extra state. Vault not connected (non-managed, pre-claim, onboarding): the card is exactly today's `SecretInput`. Codex OAuth / Claude CLI card sections: untouched.
+
 **B. Onboarding / vault not yet ready — the bootstrap lane.**
 The vault runtime token is claimed post-onboarding (needs tailnet + owner enrollment), so onboarding keeps collecting a raw key into env exactly as today. This is a deliberate, documented exception to the doctrine, closed by lane C. End-state (future, ties into the parked onboarding-async redesign): TeamYou-provisioned instances pre-seed model-key slots at provision time so onboarding never handles a raw key.
 
