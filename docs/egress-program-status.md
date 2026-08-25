@@ -1,6 +1,6 @@
 # Egress Program Status
 
-**Updated:** 2026-08-24 (late night) — maintained by Claude; ask for "the egress status board" in any session.
+**Updated:** 2026-08-25 — maintained by Claude; ask for "the egress status board" in any session.
 
 ## Live infrastructure
 
@@ -15,8 +15,9 @@
 | --- | --- | --- | --- |
 | Egress Phases 0–2 (spec, spike, mediated, enforced flip) | **Done & live-validated** on branches | — | — |
 | clawctl egress branch | **Merged to `main`** 2026-08-24 (0fb72df, 431/431 tests + tsc clean on merged main) | — | — |
-| teamyou PR #791 (Phase 1+2) | Open, mergeable into `development` | **Bill** | Review, merge |
-| Attestation workflow | **Built 2026-08-24** on branch `claude/egress-attestation` (stacked on the #791 branch): hourly self-chaining sweep, one GET /firewalls per cycle, label-based selection covering both provisioning paths' shared deny firewalls, auto-repair + Slack on drift, `{"mode":"once"}` verification endpoint. Threat model corrected in the spec (guards against our own tooling/human error — a root agent cannot cause drift). 6 unit tests + tsc clean | **Bill** | Merge PR #791, then the attestation branch retargets `development`; start the chain via POST /api/internal/openclaw/egress-attestation after deploy |
+| teamyou PR #791 (Phase 1+2) | **Merged** 2026-08-24 (admin-merge per owner direction) | — | — |
+| Attestation workflow | **Merged** to `development` 2026-08-24 (PR #798). Phase 2 code is fully landed | **Bill** | On next production deploy: run `{"mode":"once"}` via POST /api/internal/openclaw/egress-attestation (expect clean empty sweep), then start the chain — that closes Phase 2 |
+| Customer drift audit (milo-b0171223) | **No drift found** 2026-08-24: production bundle env last set Aug 20 17:20, one minute after the db3efbfb publish; teamyou prod, bundle, and alphaclaw .17 are a deliberately matched Aug-20 set, and all egress changes are opt-in/dormant in prod. Likely culprit for their problems: alphaclaw .17 ships WITHOUT this weekend's fixes (vault-env plugin installs, loopback web_search shim) — the same bugs reproduced on our test instance running the same released code | **Bill** | Get symptoms; likely fix = cut the deferred alphaclaw release (fixes flow to the instance via self-update, no re-provision) |
 | Setup-completion readiness gate | **Shipped by Bill** in `0.9.18-starfoundry.18-beta.1` (merged to alphaclaw main) | **Bill** | Live test: fresh TeamYou-admin provision with channel=beta |
 | Flow-log inventory report (Phase 3 input) | Ready to run — a focused exercise session beats passive soak time | Claude | Drive scoped agent usage via the gateway private path, then harvest `alphaclaw-natgw-new` logs into the destination report |
 | Host-asset bundle env bump in teamyou Vercel (`ed1ac144`) | **Deliberately deferred** (owner call 2026-08-24): a customer is mid-onboarding; bump waits until the coast is clear. (Note: the bundle URL/SHA is read once at stage-zero claim, so in-flight instances keep their bundle — the bump only affects future claims. Recorded so the timing decision has full context.) | Bill | Bump when comfortable; required before TeamYou-provisioned mediated/enforced instances |
