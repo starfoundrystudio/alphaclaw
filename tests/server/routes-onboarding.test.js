@@ -4,7 +4,10 @@ const os = require("os");
 const express = require("express");
 const request = require("supertest");
 
-const { registerOnboardingRoutes } = require("../../lib/server/routes/onboarding");
+const {
+  registerOnboardingRoutes,
+  scheduleAfterResponseTask,
+} = require("../../lib/server/routes/onboarding");
 const { kSetupDir } = require("../../lib/server/constants");
 
 const createBaseDeps = ({
@@ -2410,5 +2413,48 @@ describe("server/routes/onboarding", () => {
       error: "Invalid approved secrets payload",
     });
     expect(deps.writeEnvFile).not.toHaveBeenCalled();
+  });
+});
+
+describe("scheduleAfterResponseTask", () => {
+  const { EventEmitter } = require("events");
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("runs the task once when the response finishes normally", () => {
+    const res = new EventEmitter();
+    const task = vi.fn();
+    scheduleAfterResponseTask(res, task);
+    res.emit("finish");
+    res.emit("close");
+    vi.advanceTimersByTime(60000);
+    expect(task).toHaveBeenCalledTimes(1);
+  });
+
+  it("runs the task when the connection closes without finishing", () => {
+    const res = new EventEmitter();
+    const task = vi.fn();
+    scheduleAfterResponseTask(res, task);
+    res.emit("close");
+    vi.advanceTimersByTime(60000);
+    expect(task).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the timer when the socket was already dead", () => {
+    // An upstream proxy that cut the connection mid-onboard leaves a response
+    // that emits neither "finish" nor "close" after the handler completes;
+    // host finalization must still run.
+    const res = new EventEmitter();
+    const task = vi.fn();
+    scheduleAfterResponseTask(res, task, { fallbackDelayMs: 10000 });
+    vi.advanceTimersByTime(9999);
+    expect(task).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(task).toHaveBeenCalledTimes(1);
   });
 });
