@@ -185,6 +185,27 @@ describe("frontend/welcome handoff", () => {
     );
   });
 
+  it("treats an Already onboarded retry response as recoverable", async () => {
+    const { isRecoverableOnboardCompletionError } = await loadWelcomeHook();
+    expect(
+      isRecoverableOnboardCompletionError(new Error("Already onboarded")),
+    ).toBe(true);
+  });
+
+  it("keeps the recovery poll longer than the setup-to-runtime swap window", async () => {
+    const {
+      kOnboardCompletionPollAttempts,
+      kOnboardCompletionPollIntervalMs,
+    } = await loadWelcomeHook();
+    // The service swap after onboarding leaves ~55s where the proxy answers
+    // 502; a poll that gives up sooner strands the user on an unwinnable
+    // retry loop (observed live on 0.9.18-starfoundry.17).
+    const kObservedSwapDarkWindowMs = 55000;
+    expect(
+      kOnboardCompletionPollAttempts * kOnboardCompletionPollIntervalMs,
+    ).toBeGreaterThanOrEqual(kObservedSwapDarkWindowMs * 2);
+  });
+
   it("polls onboarding status until completion is visible", async () => {
     const { waitForOnboardingCompletion } = await loadWelcomeHook();
     const fetchStatus = vi
