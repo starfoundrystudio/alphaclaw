@@ -107,6 +107,46 @@ describe("server/slack-bot", () => {
     expect(result.scopes.missing).not.toContain("chat:write");
   });
 
+  it("resolves the app id via auth.test when tokens are vault placeholders", async () => {
+    const createApi = vi.fn((token) => {
+      if (String(token).startsWith("__agent_vault_slack_app_token")) {
+        return {
+          openSocketConnection: vi.fn(async () => ({ ok: true })),
+          // App-level tokens return app_id from auth.test; the vault proxy
+          // substitutes the real xapp value on the wire.
+          authTest: vi.fn(async () => ({ ok: true, app_id: "A777PLACE0" })),
+        };
+      }
+      return {
+        // Real bot-token auth.test responses do not include app_id.
+        authTest: vi.fn(async () => ({
+          ok: true,
+          bot_id: "B123ABC456",
+          user_id: "U123ABC456",
+          user: "alpha-wolf",
+          team_id: "T123ABC456",
+          team: "Test Workspace",
+          url: "https://test-workspace.slack.com/",
+          response_metadata: { scopes: kSlackRequiredBotScopes.join(",") },
+        })),
+        authScopes: vi.fn(async () => ({ ok: true })),
+        appsPermissionsInfo: vi.fn(async () => ({ ok: true })),
+      };
+    });
+
+    const result = await inspectSlackCredentials(
+      {
+        botToken: "__agent_vault_slack_bot_token__",
+        appToken: "__agent_vault_slack_app_token__",
+      },
+      { createApi },
+    );
+
+    expect(result.appId).toBe("A777PLACE0");
+    expect(result.appSettingsUrl).toBe("https://api.slack.com/apps/A777PLACE0");
+    expect(result.workspace.id).toBe("T123ABC456");
+  });
+
   it("rejects credentials belonging to different Slack apps", async () => {
     await expect(
       inspectSlackCredentials(
