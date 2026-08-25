@@ -1,6 +1,6 @@
 # Vault-Brokered Model API Keys — Spec
 
-**Status:** Draft for review (2026-08-25). No code yet, per program practice: spec before code.
+**Status:** Phases A+B implemented on `main` 2026-08-25 (f10c6fb) per owner approval; Phase C (AGENTS.md doctrine) and Phase D (provision-time seeding) remain open. §9 recommendations were taken as defaults: raw keys hard-block once the runtime is claimed, migration is UI-initiated, slots reuse env var names, plan-variants share the base provider's service, multi-key failover deferred.
 **Scope:** Model/gateway provider credentials whose auth method is a static API key, on Agent Vault-managed (gateway-topology) instances. OAuth and subscription routes are out of scope.
 
 ## 1. Problem
