@@ -99,7 +99,7 @@ New module `lib/server/agent-vault/model-provider-services.js`: provider id → 
 1. User picks a model in the Models UI. For a brokered-capable provider with no credential, the UI shows "Store key in Agent Vault" instead of a raw key input.
 2. `POST /api/models/vault-key {provider}` → server builds the request from the provider map → `agentVaultService.ensureServiceAccess`.
 3. If the vault already has service+credential → server immediately writes the placeholder profile + env, syncs config refs, returns `{status:"active"}`.
-4. Otherwise a proposal is created; the UI shows the TeamYou approval link (reuse the credentials page's `pending-proposal` component) and polls. The **owner enters the actual key in TeamYou** during approval — the key never touches alphaclaw. On availability, server writes placeholders as in step 3 and marks the model catalog stale.
+4. Otherwise a proposal is created; the UI shows the approval link (reuse the credentials page's `pending-proposal` component) and polls. The link is the TeamYou *entry hop* (`buildTeamYouAgentVaultApprovalUrl` wraps `/approve/<id>?token=…` into `return_to`), which authenticates the owner and forwards to the **Agent Vault operator UI on the gateway (`.ts.net`, tailnet-only) — that page is where the owner enters the actual key value.** TeamYou never sees the secret; the key never touches alphaclaw. On availability, server writes placeholders as in step 3 and marks the model catalog stale.
 
 **A½. What the Models screen shows** (`provider-auth-card.js` + models-tab "Needs auth" chip):
 
@@ -108,8 +108,8 @@ Everything up to credential entry is unchanged — model rows, the "Needs auth" 
 | Card state | Renders | Badge |
 | --- | --- | --- |
 | Not configured | "Store key in Agent Vault" button (no `SecretInput` at all) + the existing "Get" console link → `POST /api/models/vault-key` | "Not configured" |
-| Pending approval | The credentials page's `PendingProposal` block (slot, host, "Review proposal" → TeamYou, where the **owner enters the key value during approval**); card polls proposal status | "Approval pending" |
-| Active | Passive state; note that rotation happens in TeamYou | "Connected · Agent Vault" |
+| Pending approval | The credentials page's `PendingProposal` block (slot, host, "Review proposal" → TeamYou entry hop → **gateway vault operator UI, where the owner enters the key value during approval**); card polls proposal status | "Approval pending" |
+| Active | Passive state; note that rotation happens in the vault operator console | "Connected · Agent Vault" |
 | Raw key on-box (pre-vault/onboarding) | Today's connected card + migrate banner → same flow as Not configured; reconcile overwrites raw with placeholder on completion | "Connected" + banner |
 
 The "Needs auth" chip clears through the existing `hasCredentialValue` path — the placeholder *is* the profile value — and the UI tells brokered from raw purely via `isVaultPlaceholderValue`, so migrated providers render correctly with no extra state. Vault not connected (non-managed, pre-claim, onboarding): the card is exactly today's `SecretInput`. Codex OAuth / Claude CLI card sections: untouched.
@@ -118,13 +118,13 @@ The "Needs auth" chip clears through the existing `hasCredentialValue` path — 
 The vault runtime token is claimed post-onboarding (needs tailnet + owner enrollment), so onboarding keeps collecting a raw key into env exactly as today. This is a deliberate, documented exception to the doctrine, closed by lane C. End-state (future, ties into the parked onboarding-async redesign): TeamYou-provisioned instances pre-seed model-key slots at provision time so onboarding never handles a raw key.
 
 **C. Migration of an existing raw key.**
-The runtime token is proposal-only — alphaclaw *cannot* copy an on-box secret into the vault. Migration therefore needs one owner action: Models UI banner on raw-keyed brokered-capable providers → creates the proposal → owner approves **and re-enters the key value** in TeamYou → reconcile (below) flips placeholder in and scrubs the raw value from `.env` and the auth store (best-effort scrub; sqlite page residue acknowledged). Note `runModelsGitSync` only syncs `openclaw.json` — auth references there are provider/mode only, never values — so nothing raw reaches git.
+The runtime token is proposal-only — alphaclaw *cannot* copy an on-box secret into the vault. Migration therefore needs one owner action: Models UI banner on raw-keyed brokered-capable providers → creates the proposal → owner approves **and re-enters the key value** in the vault operator UI → reconcile (below) flips placeholder in and scrubs the raw value from `.env` and the auth store (best-effort scrub; sqlite page residue acknowledged). Note `runModelsGitSync` only syncs `openclaw.json` — auth references there are provider/mode only, never values — so nothing raw reaches git.
 
 **D. Reconcile (extends `reconcileLegacyCredentials`).**
 `kAgentVaultRuntimeReplacements` entries gain a `mode`: existing `TEAMYOU_API_KEY` keeps `mode: "remove"`; model providers get `mode: "placeholder"`. When the vault reports service+credential available for a placeholder-mode key and the local value isn't already the placeholder: rewrite the profile key and env value to the placeholder (never delete the profile — an unconfigured provider breaks model routing), then restart the runtime. Idempotent via `isVaultPlaceholderValue`.
 
 **E. Rotation & revocation.**
-Rotation is TeamYou-only: owner updates the credential value; placeholders on-box are stable; no alphaclaw touch, no restart. This is a material operational win over today (rotation currently means re-pasting into alphaclaw). Revocation → requests 401; OpenClaw's profile failover marks the profile bad (cosmetic); a discover-driven "credential missing" warning in the Models UI is a nice-to-have.
+Rotation happens in the vault operator console only: owner updates the credential value there; placeholders on-box are stable; no alphaclaw touch, no restart. This is a material operational win over today (rotation currently means re-pasting into alphaclaw). Revocation → requests 401; OpenClaw's profile failover marks the profile bad (cosmetic); a discover-driven "credential missing" warning in the Models UI is a nice-to-have.
 
 ## 6. Raw-key policy on managed instances
 
@@ -146,7 +146,7 @@ When the vault is connected, `PUT /api/models/config` and `PUT /api/models/auth/
 ## 9. Open questions for Bill
 
 1. **Hard-block vs warn** on raw keys when vault is connected (§6 specs hard-block; confirm).
-2. **Auto-create migration proposals** on first vault claim for already-raw-keyed providers, or strictly UI-initiated? (Spec says UI-initiated; auto-creating surprises the owner with a TeamYou approval queue.)
+2. **Auto-create migration proposals** on first vault claim for already-raw-keyed providers, or strictly UI-initiated? (Spec says UI-initiated; auto-creating surprises the owner with a vault approval queue.)
 3. Confirm **credential-key naming = env var name** (spec assumes yes).
 4. `moonshot`/`kimi-coding` and `volcengine`/`-plan` share hosts and env keys today — one shared slot per host, or per-provider slots? (Spec assumes shared, matching the shared env var.)
 5. Multi-key failover (several profiles per provider): numbered slots (`ANTHROPIC_API_KEY_2` + own placeholder) fit within the 10-substitution cap — include in v1 or defer? (Spec defers.)
@@ -158,4 +158,4 @@ When the vault is connected, `PUT /api/models/config` and `PUT /api/models/auth/
 - **Phase C (doctrine):** AGENTS.md model-key guidance (route users to Models settings; agent `ensure_service_access` uses the canonical `model-<provider>` names from the shared map).
 - **Phase D (future):** TeamYou provision-time key seeding; folds into the parked onboarding redesign.
 
-Verification per phase on `alphaclaw-egress-enforced-1`: configure Anthropic via the vault flow, confirm `.env`/sqlite hold only placeholders, live model call succeeds through the proxy, direct (NO_PROXY-forced) call 401s, rotation in TeamYou takes effect without restart.
+Verification per phase on `alphaclaw-egress-enforced-1`: configure Anthropic via the vault flow, confirm `.env`/sqlite hold only placeholders, live model call succeeds through the proxy, direct (NO_PROXY-forced) call 401s, rotation via the vault operator console takes effect without restart.
