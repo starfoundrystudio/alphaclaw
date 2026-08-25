@@ -69,6 +69,22 @@ The channel registry (`lib/server/agent-vault/channel-provider-services.js`) bec
 
 Worked example — the checklist applied to msteams — ships in the registry as the template entry. This is also the answer to "what about channels we want to support later": adding Teams support *is* running this checklist and landing the registry entry; the mechanics (S/te body substitution) already exist from the model-keys machinery.
 
+### 5a. Enforcement outside Clawbridge (Control UI, agent tools, CLI)
+
+Clawbridge's route gates only bind flows that pass through Clawbridge — but managed users also hold the OpenClaw Control UI (the "Launch OpenClaw" surface), and the agent itself and the CLI can all write `openclaw.json`. Restricting the *writers* is a losing game; the pinned gateway lets us enforce at the *consumer* instead. Verified in `openclaw@2026.7.1` (`resolvePluginActivationDecisionShared`):
+
+- **`plugins.deny` is a hard activation gate, checked first.** It beats `entries.<id>.enabled: true`, slot selection, and — critically — the bundled-channel bypass (`channels.<id>` config normally skips the allowlist via `bundled-channel-enabled-in-config`; deny still wins). A denied channel plugin does not activate no matter which surface configured it.
+- **`plugins.allow`**, when non-empty, default-closes everything not listed (`not-in-allowlist`) *except* bundled channels — which is why deny, not allow, is the load-bearing control for channels.
+- **Doctor already explains it.** The `core/doctor/channel-plugin-blockers` check surfaces "configured channel whose backing plugin cannot activate" with the cause, so a user who adds a blocked channel via the Control UI gets a truthful diagnostic, not silent breakage.
+
+The managed-instance enforcement stack is therefore three layers:
+
+1. **Install layer** (non-bundled channel plugins): plugin installation on managed hosts follows the established TeamYou-gating pattern — installs host-controlled, alphaclaw is the single enablement writer. An unclassified catalog plugin never reaches disk.
+2. **Activation layer** (everything, including bundled channels): alphaclaw derives `plugins.deny` from the classification registry — every channel plugin **not** classified (or classified but pending owner enablement) is denied — and re-asserts it on the post-onboard reconcile timer, the same single-writer doctrine already used for the TeamYou plugin gate. Because the gateway enforces at activation, this binds the Control UI, the agent, and the CLI identically, with zero upstream changes.
+3. **Credential layer** (backstop for *classified* channels configured out-of-band): a reconcile **raw-secret sweep** over `openclaw.json` and `.env` — secret-shaped values in channel config positions that are neither `${ENV}` references nor `__agent_vault_*__` placeholders get quarantined into the migration flow (moved to env, config rewritten to the reference, migrate banner raised). A token pasted into the Control UI becomes a detected migration case, not a permanent bypass.
+
+Honest limits, stated rather than papered over: the customer owns the instance, and the Control UI (or the agent, at the user's direction) can edit `plugins.deny` back. The reconcile loop re-asserts policy and surfaces a visible "managed policy re-applied" notice in Clawbridge — this is guardrails and self-healing defaults, not tamper-proofing. True config lockdown would require host-level config ownership (gateway process unable to write its own policy keys), which belongs to the parked Phase 4 privilege-hardening track; nothing in this spec depends on it.
+
 ## 6. alphaclaw flow changes (Tier S/S-te; unchanged from v1 in substance)
 
 - Add-channel UI vault states mirror the models card: request → proposal (service + this account's slots, Slack's two tokens in one approval) → owner enters values on the gateway vault operator page → alphaclaw writes placeholders, runs the existing `openclaw channels add` path (the token→`${ENV_KEY}` rewrite works verbatim on placeholders), restarts.
@@ -100,11 +116,12 @@ Tier S: as the models spec (fails closed to 401 off-proxy; vault-down = no new b
 3. Per-account slots vs shared slots (spec: per-account, matching the env convention) — carried over from v1.
 4. **msteams ingress**: Bot Framework needs a public inbound endpoint, which cuts against the outbound-only Phase 3 posture. Classify-and-allow with a documented ingress exception, or hold Teams until the Phase 3 ingress design lands?
 5. Post-approval probe failure: block the flow (spec) or activate with warning — carried over from v1.
+6. **Deny-list posture** (§5a): deny every catalog channel plugin not in the classification registry (default-closed, spec recommendation), or deny only channels explicitly marked restricted (default-open)? Default-closed makes the §5 gate real against the Control UI; default-open keeps Control UI parity with a stock openclaw install.
 
 ## 10. Rollout
 
 - **Phase A — verification + transport groundwork** (§8; `channels.discord.proxy` managed write; no credential behavior changes, no release needed).
-- **Phase B — Tier S server**: channel registry with tier field + classification gate · `ensureChannelProviderAccess` · placeholder plumbing · raw-token gates · reconcile channel mode · vault-aware probe fetch.
+- **Phase B — Tier S server**: channel registry with tier field + classification gate · `ensureChannelProviderAccess` · placeholder plumbing · raw-token gates · reconcile channel mode · vault-aware probe fetch · `plugins.deny` derivation + reconcile re-assert and the raw-secret sweep (§5a layers 2–3).
 - **Phase C — UI**: vault states for S-tier channels · migrate banners · honest Tier C/L labeling · placeholder-aware readback.
 - **Phase D — doctrine**: one AGENTS.md update covering model keys + channel tokens + the Tier C statement ("pairing credentials are custody-protected, not vault-brokered; never write them to Envars either").
 - **Phase E — Tier C sealed custody (C1)**: KEK mechanism per §9 Q1; WhatsApp + Signal first, then LINE HMAC/Nostr keys as those channels are enabled. Independent track; C0 hygiene lands in Phase B.
