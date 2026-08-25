@@ -28,6 +28,12 @@
 | Vault-env plugin-install bug | **Released to beta 2026-08-25** in `0.9.18-starfoundry.18-beta.2` (6b769a2). Live test instance was manually unblocked earlier | Bill | Promote to `latest` after beta validation |
 | Onboarding recovery-poll window | **Fixed + released to beta 2026-08-25** (3ac11e8, in `0.9.18-starfoundry.18-beta.2`): recovery poll extended 36s→120s to outlast the ~55s service-swap dark window; a retried submit answering "Already onboarded" now resolves through the status poll into the normal readiness handoff. Guard test pins poll ≥ 2× the observed window. 1248/1248 tests | Bill | Promote to `latest` after beta validation |
 
+## Threads (continued)
+
+| Thread | State | Owner | Next action |
+| --- | --- | --- | --- |
+| Channel credentials vs Agent Vault doctrine conflict | **Diagnosed 2026-08-25**: milo's Discord 401 loop — channel tokens are env-based by design (channel UI → `.env` `DISCORD_BOT_TOKEN` → openclaw env ref; `token:env` is correct), but `AGENTS.md` tells the agent "Agent Vault is mandatory / never write credentials to Envars", so the agent directed the customer to put the reset token in the vault, where nothing reads it for channels. Stale env token → 401 forever. Milo unblock: reset token once more, enter it in AlphaClaw channel settings (not vault), restart. Stopgap: AGENTS.md carve-out routing channel tokens to channel settings. Real fix: vault-broker channel tokens (Discord is the vault docs' own worked example — REST + websocket substitution); needs a per-provider spec | **Bill** | Approve stopgap prompt fix now; spec vault-brokered channels before any code |
+
 ## Explicitly parked (no one is working on these)
 
 - Onboarding speed + async redesign (owner concern 2026-08-25): milo's ~80s breakdown — 5s git/onboard, 22s `models set`, 37s skills/git-sync installs, 15s tailnet+vault. Two-part plan when picked up: (a) defer non-blocking housekeeping to the post-onboard reconcile timer (~20–30s critical path), (b) convert POST /api/onboard to a background job + progress polling so no long-lived response exists for any hop to cut (makes the bridge-timeout bump unnecessary and finalize-decoupling trivial).
