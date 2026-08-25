@@ -30,6 +30,8 @@
 
 ## Explicitly parked (no one is working on these)
 
+- Onboarding speed + async redesign (owner concern 2026-08-25): milo's ~80s breakdown — 5s git/onboard, 22s `models set`, 37s skills/git-sync installs, 15s tailnet+vault. Two-part plan when picked up: (a) defer non-blocking housekeeping to the post-onboard reconcile timer (~20–30s critical path), (b) convert POST /api/onboard to a background job + progress polling so no long-lived response exists for any hop to cut (makes the bridge-timeout bump unnecessary and finalize-decoupling trivial).
+
 - Phase 3: retire public bootstrap ingress; transparent payload scanning (PipeLock); egress policy tiers — needs the flow-log inventory first.
 - Phase 4: OpenClaw privilege escalation (sudo/power-mode) — gated on attestation running fleet-wide.
 - alphaclaw `enforced`-mode observability (doctor/watchdog "gateway unreachable" state) — downgraded from prerequisite to nice-to-have by the Phase 2 NAT correction.
