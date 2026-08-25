@@ -1,103 +1,112 @@
 # Vault-Brokered Channel Credentials — Spec
 
-**Status:** Draft for review (2026-08-25). No code yet, per program practice: spec before code. Companion to `docs/vault-brokered-model-keys-spec.md` (Phases A+B of which are implemented); this spec reuses its machinery — placeholder convention, registry shape, proposal flow, reconcile mode, UI states.
-**Scope:** Token-based channel credentials on Agent Vault-managed instances: Telegram bot tokens, Discord bot tokens, Slack bot + app tokens, including multi-account variants (`DISCORD_BOT_TOKEN_<ACCOUNT>`). WhatsApp and Signal are out of scope (see §6).
+**Status:** Draft v2 for review (2026-08-25). v1 excluded WhatsApp/Signal; owner rejected exclusion-by-fiat. v2 replaces the exclusion list with a credential taxonomy that classifies **every** channel in the OpenClaw catalog (26 plugins + the 4 core channels alphaclaw manages today) and assigns each credential class a defined protection tier — including the classes substitution cannot serve. No code yet: spec before code.
+**Companion:** `docs/vault-brokered-model-keys-spec.md` (Phases A+B shipped); the placeholder machinery, proposal flow, reconcile mode, and UI states from that work are reused here for Tier S.
 
 ## 1. Problem
 
-Channel tokens are the credential class that actually produced a customer incident (milo's Discord 401 loop): they are env-based by design (`.env` → `${DISCORD_BOT_TOKEN}` reference in `openclaw.json`), agent-readable, vault-invisible — and AGENTS.md doctrine says the opposite. The models work closed this gap for model keys; channels are the remaining token class, and the UI even exposes a token *readback* endpoint (`GET /api/channels/accounts/token`) that brokering eliminates outright.
+Channel credentials are env/config-based, agent-readable, and vault-invisible; AGENTS.md doctrine says the opposite, and the contradiction produced the milo incident. The models work closed the gap for model keys. Channels span a much wider credential space than "a token": bot tokens, OAuth client secrets, webhook-signing HMAC secrets, private signing keys, and device-pairing keystores. A plan that only handles the token-shaped ones and waves the rest away leaves both a security gap and a doctrine ambiguity for every channel we add later (Microsoft Teams included). This spec therefore defines: (a) a taxonomy that covers every credential shape a channel can have, (b) the protection mechanism and honest threat-model statement for each tier, and (c) a governance rule so **no channel ships on a managed instance unclassified**.
 
-## 2. Why channels are harder than model keys — and less hard than the audit assumed
+## 2. Transport ground truth (unchanged from v1, condensed)
 
-Model keys needed zero transport work because model calls are in-process HTTPS fetches. Channels have long-lived sockets — but the 2026-08-25 transport audit predates a load-bearing fact confirmed in the pinned `openclaw@2026.7.1`: when `proxy.enabled` is set (which the vault claim already does), openclaw installs **`@openclaw/proxyline` in managed mode** — process-global routing that replaces `node:http`/`node:https`, both global agents, and the undici/fetch dispatcher, and *replaces caller-supplied agents* so libraries can't accidentally bypass. Child processes re-install it via `OPENCLAW_PROXY_ACTIVE=1`. Outside its model: code that captured transports before install or owns a private/native stack — which is exactly the Discord plugin case the audit verified.
+With `proxy.enabled` (set at vault claim), the pinned `openclaw@2026.7.1` installs `@openclaw/proxyline` in managed mode: process-global routing over `node:http`/`https`, the undici/fetch dispatcher, and caller-supplied agents, re-installed in children via `OPENCLAW_PROXY_ACTIVE=1`. Consequences: most channel REST/long-poll traffic already transits the vault proxy; the audited exception is the Discord plugin's private transport stack (fixed via its own `channels.discord.proxy` hook — set to the literal `"${OPENCLAW_PROXY_URL}"` env reference so the git-synced config stays secret-free); loopback destinations intentionally bypass via the shim. Per-plugin transit is an empirical checklist item (§8), not an assumption.
 
-Per-channel ground truth:
+## 3. Credential taxonomy
 
-| Channel | Secret(s) | Where the secret travels | Transit today (managed) | Transport work |
-| --- | --- | --- | --- | --- |
-| Telegram | `TELEGRAM_BOT_TOKEN` | **URL path** of every long-poll/API call (`api.telegram.org/bot<token>/…`) via grammY (global fetch) | Through vault proxy (proxyline) | **None** — pure config, `path` substitution |
-| Slack | `SLACK_BOT_TOKEN` (xoxb), `SLACK_APP_TOKEN` (xapp) | REST headers to `slack.com` (Web API + `apps.connections.open`); the Socket-Mode WSS itself uses a short-lived **ticketed URL, no stored secret** | REST expected through proxy (plugin transit **unverified** — §8) | None expected; verify plugin |
-| Discord | `DISCORD_BOT_TOKEN` | REST `Authorization: Bot` header to `discord.com` **and** the gateway WSS IDENTIFY payload to `gateway.discord.gg` | **Direct-dials** (audit-verified: private transport; managed proxy never consulted) | Set `channels.discord.proxy` — the plugin's own hook routes **both** WSS and REST through an explicit proxy, no upstream PR |
-| WhatsApp | `WHATSAPP_OWNER_NUMBER` + on-disk pairing keys | Number is not a secret; the real credential is Noise-protocol crypto material used in-process | n/a | **Excluded** — not a substitutable token |
-| Signal | signal-cli linked-device keys | Local sidecar over loopback (shim direct-dials) | n/a | **Excluded** |
+Classify each credential by **where the secret must appear for the integration to work**. That single question determines what protection is achievable — this is physics, not preference.
 
-Discord's substitution is the vault docs' own worked example (REST header + `websocket` surface for IDENTIFY). Telegram webhook mode and other inbound-ingress modes stay out of scope — outbound-only modes are the Phase 3 recommendation already on the status board.
+**Tier S — Substitutable request secrets.** The secret appears verbatim in a request surface the vault proxy can rewrite (`header`, `path`, `query`, `body`, `websocket`). Mechanism: the shipped model-keys machinery — vault service per host, `__agent_vault_*__` placeholder on-box, substitution at the proxy. Protection achieved: the secret **never exists on the instance**; agent exfiltration is impossible, rotation is vault-console-only. This is full brokering.
 
-## 3. Design
+**Tier S/te — OAuth client secrets (token-endpoint variant of Tier S).** App credentials (client_id + client_secret, e.g. Microsoft Bot Framework, Feishu, WeCom, Twitch) appear only in the token-endpoint request (form body or query). Mechanism: `body`/`query` substitution on the identity host (`login.microsoftonline.com`, `open.feishu.cn`, …). The resulting access token is Tier D. Same guarantee as Tier S for the durable secret.
 
-Same placeholder contract as model keys: the value stored in `.env` (and expanded through `${ENV_KEY}` references in `openclaw.json`) becomes `__agent_vault_<env_key_lower>__`; the real token lives only in the vault and is injected at the proxy. `isVaultPlaceholderValue` and the whole models machinery apply unchanged.
+**Tier D — Derived ephemeral secrets.** Short-lived artifacts obtained *using* a Tier S/C parent: OAuth access tokens, Slack Socket-Mode ticket URLs, session cookies. Policy: permitted in process memory and short-lived caches; never written durably (disk cache must be tmpfs or encrypted under Tier C custody); expiry ≤ provider default. The durable parent stays brokered, so a leaked derivative self-heals on expiry and revocation happens at the parent.
 
-**Registry** — new `lib/server/agent-vault/channel-provider-services.js`, same shape as the model registry plus two capabilities the model one lacks:
+**Tier C — Cryptographic custody material.** The process must *compute* with the secret: webhook-signature HMAC keys (LINE channel secret), event-signing private keys (Nostr, Matrix E2EE device keys, Urbit), and pairing/session keystores (WhatsApp Noise keys, Signal linked-device keys, WeChat/Zalo QR sessions). Substitution is architecturally impossible — no proxy rewrite can perform the crypto for a process that never has the key.
 
-- **Multiple credential slots per service** (Slack: `SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN`, both `header`-surface substitutions on one `channel-slack` / `slack.com` service).
-- **Account-scoped slots**: the env-key convention `DISCORD_BOT_TOKEN_<ACCOUNT>` already exists (`deriveChannelEnvKey`); each account adds a slot + substitution on the provider's existing service, placeholder `__agent_vault_discord_bot_token_work__`-style. The vault's 10-substitutions-per-service cap bounds this at 10 accounts per provider (5 for Slack) — acceptable, `log`-able.
+Honest threat-model statement, since this is the class v1 hand-waved: **runtime confidentiality from the agent is not achievable for Tier C** — the gateway process the agent operates in must hold the plaintext in memory to function; a sufficiently capable agent can read its own process. What *is* achievable, and what Tier C requires:
 
-Canonical services:
+1. **Sealed at-rest custody (C1, target).** Keystores envelope-encrypted on disk; the KEK lives off-instance and the plaintext exists only in gateway memory/tmpfs after an unwrap at boot. Two candidate KEK holders: **(a) the security gateway** — unwrap over the existing gateway private path at service start; needs clawctl work but **no new TeamYou/vault feature**; **(b) the Agent Vault** — needs a new unwrap primitive, deliberately absent from today's proposal-only runtime token; TeamYou roadmap item. Recommendation: (a) first; (b) can supersede. Either way a stolen disk/backup/snapshot yields ciphertext, and revocation = KEK denial + provider-side unlink.
+2. **Custody hygiene (C0, interim — shippable now).** Keystore paths enumerated per channel in the registry; enforced: 0600/0700 modes, excluded from git-sync and any backup/export path, excluded from the agent-browsable workspace, never mirrored into env or `openclaw.json`.
+3. **Flow visibility.** Tier C transports still transit proxyline/NAT and are Phase-3 scannable; exfil of the keystore to an unexpected destination is a detectable flow, which is the compensating control for the runtime-confidentiality gap.
+4. **Revocation runbook per channel.** Every Tier C registry entry documents the provider-side revocation act (WhatsApp: unlink device; Signal: remove linked device; Nostr: key rotation + relay note), so incident response never depends on remembering provider mechanics.
 
-| Provider | Service(s) | Substitution surfaces |
+**Tier L — Locally-terminated services.** The credential authenticates to a host the vault proxy cannot front: loopback/LAN endpoints (self-hosted Mattermost, Synology NAS, Nextcloud, private IRC). The shim direct-dials loopback by design, so substitution never sees the traffic. Classification is per *instance configuration*, not per channel: the same Mattermost token is Tier S when the URL is public and Tier L when it's LAN. Tier L secrets get C0 custody hygiene + the documented residual ("secret readable on-box; compensate with provider-side scoping"), and the UI says so instead of pretending.
+
+## 4. Full catalog classification
+
+The four alphaclaw-managed channels, mapped and ready for implementation:
+
+| Channel | Credential(s) | Tier | Mechanism |
+| --- | --- | --- | --- |
+| telegram | `TELEGRAM_BOT_TOKEN` (+ per-account) | S | `path` substitution on `api.telegram.org` (grammY transits via proxyline) |
+| discord | `DISCORD_BOT_TOKEN` (+ per-account) | S | `header`+`websocket` substitution on `discord.com` + `gateway.discord.gg`; requires `channels.discord.proxy = "${OPENCLAW_PROXY_URL}"` |
+| slack | `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN` | S | `header` substitution on `slack.com`, one service/two slots; WSS is a Tier D ticketed URL |
+| whatsapp | Noise-protocol pairing keystore (`WHATSAPP_OWNER_NUMBER` is not a secret) | **C** | C0 now (keystore path hygiene); C1 sealed custody when the KEK mechanism lands; revocation = unlink device |
+
+Catalog plugins, classified provisionally (each entry is **verified against the plugin's actual config at classification time** — the plugins install at runtime and are not vendored here; provisional rows are from the providers' published auth models):
+
+| Channel | Expected credential(s) | Tier |
 | --- | --- | --- |
-| telegram | `channel-telegram` → `api.telegram.org` | `path` |
-| discord | `channel-discord` → `discord.com`, `channel-discord-2` → `gateway.discord.gg` | `header`, `websocket` |
-| slack | `channel-slack` → `slack.com` | `header` |
+| msteams | Bot Framework `appId` + `appPassword` (client secret), tenant | **S/te** (body substitution on `login.microsoftonline.com`; Bot Connector/Graph bearer is Tier D). Note: Bot Framework requires a public inbound messaging endpoint — an ingress-posture question independent of credentials (§9 Q4) |
+| feishu / wecom / qqbot / zalo / line / twitch / googlechat | app/client secrets, bot tokens; LINE adds a webhook-HMAC channel secret | S or S/te for tokens/secrets; LINE's HMAC secret is **C** (in-process signature verification) |
+| sms (Twilio) | `TWILIO_AUTH_TOKEN` etc. | S (`header` basic-auth uses base64 — **verify**: if the plugin base64-encodes SID:token, verbatim substitution fails and Twilio needs the vault's `basic` auth-injection mode instead of substitution) |
+| clickclack / mattermost / synology-chat / nextcloud-talk / irc | bot tokens / passwords to arbitrary or self-hosted hosts | S when the configured host is public; **L** when loopback/LAN |
+| matrix | access token (S) · E2EE device keys (**C**) | split |
+| nostr / tlon | private signing keys | **C** |
+| openclaw-weixin / zalouser | QR-login session keystores | **C** |
+| signal | signal-cli linked-device keystore (loopback REST bridge) | **C** (+ the bridge itself is loopback, Tier L transport) |
+| raft / yuanbao | to classify at enablement | — |
 
-**Discord transport prerequisite:** on managed instances, alphaclaw sets `channels.discord.proxy` to the literal string `"${OPENCLAW_PROXY_URL}"` — the same env-reference pattern channel tokens already use, so the git-synced `openclaw.json` never carries the runtime proxy token; the gateway child resolves it from the vault runtime env (shim port, credentials in userinfo). This is worth doing **independently of brokering**: it makes Discord's sockets vault-visible for Phase 3 flow scanning even while tokens are still raw. Recommend setting it at vault-claim time for all managed instances.
+## 5. Governance: no unclassified channel on managed instances
 
-## 4. Flow changes in alphaclaw
+The channel registry (`lib/server/agent-vault/channel-provider-services.js`) becomes the gate, not just a lookup: on managed instances, the add-channel UI and `POST /api/channels/accounts` **refuse to enable a channel that has no registry classification**, with a message naming the missing step (owner-overridable per §9 Q2). Classifying a new channel is a five-question checklist, answered against the plugin's real config and transport:
 
-**A. Adding a channel (vault connected)** — mirrors the models card states:
+1. Which config/env fields hold secrets, and where does each appear on the wire (surface, host)?
+2. Does any secret feed in-process crypto (signing, HMAC, pairing)? → Tier C entry + keystore paths + revocation runbook.
+3. Which hosts terminate the traffic, and do they transit proxyline (empirical check)? Public → S/S-te service defs; local → L.
+4. What derived secrets exist and where are they cached? → Tier D policy check (no durable plaintext).
+5. What is the inbound-ingress posture (webhook needs)? → flag if it conflicts with outbound-only doctrine.
 
-1. Channel add UI: for telegram/discord/slack, the token input is replaced by "Store token in Agent Vault". No `inspect-token` pre-validation (there is no token to inspect); the create flow runs `ensureChannelProviderAccess(provider, accountId)` → proposal with the service(s) + this account's slot(s).
-2. Owner approves and enters the token(s) on the gateway vault operator page (TeamYou entry hop, as with model keys).
-3. On availability, alphaclaw writes the placeholder(s) to `.env`, then runs the existing `openclaw channels add --channel <ch> --token <placeholder>` path — `syncChannelConfig`'s token→`${ENV_KEY}` rewrite works verbatim on placeholders — and restarts the gateway.
-4. Post-approval verification replaces pre-validation: the existing inspect probe runs with the placeholder **through the vault proxy** and must succeed before the flow reports success.
+Worked example — the checklist applied to msteams — ships in the registry as the template entry. This is also the answer to "what about channels we want to support later": adding Teams support *is* running this checklist and landing the registry entry; the mechanics (S/te body substitution) already exist from the model-keys machinery.
 
-**B. alphaclaw's own probes become proxy-aware.** `telegram-api.js`, `discord-api.js`, `slack-api.js`, `watchdog-notify.js`, and the inspect endpoints call provider APIs directly from the alphaclaw process, which is *not* behind proxyline. With placeholder tokens those calls 401. Add a small `createVaultAwareFetch()` (undici `ProxyAgent` from the runtime store, shim port) used by these modules whenever the token in hand is a placeholder; raw tokens keep the direct path so non-managed installs are untouched.
+## 6. alphaclaw flow changes (Tier S/S-te; unchanged from v1 in substance)
 
-**C. Raw-token gate.** Once the vault runtime is claimed, the channel routes (`POST/PUT /api/channels/accounts`, inspect endpoints) reject raw tokens for brokered providers, mirroring the models gate. `kManagedChannelCredentialPattern` — the env-classification carve-out that currently *excludes* channel tokens from vault classification — becomes conditional: excluded only until brokering ships, then channel tokens are vault-class and the envars route's existing gate covers them too.
+- Add-channel UI vault states mirror the models card: request → proposal (service + this account's slots, Slack's two tokens in one approval) → owner enters values on the gateway vault operator page → alphaclaw writes placeholders, runs the existing `openclaw channels add` path (the token→`${ENV_KEY}` rewrite works verbatim on placeholders), restarts.
+- Pre-validation (`inspect-token`) is replaced by post-approval verification through the proxy; alphaclaw's own probes (`telegram-api.js`, `discord-api.js`, `slack-api.js`, `watchdog-notify.js`) gain `createVaultAwareFetch()` (undici ProxyAgent from the runtime store) for placeholder values, since the alphaclaw process is not behind proxyline.
+- Raw-token gate on channel routes once the runtime is claimed; `kManagedChannelCredentialPattern`'s carve-out becomes conditional so the envars gate covers channel tokens too.
+- Migration: per-account "Move token to Agent Vault" banner → proposal → reconcile flips env to placeholder (channel entries in placeholder mode); `${ENV_KEY}` refs in `openclaw.json` never change.
+- `GET /api/channels/accounts/token` returns the placeholder for brokered accounts — the token-readback exposure ends.
+- Multi-account slots follow the existing `DISCORD_BOT_TOKEN_<ACCOUNT>` convention; the 10-substitutions-per-service cap bounds accounts per provider (10; Slack 5) and is logged, not silently truncated.
 
-**D. Migration.** Same as model keys: per-account "Move token to Agent Vault" banner → proposal (owner re-enters the token at approval — the runtime token is proposal-only) → reconcile gains channel entries in placeholder mode and flips `.env` values once the vault reports service(s)+slot(s), then restarts. The `${ENV_KEY}` references in `openclaw.json` never change at all.
-
-**E. Token readback.** `GET /api/channels/accounts/token` returns the placeholder for brokered accounts — the UI shows "Stored in Agent Vault" instead of a revealable secret.
-
-## 5. What this closes
-
-- The milo class dies completely: an agent asked to fix a channel token can only route the user to channel settings → vault flow, and doctrine, UI, API, and reality say the same thing. The AGENTS.md stopgap carve-out ("channel tokens go to channel settings, not the vault") becomes *true and vault-consistent* rather than an exception, and the models-spec Phase C doctrine edit and this land as **one** AGENTS.md change.
-- Channel sockets stop being invisible: Discord WSS+REST transit the vault (per-channel proxy), Slack/Telegram already transit via proxyline — Phase 3 scanning sees every channel flow.
-- Token rotation becomes vault-console-only, no alphaclaw touch, gateway restart not required (substitution reads the vault's current value per request/connect; the Discord WSS picks up rotation on next reconnect).
-
-## 6. Exclusions
-
-- **WhatsApp / Signal**: their credentials are pairing/crypto material used in-process, not substitutable request tokens. `WHATSAPP_OWNER_NUMBER` is not a secret. Unchanged.
-- **Inbound webhook modes** (Telegram webhook mode, Gmail push): already broken/deprecated under strict routing; outbound-only modes are the supported path.
-- **Non-managed installs**: unchanged raw-env path, as with model keys.
+Tier C flows: no UI change in C0 beyond honest labeling — the channel card shows "Device-pairing credential: protected at rest, not vault-brokered (by design)" with the revocation link, instead of implying vault coverage that doesn't exist. C1 adds an "encrypt keystore" state when the KEK mechanism ships.
 
 ## 7. Failure modes
 
-- Vault proxy down → Discord/Slack/Telegram fail alongside every other brokered flow; no new blast radius on managed instances (NAT path carries placeholders → 401, fails closed for auth).
-- `channels.discord.proxy` set but vault runtime absent (mis-sequencing) → `${OPENCLAW_PROXY_URL}` expands empty; plugin must treat empty as "no proxy" — implementation-time verification, with a guard in alphaclaw to only write the key when the runtime exists.
-- WSS substitution failure (vault can't parse a frame) → Discord IDENTIFY rejected → channel down but token safe; surfaced by the existing channel status probes.
+Tier S: as the models spec (fails closed to 401 off-proxy; vault-down = no new blast radius; WSS substitution failure surfaces via channel status). Tier C custody: KEK holder unreachable at boot → channel stays down with a specific doctor state (fail-closed, no plaintext fallback write); backup/export paths tested to confirm keystore exclusion. Tier L: UI residual-risk labeling is the control; no silent pretense.
 
-## 8. Verification prerequisites (before code — Phase A exit criteria)
+## 8. Verification prerequisites (Phase A exit criteria, on `alphaclaw-egress-enforced-1`)
 
-On `alphaclaw-egress-enforced-1`:
-1. **Discord**: set `channels.discord.proxy` to the vault shim URL manually; confirm WSS+REST transit (vault/flow logs), then confirm the vault's `websocket` substitution completes an IDENTIFY with a vaulted token and `header` substitution carries REST.
-2. **Slack**: confirm the plugin's Web API + `apps.connections.open` calls transit proxyline (flow logs), and that the ticketed WSS carries no stored secret.
-3. **Telegram**: confirm grammY long-poll transits and `path` substitution works end-to-end (`getMe` with placeholder).
-4. Confirm `${OPENCLAW_PROXY_URL}` env-expansion is honored in the `channels.discord.proxy` config position, and that empty expansion means direct.
-5. Confirm `openclaw channels add` token probes (CLI child process) transit via inherited proxyline (`OPENCLAW_PROXY_ACTIVE=1`) so placeholder adds validate; if the Discord CLI probe uses the plugin's private transport, sequence the proxy config write before `channels add` or add with verification deferred.
+1. Discord: `channels.discord.proxy` → shim URL; WSS+REST transit confirmed in flow logs; `websocket` substitution completes IDENTIFY with a vaulted token; `header` carries REST.
+2. Slack: plugin Web API + `apps.connections.open` transit confirmed; WSS ticket confirmed secret-free.
+3. Telegram: long-poll transit + `path` substitution end-to-end (`getMe` with placeholder).
+4. `${OPENCLAW_PROXY_URL}` expansion honored in the `channels.discord.proxy` position; empty expansion = direct (guard: alphaclaw only writes the key when the runtime exists).
+5. `openclaw channels add` CLI probes transit via inherited proxyline so placeholder adds validate; otherwise sequence proxy config before add.
+6. WhatsApp/Signal keystore inventory: enumerate on-disk paths, confirm current permissions, confirm git-sync/backup exclusion status (C0 baseline facts).
 
 ## 9. Open questions for Bill
 
-1. Set `channels.discord.proxy` at vault-claim time for **all** managed instances (recommended — Phase 3 visibility win independent of brokering), or only once a Discord token is brokered?
-2. Multi-account slots: per-account credential keys as specced (matches env convention), or one shared slot per provider with per-account services? (Spec assumes per-account keys.)
-3. Post-approval probe failure handling: block the flow (spec) or activate with a warning?
-4. Should Slack's two tokens be approvable in one proposal (spec: yes — one service, two slots, single approval)?
+1. **Tier C mechanism**: gateway-held KEK over the existing private path (clawctl work, no TeamYou change — recommended first step), vault unwrap primitive (TeamYou roadmap), or C0-only for now with C1 as a scheduled follow-up?
+2. **Unclassified-channel gate**: hard block on managed instances (spec) or warn-and-allow?
+3. Per-account slots vs shared slots (spec: per-account, matching the env convention) — carried over from v1.
+4. **msteams ingress**: Bot Framework needs a public inbound endpoint, which cuts against the outbound-only Phase 3 posture. Classify-and-allow with a documented ingress exception, or hold Teams until the Phase 3 ingress design lands?
+5. Post-approval probe failure: block the flow (spec) or activate with warning — carried over from v1.
 
 ## 10. Rollout
 
-- **Phase A (verification + transport groundwork):** the §8 checklist on the enforced instance; `channels.discord.proxy` managed write. No credential behavior changes.
-- **Phase B (server):** channel registry (multi-slot, per-account) · `ensureChannelProviderAccess` · placeholder plumbing through `syncChannelConfig`/`createChannelAccount` · raw-token gates · reconcile channel mode · vault-aware probe fetch.
-- **Phase C (UI):** channel add/edit vault states (reuse the models card pattern + `PendingProposal`) · migrate banners · placeholder-aware token readback.
-- **Phase D (doctrine):** the single AGENTS.md update covering model keys + channel tokens together.
+- **Phase A — verification + transport groundwork** (§8; `channels.discord.proxy` managed write; no credential behavior changes, no release needed).
+- **Phase B — Tier S server**: channel registry with tier field + classification gate · `ensureChannelProviderAccess` · placeholder plumbing · raw-token gates · reconcile channel mode · vault-aware probe fetch.
+- **Phase C — UI**: vault states for S-tier channels · migrate banners · honest Tier C/L labeling · placeholder-aware readback.
+- **Phase D — doctrine**: one AGENTS.md update covering model keys + channel tokens + the Tier C statement ("pairing credentials are custody-protected, not vault-brokered; never write them to Envars either").
+- **Phase E — Tier C sealed custody (C1)**: KEK mechanism per §9 Q1; WhatsApp + Signal first, then LINE HMAC/Nostr keys as those channels are enabled. Independent track; C0 hygiene lands in Phase B.
 
-Release sequencing: Phases B+C ride the same beta line as the model-keys work so one release closes the whole token class; Phase A needs no release (config + observation on the test instance).
+Release sequencing: Phases B+C ride the same beta line as the model-keys work; Phase E is decoupled and gated on the §9 Q1 decision.
