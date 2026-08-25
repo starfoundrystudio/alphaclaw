@@ -43,6 +43,8 @@ const createModelDeps = () => {
     writeEnvFile: vi.fn(),
     reloadEnv: vi.fn(() => true),
     reconcileOpenclawPlugins: vi.fn(async () => ({ plugins: [] })),
+    agentVaultService: null,
+    hasVaultRuntime: vi.fn(() => false),
     rootDir: "/tmp/alphaclaw",
     openclawDir: "/tmp/openclaw",
     fsModule: fs,
@@ -725,5 +727,220 @@ describe("server/routes/models", () => {
       "AI-live-123",
       undefined,
     );
+  });
+});
+
+describe("server/routes/models vault-brokered keys", () => {
+  const kAnthropicPlaceholder = "__agent_vault_anthropic_api_key__";
+
+  const createVaultDeps = () => {
+    const deps = createModelDeps();
+    deps.hasVaultRuntime = vi.fn(() => true);
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation(
+      (provider) =>
+        provider === "anthropic"
+          ? "ANTHROPIC_API_KEY"
+          : provider === "openai"
+            ? "OPENAI_API_KEY"
+            : "",
+    );
+    return deps;
+  };
+
+  it("reports brokered providers and enforcement in the config payload", async () => {
+    const deps = createVaultDeps();
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/models/config");
+
+    expect(res.status).toBe(200);
+    expect(res.body.vaultBrokering.enforced).toBe(true);
+    expect(res.body.vaultBrokering.providers).toContain("anthropic");
+    expect(res.body.vaultBrokering.providers).not.toContain("vllm");
+  });
+
+  it("rejects raw api keys for brokered providers once the runtime is claimed", async () => {
+    const deps = createVaultDeps();
+    const app = createApp(deps);
+
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        profiles: [
+          {
+            id: "anthropic:default",
+            type: "api_key",
+            provider: "anthropic",
+            key: "sk-ant-api03-raw",
+          },
+        ],
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain("Agent Vault");
+    expect(deps.authProfiles.upsertProfile).not.toHaveBeenCalled();
+
+    const authRes = await request(app)
+      .put("/api/models/auth/anthropic:default")
+      .send({
+        type: "api_key",
+        provider: "anthropic",
+        key: "sk-ant-api03-raw",
+      });
+
+    expect(authRes.status).toBe(400);
+    expect(authRes.body.error).toContain("Agent Vault");
+  });
+
+  it("accepts placeholder values and raw keys for non-brokered providers", async () => {
+    const deps = createVaultDeps();
+    const app = createApp(deps);
+
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        profiles: [
+          {
+            id: "anthropic:default",
+            type: "api_key",
+            provider: "anthropic",
+            key: kAnthropicPlaceholder,
+          },
+          {
+            id: "vllm:default",
+            type: "api_key",
+            provider: "vllm",
+            key: "raw-local-key",
+          },
+        ],
+      });
+
+    expect(res.status).toBe(200);
+    expect(deps.authProfiles.upsertProfile).toHaveBeenCalledWith(
+      "anthropic:default",
+      expect.objectContaining({ key: kAnthropicPlaceholder }),
+      undefined,
+    );
+  });
+
+  it("keeps the raw path open before the vault runtime is claimed", async () => {
+    const deps = createVaultDeps();
+    deps.hasVaultRuntime.mockReturnValue(false);
+    const app = createApp(deps);
+
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        profiles: [
+          {
+            id: "anthropic:default",
+            type: "api_key",
+            provider: "anthropic",
+            key: "sk-ant-api03-raw",
+          },
+        ],
+      });
+
+    expect(res.status).toBe(200);
+  });
+
+  it("rejects vault-key requests for unsupported providers and missing service", async () => {
+    const deps = createVaultDeps();
+    const app = createApp(deps);
+
+    const unsupported = await request(app)
+      .post("/api/models/vault-key")
+      .send({ provider: "vllm" });
+    expect(unsupported.status).toBe(400);
+
+    const noService = await request(app)
+      .post("/api/models/vault-key")
+      .send({ provider: "anthropic" });
+    expect(noService.status).toBe(409);
+  });
+
+  it("activates the placeholder when the vault already brokers the provider", async () => {
+    const deps = createVaultDeps();
+    deps.agentVaultService = {
+      ensureModelProviderAccess: vi.fn(async () => ({
+        status: "available",
+        provider: "anthropic",
+        credentialKey: "ANTHROPIC_API_KEY",
+        placeholder: kAnthropicPlaceholder,
+      })),
+    };
+    const app = createApp(deps);
+
+    const res = await request(app)
+      .post("/api/models/vault-key")
+      .send({ provider: "anthropic" });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      ok: true,
+      status: "active",
+      provider: "anthropic",
+      credentialKey: "ANTHROPIC_API_KEY",
+    });
+    expect(deps.authProfiles.upsertProfile).toHaveBeenCalledWith(
+      "anthropic:default",
+      { type: "api_key", provider: "anthropic", key: kAnthropicPlaceholder },
+      undefined,
+    );
+    expect(deps.writeEnvFile).toHaveBeenCalledWith([
+      { key: "ANTHROPIC_API_KEY", value: kAnthropicPlaceholder },
+    ]);
+    expect(deps.reloadEnv).toHaveBeenCalled();
+    expect(
+      deps.authProfiles.syncConfigAuthReferencesForAgent,
+    ).toHaveBeenCalledWith(undefined);
+  });
+
+  it("returns the pending proposal when owner approval is required", async () => {
+    const deps = createVaultDeps();
+    deps.agentVaultService = {
+      ensureModelProviderAccess: vi.fn(async () => ({
+        status: "proposal_created",
+        provider: "anthropic",
+        credentialKey: "ANTHROPIC_API_KEY",
+        placeholder: kAnthropicPlaceholder,
+        proposal: { id: 11, status: "pending", approvalUrl: "https://x" },
+      })),
+    };
+    const app = createApp(deps);
+
+    const res = await request(app)
+      .post("/api/models/vault-key")
+      .send({ provider: "anthropic" });
+
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({
+      ok: true,
+      status: "pending",
+      provider: "anthropic",
+      proposal: { id: 11 },
+    });
+    expect(deps.authProfiles.upsertProfile).not.toHaveBeenCalled();
+    expect(deps.writeEnvFile).not.toHaveBeenCalled();
+  });
+
+  it("propagates vault errors with their status codes", async () => {
+    const deps = createVaultDeps();
+    deps.agentVaultService = {
+      ensureModelProviderAccess: vi.fn(async () => {
+        throw Object.assign(
+          new Error("Agent Vault owner enrollment is not complete"),
+          { status: 409 },
+        );
+      }),
+    };
+    const app = createApp(deps);
+
+    const res = await request(app)
+      .post("/api/models/vault-key")
+      .send({ provider: "anthropic" });
+
+    expect(res.status).toBe(409);
+    expect(res.body.error).toContain("enrollment");
   });
 });

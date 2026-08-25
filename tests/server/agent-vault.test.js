@@ -338,6 +338,7 @@ describe("server/agent-vault", () => {
 
     await expect(service.reconcileLegacyCredentials()).resolves.toEqual({
       removedKeys: [],
+      flippedKeys: [],
       restartRequired: false,
     });
     expect(writeEnvFile).not.toHaveBeenCalled();
@@ -355,12 +356,222 @@ describe("server/agent-vault", () => {
     ];
     await expect(service.reconcileLegacyCredentials()).resolves.toEqual({
       removedKeys: ["TEAMYOU_API_KEY"],
+      flippedKeys: [],
       restartRequired: true,
     });
     expect(writeEnvFile).toHaveBeenCalledWith([
       { key: "GITHUB_TOKEN", value: "ghp_host_owned" },
     ]);
     expect(reloadEnv).toHaveBeenCalledOnce();
+  });
+
+  it("flips raw model provider keys to placeholders once the vault brokers them", async () => {
+    const {
+      writeAgentVaultRuntime,
+    } = require("../../lib/server/agent-vault/runtime-store");
+    writeAgentVaultRuntime({
+      token: "av_runtime_token_123456789",
+      vault: "default",
+      mode: "brokered",
+      operatorUrl: "https://agent-vault-test.tail123.ts.net",
+    });
+    let services = [];
+    const fetchImpl = vi.fn(async () =>
+      Response.json({
+        vault: "default",
+        available_credentials: ["ANTHROPIC_API_KEY"],
+        services,
+      }),
+    );
+    let envVars = [
+      { key: "ANTHROPIC_API_KEY", value: "sk-ant-api03-raw" },
+      { key: "OPENAI_API_KEY", value: "sk-raw" },
+    ];
+    const writeEnvFile = vi.fn((next) => {
+      envVars = next;
+    });
+    const authProfiles = {
+      listApiKeyProviders: () => ["anthropic", "openai"],
+      getEnvVarForApiKeyProvider: (provider) =>
+        provider === "anthropic" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY",
+      listProfilesByProvider: vi.fn((provider) =>
+        provider === "anthropic"
+          ? [
+              {
+                id: "anthropic:default",
+                type: "api_key",
+                provider: "anthropic",
+                key: "sk-ant-api03-raw",
+              },
+            ]
+          : [],
+      ),
+      upsertProfile: vi.fn(),
+      removeApiKeyProfileForEnvVar: vi.fn(),
+    };
+    const { createAgentVaultService } = require(
+      "../../lib/server/agent-vault/service"
+    );
+    const service = createAgentVaultService({
+      readEnvFile: () => envVars,
+      writeEnvFile,
+      reloadEnv: vi.fn(),
+      authProfiles,
+      fetchImpl,
+    });
+
+    // Credential available but service missing → no flip yet.
+    await expect(service.reconcileLegacyCredentials()).resolves.toEqual({
+      removedKeys: [],
+      flippedKeys: [],
+      restartRequired: false,
+    });
+    expect(writeEnvFile).not.toHaveBeenCalled();
+
+    services = [{ name: "model-anthropic", host: "api.anthropic.com" }];
+    await expect(service.reconcileLegacyCredentials()).resolves.toEqual({
+      removedKeys: [],
+      flippedKeys: ["ANTHROPIC_API_KEY"],
+      restartRequired: true,
+    });
+    expect(envVars).toEqual([
+      {
+        key: "ANTHROPIC_API_KEY",
+        value: "__agent_vault_anthropic_api_key__",
+      },
+      { key: "OPENAI_API_KEY", value: "sk-raw" },
+    ]);
+    expect(authProfiles.upsertProfile).toHaveBeenCalledWith(
+      "anthropic:default",
+      {
+        type: "api_key",
+        provider: "anthropic",
+        key: "__agent_vault_anthropic_api_key__",
+      },
+    );
+    expect(authProfiles.removeApiKeyProfileForEnvVar).not.toHaveBeenCalled();
+
+    // Idempotent: placeholder values are left alone on the next pass.
+    authProfiles.listProfilesByProvider.mockReturnValue([]);
+    writeEnvFile.mockClear();
+    await expect(service.reconcileLegacyCredentials()).resolves.toEqual({
+      removedKeys: [],
+      flippedKeys: [],
+      restartRequired: false,
+    });
+    expect(writeEnvFile).not.toHaveBeenCalled();
+  });
+
+  it("brokers a model provider key via one merged proposal and reports availability", async () => {
+    const {
+      writeAgentVaultRuntime,
+    } = require("../../lib/server/agent-vault/runtime-store");
+    writeAgentVaultRuntime({
+      token: "av_runtime_token_123456789",
+      vault: "default",
+      mode: "brokered",
+      operatorUrl: "https://agent-vault-test.tail123.ts.net",
+    });
+    let discoverPayload = {
+      vault: "default",
+      available_credentials: [],
+      services: [],
+    };
+    const requests = [];
+    const fetchImpl = vi.fn(async (url, options = {}) => {
+      requests.push({ url: String(url), options });
+      if (String(url).endsWith("/discover")) {
+        return Response.json(discoverPayload);
+      }
+      if (String(url).endsWith("/v1/proposals")) {
+        return Response.json({
+          id: 11,
+          status: "pending",
+          vault: "default",
+          approval_url:
+            "https://agent-vault-test.tail123.ts.net/approve/11?token=once",
+          created_at: "2026-08-25T08:00:00Z",
+        });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    const envVars = [
+      {
+        key: "TEAMYOU_AGENT_VAULT_ENTRY_URL",
+        value: "https://www.teamyou.com/openclaw/agent-vault/inst_test123",
+      },
+    ];
+    const { createAgentVaultService } = require(
+      "../../lib/server/agent-vault/service"
+    );
+    const service = createAgentVaultService({
+      env: {},
+      readEnvFile: () => envVars,
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+    });
+
+    await expect(
+      service.ensureModelProviderAccess("vllm"),
+    ).rejects.toMatchObject({ status: 400 });
+
+    const created = await service.ensureModelProviderAccess("minimax");
+    expect(created).toMatchObject({
+      status: "proposal_created",
+      provider: "minimax",
+      credentialKey: "MINIMAX_API_KEY",
+      placeholder: "__agent_vault_minimax_api_key__",
+      proposal: {
+        id: 11,
+        approvalUrl:
+          "https://www.teamyou.com/openclaw/agent-vault/inst_test123?return_to=%2Fapprove%2F11%3Ftoken%3Donce",
+      },
+    });
+    const proposalRequest = requests.find(({ url }) =>
+      url.endsWith("/v1/proposals"),
+    );
+    const proposalBody = JSON.parse(proposalRequest.options.body);
+    expect(proposalBody.services.map((service) => service.host)).toEqual([
+      "api.minimax.io",
+      "api.minimaxi.com",
+    ]);
+    expect(proposalBody.services.map((service) => service.name)).toEqual([
+      "model-minimax",
+      "model-minimax-2",
+    ]);
+    expect(proposalBody.services[0].auth).toEqual({ type: "passthrough" });
+    expect(proposalBody.services[0].substitutions).toEqual([
+      {
+        key: "MINIMAX_API_KEY",
+        placeholder: "__agent_vault_minimax_api_key__",
+        in: ["header"],
+      },
+    ]);
+    expect(proposalBody.credentials).toHaveLength(1);
+    expect(proposalBody.credentials[0]).toMatchObject({
+      action: "set",
+      key: "MINIMAX_API_KEY",
+      type: "static",
+    });
+    expect(proposalBody.credentials[0]).not.toHaveProperty("value");
+
+    discoverPayload = {
+      vault: "default",
+      available_credentials: ["MINIMAX_API_KEY"],
+      services: [
+        { name: "model-minimax", host: "api.minimax.io" },
+        { name: "model-minimax-2", host: "api.minimaxi.com" },
+      ],
+    };
+    await expect(
+      service.ensureModelProviderAccess("minimax"),
+    ).resolves.toMatchObject({
+      status: "available",
+      provider: "minimax",
+      credentialKey: "MINIMAX_API_KEY",
+      placeholder: "__agent_vault_minimax_api_key__",
+    });
   });
 
   it("plans only the missing pieces of an atomic service access request", () => {

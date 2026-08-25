@@ -99,7 +99,7 @@ describe("server/ui-sandbox", () => {
       expect(res.body.authProfiles).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            id: "anthropic-default",
+            id: "anthropic:default",
             provider: "anthropic",
           }),
           expect.objectContaining({
