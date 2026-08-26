@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-26T07:22:52.220Z",
+  "generatedAt": "2026-08-26T17:07:52.906Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -4424,15 +4424,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/stealth/ox-alpha",
-              "provider": "openrouter",
-              "label": "Ox Alpha",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/openrouter/pareto-code",
               "provider": "openrouter",
               "label": "Pareto Code Router",
@@ -5477,6 +5468,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/z-ai/glm-5.3-flash",
+              "provider": "openrouter",
+              "label": "Z.ai: GLM 5.3 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/z-ai/glm-5v-turbo",
               "provider": "openrouter",
               "label": "Z.ai: GLM 5V Turbo",
@@ -6062,6 +6062,15 @@
               "key": "vercel-ai-gateway/zai/glm-5.3",
               "provider": "vercel-ai-gateway",
               "label": "GLM 5.3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/zai/glm-5.3-flash",
+              "provider": "vercel-ai-gateway",
+              "label": "GLM 5.3 Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -7377,6 +7386,15 @@
               "key": "vercel-ai-gateway/alibaba/qwen3.7-plus",
               "provider": "vercel-ai-gateway",
               "label": "Qwen 3.7 Plus",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/alibaba/qwen3.8-flash",
+              "provider": "vercel-ai-gateway",
+              "label": "Qwen 3.8 Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -10985,15 +11003,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/stealth/ox-alpha",
-      "provider": "openrouter",
-      "label": "Ox Alpha",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/openrouter/pareto-code",
       "provider": "openrouter",
       "label": "Pareto Code Router",
@@ -12038,6 +12047,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/z-ai/glm-5.3-flash",
+      "provider": "openrouter",
+      "label": "Z.ai: GLM 5.3 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/z-ai/glm-5v-turbo",
       "provider": "openrouter",
       "label": "Z.ai: GLM 5V Turbo",
@@ -12996,6 +13014,15 @@
       "key": "vercel-ai-gateway/zai/glm-5.3",
       "provider": "vercel-ai-gateway",
       "label": "GLM 5.3",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/zai/glm-5.3-flash",
+      "provider": "vercel-ai-gateway",
+      "label": "GLM 5.3 Flash",
       "accessModes": [
         "gateway"
       ],
@@ -14324,6 +14351,15 @@
       "key": "vercel-ai-gateway/alibaba/qwen3.7-plus",
       "provider": "vercel-ai-gateway",
       "label": "Qwen 3.7 Plus",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/alibaba/qwen3.8-flash",
+      "provider": "vercel-ai-gateway",
+      "label": "Qwen 3.8 Flash",
       "accessModes": [
         "gateway"
       ],
