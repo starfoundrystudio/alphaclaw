@@ -1,11 +1,11 @@
 # OAuth Credentials — Gateway Refresh Broker Spec
 
-**Status:** DRAFT 2026-08-26 — for owner review. No implementation started.
+**Status:** APPROVED 2026-08-26 — all §7 decisions taken by the owner (recorded inline as D1–D6). Implementation not yet started.
 **Companions:** `docs/vault-brokered-model-keys-spec.md` (explicitly excluded OAuth/subscription routes), `docs/vault-brokered-channels-spec.md` (Tier S/te covers OAuth *client* secrets; Tier D covers derived access tokens; this spec covers the class both left open: **user-consent OAuth grants whose durable secret is a refresh token**).
 
 ## 1. Problem
 
-Vault substitution protects static keys that ride requests verbatim. OAuth's durable secret — the refresh token — breaks that model twice: it appears in token-endpoint POST *bodies* (solvable, S/te-style), and most providers **rotate it on every refresh**, so the *response* carries a new durable secret that lands on the instance. The vault MITM has no response-capture primitive and we don't control the agent-vault binary, so substitution cannot contain rotation. Result: refresh tokens sit in plaintext on instance disks, agent-readable, in stores we already have to defend ad hoc (`openclaw-doctor-oauth-guard` exists solely to shield them from doctor runs).
+Vault substitution protects static keys that ride requests verbatim. OAuth's durable secret — the refresh token — breaks that model twice: it appears in token-endpoint POST *bodies* (solvable, S/te-style), and most providers **rotate it on every refresh**, so the *response* carries a new durable secret that lands on the instance. The vault MITM has no response-capture primitive as shipped, so substitution cannot contain rotation. (agent-vault is open source, so a response-capture primitive *could* be contributed upstream or added in a fork — see §6a for why the broker is still the better design.) Result: refresh tokens sit in plaintext on instance disks, agent-readable, in stores we already have to defend ad hoc (`openclaw-doctor-oauth-guard` exists solely to shield them from doctor runs).
 
 ## 2. Credential inventory
 
@@ -44,10 +44,10 @@ The crypto is trivial; the seams are not. Each consumer expects a self-refreshin
 | Consumer | Seam | Mechanism | Risk |
 | --- | --- | --- | --- |
 | openclaw codex plugin | openclaw refreshes from its auth store when `expires` nears | alphaclaw **proactive refresh loop**: before expiry (timer, ~5 min margin), ask the broker for a fresh access token and rewrite the auth-profiles entry (`access` + `expires` real, `refresh` stubbed with a non-secret placeholder). openclaw then never needs to refresh | If the loop misses (alphaclaw down at expiry), openclaw attempts refresh with the stub and errors → model calls fail until the loop catches up. Mitigation: refresh-on-boot + watchdog check. **Verify at impl** whether openclaw hard-fails or surfaces a re-auth prompt on refresh failure, and whether the sqlite store shadows the JSON |
-| claude CLI | CLI refreshes its own `~/.claude` store; format is theirs and changes | **Phase 2, deliberately.** Same proactive-rewrite approach is possible but the store is a moving target we don't own. Interim: the store is enumerated for at-rest custody (see §5) and excluded from backups/git-sync (verify C0-style hygiene applies) | Store-format drift breaks the rewrite silently |
-| gog CLI | gogcli reads `credentials.json` and refreshes itself | Same proactive-rewrite pattern; format is simple JSON we already integrate with. Alternative: keep gog out of scope if Composio remains the strategic path for Google | Low |
+| claude CLI | CLI refreshes its own `~/.claude` store; format is theirs and changes | Same proactive-rewrite approach as codex, landing after the codex seam proves the pattern (same program per D2). The rewrite must pin the exact store fields it touches and fail loudly on unrecognized shape rather than guessing | Store-format drift breaks the rewrite silently — mitigated by shape-pinning + loud failure, accepted per D2 |
+| gog CLI | gogcli reads `credentials.json` and refreshes itself | Same proactive-rewrite pattern; format is simple JSON we already integrate with. In scope per D2 | Low |
 
-Decision principle: **ship the seam we control end-to-end first** (openclaw/codex — where alphaclaw already owns both consent flows), and let phase 2+ consumers prove the pattern before touching stores we don't own.
+Sequencing within the program (per D2): the codex seam lands first — alphaclaw owns both consent flows end-to-end — and claude-CLI + gog follow in the same release train once it proves the pattern.
 
 ## 5. Interim option: at-rest custody sealing (shippable now, weaker)
 
@@ -59,19 +59,23 @@ Vercel Connect (reviewed 2026-08-26) is the hosted incarnation of exactly this a
 
 Direct use is blocked structurally: (a) instances have no Vercel OIDC identity (Hetzner VPSes can't mint deployment tokens; the SDK's `vercelToken` override targets tests/dev, not a customer fleet) — the only shape is TeamYou fronting Connect, at which point TeamYou is the broker and Connect is a backing store; (b) the credentials that matter most — Codex and Claude CLI subscription auth — use **first-party OAuth clients owned by OpenAI/Anthropic** that cannot be registered as Connect connectors at all; (c) the niche Connect does serve (user-consent connectors for Google/Slack/etc.) is already occupied by Composio in our stack, and would move customer grants into Vercel's control plane (custody posture change) at $3/1k token requests. Same reasoning applies to any hosted broker in this category.
 
-## 7. Open questions (owner decisions)
+## 6a. Alternative considered: response capture in agent-vault (open source)
 
-- **Q1 — Broker placement:** gateway-host service as specced (recommended: reuses the custody channel pattern, keys, and revocation semantics; no new TeamYou/vault feature), vs. TeamYou-side broker (central fleet visibility, but customer OAuth grants move into the TeamYou/Vercel trust domain).
-- **Q2 — Scope:** phase 1 = openclaw/codex only (recommended), with claude-CLI and gog as explicitly sequenced phase 2/3? Or all three at once?
-- **Q3 — KEK-seal the gateway grant files?** Same-host KEK means it's hygiene, not custody. Recommended: yes, cheap and uniform with Phase E.
-- **Q4 — Scope narrowing:** where providers support down-scoped issuance, should the broker request narrowed tokens per consumer? (Mostly moot for Codex/Claude subscription tokens — provider-fixed scopes — but the protocol should carry a `scopes` field from day one.)
-- **Q5 — Existing instances:** migrate on next consent (recommended — grants re-consent naturally on expiry/re-auth) vs. active migration sweep of current auth stores.
-- **Q6 — Broker unreachable at refresh time:** fail closed (model calls error until gateway returns — recommended, matches D5 posture) vs. any cached-grant fallback on the instance (reintroduces the durable secret; not recommended).
+agent-vault is open source, so the missing response-capture primitive could be contributed upstream or carried in a fork. Deliberately not chosen: (a) generic response capture turns a stateless substituting MITM into a stateful, OAuth-aware component that must parse per-provider token-endpoint responses, extract secrets, and rewrite bodies — a much larger and riskier primitive than the narrow broker; (b) a fork of a security-critical binary is a permanent maintenance tax (the AlphaClaw hard-fork itself is the cautionary precedent), and an upstream contribution has uncertain timeline and acceptance; (c) even with capture, refreshes would still be *initiated by the instance* and span two hosts — the broker keeps the entire exchange on the gateway, which is the simpler trust story. Kept open as a future option: if agent-vault later grows a token-custody/unwrap primitive upstream, it could supersede the broker's storage layer without changing the instance-side contract (same note as the channels spec made for the Phase E KEK).
+
+## 7. Decisions (owner, 2026-08-26)
+
+- **D1 — Broker placement: gateway-host service as specced.** Reuses the custody channel pattern, keys, and revocation semantics; no new TeamYou/vault feature.
+- **D2 — Scope: all three consumers in one program** (openclaw/codex, claude CLI, gog). Internal implementation order still lands the codex seam first (we own both consent flows) with claude-CLI and gog in the same release train; the claude-CLI store-format drift risk (§4) is accepted.
+- **D3 — KEK-seal the gateway grant files: yes.** Same-host hygiene, uniform with Phase E.
+- **D4 — Scope narrowing: protocol carries a `scopes` field from day one; no narrowing behavior built now.** Moot for the current consumers (provider-fixed subscription scopes); the field keeps issuance-time narrowing available for future consumers without a protocol rev.
+- **D5 — Existing instances: migrate on next consent.** Grants re-home naturally at re-auth/expiry; no active sweep of current auth stores.
+- **D6 — Broker unreachable at refresh time: fail closed.** Consumers error until the gateway returns; no instance-side cached-grant fallback (it would reintroduce the durable secret).
 
 ## 8. Phases
 
 - **Phase A — protocol + gateway service** (clawctl): broker forced command, PKI keypair, staging/installer wiring, verification checks — the keystore-custody template applied to a new script. Provenance-stamped bundle → beta pin → soak.
 - **Phase B — codex seam** (alphaclaw): consent flows `deposit` instead of writing `refresh` locally; proactive refresh loop rewrites the auth store; watchdog surfaces broker health; doctor-oauth-guard updated (shielding becomes unnecessary for brokered profiles).
 - **Phase C — migration + doctrine**: consent-time migration for existing grants (per Q5), AGENTS.md note (OAuth grants are broker-held; placeholders in auth stores are working values).
-- **Phase D — second consumer** (gog or claude-CLI per Q2 outcome), only after the codex seam has soaked.
+- **Phase D — remaining consumers** (claude-CLI and gog seams, per D2 all in this program; codex lands first as the pattern-prover within the same train).
 - **TeamYou port** mirrors clawctl per the established pattern (gateway-installer + PKI + staging parity), same as Phase E custody.
