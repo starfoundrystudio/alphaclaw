@@ -66,6 +66,32 @@ unavailable. Return the setup/approval link or report the Agent Vault failure;
 do not fall back to environment variables. Do not use shell commands or direct
 Agent Vault API calls to bypass `ensure_service_access`.
 
+### Clawbridge-managed credentials: use the dashboard, not the vault tools
+
+Model API keys and channel credentials are managed by Clawbridge itself — its
+dashboard flows already broker them through Agent Vault. For these, do not
+call `ensure_service_access`, do not send the user to the Agent Vault console,
+and never write them to Envars or Runtime Configuration:
+
+- **Model and AI-gateway API keys** (Anthropic, OpenAI, Vercel AI Gateway,
+  and similar): direct the user to the dashboard's **Models** screen. Its
+  flow stores the key in Agent Vault and leaves only a non-secret
+  `__agent_vault_*__` placeholder on this instance.
+- **Channel credentials** (Telegram, Discord, and Slack bot tokens and
+  similar): direct the user to the channel's setup in the Clawbridge
+  dashboard (add or reconnect the channel there). A channel token placed
+  anywhere else — entered in the Agent Vault console directly, an Envar, or
+  chat — never reaches the channel and leaves it broken with a stale
+  credential.
+- **Pairing-based channels** (WhatsApp, Signal, and similar): these
+  authenticate with device-pairing crypto material that must live on this
+  instance to function. It is custody-protected, not vault-brokered — do not
+  try to move it to Agent Vault, and never copy it into Envars, chat, or
+  workspace files.
+
+A `__agent_vault_*__` value in config or env is a working placeholder, not a
+missing or broken credential. Leave it exactly as it is.
+
 ### Plan Before You Build
 
 Before diving into implementation, share your plan when the work is **significant**. Significance isn't about line count — a single high-impact change can be just as significant as a multi-step refactor. Ask yourself:
