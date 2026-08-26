@@ -83,9 +83,13 @@ New module `lib/server/agent-vault/model-provider-services.js`: provider id → 
 | xiaomi | `api.xiaomimimo.com`, `token-plan-sgp.xiaomimimo.com` | header | |
 | volcengine(-plan) | `ark.cn-beijing.volces.com` | header | |
 | byteplus(-plan) | `ark.ap-southeast.bytepluses.com` | header | |
-| groq / cerebras / fireworks / venice / kilocode / tencent-tokenhub | verify at impl | header | not in the dist sweep; confirm hosts before enabling |
-| vercel-ai-gateway | `ai-gateway.vercel.sh` (verify) | header | `vck_` prefix rule needs the §7 exemption |
-| cloudflare-ai-gateway | `gateway.ai.cloudflare.com/...` | header | account-scoped path — build host matcher from the user's configured gateway URL |
+| vercel-ai-gateway | `ai-gateway.vercel.sh` | header | confirmed in openclaw docs + transport special-case; `vck_` prefix rule has the §7 placeholder exemption |
+| cloudflare-ai-gateway | `gateway.ai.cloudflare.com` | header | account/gateway ids live in the PATH, host is fixed — bare-host matcher works, no per-user matcher needed |
+| fireworks | `api.fireworks.ai` | header | confirmed in openclaw provider docs (added 2026-08-25 with the gateway batch) |
+| venice | `api.venice.ai` | header | confirmed in openclaw provider docs |
+| kilocode | `api.kilo.ai` | header | confirmed in openclaw provider docs |
+| tencent-tokenhub | `tokenhub.tencentmaas.com`, `tokenhub-intl.tencentmaas.com` | header | region override is between two known hosts → two services, one slot (minimax precedent) |
+| groq / cerebras | verify at impl | header | still not in the dist sweep; no catalog env key today — confirm hosts before enabling |
 
 **Excluded from brokering** (stay on the current env path, unchanged):
 
