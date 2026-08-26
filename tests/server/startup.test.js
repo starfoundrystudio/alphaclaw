@@ -407,3 +407,57 @@ describe("server/startup", () => {
     consoleLogSpy.mockRestore();
   });
 });
+
+describe("server/startup isAwaitingHostFinalizationRestart", () => {
+  const {
+    isAwaitingHostFinalizationRestart,
+  } = require("../../lib/server/startup");
+  const markerFs = (marker) => ({
+    readFileSync: () => JSON.stringify(marker),
+  });
+
+  it("defers only the process that predates the scheduled restart", () => {
+    const marker = {
+      hostFinalizationScheduled: true,
+      markedAt: "2026-08-26T18:19:54.000Z",
+    };
+    const markedAt = Date.parse(marker.markedAt);
+    expect(
+      isAwaitingHostFinalizationRestart({
+        fsModule: markerFs(marker),
+        markerPath: "/tmp/marker.json",
+        processStartedAtMs: markedAt - 60_000,
+      }),
+    ).toBe(true);
+    // The post-restart successor process starts the gateway normally.
+    expect(
+      isAwaitingHostFinalizationRestart({
+        fsModule: markerFs(marker),
+        markerPath: "/tmp/marker.json",
+        processStartedAtMs: markedAt + 60_000,
+      }),
+    ).toBe(false);
+  });
+
+  it("does not defer without the flag, with a bad timestamp, or without a marker", () => {
+    const base = { markerPath: "/tmp/marker.json", processStartedAtMs: 0 };
+    expect(
+      isAwaitingHostFinalizationRestart({
+        ...base,
+        fsModule: markerFs({ hostFinalizationScheduled: false, markedAt: "2026-08-26T18:19:54.000Z" }),
+      }),
+    ).toBe(false);
+    expect(
+      isAwaitingHostFinalizationRestart({
+        ...base,
+        fsModule: markerFs({ hostFinalizationScheduled: true, markedAt: "not-a-date" }),
+      }),
+    ).toBe(false);
+    expect(
+      isAwaitingHostFinalizationRestart({
+        ...base,
+        fsModule: { readFileSync: () => { throw new Error("ENOENT"); } },
+      }),
+    ).toBe(false);
+  });
+});

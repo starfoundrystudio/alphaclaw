@@ -1243,3 +1243,26 @@ describe("server/gateway restart behavior", () => {
     }
   });
 });
+
+describe("server/gateway parseMigrationLockRetryAfterMs", () => {
+  const {
+    parseMigrationLockRetryAfterMs,
+  } = require("../../lib/server/gateway");
+
+  it("extracts the retry-after timestamp from the real lock message", () => {
+    const output = [
+      "[openclaw] Could not start the CLI.",
+      "[openclaw] Reason: OpenClaw startup migrations are already running for this state directory; retry after the other gateway finishes or after 2026-08-26T18:25:02.345Z.",
+      "[openclaw] Try: openclaw doctor",
+    ].join("\n");
+    expect(parseMigrationLockRetryAfterMs(output)).toBe(
+      Date.parse("2026-08-26T18:25:02.345Z"),
+    );
+  });
+
+  it("returns null for unrelated output", () => {
+    expect(parseMigrationLockRetryAfterMs("Gateway service disabled.")).toBe(null);
+    expect(parseMigrationLockRetryAfterMs("")).toBe(null);
+    expect(parseMigrationLockRetryAfterMs(null)).toBe(null);
+  });
+});
