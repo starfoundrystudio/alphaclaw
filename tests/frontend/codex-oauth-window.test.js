@@ -24,14 +24,14 @@ describe("frontend/codex-oauth-window", () => {
     expect(opened).toBeTruthy();
   });
 
-  it("falls back to navigating the current page when opening fails", async () => {
+  it("returns null without navigating away when the popup is blocked", async () => {
     global.window.open.mockReturnValue(null);
     const mod = await loadCodexOauthWindow();
 
     const opened = mod.openCodexAuthWindow();
 
     expect(opened).toBeNull();
-    expect(global.window.location.href).toBe("/auth/codex/start");
+    expect(global.window.location.href).toBe("http://localhost/");
   });
 
   it("detects automatic localhost callback messages", async () => {
