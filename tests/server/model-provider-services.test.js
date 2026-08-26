@@ -15,6 +15,27 @@ const {
 } = require("../../lib/server/auth-profiles");
 
 describe("server/agent-vault/model-provider-services", () => {
+  it("covers every catalog provider with an env key (no silent registry drift)", () => {
+    // Providers surfaced in onboarding with an API-key env slot must either
+    // be vault-brokerable or be excluded here with a stated reason — this is
+    // what caught fire when the six gateway providers shipped without
+    // registry entries and configured keys offered no migration path.
+    const excluded = {
+      // (none today; add "provider-id": "reason" when a catalog provider
+      // genuinely cannot be brokered — user-overridable base URL, encoded
+      // key scheme, or host unverifiable in the pinned openclaw dist)
+    };
+    const catalog = require("../../lib/server/model-catalog-support.json");
+    const missing = [];
+    for (const [provider, entry] of Object.entries(catalog.providers || {})) {
+      const hasEnvKeys =
+        Array.isArray(entry?.envKeys) && entry.envKeys.length > 0;
+      if (!hasEnvKeys || excluded[provider]) continue;
+      if (!getModelProviderVaultConfig(provider)) missing.push(provider);
+    }
+    expect(missing).toEqual([]);
+  });
+
   it("every registry entry maps to a known api-key provider", () => {
     for (const provider of Object.keys(kModelProviderVaultServices)) {
       expect(getEnvVarForApiKeyProvider(provider)).toBeTruthy();
