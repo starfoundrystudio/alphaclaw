@@ -11,7 +11,7 @@ const {
   walkCodexBindingSidecars,
 } = require("../../lib/cli/openclaw-startup-state-repair");
 const {
-  runAlphaClawMigrations,
+  runAlphaclawMigrations,
 } = require("../../lib/cli/alphaclaw-migrations");
 
 const writeJson = (filePath, value) => {
@@ -113,7 +113,7 @@ describe("OpenClaw startup state repair", () => {
       inspectPluginIndexConflict({ openclawDir }).conflictingPluginIds,
     ).toEqual(["codex", "slack"]);
 
-    const result = runAlphaClawMigrations({
+    const result = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fix: true,
@@ -169,7 +169,7 @@ describe("OpenClaw startup state repair", () => {
     expect(inspection.candidates).toHaveLength(1);
     expect(inspection.candidates[0].owner.agentHarnessId).toBe("pi");
 
-    const result = runAlphaClawMigrations({
+    const result = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fix: true,
@@ -202,7 +202,7 @@ describe("OpenClaw startup state repair", () => {
     fs.writeFileSync(path.join(sessionsDir, transcriptName), "", "utf8");
     writeJson(sidecarPath, { threadId: "thread-shared" });
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
     expect(result.ok).toBe(true);
     expect(fs.existsSync(sidecarPath)).toBe(true);
 

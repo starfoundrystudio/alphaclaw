@@ -379,7 +379,7 @@ describe("server/routes/browse", () => {
     expect(res.status).toBe(403);
     expect(res.body).toEqual({
       ok: false,
-      error: "This file is managed by AlphaClaw and cannot be edited.",
+      error: "This file is managed by Clawbridge and cannot be edited.",
     });
     expect(fs.readFileSync(lockedPath, "utf8")).toBe("before\n");
   });
@@ -405,7 +405,7 @@ describe("server/routes/browse", () => {
     expect(res.status).toBe(403);
     expect(res.body).toEqual({
       ok: false,
-      error: "This file is managed by AlphaClaw and cannot be edited.",
+      error: "This file is managed by Clawbridge and cannot be edited.",
     });
     expect(fs.readFileSync(lockedPath, "utf8")).toBe("before\n");
   });
@@ -425,7 +425,7 @@ describe("server/routes/browse", () => {
     expect(res.status).toBe(403);
     expect(res.body).toEqual({
       ok: false,
-      error: "This file is managed by AlphaClaw and cannot be edited.",
+      error: "This file is managed by Clawbridge and cannot be edited.",
     });
     expect(fs.readFileSync(lockedPath, "utf8")).toBe("before\n");
   });

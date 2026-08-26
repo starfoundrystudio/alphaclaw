@@ -1,5 +1,5 @@
 const {
-  ensureAlphaClawTailscalePolicy,
+  ensureAlphaclawTailscalePolicy,
   getTailscaleApiTokenValidation,
   createTailscaleFinalizer,
 } = require("../../lib/server/onboarding/tailscale-finalizer");
@@ -25,7 +25,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
       ssh: [],
     };
 
-    const result = ensureAlphaClawTailscalePolicy(input);
+    const result = ensureAlphaclawTailscalePolicy(input);
 
     expect(result.changed).toBe(true);
     expect(result.policy.groups).toEqual(input.groups);
@@ -65,7 +65,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
       action: "accept",
     };
 
-    const result = ensureAlphaClawTailscalePolicy({
+    const result = ensureAlphaclawTailscalePolicy({
       acls: [],
       ssh: [defaultSshRule, partialCloudOpsRule],
     });
@@ -90,7 +90,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
       action: "accept",
     };
 
-    const result = ensureAlphaClawTailscalePolicy({
+    const result = ensureAlphaclawTailscalePolicy({
       acls: [],
       ssh: [existingCloudOpsRule],
     });
@@ -105,7 +105,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
   });
 
   it("uses ACLs when the policy does not use grants", () => {
-    const result = ensureAlphaClawTailscalePolicy({ acls: [] });
+    const result = ensureAlphaclawTailscalePolicy({ acls: [] });
 
     expect(result.policy.grants).toBeUndefined();
     expect(result.policy.acls).toEqual([
@@ -124,7 +124,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
       dst: ["autogroup:self"],
       users: ["autogroup:nonroot"],
     };
-    const result = ensureAlphaClawTailscalePolicy(
+    const result = ensureAlphaclawTailscalePolicy(
       {
         grants: [],
         ssh: [existingSshRule],

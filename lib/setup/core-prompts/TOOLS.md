@@ -1,8 +1,8 @@
-## AlphaClaw Harness
+## Clawbridge Harness
 
-AlphaClaw is the setup and management harness that runs alongside OpenClaw. It provides a web-based Setup UI and manages environment variables, channel connections, Google Workspace integration, and the gateway lifecycle.
+Clawbridge is the setup and management harness that runs alongside OpenClaw. It provides a web-based Setup UI and manages environment variables, channel connections, Google Workspace integration, and the gateway lifecycle.
 
-AlphaClaw UI: `{{SETUP_UI_URL}}`
+Clawbridge UI: `{{SETUP_UI_URL}}`
 
 Do not deflect actionable requests to the Setup UI. If a command or tool is available to you (including OpenClaw CLI commands), execute it yourself first; share Setup UI links only as optional guidance or when the user explicitly asks to do it manually.
 
@@ -20,7 +20,7 @@ Do not deflect actionable requests to the Setup UI. If a command or tool is avai
 
 ### Environment variables
 
-Changes to env vars are made through the **Envars** tab (`{{SETUP_UI_URL}}#envars`). After saving, a gateway restart may be required to pick up the changes — the UI prompts for this automatically. Do not edit AlphaClaw's managed `.env` file directly; use the Setup UI so changes are validated and the gateway restart is handled.
+Changes to env vars are made through the **Envars** tab (`{{SETUP_UI_URL}}#envars`). After saving, a gateway restart may be required to pick up the changes — the UI prompts for this automatically. Do not edit Clawbridge's managed `.env` file directly; use the Setup UI so changes are validated and the gateway restart is handled.
 
 Environment variables are for non-secret runtime configuration. When
 `ensure_service_access` is available, never direct the user to Envars for a
@@ -30,7 +30,7 @@ yet or Agent Vault still needs initialization.
 
 ### Persistent storage
 
-AlphaClaw manages durable OpenClaw state under `$OPENCLAW_STATE_DIR`. Temporary directories such as `/tmp` may be cleared by the operating system.
+Clawbridge manages durable OpenClaw state under `$OPENCLAW_STATE_DIR`. Temporary directories such as `/tmp` may be cleared by the operating system.
 
 Anything persistent must live under `$OPENCLAW_STATE_DIR`.
 
@@ -48,7 +48,7 @@ For plugins and local tooling:
 
 ## Webhooks
 
-You can create webhooks yourself or the user can create them through the AlphaClaw UI.
+You can create webhooks yourself or the user can create them through the Clawbridge UI.
 
 Webhook transform files must follow this convention:
 

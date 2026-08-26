@@ -25,7 +25,7 @@ const {
   reconcileOpenclawPlugins,
 } = require("../lib/cli/openclaw-plugin-compat");
 const {
-  runAlphaClawMigrations,
+  runAlphaclawMigrations,
 } = require("../lib/cli/alphaclaw-migrations");
 const {
   runOpenclawDoctorWithOauthGuard,
@@ -469,7 +469,7 @@ const formatMigrationStatus = (result) => {
 
 const runMigrate = () => {
   try {
-    const result = runAlphaClawMigrations({
+    const result = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fsModule: fs,

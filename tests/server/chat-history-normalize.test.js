@@ -1,7 +1,7 @@
 const {
   normalizeHistoryMessages,
   isConnectionLevelError,
-  kAlphaclawSystemNotePrefix,
+  kClawbridgeSystemNotePrefix,
 } = require("../../lib/server/chat-ws");
 const { kBootstrapKickoffMessage } = require("../../lib/server/bootstrap-kickoff");
 
@@ -22,7 +22,7 @@ describe("server/chat-ws normalizeHistoryMessages", () => {
   });
 
   it("keeps the kickoff message aligned with the hidden-note marker", () => {
-    expect(kBootstrapKickoffMessage.startsWith(kAlphaclawSystemNotePrefix)).toBe(
+    expect(kBootstrapKickoffMessage.startsWith(kClawbridgeSystemNotePrefix)).toBe(
       true,
     );
   });
@@ -60,7 +60,7 @@ describe("server/chat-ws normalizeHistoryMessages", () => {
     const rawMessages = [
       {
         role: "assistant",
-        content: `${kAlphaclawSystemNotePrefix} looks like a system note`,
+        content: `${kClawbridgeSystemNotePrefix} looks like a system note`,
         timestamp: 1,
       },
     ];

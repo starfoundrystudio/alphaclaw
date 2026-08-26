@@ -124,7 +124,7 @@ describe("server/ui-sandbox", () => {
         .get("/api/browse/read")
         .query({ path: "README.md" });
       expect(read.status).toBe(200);
-      expect(read.body.content).toContain("AlphaClaw UI Sandbox");
+      expect(read.body.content).toContain("Clawbridge UI Sandbox");
 
       const git = await request(sandbox.app).get("/api/browse/git-summary");
       expect(git.status).toBe(200);

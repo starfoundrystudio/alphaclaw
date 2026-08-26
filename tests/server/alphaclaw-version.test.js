@@ -110,7 +110,7 @@ describe("server/alphaclaw-version", () => {
     );
   });
 
-  it("derives the latest OpenClaw version from the registry metadata for the latest AlphaClaw release", async () => {
+  it("derives the latest OpenClaw version from the registry metadata for the latest Clawbridge release", async () => {
     const fetchMock = vi.fn(async (url) => {
       expect(url).toBe(kAlphaclawRegistryUrl);
       return createFetchResponse({
@@ -168,7 +168,7 @@ describe("server/alphaclaw-version", () => {
         provider: "clawctl",
         label: "TeamYou",
         action: "instructions",
-        description: "This AlphaClaw instance is managed by TeamYou.",
+        description: "This Clawbridge instance is managed by TeamYou.",
         steps: ["Contact TeamYou support to request an upgrade."],
         primaryActionLabel: "Done",
       }),
@@ -182,7 +182,7 @@ describe("server/alphaclaw-version", () => {
         provider: "clawctl",
         label: "TeamYou",
         action: "instructions",
-        description: "This AlphaClaw instance is managed by TeamYou.",
+        description: "This Clawbridge instance is managed by TeamYou.",
         steps: ["Contact TeamYou support to request an upgrade."],
         primaryActionLabel: "Done",
       }),
@@ -214,7 +214,7 @@ describe("server/alphaclaw-version", () => {
     expect(secondResult.status).toBe(409);
     expect(secondResult.body).toEqual({
       ok: false,
-      error: "AlphaClaw update already in progress",
+      error: "Clawbridge update already in progress",
     });
 
     callbacks[0](null, "installed", "");

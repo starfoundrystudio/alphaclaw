@@ -18,6 +18,6 @@ Rules:
 - Run `composio execute <SLUG> --get-schema` before the first execution of an unfamiliar tool — argument names vary between versions; trust the schema over any example here.
 - Tool slugs follow `TOOLKIT_ACTION` uppercase convention (e.g. `GMAIL_SEND_EMAIL`).
 - `-d` accepts JSON or JS-style object literals, `@file`, or `-` for stdin.
-- If `execute` reports the toolkit is not connected, the user can link it from the AlphaClaw dashboard (General tab) or you can run `composio link <toolkit>` and give them the printed URL.
+- If `execute` reports the toolkit is not connected, the user can link it from the Clawbridge dashboard (General tab) or you can run `composio link <toolkit>` and give them the printed URL.
 - Multiple accounts on one toolkit: select with `--account <alias-or-id>`.
 - For multi-step logic, loops, or chaining, use `composio run '<inline JS with execute()/search()>'`.

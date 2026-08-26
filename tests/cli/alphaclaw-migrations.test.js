@@ -3,10 +3,10 @@ const os = require("os");
 const path = require("path");
 
 const {
-  kAlphaClawMigrations,
+  kAlphaclawMigrations,
   readMigrationLedger,
   resolveMigrationLedgerPath,
-  runAlphaClawMigrations,
+  runAlphaclawMigrations,
 } = require("../../lib/cli/alphaclaw-migrations");
 
 const makeRoot = () => {
@@ -71,7 +71,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir });
 
     expect(result.ok).toBe(true);
     expect(result.summary.pending).toBe(1);
@@ -112,7 +112,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({
+    const result = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fix: true,
@@ -160,7 +160,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir });
 
     expect(result.ok).toBe(true);
     expect(result.summary.pending).toBe(1);
@@ -221,7 +221,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const first = runAlphaClawMigrations({
+    const first = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fix: true,
@@ -252,14 +252,14 @@ describe("AlphaClaw migrations", () => {
       }),
     ]);
 
-    const second = runAlphaClawMigrations({
+    const second = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fix: true,
     });
 
     expect(second.ok).toBe(true);
-    expect(second.summary.ok).toBe(kAlphaClawMigrations.length);
+    expect(second.summary.ok).toBe(kAlphaclawMigrations.length);
     expect(second.summary.fixed || 0).toBe(0);
     expect(readMigrationLedger({ rootDir })).toHaveLength(1);
   });
@@ -279,10 +279,10 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(true);
-    expect(result.summary.ok).toBe(kAlphaClawMigrations.length);
+    expect(result.summary.ok).toBe(kAlphaclawMigrations.length);
     expect(fs.existsSync(resolveMigrationLedgerPath({ rootDir }))).toBe(false);
   });
 
@@ -290,7 +290,7 @@ describe("AlphaClaw migrations", () => {
     const { rootDir, openclawDir } = createRoot();
     fs.writeFileSync(path.join(openclawDir, "openclaw.json"), "{not-json", "utf8");
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(false);
     expect(result.summary.failed).toBe(5);
@@ -335,7 +335,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir });
 
     expect(result.ok).toBe(true);
     expect(result.summary.pending).toBe(1);
@@ -387,7 +387,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({
+    const result = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fix: true,
@@ -442,7 +442,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(true);
     expect(result.summary.fixed || 0).toBe(0);
@@ -478,7 +478,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(true);
     expect(result.summary.fixed || 0).toBe(0);
@@ -501,7 +501,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir });
 
     expect(result.ok).toBe(true);
     expect(result.summary.pending).toBe(1);
@@ -531,7 +531,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({
+    const result = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fix: true,
@@ -575,7 +575,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir, fix: true });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
 
     expect(result.ok).toBe(true);
     expect(result.summary.fixed || 0).toBe(0);
@@ -613,7 +613,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({ rootDir, openclawDir });
+    const result = runAlphaclawMigrations({ rootDir, openclawDir });
 
     expect(result.ok).toBe(true);
     expect(result.summary.pending).toBe(1);
@@ -660,7 +660,7 @@ describe("AlphaClaw migrations", () => {
       },
     });
 
-    const result = runAlphaClawMigrations({
+    const result = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fix: true,
@@ -705,7 +705,7 @@ describe("AlphaClaw migrations", () => {
     };
 
     for (let index = 0; index < 3; index += 1) {
-      const result = runAlphaClawMigrations({
+      const result = runAlphaclawMigrations({
         rootDir,
         openclawDir,
         fix: true,
@@ -714,13 +714,13 @@ describe("AlphaClaw migrations", () => {
       expect(result.summary.failed).toBe(1);
     }
 
-    const blocked = runAlphaClawMigrations({
+    const blocked = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fix: true,
       migrations: [failingMigration],
     });
-    const forced = runAlphaClawMigrations({
+    const forced = runAlphaclawMigrations({
       rootDir,
       openclawDir,
       fix: true,

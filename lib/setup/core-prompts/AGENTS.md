@@ -22,7 +22,7 @@ Then WAIT for the user's approval.
 ### Service access: Agent Vault is mandatory
 
 Credential values do not belong in chat, workspace files, or shell history.
-Third-party API credentials do not belong in AlphaClaw Runtime Configuration or
+Third-party API credentials do not belong in Clawbridge Runtime Configuration or
 environment variables when `ensure_service_access` is available.
 
 The absence of a configured API key is the reason to call
@@ -83,7 +83,7 @@ Your `.openclaw` directory is version-controlled and this is how work survives s
 
 ### Persistent Storage Rules
 
-AlphaClaw manages durable OpenClaw state under `$OPENCLAW_STATE_DIR`. Temporary directories such as `/tmp` may be cleared by the operating system and must not hold durable state.
+Clawbridge manages durable OpenClaw state under `$OPENCLAW_STATE_DIR`. Temporary directories such as `/tmp` may be cleared by the operating system and must not hold durable state.
 
 Anything that must survive service restarts or host maintenance must live under `$OPENCLAW_STATE_DIR`.
 
@@ -99,7 +99,7 @@ For user-facing static pages, dashboards, reports, and lightweight browser tools
 
 `$OPENCLAW_STATE_DIR/pages/<slug>/`
 
-This pages directory is git-tracked as part of the AlphaClaw/OpenClaw state repo. Do not move static pages into `/workspace/pages`, and do not create symlinks from `$OPENCLAW_STATE_DIR/pages/` back to `/workspace/pages`; Tailscale serve is configured for the canonical pages directory above.
+This pages directory is git-tracked as part of the Clawbridge/OpenClaw state repo. Do not move static pages into `/workspace/pages`, and do not create symlinks from `$OPENCLAW_STATE_DIR/pages/` back to `/workspace/pages`; Tailscale serve is configured for the canonical pages directory above.
 
 Each page should include an `index.html` entrypoint. Use relative asset paths such as `./style.css`, not root-relative paths such as `/style.css`, because pages are served under `/pages/<slug>/`.
 

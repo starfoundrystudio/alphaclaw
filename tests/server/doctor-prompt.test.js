@@ -25,7 +25,7 @@ describe("server/doctor-prompt", () => {
     expect(prompt).toContain("`BOOTSTRAP.md` is first-run only");
   });
 
-  it("tells the analyzer not to propose structural changes to AlphaClaw-managed files", () => {
+  it("tells the analyzer not to propose structural changes to Clawbridge-managed files", () => {
     const prompt = buildDoctorPrompt({
       workspaceRoot: "/tmp/workspace",
       managedRoot: "/tmp/managed",
@@ -33,12 +33,12 @@ describe("server/doctor-prompt", () => {
       promptVersion: "doctor-v1",
     });
 
-    expect(prompt).toContain("AlphaClaw ownership rules:");
+    expect(prompt).toContain("Clawbridge ownership rules:");
     expect(prompt).toContain(
-      "Do not recommend splitting, renaming, relocating, or otherwise restructuring AlphaClaw-managed files solely for cleanliness or purity.",
+      "Do not recommend splitting, renaming, relocating, or otherwise restructuring Clawbridge-managed files solely for cleanliness or purity.",
     );
     expect(prompt).toContain(
-      "Do not create cards whose primary recommendation is to refactor AlphaClaw-managed file structure",
+      "Do not create cards whose primary recommendation is to refactor Clawbridge-managed file structure",
     );
   });
 

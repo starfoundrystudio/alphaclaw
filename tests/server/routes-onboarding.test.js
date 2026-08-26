@@ -1570,7 +1570,7 @@ describe("server/routes/onboarding", () => {
     ).toBe(true);
     expect(
       deps.shellCmd.mock.calls.some(([cmd]) =>
-        cmd.includes('alphaclaw git-sync -m "imported existing setup via AlphaClaw"'),
+        cmd.includes('alphaclaw git-sync -m "imported existing setup via Clawbridge"'),
       ),
     ).toBe(true);
   });

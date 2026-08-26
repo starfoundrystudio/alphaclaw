@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "AlphaClaw-owned setup catalog support policy. This declares the model access routes and providers AlphaClaw wants to present during onboarding; the generator validates managed plugin requirements against the pinned OpenClaw compatibility manifest and enriches models from provider-specific OpenClaw catalog probes.",
+  "description": "Clawbridge-owned setup catalog support policy. This declares the model access routes and providers Clawbridge wants to present during onboarding; the generator validates managed plugin requirements against the pinned OpenClaw compatibility manifest and enriches models from provider-specific OpenClaw catalog probes.",
   "accessModes": {
     "subscription": {
       "label": "Subscription",
