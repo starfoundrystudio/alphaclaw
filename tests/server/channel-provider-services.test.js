@@ -3,6 +3,7 @@ const {
   getChannelClassification,
   getChannelVaultConfig,
   getDiscordManagedProxyConfigValue,
+  isChannelProviderShelved,
   listDeniedChannelPluginIds,
   listVaultBrokeredChannelProviders,
   resolveCatalogChannelIds,
@@ -107,11 +108,17 @@ describe("server/agent-vault/channel-provider-services", () => {
     ]);
   });
 
-  it("denies exactly the unclassified catalog channels (D6 default-closed)", () => {
+  it("denies the unclassified catalog channels plus shelved ones (D6 default-closed)", () => {
     const denied = listDeniedChannelPluginIds();
-    for (const id of ["telegram", "discord", "slack", "whatsapp"]) {
+    // The three vault-brokered channels stay available.
+    for (const id of ["telegram", "discord", "slack"]) {
       expect(denied).not.toContain(id);
     }
+    // WhatsApp is classified (Tier C) but shelved — denied despite being in
+    // the vault-services registry, because it cannot link behind the MITM.
+    expect(denied).toContain("whatsapp");
+    expect(isChannelProviderShelved("whatsapp")).toBe(true);
+    expect(isChannelProviderShelved("telegram")).toBe(false);
     expect(denied).toContain("msteams");
     expect(denied).toContain("signal");
     expect(denied).toContain("nostr");
