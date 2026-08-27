@@ -304,4 +304,46 @@ describe("OpenClaw doctor OAuth guard", () => {
     expect(result.shielded).toBe(0);
     expect(result.store.profiles["openai:missing"].expires).toBe(kOldExpires);
   });
+
+  it("does not shield or restore broker-managed Codex placeholders", () => {
+    const store = {
+      version: 1,
+      profiles: {
+        "openai:codex-cli": {
+          type: "oauth",
+          provider: "openai",
+          access: "short-lived-access",
+          refresh: "alphaclaw-oauth-broker:v1:openclaw-codex:openai",
+          expires: kOldExpires,
+        },
+      },
+    };
+
+    const result = shieldOAuthExpiries({
+      shieldExpiresAt: Date.parse("2026-07-01T00:00:00.000Z"),
+      store,
+    });
+
+    expect(result).toEqual({ store, changed: false, shielded: 0 });
+
+    const restored = restoreOAuthCredentialMaterial({
+      store,
+      originals: [
+        {
+          profileId: "openai-codex:codex-cli",
+          canonicalProfileId: "openai:codex-cli",
+          provider: "openai",
+          credential: {
+            type: "oauth",
+            provider: "openai-codex",
+            access: "legacy-access",
+            refresh: "legacy-durable-refresh",
+            expires: kOldExpires,
+          },
+        },
+      ],
+    });
+    expect(restored.store).toEqual(store);
+    expect(restored.restored).toBe(0);
+  });
 });

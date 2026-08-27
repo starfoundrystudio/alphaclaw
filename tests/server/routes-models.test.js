@@ -52,6 +52,7 @@ const createModelDeps = () => {
       getModelConfig: vi.fn(() => ({ primary: null, configuredModels: {} })),
       listProfiles: vi.fn(() => []),
       loadAuthStore: vi.fn(() => ({ profiles: {}, order: {} })),
+      getProfile: vi.fn(() => null),
       setModelConfig: vi.fn(),
       upsertProfile: vi.fn(),
       getEnvVarForApiKeyProvider: vi.fn((provider) =>
@@ -118,10 +119,13 @@ describe("server/routes/models", () => {
       models: kFallbackOnboardingModels,
       accessModes: expectModelAccessModes(),
     });
-    expect(deps.shellCmd).toHaveBeenCalledWith("openclaw models list --all --json", {
-      env: { OPENCLAW_GATEWAY_TOKEN: "token" },
-      timeout: kModelCatalogLoadTimeoutMs,
-    });
+    expect(deps.shellCmd).toHaveBeenCalledWith(
+      "openclaw models list --all --json",
+      {
+        env: { OPENCLAW_GATEWAY_TOKEN: "token" },
+        timeout: kModelCatalogLoadTimeoutMs,
+      },
+    );
 
     await flushPromises();
 
@@ -135,7 +139,9 @@ describe("server/routes/models", () => {
         stale: false,
         refreshing: false,
         fetchedAt: expect.any(Number),
-        models: [{ key: "openai/gpt-5.1-codex", provider: "openai", label: "GPT" }],
+        models: [
+          { key: "openai/gpt-5.1-codex", provider: "openai", label: "GPT" },
+        ],
       }),
     );
   });
@@ -197,12 +203,15 @@ describe("server/routes/models", () => {
       models: kFallbackOnboardingModels,
       accessModes: expectModelAccessModes(),
     });
-    expect(res.body.models.some((model) => model.key === "openrouter/anthropic/claude-sonnet-4.6")).toBe(
-      true,
-    );
     expect(
       res.body.models.some(
-        (model) => model.key === "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
+        (model) => model.key === "openrouter/anthropic/claude-sonnet-4.6",
+      ),
+    ).toBe(true);
+    expect(
+      res.body.models.some(
+        (model) =>
+          model.key === "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
       ),
     ).toBe(true);
     expect(deps.shellCmd).not.toHaveBeenCalled();
@@ -253,7 +262,7 @@ describe("server/routes/models", () => {
     err.stdout =
       'prefix\n{"resolvedDefault":"openai/gpt-5.1-codex","fallbacks":["anthropic/claude-opus-4-6"],"imageModel":"google/gemini-3.1-pro-preview"}\n';
     err.stderr =
-      '[plugins] google failed to load from /srv/alphaclaw/node_modules/openclaw/dist/extensions/google/index.js';
+      "[plugins] google failed to load from /srv/alphaclaw/node_modules/openclaw/dist/extensions/google/index.js";
     deps.shellCmd.mockRejectedValue(err);
     deps.parseJsonFromNoisyOutput.mockImplementation((raw) =>
       String(raw).includes("resolvedDefault")
@@ -281,7 +290,9 @@ describe("server/routes/models", () => {
     const deps = createModelDeps();
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/models/set").send({ modelKey: "invalid" });
+    const res = await request(app)
+      .post("/api/models/set")
+      .send({ modelKey: "invalid" });
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({ ok: false, error: "Missing modelKey" });
@@ -314,8 +325,9 @@ describe("server/routes/models", () => {
     deps.readEnvFile.mockReturnValue([
       { key: "AI_GATEWAY_API_KEY", value: "not-a-vercel-key" },
     ]);
-    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
-      provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation(
+      (provider) =>
+        provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
     );
     const app = createApp(deps);
 
@@ -357,12 +369,14 @@ describe("server/routes/models", () => {
     const app = createApp(deps);
 
     try {
-      const res = await request(app).put("/api/models/config").send({
-        primary: "openai-codex/gpt-5.3-codex",
-        configuredModels: {
-          "openai-codex/gpt-5.3-codex": {},
-        },
-      });
+      const res = await request(app)
+        .put("/api/models/config")
+        .send({
+          primary: "openai-codex/gpt-5.3-codex",
+          configuredModels: {
+            "openai-codex/gpt-5.3-codex": {},
+          },
+        });
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ ok: true });
@@ -372,9 +386,9 @@ describe("server/routes/models", () => {
           "openai-codex/gpt-5.3-codex": {},
         },
       });
-      expect(deps.authProfiles.syncConfigAuthReferencesForAgent).toHaveBeenCalledWith(
-        undefined,
-      );
+      expect(
+        deps.authProfiles.syncConfigAuthReferencesForAgent,
+      ).toHaveBeenCalledWith(undefined);
       expect(deps.shellCmd).toHaveBeenCalledWith(
         'alphaclaw git-sync -m "models: update config" -f "openclaw.json"',
         { timeout: 30000 },
@@ -401,12 +415,14 @@ describe("server/routes/models", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      primary: "openai/gpt-5.5",
-      configuredModels: {
-        "openai/gpt-5.5": { agentRuntime: { id: "codex" } },
-      },
-    });
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        primary: "openai/gpt-5.5",
+        configuredModels: {
+          "openai/gpt-5.5": { agentRuntime: { id: "codex" } },
+        },
+      });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true });
@@ -427,12 +443,14 @@ describe("server/routes/models", () => {
     deps.reconcileOpenclawPlugins.mockRejectedValue(new Error("npm failed"));
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      primary: "openai/gpt-5.5",
-      configuredModels: {
-        "openai/gpt-5.5": { agentRuntime: { id: "codex" } },
-      },
-    });
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        primary: "openai/gpt-5.5",
+        configuredModels: {
+          "openai/gpt-5.5": { agentRuntime: { id: "codex" } },
+        },
+      });
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({
@@ -452,12 +470,14 @@ describe("server/routes/models", () => {
     const app = createApp(deps);
 
     try {
-      const res = await request(app).put("/api/models/config").send({
-        primary: "openai-codex/gpt-5.3-codex",
-        configuredModels: {
-          "openai-codex/gpt-5.3-codex": {},
-        },
-      });
+      const res = await request(app)
+        .put("/api/models/config")
+        .send({
+          primary: "openai-codex/gpt-5.3-codex",
+          configuredModels: {
+            "openai-codex/gpt-5.3-codex": {},
+          },
+        });
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ ok: true });
@@ -481,10 +501,12 @@ describe("server/routes/models", () => {
 
   it("prefills default api-key auth profiles from env vars on GET /api/models/config", async () => {
     const deps = createModelDeps();
-    deps.readEnvFile.mockReturnValue([{ key: "GEMINI_API_KEY", value: "AI-live-123" }]);
+    deps.readEnvFile.mockReturnValue([
+      { key: "GEMINI_API_KEY", value: "AI-live-123" },
+    ]);
     deps.authProfiles.listApiKeyProviders.mockReturnValue(["google"]);
-    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
-      provider === "google" ? "GEMINI_API_KEY" : "",
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation(
+      (provider) => (provider === "google" ? "GEMINI_API_KEY" : ""),
     );
     const app = createApp(deps);
 
@@ -528,16 +550,18 @@ describe("server/routes/models", () => {
     deps.readEnvFile.mockReturnValue([{ key: "OPENAI_API_KEY", value: "" }]);
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      profiles: [
-        {
-          id: "openai:default",
-          type: "api_key",
-          provider: "openai",
-          key: "sk-live-123",
-        },
-      ],
-    });
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        profiles: [
+          {
+            id: "openai:default",
+            type: "api_key",
+            provider: "openai",
+            key: "sk-live-123",
+          },
+        ],
+      });
 
     expect(res.status).toBe(200);
     expect(deps.writeEnvFile).toHaveBeenCalledWith([
@@ -551,16 +575,18 @@ describe("server/routes/models", () => {
     deps.shellCmd.mockResolvedValue("");
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      profiles: [
-        {
-          id: "vercel-ai-gateway:default",
-          type: "api_key",
-          provider: "vercel-ai-gateway",
-          key: "not-a-vercel-key",
-        },
-      ],
-    });
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        profiles: [
+          {
+            id: "vercel-ai-gateway:default",
+            type: "api_key",
+            provider: "vercel-ai-gateway",
+            key: "not-a-vercel-key",
+          },
+        ],
+      });
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({
@@ -577,17 +603,20 @@ describe("server/routes/models", () => {
     deps.readEnvFile.mockReturnValue([
       { key: "AI_GATEWAY_API_KEY", value: "not-a-vercel-key" },
     ]);
-    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
-      provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation(
+      (provider) =>
+        provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
     );
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      primary: "vercel-ai-gateway/openai/gpt-5.5",
-      configuredModels: {
-        "vercel-ai-gateway/openai/gpt-5.5": {},
-      },
-    });
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        primary: "vercel-ai-gateway/openai/gpt-5.5",
+        configuredModels: {
+          "vercel-ai-gateway/openai/gpt-5.5": {},
+        },
+      });
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({
@@ -602,17 +631,20 @@ describe("server/routes/models", () => {
     deps.readEnvFile.mockImplementation(() => {
       throw new Error("env unreadable");
     });
-    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
-      provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation(
+      (provider) =>
+        provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
     );
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      primary: "vercel-ai-gateway/openai/gpt-5.5",
-      configuredModels: {
-        "vercel-ai-gateway/openai/gpt-5.5": {},
-      },
-    });
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        primary: "vercel-ai-gateway/openai/gpt-5.5",
+        configuredModels: {
+          "vercel-ai-gateway/openai/gpt-5.5": {},
+        },
+      });
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({ ok: false, error: "env unreadable" });
@@ -631,18 +663,21 @@ describe("server/routes/models", () => {
         "vercel-ai-gateway/openai/gpt-5.5": {},
       },
     });
-    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
-      provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation(
+      (provider) =>
+        provider === "vercel-ai-gateway" ? "AI_GATEWAY_API_KEY" : "",
     );
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      primary: "openai/gpt-5.5",
-      configuredModels: {
-        "openai/gpt-5.5": {},
-        "vercel-ai-gateway/openai/gpt-5.5": {},
-      },
-    });
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        primary: "openai/gpt-5.5",
+        configuredModels: {
+          "openai/gpt-5.5": {},
+          "vercel-ai-gateway/openai/gpt-5.5": {},
+        },
+      });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true });
@@ -658,19 +693,23 @@ describe("server/routes/models", () => {
   it("removes API-key env vars when profile key is cleared", async () => {
     const deps = createModelDeps();
     deps.shellCmd.mockResolvedValue("");
-    deps.readEnvFile.mockReturnValue([{ key: "OPENAI_API_KEY", value: "sk-live-123" }]);
+    deps.readEnvFile.mockReturnValue([
+      { key: "OPENAI_API_KEY", value: "sk-live-123" },
+    ]);
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      profiles: [
-        {
-          id: "openai:default",
-          type: "api_key",
-          provider: "openai",
-          key: "",
-        },
-      ],
-    });
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        profiles: [
+          {
+            id: "openai:default",
+            type: "api_key",
+            provider: "openai",
+            key: "",
+          },
+        ],
+      });
 
     expect(res.status).toBe(200);
     expect(deps.writeEnvFile).toHaveBeenCalledWith([]);
@@ -680,22 +719,24 @@ describe("server/routes/models", () => {
   it("writes newly supported provider API keys back to env vars", async () => {
     const deps = createModelDeps();
     deps.shellCmd.mockResolvedValue("");
-    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
-      provider === "zai" ? "ZAI_API_KEY" : "",
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation(
+      (provider) => (provider === "zai" ? "ZAI_API_KEY" : ""),
     );
     deps.readEnvFile.mockReturnValue([{ key: "ZAI_API_KEY", value: "" }]);
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      profiles: [
-        {
-          id: "zai:default",
-          type: "api_key",
-          provider: "zai",
-          key: "zai-live-123",
-        },
-      ],
-    });
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        profiles: [
+          {
+            id: "zai:default",
+            type: "api_key",
+            provider: "zai",
+            key: "zai-live-123",
+          },
+        ],
+      });
 
     expect(res.status).toBe(200);
     expect(deps.writeEnvFile).toHaveBeenCalledWith([
@@ -707,19 +748,23 @@ describe("server/routes/models", () => {
   it("syncs env-backed api-key profiles into auth storage on PUT /api/models/config", async () => {
     const deps = createModelDeps();
     deps.shellCmd.mockResolvedValue("");
-    deps.readEnvFile.mockReturnValue([{ key: "GEMINI_API_KEY", value: "AI-live-123" }]);
+    deps.readEnvFile.mockReturnValue([
+      { key: "GEMINI_API_KEY", value: "AI-live-123" },
+    ]);
     deps.authProfiles.listApiKeyProviders.mockReturnValue(["google"]);
-    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation((provider) =>
-      provider === "google" ? "GEMINI_API_KEY" : "",
+    deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation(
+      (provider) => (provider === "google" ? "GEMINI_API_KEY" : ""),
     );
     const app = createApp(deps);
 
-    const res = await request(app).put("/api/models/config").send({
-      primary: "google/gemini-3.1-pro-preview",
-      configuredModels: {
-        "google/gemini-3.1-pro-preview": {},
-      },
-    });
+    const res = await request(app)
+      .put("/api/models/config")
+      .send({
+        primary: "google/gemini-3.1-pro-preview",
+        configuredModels: {
+          "google/gemini-3.1-pro-preview": {},
+        },
+      });
 
     expect(res.status).toBe(200);
     expect(deps.authProfiles.upsertApiKeyProfileForEnvVar).toHaveBeenCalledWith(
@@ -790,6 +835,71 @@ describe("server/routes/models vault-brokered keys", () => {
 
     expect(authRes.status).toBe(400);
     expect(authRes.body.error).toContain("Agent Vault");
+  });
+
+  it("rejects generic Codex OAuth writes and deletes", async () => {
+    const deps = createModelDeps();
+    deps.authProfiles.getProfile.mockReturnValue({
+      id: "openai:alternate",
+      type: "oauth",
+      provider: "openai",
+      refresh: "broker-marker",
+    });
+    const app = createApp(deps);
+    const credential = {
+      type: "oauth",
+      provider: "openai",
+      access: "access",
+      refresh: "durable-refresh",
+      expires: 9999999999999,
+    };
+
+    const direct = await request(app)
+      .put("/api/models/auth/openai:codex-cli")
+      .send(credential);
+    const bulk = await request(app)
+      .put("/api/models/config")
+      .send({ profiles: [{ id: "openai:codex-cli", ...credential }] });
+    const remove = await request(app).delete(
+      "/api/models/auth/openai:alternate",
+    );
+    const reservedApiKey = await request(app)
+      .put("/api/models/auth/openai:codex-cli")
+      .send({ type: "api_key", provider: "openai", key: "api-key" });
+    const replaceExistingOauth = await request(app)
+      .put("/api/models/auth/openai:alternate")
+      .send({ type: "api_key", provider: "openai", key: "api-key" });
+    const bulkReservedToken = await request(app)
+      .put("/api/models/config")
+      .send({
+        profiles: [
+          {
+            id: "openai:codex-cli",
+            type: "token",
+            provider: "openai",
+            token: "token",
+          },
+        ],
+      });
+    const normalizedProvider = await request(app)
+      .put("/api/models/auth/custom-oauth")
+      .send({ ...credential, provider: " OpenAI " });
+    const normalizedReservedId = await request(app)
+      .put("/api/models/auth/%20OPENAI:CODEX-CLI%20")
+      .send({ type: "api_key", provider: "openai", key: "api-key" });
+
+    expect(direct.status).toBe(409);
+    expect(bulk.status).toBe(409);
+    expect(remove.status).toBe(409);
+    expect(reservedApiKey.status).toBe(409);
+    expect(replaceExistingOauth.status).toBe(409);
+    expect(bulkReservedToken.status).toBe(409);
+    expect(normalizedProvider.status).toBe(409);
+    expect(normalizedReservedId.status).toBe(409);
+    expect(direct.body.error).toContain("Codex account flow");
+    expect(deps.authProfiles.upsertProfile).not.toHaveBeenCalled();
+    expect(deps.authProfiles.removeProfile).not.toHaveBeenCalled();
+    expect(deps.authProfiles.setModelConfig).not.toHaveBeenCalled();
   });
 
   it("accepts placeholder values and raw keys for non-brokered providers", async () => {

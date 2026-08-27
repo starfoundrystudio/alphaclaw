@@ -11,6 +11,9 @@ describe("server/startup", () => {
     );
     const doSyncPromptFiles = vi.fn(() => callOrder.push("doSyncPromptFiles"));
     const reloadEnv = vi.fn(() => callOrder.push("reloadEnv"));
+    const codexBrokerService = {
+      start: vi.fn(async () => callOrder.push("codexBrokerService.start")),
+    };
     const syncChannelConfig = vi.fn(() => callOrder.push("syncChannelConfig"));
     const resolveSetupUrl = vi.fn(() => {
       callOrder.push("resolveSetupUrl");
@@ -33,6 +36,7 @@ describe("server/startup", () => {
       ensureUsageTrackerPluginConfig,
       doSyncPromptFiles,
       reloadEnv,
+      codexBrokerService,
       syncChannelConfig,
       ensureGatewayProxyConfig,
       ensureManagedGatewayDevice,
@@ -50,6 +54,7 @@ describe("server/startup", () => {
       "ensureUsageTrackerPluginConfig",
       "doSyncPromptFiles",
       "reloadEnv",
+      "codexBrokerService.start",
       "resolveSetupUrl",
       "ensureGatewayProxyConfig",
       "ensureManagedGatewayDevice",

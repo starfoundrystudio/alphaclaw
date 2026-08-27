@@ -83,14 +83,21 @@ and never write them to Envars or Runtime Configuration:
   anywhere else — entered in the Agent Vault console directly, an Envar, or
   chat — never reaches the channel and leaves it broken with a stale
   credential.
+- **Subscription OAuth** (Codex OAuth, and other dashboard-supported OAuth
+  connections): direct the user to the matching dashboard connect/reconnect
+  flow. On managed instances, the durable refresh grant is held by the
+  security-gateway broker; the local auth store contains only a short-lived
+  access token and a non-secret broker marker. Never replace that marker,
+  copy the auth-store entry, or try to refresh the grant yourself.
 - **Pairing-based channels** (WhatsApp, Signal, and similar): these
   authenticate with device-pairing crypto material that must live on this
   instance to function. It is custody-protected, not vault-brokered — do not
   try to move it to Agent Vault, and never copy it into Envars, chat, or
   workspace files.
 
-A `__agent_vault_*__` value in config or env is a working placeholder, not a
-missing or broken credential. Leave it exactly as it is.
+A `__agent_vault_*__` value in config or env, or an
+`alphaclaw-oauth-broker:*` refresh value in an auth store, is a working
+placeholder, not a missing or broken credential. Leave it exactly as it is.
 
 ### Plan Before You Build
 

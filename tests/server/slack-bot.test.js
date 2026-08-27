@@ -147,6 +147,56 @@ describe("server/slack-bot", () => {
     expect(result.workspace.id).toBe("T123ABC456");
   });
 
+  it("detects swapped vault slots: bot slot holds the xapp token, app slot the xoxb token", async () => {
+    // Both live testers pasted the two tokens into the wrong approval-page
+    // fields. On the wire that means the bot placeholder substitutes to an
+    // xapp token (auth.test ok, no bot_id) and the app placeholder to the
+    // xoxb token (auth.test ok WITH bot_id) — a definitive signature.
+    const createApi = vi.fn((token) => {
+      if (String(token).startsWith("__agent_vault_slack_app_token")) {
+        return {
+          authTest: vi.fn(async () => ({
+            ok: true,
+            bot_id: "B123ABC456",
+            app_id: "A777PLACE0",
+          })),
+        };
+      }
+      return {
+        // The bot slot substitutes to the app-level token: auth.test
+        // succeeds but carries no bot_id.
+        authTest: vi.fn(async () => ({ ok: true, app_id: "A777PLACE0" })),
+      };
+    });
+
+    await expect(
+      inspectSlackCredentials(
+        {
+          botToken: "__agent_vault_slack_bot_token__",
+          appToken: "__agent_vault_slack_app_token__",
+        },
+        { createApi },
+      ),
+    ).rejects.toThrow(/swapped in Agent Vault/);
+  });
+
+  it("keeps the generic not-a-bot-token error when the app slot is not a bot token either", async () => {
+    const createApi = vi.fn(() => ({
+      // Neither slot answers auth.test with a bot_id — not a swap.
+      authTest: vi.fn(async () => ({ ok: true, app_id: "A777PLACE0" })),
+    }));
+
+    await expect(
+      inspectSlackCredentials(
+        {
+          botToken: "__agent_vault_slack_bot_token__",
+          appToken: "__agent_vault_slack_app_token__",
+        },
+        { createApi },
+      ),
+    ).rejects.toThrow(/not a Bot User OAuth Token/);
+  });
+
   it("rejects credentials belonging to different Slack apps", async () => {
     await expect(
       inspectSlackCredentials(

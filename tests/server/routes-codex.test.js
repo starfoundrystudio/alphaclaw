@@ -8,7 +8,10 @@ const {
 } = require("../../lib/server/routes/codex");
 
 const createDeps = (overrides = {}) => ({
-  createPkcePair: vi.fn(() => ({ verifier: "verifier", challenge: "challenge" })),
+  createPkcePair: vi.fn(() => ({
+    verifier: "verifier",
+    challenge: "challenge",
+  })),
   parseCodexAuthorizationInput: vi.fn(() => ({ code: "code", state: "state" })),
   getCodexAccountId: vi.fn(() => "acct"),
   authProfiles: {
@@ -76,7 +79,9 @@ describe("server/routes/codex", () => {
         updatedAt: Date.parse("2026-06-25T22:00:00.000Z"),
       }),
     );
-    expect(res.body.lastReconnectFailure).toContain("auth refresh request timed out");
+    expect(res.body.lastReconnectFailure).toContain(
+      "auth refresh request timed out",
+    );
   });
 
   it("ignores auth refresh failures older than the latest Codex reconnect", async () => {
@@ -248,6 +253,205 @@ describe("server/routes/codex device auth", () => {
       deviceAuthId: "",
       userCode: "",
       intervalMs: 5000,
+    });
+  });
+});
+
+describe("server/routes/codex brokered consent", () => {
+  const jsonResponse = (status, body) => ({
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const brokerService = () => ({
+    storeTokens: vi.fn().mockResolvedValue({ brokered: true }),
+    getStatus: vi.fn(() => ({
+      configured: true,
+      brokered: false,
+      state: "idle",
+    })),
+    disconnect: vi.fn().mockResolvedValue({ ok: true, changed: true }),
+  });
+
+  it("deposits the paste-flow grant through the broker service", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse(200, {
+          access_token: "access",
+          refresh_token: "refresh",
+          expires_in: 3600,
+        }),
+      ),
+    );
+    let state = "";
+    const codexBrokerService = brokerService();
+    const deps = createDeps({
+      codexBrokerService,
+      parseCodexAuthorizationInput: vi.fn(() => ({ code: "code", state })),
+    });
+    const app = createApp(deps);
+    const start = await request(app).get("/auth/codex/start");
+    state = new URL(start.headers.location).searchParams.get("state");
+
+    const response = await request(app)
+      .post("/api/codex/exchange")
+      .send({ input: "http://localhost/callback" });
+
+    expect(response.body).toEqual({ ok: true });
+    expect(codexBrokerService.storeTokens).toHaveBeenCalledWith(
+      expect.objectContaining({
+        access: "access",
+        refresh: "refresh",
+        accountId: "acct",
+      }),
+    );
+    expect(deps.authProfiles.upsertCodexProfile).not.toHaveBeenCalled();
+  });
+
+  it("does not fall back to local storage when broker deposit fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse(200, {
+          access_token: "access",
+          refresh_token: "refresh",
+          expires_in: 3600,
+        }),
+      ),
+    );
+    let state = "";
+    const codexBrokerService = brokerService();
+    codexBrokerService.storeTokens.mockRejectedValue(
+      Object.assign(new Error("OAuth credential broker request failed"), {
+        code: "ssh_failed",
+      }),
+    );
+    const deps = createDeps({
+      codexBrokerService,
+      parseCodexAuthorizationInput: vi.fn(() => ({ code: "code", state })),
+    });
+    const app = createApp(deps);
+    const start = await request(app).get("/auth/codex/start");
+    state = new URL(start.headers.location).searchParams.get("state");
+
+    const response = await request(app)
+      .post("/api/codex/exchange")
+      .send({ input: "http://localhost/callback" });
+
+    expect(response.status).toBe(500);
+    expect(response.body.ok).toBe(false);
+    expect(deps.authProfiles.upsertCodexProfile).not.toHaveBeenCalled();
+  });
+
+  it("deposits browser-callback grants through the broker service", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        jsonResponse(200, {
+          access_token: "access",
+          refresh_token: "refresh",
+          expires_in: 3600,
+        }),
+      ),
+    );
+    const codexBrokerService = brokerService();
+    const deps = createDeps({ codexBrokerService });
+    const app = createApp(deps);
+    const start = await request(app).get("/auth/codex/start");
+    const state = new URL(start.headers.location).searchParams.get("state");
+
+    const response = await request(app)
+      .get("/auth/codex/callback")
+      .query({ code: "code", state });
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain("Codex connected");
+    expect(codexBrokerService.storeTokens).toHaveBeenCalledWith(
+      expect.objectContaining({ access: "access", refresh: "refresh" }),
+    );
+  });
+
+  it("deposits device-flow grants through the broker service", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          jsonResponse(200, { device_auth_id: "device", user_code: "CODE" }),
+        )
+        .mockResolvedValueOnce(
+          jsonResponse(200, {
+            authorization_code: "code",
+            code_verifier: "verifier",
+          }),
+        )
+        .mockResolvedValueOnce(
+          jsonResponse(200, {
+            access_token: "access",
+            refresh_token: "refresh",
+            expires_in: 3600,
+          }),
+        ),
+    );
+    const codexBrokerService = brokerService();
+    const deps = createDeps({ codexBrokerService });
+    const app = createApp(deps);
+    const start = await request(app).post("/api/codex/device/start");
+
+    const response = await request(app)
+      .post("/api/codex/device/poll")
+      .send({ sessionId: start.body.sessionId });
+
+    expect(response.body).toEqual({ ok: true, status: "complete" });
+    expect(codexBrokerService.storeTokens).toHaveBeenCalledWith(
+      expect.objectContaining({ access: "access", refresh: "refresh" }),
+    );
+  });
+
+  it("reports incomplete gateway revocation after removing the local profile", async () => {
+    const codexBrokerService = brokerService();
+    codexBrokerService.disconnect.mockResolvedValue({
+      ok: false,
+      changed: true,
+      brokered: true,
+      error: "ssh_failed",
+      revocationPending: true,
+    });
+    const app = createApp(createDeps({ codexBrokerService }));
+
+    const response = await request(app).post("/api/codex/disconnect");
+
+    expect(response.status).toBe(502);
+    expect(response.body).toMatchObject({
+      ok: false,
+      changed: true,
+      error: "ssh_failed",
+      revocationPending: true,
+    });
+  });
+
+  it("returns a controlled error when disconnect rejects", async () => {
+    const codexBrokerService = brokerService();
+    codexBrokerService.disconnect.mockRejectedValue(
+      Object.assign(new Error("config unavailable"), {
+        code: "effective_agent_config_unavailable",
+      }),
+    );
+    const app = createApp(createDeps({ codexBrokerService }));
+
+    const response = await request(app).post("/api/codex/disconnect");
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({
+      ok: false,
+      changed: false,
+      error: "effective_agent_config_unavailable",
     });
   });
 });
