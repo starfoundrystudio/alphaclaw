@@ -177,7 +177,7 @@ describe("server/slack-bot", () => {
         },
         { createApi },
       ),
-    ).rejects.toThrow(/swapped in Agent Vault/);
+    ).rejects.toThrow(/wrong order.*Agent Vault/);
   });
 
   it("keeps the generic not-a-bot-token error when the app slot is not a bot token either", async () => {

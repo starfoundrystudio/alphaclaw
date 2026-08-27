@@ -134,6 +134,9 @@ const createHarness = ({
     getDepositPending: () => depositJournal !== null,
     getPublicationPending: () => publicationPending,
     getAccessPublicationPending: () => accessPublicationPending,
+    advanceNow: (milliseconds) => {
+      now += milliseconds;
+    },
   };
 };
 
@@ -221,6 +224,19 @@ describe("server/codex-broker-service", () => {
       accountId: "account",
     });
     expect(JSON.stringify(harness.getProfile())).not.toContain("durable-refresh");
+  });
+
+  it("immediately brokers an initial token already inside the safe refresh window", async () => {
+    const harness = createHarness();
+
+    await harness.service.start();
+    await harness.service.storeTokens({
+      access: "initial-access",
+      refresh: "durable-refresh",
+      expires: 1_700_000_420_000,
+    });
+
+    expect(harness.timers.at(-1).delay).toBe(0);
   });
 
   it("fails closed when deposit fails", async () => {
@@ -458,6 +474,83 @@ describe("server/codex-broker-service", () => {
     expect(harness.service.getStatus()).toMatchObject({
       state: "degraded",
       lastErrorCode: "refresh_deferred",
+    });
+    expect(harness.timers.at(-1).delay).toBe(60 * 1000);
+  });
+
+  it("schedules short-lived refreshed tokens before OpenClaw's expiry window", async () => {
+    const harness = createHarness({
+      profile: {
+        type: "oauth",
+        provider: "openai",
+        access: "old",
+        refresh: CODEX_BROKER_REFRESH_PLACEHOLDER,
+        expires: 1_700_000_100_000,
+      },
+    });
+    harness.brokerClient.getCodexAccessToken.mockResolvedValue({
+      access_token: "short-lived-access",
+      expires_at: 1_700_000_600,
+      scopes: [],
+      scopes_known: true,
+      refreshed: true,
+    });
+
+    await harness.service.start();
+
+    expect(harness.getProfile()?.expires).toBe(1_700_000_600_000);
+    expect(harness.timers.at(-1).delay).toBe(2 * 60 * 1000);
+  });
+
+  it("keeps a retry and operation budget before OpenClaw's expiry window", async () => {
+    const harness = createHarness();
+    await harness.service.start();
+    await harness.service.storeTokens({
+      access: "initial-access",
+      refresh: "durable-refresh",
+      expires: 1_700_000_600_000,
+    });
+    expect(harness.timers.at(-1).delay).toBe(2 * 60 * 1000);
+
+    harness.brokerClient.getCodexAccessToken.mockRejectedValue(
+      Object.assign(new Error("temporary outage"), { code: "ssh_failed" }),
+    );
+    harness.advanceNow(2 * 60 * 1000);
+    harness.timers.at(-1).callback();
+    await vi.waitFor(() => {
+      expect(harness.service.getStatus().lastErrorCode).toBe("ssh_failed");
+    });
+
+    expect(harness.timers.at(-1).delay).toBe(60 * 1000);
+    // The retry starts with seven minutes remaining: one operation minute and
+    // one safety minute still fit before OpenClaw's five-minute boundary.
+    expect(harness.getProfile().expires - 1_700_000_120_000).toBe(8 * 60 * 1000);
+  });
+
+  it("rejects tokens too short-lived to refresh before OpenClaw's expiry window", async () => {
+    const harness = createHarness({
+      profile: {
+        type: "oauth",
+        provider: "openai",
+        access: "old",
+        refresh: CODEX_BROKER_REFRESH_PLACEHOLDER,
+        expires: 1_700_000_100_000,
+      },
+    });
+    harness.brokerClient.getCodexAccessToken.mockResolvedValue({
+      access_token: "too-short-lived",
+      expires_at: 1_700_000_420,
+      scopes: [],
+      scopes_known: true,
+      refreshed: true,
+    });
+
+    await harness.service.start();
+
+    expect(harness.authProfiles.upsertCodexProfile).not.toHaveBeenCalled();
+    expect(harness.service.getStatus()).toMatchObject({
+      state: "degraded",
+      lastErrorCode: "invalid_response",
     });
     expect(harness.timers.at(-1).delay).toBe(60 * 1000);
   });
