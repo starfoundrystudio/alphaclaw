@@ -224,3 +224,45 @@ describe("server/slack-bot", () => {
     ).rejects.toThrow("missing connections:write");
   });
 });
+
+describe("server/slack-bot vault-aware remediation copy", () => {
+  it("points a rejected vault-held bot token at the Agent Vault credential", async () => {
+    const authError = new Error("invalid_auth");
+    authError.slackError = "invalid_auth";
+    const createApi = vi.fn(() => ({
+      authTest: vi.fn(async () => {
+        throw authError;
+      }),
+    }));
+
+    await expect(
+      inspectSlackCredentials(
+        {
+          botToken: "__agent_vault_slack_bot_token__",
+          appToken: "__agent_vault_slack_app_token__",
+        },
+        { createApi },
+      ),
+    ).rejects.toThrow(/update the SLACK_BOT_TOKEN credential in Agent Vault/);
+  });
+
+  it("keeps the raw-flow wording when the rejected bot token is not vault-held", async () => {
+    const authError = new Error("invalid_auth");
+    authError.slackError = "invalid_auth";
+    const createApi = vi.fn(() => ({
+      authTest: vi.fn(async () => {
+        throw authError;
+      }),
+    }));
+
+    await expect(
+      inspectSlackCredentials(
+        {
+          botToken: "xoxb-1234567890-secret",
+          appToken: "xapp-1-A123ABC456-secret",
+        },
+        { createApi },
+      ),
+    ).rejects.toThrow(/copy the Bot User OAuth Token again/);
+  });
+});
