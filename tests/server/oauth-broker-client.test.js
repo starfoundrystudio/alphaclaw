@@ -123,18 +123,63 @@ describe("server/oauth-broker-client", () => {
   });
 
   it("discovers only a complete staged broker identity", () => {
-    const brokerDir = fs.mkdtempSync(path.join(os.tmpdir(), "ac-oauth-broker-"));
-    const client = createOAuthBrokerClient({ brokerDir });
+    const brokerDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "ac-oauth-broker-"),
+    );
+    const trustDir = fs.mkdtempSync(path.join(os.tmpdir(), "ac-oauth-trust-"));
+    const client = createOAuthBrokerClient({
+      brokerDir,
+      trustDir,
+      trustedOwnerUid: process.getuid(),
+    });
     expect(client.isConfigured()).toBe(false);
 
     fs.writeFileSync(
-      path.join(brokerDir, "config.json"),
+      path.join(trustDir, "config.json"),
       JSON.stringify({ schema_version: 1, gateway_host: "10.0.0.2" }),
     );
-    fs.writeFileSync(path.join(brokerDir, "id_ed25519"), "key", { mode: 0o600 });
-    fs.writeFileSync(path.join(brokerDir, "known_hosts"), "host", { mode: 0o644 });
+    fs.writeFileSync(path.join(brokerDir, "id_ed25519"), "key", {
+      mode: 0o600,
+    });
+    fs.writeFileSync(path.join(trustDir, "known_hosts"), "host", {
+      mode: 0o644,
+    });
     expect(client.isConfigured()).toBe(true);
     fs.rmSync(brokerDir, { recursive: true, force: true });
+    fs.rmSync(trustDir, { recursive: true, force: true });
+  });
+
+  it("rejects workload-writable trust anchors before sending a request", async () => {
+    const brokerDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "ac-oauth-broker-"),
+    );
+    const trustDir = fs.mkdtempSync(path.join(os.tmpdir(), "ac-oauth-trust-"));
+    fs.writeFileSync(path.join(brokerDir, "id_ed25519"), "key", {
+      mode: 0o600,
+    });
+    fs.writeFileSync(
+      path.join(trustDir, "config.json"),
+      JSON.stringify({ schema_version: 1, gateway_host: "10.0.0.2" }),
+      { mode: 0o600 },
+    );
+    fs.writeFileSync(path.join(trustDir, "known_hosts"), "host", {
+      mode: 0o666,
+    });
+    fs.chmodSync(path.join(trustDir, "known_hosts"), 0o666);
+    const spawnImpl = vi.fn();
+    const client = createOAuthBrokerClient({
+      brokerDir,
+      trustDir,
+      trustedOwnerUid: process.getuid(),
+      spawnImpl,
+    });
+
+    await expect(client.status()).rejects.toMatchObject({
+      code: "invalid_config",
+    });
+    expect(spawnImpl).not.toHaveBeenCalled();
+    fs.rmSync(brokerDir, { recursive: true, force: true });
+    fs.rmSync(trustDir, { recursive: true, force: true });
   });
 
   it("rejects malformed access-token responses", async () => {
@@ -147,10 +192,14 @@ describe("server/oauth-broker-client", () => {
       }),
     });
 
-    await expect(client.getCodexAccessToken({ scopes: [] })).rejects.toMatchObject({
+    await expect(
+      client.getCodexAccessToken({ scopes: [] }),
+    ).rejects.toMatchObject({
       name: "OAuthBrokerError",
       code: "invalid_response",
     });
-    expect(new OAuthBrokerError("broker_denied").message).not.toContain("token");
+    expect(new OAuthBrokerError("broker_denied").message).not.toContain(
+      "token",
+    );
   });
 });

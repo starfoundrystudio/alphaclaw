@@ -634,12 +634,12 @@ describe("server/agent-vault", () => {
       accountId: "work",
       slots: [
         {
-          envKey: "SLACK_BOT_TOKEN_WORK",
-          placeholder: "__agent_vault_slack_bot_token_work__",
-        },
-        {
           envKey: "SLACK_APP_TOKEN_WORK",
           placeholder: "__agent_vault_slack_app_token_work__",
+        },
+        {
+          envKey: "SLACK_BOT_TOKEN_WORK",
+          placeholder: "__agent_vault_slack_bot_token_work__",
         },
       ],
       proposal: {
@@ -654,7 +654,9 @@ describe("server/agent-vault", () => {
     expect(proposalBody.services).toHaveLength(1);
     expect(proposalBody.services[0].substitutions).toHaveLength(2);
     expect(proposalBody.credentials.map((credential) => credential.key)).toEqual(
-      ["SLACK_BOT_TOKEN_WORK", "SLACK_APP_TOKEN_WORK"],
+      // App token first: the approval page shows fields in proposal order,
+      // matching the wizard's copy order (see credentialOrder in the registry).
+      ["SLACK_APP_TOKEN_WORK", "SLACK_BOT_TOKEN_WORK"],
     );
 
     // Discord: two services, one deduped credential slot.

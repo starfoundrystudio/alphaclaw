@@ -69,17 +69,17 @@ describe("server/agent-vault/channel-provider-services", () => {
   it("derives account-scoped slots and placeholders", () => {
     const defaults = getChannelVaultConfig("slack");
     expect(defaults.slots.map((slot) => slot.envKey)).toEqual([
-      "SLACK_BOT_TOKEN",
       "SLACK_APP_TOKEN",
+      "SLACK_BOT_TOKEN",
     ]);
     expect(defaults.slots.map((slot) => slot.placeholder)).toEqual([
-      "__agent_vault_slack_bot_token__",
       "__agent_vault_slack_app_token__",
+      "__agent_vault_slack_bot_token__",
     ]);
     const work = getChannelVaultConfig("slack", "work-team");
     expect(work.slots.map((slot) => slot.envKey)).toEqual([
-      "SLACK_BOT_TOKEN_WORK_TEAM",
       "SLACK_APP_TOKEN_WORK_TEAM",
+      "SLACK_BOT_TOKEN_WORK_TEAM",
     ]);
     for (const slot of work.slots) {
       expect(isVaultPlaceholderValue(slot.placeholder)).toBe(true);
@@ -103,8 +103,8 @@ describe("server/agent-vault/channel-provider-services", () => {
     const [slack] = buildChannelProviderAccessRequests("slack");
     expect(slack.service.substitutions).toHaveLength(2);
     expect(slack.credentials.map((credential) => credential.key)).toEqual([
-      "SLACK_BOT_TOKEN",
       "SLACK_APP_TOKEN",
+      "SLACK_BOT_TOKEN",
     ]);
   });
 
