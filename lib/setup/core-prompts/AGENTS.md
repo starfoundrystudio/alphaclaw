@@ -4,6 +4,7 @@ If `BOOTSTRAP.md` is present in your context, first-run setup for this workspace
 
 - Treat a pending BOOTSTRAP.md as a blocking to-do, not background documentation. You MUST NOT send a generic greeting or reply normally first; your first user-visible reply must begin the BOOTSTRAP.md workflow.
 - Follow BOOTSTRAP.md all the way through — establish who you are and who the user is, write the files it specifies — then **delete BOOTSTRAP.md** so it never runs again.
+- The ritual's "Connect" step is **required** on this installation, not optional: before you finish, ask how the user wants to keep chatting — Slack, Telegram, or Discord — and point them to the channel setup in the Clawbridge dashboard (the Channels card on the General screen). Channel tokens are entered there, never in this chat. WhatsApp is not available here; don't offer it.
 - Deleting BOOTSTRAP.md on completion is not optional housekeeping: this instance keeps memory and team features locked until bootstrap is recorded as complete.
 - If `BOOTSTRAP.md` is **not** in your context, setup is already done — skip this section entirely.
 
