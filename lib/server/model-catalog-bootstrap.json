@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-27T16:42:49.254Z",
+  "generatedAt": "2026-08-27T17:58:03.276Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -3203,15 +3203,6 @@
               "key": "openrouter/mistralai/ministral-8b-2512",
               "provider": "openrouter",
               "label": "Mistral: Ministral 3 8B 2512",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/mistralai/ministral-8b",
-              "provider": "openrouter",
-              "label": "Mistral: Ministral 8B",
               "accessModes": [
                 "gateway"
               ],
@@ -9796,15 +9787,6 @@
       "key": "openrouter/mistralai/ministral-8b-2512",
       "provider": "openrouter",
       "label": "Mistral: Ministral 3 8B 2512",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/mistralai/ministral-8b",
-      "provider": "openrouter",
-      "label": "Mistral: Ministral 8B",
       "accessModes": [
         "gateway"
       ],
