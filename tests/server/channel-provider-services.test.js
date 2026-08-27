@@ -64,6 +64,14 @@ describe("server/agent-vault/channel-provider-services", () => {
     expect(getChannelVaultConfig("slack").services).toEqual([
       { name: "channel-slack", host: "slack.com" },
     ]);
+    // "body" must stay: @slack/web-api sends argument-passed tokens (Bolt's
+    // per-event authorize) in the form body too, and Slack prefers the body
+    // field over the Authorization header. Header-only substitution breaks
+    // every incoming Slack event with invalid_auth.
+    expect(getChannelVaultConfig("slack").surfaces).toEqual([
+      "header",
+      "body",
+    ]);
   });
 
   it("derives account-scoped slots and placeholders", () => {
@@ -102,6 +110,9 @@ describe("server/agent-vault/channel-provider-services", () => {
     );
     const [slack] = buildChannelProviderAccessRequests("slack");
     expect(slack.service.substitutions).toHaveLength(2);
+    for (const substitution of slack.service.substitutions) {
+      expect(substitution.in).toEqual(["header", "body"]);
+    }
     expect(slack.credentials.map((credential) => credential.key)).toEqual([
       "SLACK_APP_TOKEN",
       "SLACK_BOT_TOKEN",
