@@ -214,6 +214,19 @@ describe("server/agent-vault", () => {
           type: "static",
           createdAt: "2026-07-20T12:30:00.000Z",
           updatedAt: "2026-07-21T14:45:00.000Z",
+          // Registry join: the key belongs to the openai model provider, but
+          // no vault service covers its host and no instance profile holds
+          // the placeholder — wired/configured both false, so not in use.
+          usedBy: [
+            {
+              kind: "model",
+              label: "openai (models)",
+              host: "api.openai.com",
+              configured: false,
+              wired: false,
+            },
+          ],
+          inUse: false,
         },
         {
           key: "STRIPE_API_KEY",
@@ -222,9 +235,14 @@ describe("server/agent-vault", () => {
           type: "",
           createdAt: "",
           updatedAt: "",
+          // No registry entry references STRIPE_API_KEY: flagged unused.
+          usedBy: [],
+          inUse: false,
         },
       ],
       services: [],
+      consoleUrl:
+        "https://www.teamyou.com/openclaw/agent-vault/inst_test123?return_to=%2Fvaults%2Fdefault%2Fcredentials",
     });
 
     await expect(
@@ -299,6 +317,101 @@ describe("server/agent-vault", () => {
       reason: "Publish the requested release",
       createdAt: "2026-07-27T20:15:00.000Z",
     });
+  });
+
+  it("maps credential usage from the registries and instance placeholders", async () => {
+    const {
+      writeAgentVaultRuntime,
+    } = require("../../lib/server/agent-vault/runtime-store");
+    writeAgentVaultRuntime({
+      token: "av_runtime_token_123456789",
+      vault: "default",
+      mode: "brokered",
+      operatorUrl: "https://agent-vault-test.tail123.ts.net",
+    });
+    const fetchImpl = vi.fn(async () =>
+      Response.json({
+        vault: "default",
+        available_credentials: [
+          "SLACK_BOT_TOKEN",
+          "SLACK_APP_TOKEN",
+          "ANTHROPIC_API_KEY",
+          "TEAMYOU_API_KEY",
+          "ORPHANED_KEY",
+        ],
+        services: [
+          { name: "channel-slack", host: "slack.com" },
+          { name: "model-anthropic", host: "api.anthropic.com" },
+          { name: "teamyou-external-api", host: "www.teamyou.com/api/external/v1/*" },
+        ],
+      }),
+    );
+    const envVars = [
+      { key: "SLACK_BOT_TOKEN", value: "__agent_vault_slack_bot_token__" },
+      { key: "SLACK_APP_TOKEN", value: "__agent_vault_slack_app_token__" },
+      {
+        key: "TEAMYOU_AGENT_VAULT_ENTRY_URL",
+        value: "https://www.teamyou.com/openclaw/agent-vault/inst_test123",
+      },
+    ];
+    const { createAgentVaultService } = require(
+      "../../lib/server/agent-vault/service"
+    );
+    const service = createAgentVaultService({
+      readEnvFile: () => envVars,
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      authProfiles: {
+        listProfilesByProvider: (provider) =>
+          provider === "anthropic"
+            ? [
+                {
+                  id: "p1",
+                  type: "api_key",
+                  key: "__agent_vault_anthropic_api_key__",
+                },
+              ]
+            : [],
+      },
+    });
+
+    const payload = await service.listCredentials();
+    const byKey = Object.fromEntries(
+      payload.credentialDetails.map((detail) => [detail.key, detail]),
+    );
+    expect(byKey.SLACK_BOT_TOKEN.usedBy).toEqual([
+      {
+        kind: "channel",
+        label: "Slack channel",
+        host: "slack.com",
+        configured: true,
+        wired: true,
+      },
+    ]);
+    expect(byKey.SLACK_BOT_TOKEN.inUse).toBe(true);
+    expect(byKey.SLACK_APP_TOKEN.inUse).toBe(true);
+    expect(byKey.ANTHROPIC_API_KEY.usedBy).toEqual([
+      {
+        kind: "model",
+        label: "anthropic (models)",
+        host: "api.anthropic.com",
+        configured: true,
+        wired: true,
+      },
+    ]);
+    expect(byKey.TEAMYOU_API_KEY.usedBy).toEqual([
+      {
+        kind: "system",
+        label: "TeamYou integration",
+        host: "www.teamyou.com",
+        configured: true,
+        wired: true,
+      },
+    ]);
+    // The stale-credential case: nothing references it, flag as unused.
+    expect(byKey.ORPHANED_KEY.usedBy).toEqual([]);
+    expect(byKey.ORPHANED_KEY.inUse).toBe(false);
   });
 
   it("only removes legacy credentials with a complete runtime replacement", async () => {
