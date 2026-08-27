@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-27T16:20:13.756Z",
+  "generatedAt": "2026-08-27T16:41:06.406Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -6810,6 +6810,24 @@
               "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash",
               "provider": "vercel-ai-gateway",
               "label": "Ling 3.0 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-fin",
+              "provider": "vercel-ai-gateway",
+              "label": "Ling 3.0 Flash Fin",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-fin-free",
+              "provider": "vercel-ai-gateway",
+              "label": "Ling 3.0 Flash Fin (Free)",
               "accessModes": [
                 "gateway"
               ],
@@ -13784,6 +13802,24 @@
       "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash",
       "provider": "vercel-ai-gateway",
       "label": "Ling 3.0 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-fin",
+      "provider": "vercel-ai-gateway",
+      "label": "Ling 3.0 Flash Fin",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-fin-free",
+      "provider": "vercel-ai-gateway",
+      "label": "Ling 3.0 Flash Fin (Free)",
       "accessModes": [
         "gateway"
       ],
