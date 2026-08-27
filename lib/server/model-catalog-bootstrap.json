@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-27T19:01:49.716Z",
+  "generatedAt": "2026-08-27T21:43:40.407Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -5201,15 +5201,6 @@
               "key": "openrouter/thedrummer/cydonia-24b-v4.1",
               "provider": "openrouter",
               "label": "TheDrummer: Cydonia 24B V4.1",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/thedrummer/rocinante-12b",
-              "provider": "openrouter",
-              "label": "TheDrummer: Rocinante 12B",
               "accessModes": [
                 "gateway"
               ],
@@ -11798,15 +11789,6 @@
       "key": "openrouter/thedrummer/cydonia-24b-v4.1",
       "provider": "openrouter",
       "label": "TheDrummer: Cydonia 24B V4.1",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/thedrummer/rocinante-12b",
-      "provider": "openrouter",
-      "label": "TheDrummer: Rocinante 12B",
       "accessModes": [
         "gateway"
       ],
