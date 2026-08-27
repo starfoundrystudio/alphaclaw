@@ -243,7 +243,7 @@ describe("server/slack-bot vault-aware remediation copy", () => {
         },
         { createApi },
       ),
-    ).rejects.toThrow(/update the SLACK_BOT_TOKEN credential in Agent Vault/);
+    ).rejects.toThrow(/update the SLACK_BOT_TOKEN \(and SLACK_APP_TOKEN\) credentials in Agent Vault/);
   });
 
   it("keeps the raw-flow wording when the rejected bot token is not vault-held", async () => {
