@@ -38,6 +38,15 @@ const createTestApp = ({ setupPassword, loginThrottle, trustProxy } = {}) => {
   registerAuthRoutes({ app, loginThrottle: throttle });
 
   app.get("/api/protected", (req, res) => res.json({ ok: true }));
+  app.get("/api/onboard/runtime-ready.svg", (_req, res) =>
+    res.type("image/svg+xml").send("<svg></svg>"),
+  );
+  app.post("/api/onboard/runtime-ready.svg", (_req, res) =>
+    res.json({ mutated: true }),
+  );
+  app.get("/api/onboard/runtime-ready.svg/extra", (_req, res) =>
+    res.type("image/svg+xml").send("<svg></svg>"),
+  );
   app.get("/setup/protected", (req, res) => res.json({ ok: true }));
 
   return { app, throttle };
@@ -137,6 +146,31 @@ describe("server/routes/auth", () => {
     const protectedRes = await request(app).get(`/api/protected?token=${tokenMatch[1]}`);
     expect(protectedRes.status).toBe(401);
     expect(protectedRes.body).toEqual({ error: "Unauthorized" });
+  });
+
+  it("allows only read-only requests to the exact runtime readiness image", async () => {
+    const { app } = createTestApp({ setupPassword: "secret" });
+
+    const getResponse = await request(app).get(
+      "/api/onboard/runtime-ready.svg?ready-probe=1",
+    );
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.headers["content-type"]).toMatch(/^image\/svg\+xml/);
+
+    const headResponse = await request(app).head(
+      "/api/onboard/runtime-ready.svg?ready-probe=2",
+    );
+    expect(headResponse.status).toBe(200);
+
+    const postResponse = await request(app).post(
+      "/api/onboard/runtime-ready.svg",
+    );
+    expect(postResponse.status).toBe(401);
+
+    const adjacentResponse = await request(app).get(
+      "/api/onboard/runtime-ready.svg/extra",
+    );
+    expect(adjacentResponse.status).toBe(401);
   });
 
 });
