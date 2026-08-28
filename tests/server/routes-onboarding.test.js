@@ -14,6 +14,7 @@ const createBaseDeps = ({
   onboarded = false,
   hasCodexOauth = false,
   hasClaudeCli = false,
+  processStartedAtMs = Date.parse("2026-08-27T23:12:06.000Z"),
 } = {}) => {
   const kOnboardingMarkerPath = "/tmp/alphaclaw/onboarded.json";
   return {
@@ -94,6 +95,7 @@ const createBaseDeps = ({
     },
     prepareAgentVaultRuntime: vi.fn(async () => ({ ready: true })),
     runOnboardedBootSequence: vi.fn(),
+    getProcessStartedAtMs: vi.fn(() => processStartedAtMs),
   };
 };
 
@@ -242,6 +244,70 @@ describe("server/routes/onboarding", () => {
       publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
       tailscaleDns: "alphaclaw.tail123.ts.net",
     });
+  });
+
+  it("keeps the runtime image unavailable in the process that scheduled finalization", async () => {
+    const markedAt = "2026-08-27T23:11:37.000Z";
+    const deps = createBaseDeps({
+      onboarded: true,
+      processStartedAtMs: Date.parse(markedAt) - 60_000,
+    });
+    deps.fs.readFileSync.mockReturnValue(
+      JSON.stringify({
+        onboarded: true,
+        markedAt,
+        hostFinalizationScheduled: true,
+      }),
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/onboard/runtime-ready.svg");
+
+    expect(res.status).toBe(503);
+    expect(res.headers["cache-control"]).toBe("no-store");
+    expect(res.headers["content-type"]).toMatch(/^text\/plain/);
+  });
+
+  it("serves the runtime image only from the successor process", async () => {
+    const markedAt = "2026-08-27T23:11:37.000Z";
+    const deps = createBaseDeps({
+      onboarded: true,
+      processStartedAtMs: Date.parse(markedAt) + 29_000,
+    });
+    deps.fs.readFileSync.mockReturnValue(
+      JSON.stringify({
+        onboarded: true,
+        markedAt,
+        hostFinalizationScheduled: true,
+      }),
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/onboard/runtime-ready.svg");
+
+    expect(res.status).toBe(200);
+    expect(res.headers["cache-control"]).toBe("no-store");
+    expect(res.headers["content-type"]).toMatch(/^image\/svg\+xml/);
+    expect(Buffer.from(res.body).toString("utf8")).toContain("<svg");
+  });
+
+  it("serves the runtime image when finalization scheduling was cancelled", async () => {
+    const deps = createBaseDeps({
+      onboarded: true,
+      processStartedAtMs: Date.parse("2026-08-27T23:10:00.000Z"),
+    });
+    deps.fs.readFileSync.mockReturnValue(
+      JSON.stringify({
+        onboarded: true,
+        markedAt: "2026-08-27T23:11:37.000Z",
+        hostFinalizationScheduled: false,
+      }),
+    );
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/onboard/runtime-ready.svg");
+
+    expect(res.status).toBe(200);
   });
 
   it("short-circuits when already onboarded", async () => {

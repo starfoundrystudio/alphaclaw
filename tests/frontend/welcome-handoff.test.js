@@ -76,7 +76,7 @@ describe("frontend/welcome handoff", () => {
     const { buildInstanceProbeUrl } = await loadWelcomeHook();
 
     expect(buildInstanceProbeUrl("https://alphaclaw.tail123.ts.net", 3)).toBe(
-      "https://alphaclaw.tail123.ts.net/img/logo.svg?ready-probe=3",
+      "https://alphaclaw.tail123.ts.net/api/onboard/runtime-ready.svg?ready-probe=3",
     );
     expect(buildInstanceProbeUrl("not a url")).toBe("");
   });
