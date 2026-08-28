@@ -1,16 +1,22 @@
-# OAuth Broker v2 — Policy, Grant, and Consumer Framework
+# OAuth Broker v2 — Connector, Grant, and Consumer Framework
 
-**Status:** ARCHITECTURE SPIKE 2026-08-27. This document defines the recommended
-next phase after the Codex seam. It is not yet an implementation decision or a
-release commitment. The existing schema-v1 broker and Codex integration remain
-authoritative until v2 is approved and shipped.
+**Status:** REVISED ARCHITECTURE SPIKE 2026-08-27. This document defines the
+recommended next phase after the Codex seam. The revision incorporates the
+Vercel Connect distinction between owner-managed connector registration and
+runtime token retrieval: standard OAuth/OIDC providers and token-compatible
+CLIs should be addable without an AlphaClaw or gateway release. It is not yet an
+implementation decision or a release commitment. The existing schema-v1 broker
+and Codex integration remain authoritative until v2 is approved and shipped.
 
 **Why this companion exists:** `oauth-refresh-broker-spec.md` correctly defines
 the custody boundary, but its original gog plan assumed another proactive
 credential-store rewrite. Inspection of gog and of AlphaClaw's multi-account
 Google setup exposed a more general seam: applications that accept a short-lived
 access token should receive one at invocation time. That pattern should be a
-framework, not a new refresh implementation for every OAuth application.
+framework, not a new refresh implementation for every OAuth application. The
+first draft still made provider policy a gateway release artifact; this revision
+corrects that scaling limitation by introducing owner-created Custom OAuth/OIDC
+connectors and user-created consumer bindings.
 
 ## 1. Goals and non-goals
 
@@ -20,12 +26,18 @@ Goals:
 - Preserve the honest trust model: the workload, including `root`, can read and
   use a live access token, but cannot recover the durable grant from disk.
 - Support more than one account and OAuth client for the same provider.
-- Make standard OAuth providers mostly declarative gateway policy rather than a
-  bespoke broker implementation.
-- Make consumer integration a narrow access-token delivery seam rather than
-  duplicating refresh, rotation, caching, revocation, and storage logic.
+- Let an owner add a standards-compliant OAuth/OIDC provider as validated
+  connector data without publishing a gateway asset or AlphaClaw release.
+- Let a user bind an unknown CLI to a grant without an AlphaClaw release when
+  the CLI accepts an externally supplied access token.
+- Keep built-in provider templates and known-CLI bindings for tested defaults
+  and good UX without making them the only supported path.
+- Make consumer integration a declarative access-token delivery seam rather
+  than duplicating refresh, rotation, caching, revocation, and storage logic.
+- Separate owner-authorized connector management from the workload's ordinary
+  token-use capability.
 - Keep gateway egress destinations and request shapes controlled by reviewed
-  gateway policy, never by workload input.
+  connector configuration, never by a token request from the workload.
 - Preserve schema-v1 Codex behavior through a rolling migration.
 
 Non-goals:
@@ -37,6 +49,9 @@ Non-goals:
 - Automatically support an application that can only consume its own durable
   refresh-token store. Such a consumer needs a supported injection seam, an
   upstream change, or an explicit risk decision.
+- Guarantee that every product labeled OAuth follows standard OAuth/OIDC
+  metadata and token contracts. Non-standard dialects may still require a
+  reviewed connector driver.
 - Solve upgrades of existing dual-VPS instances. That remains part of the
   separate topology upgrade program; the design here must be roll-forward
   compatible, but its first target can be fresh provisions.
@@ -95,14 +110,36 @@ particular program accepts a lease and *which account* a command means. The
 scalable objective is to make that seam declarative or very small, not to claim
 that arbitrary binaries can be integrated without any knowledge of them.
 
+### 3.1 What "arbitrary" means
+
+Provider compatibility and consumer compatibility are different problems:
+
+| Question | Generic path | Hard limit |
+| --- | --- | --- |
+| Can an owner connect a previously unknown standard OAuth/OIDC provider? | Create a Custom OAuth/OIDC connector containing validated provider metadata, client registration, redirect URIs, and scope ceiling. No product release. | A non-standard token dialect or proof scheme may need a reviewed driver. |
+| Can a user run a previously unknown CLI with that grant? | Create a consumer binding describing the grant and the CLI's environment-variable, credential-process, stdin, or flag seam. No product release. | A CLI that insists on owning a local refresh token cannot be made brokered by configuration alone. |
+
+This is also the boundary in hosted brokers such as Vercel Connect. Their
+generic connector centralizes consent and token issuance, but consuming code
+still calls an SDK, CLI, or HTTP token API and passes the result to the target
+service. It does not transparently retrofit a refresh-token-only executable.
+
 ## 4. Gateway object model
 
-Schema v2 should separate three concepts currently collapsed into one sealed
+Schema v2 should separate four concepts currently collapsed into one sealed
 grant record.
 
-### 4.1 Provider policy
+### 4.1 Connector type
 
-A gateway-installed, versioned policy defines the trusted OAuth protocol:
+A connector type is gateway code that implements a protocol family. The first
+types should be:
+
+- `standard-oauth2`, driven by validated connector metadata;
+- `oidc`, using validated issuer discovery and PKCE where applicable; and
+- named built-in drivers only for providers whose behavior cannot be expressed
+  safely by the standard schemas.
+
+The standard types define the allowed fields and protocol behavior, including:
 
 - authorization, token, and revocation endpoints;
 - redirect behavior (redirects remain rejected for token/revocation calls);
@@ -116,33 +153,56 @@ A gateway-installed, versioned policy defines the trusted OAuth protocol:
 - scope syntax, allowed scope set, and narrowing behavior; and
 - optional metadata/userinfo behavior.
 
-The workload supplies a `policy_id`; it never supplies an endpoint, arbitrary
-header, request template, or response parser. Standard providers should use a
-strict declarative schema. An unusual provider may use a small reviewed driver,
-but the driver is installed with the gateway asset and referenced by name.
+The workload never supplies an endpoint, arbitrary header, request template, or
+response parser as part of a token request. Adding a genuinely new protocol
+type remains a reviewed gateway-code change; adding another provider that fits
+an existing type does not.
 
-### 4.2 Client registration
+### 4.2 Connector
 
-A client registration represents the OAuth application, independently of a
-user's consent grant:
+A connector is an owner-managed instance of a connector type. It combines the
+provider metadata and OAuth client registration needed to authorize grants:
 
-- stable opaque `client_registration_id`;
-- `policy_id`;
+- stable opaque `connector_id` and connector-type/version reference;
+- authorization, token, revocation, issuer, and optional userinfo metadata;
 - client ID;
 - sealed client secret or private key when applicable;
 - exact allowed redirect URI set; and
-- non-secret display metadata.
+- allowed scope ceiling, authentication method, PKCE requirements, and
+  non-secret display metadata.
 
-Owner-supplied client credentials are entered through AlphaClaw as today, but
-the durable copy is deposited on the gateway. AlphaClaw may retain the client
-ID and display metadata; it must not retain the client secret.
+Connectors may come from built-in templates (for example Google or OpenAI) or be
+Custom OAuth/OIDC connectors entered by the owner. Owner-supplied client
+credentials are deposited on the gateway. AlphaClaw may retain the connector
+ID, client ID, endpoint origins, and display metadata; it must not retain the
+client secret.
+
+Connector creation, endpoint changes, client-secret rotation, redirect changes,
+and scope-ceiling changes are **management-plane actions**. The normal
+workload broker identity must not have this capability. Otherwise a compromised
+sudo-capable workload could redefine a token endpoint and turn the gateway into
+an arbitrary secret-bearing HTTP client. Management requires an externally
+authenticated owner action, such as a TeamYou owner session or a distinct
+short-lived gateway administration capability.
+
+Custom connector validation must include:
+
+- HTTPS-only endpoints with no userinfo or fragments;
+- rejection of loopback, private, link-local, multicast, metadata-service, and
+  other non-public destinations after DNS resolution and again at connection;
+- exact issuer validation for OIDC discovery;
+- explicit display and approval of endpoint origins, client-auth method,
+  redirects, and scope ceiling;
+- no token/revocation redirects; and
+- immutable versioning or mandatory re-consent when security-relevant connector
+  fields change while grants exist.
 
 ### 4.3 User grant
 
 A grant represents one account's consent:
 
 - stable opaque `grant_id`;
-- `policy_id` and `client_registration_id` references;
+- `connector_id` and connector-version reference;
 - sealed refresh token and any provider-rotated replacement;
 - consented scopes and whether that set is authoritative;
 - sealed cached access token;
@@ -151,45 +211,71 @@ A grant represents one account's consent:
 
 `grant_id` must be independent of provider email and safe to expose on the
 workload. AlphaClaw's Google account state can map `(client, normalized email)`
-to it. The gateway must reject a grant whose policy and client-registration
-references disagree.
+to it. The gateway must reject a grant whose connector/version reference is
+missing, superseded, or incompatible.
+
+### 4.4 Consumer binding
+
+A consumer binding is non-secret workload configuration that explains how to
+deliver a lease to a program:
+
+- stable local binding name;
+- `grant_id` or an account-to-grant selector;
+- absolute executable path or credential-helper identity;
+- token delivery method and destination;
+- requested scopes and minimum remaining lifetime; and
+- optional account-selection rules.
+
+Bindings may be built in or user-created. They may be editable by workload root
+because they cannot change provider endpoints, client registrations, grants, or
+scope ceilings. A compromised workload can redirect a returned access token to
+another local process, but it could already call the token-use operation and
+read that short-lived token; the durable-secret boundary is unchanged.
 
 ## 5. Recommended schema-v2 operations
 
-Exact field names can change during implementation, but the capability split
-should remain:
+Exact field names can change during implementation, but management and use must
+remain separate.
+
+Owner-authorized management plane:
+
+| Operation | Purpose |
+| --- | --- |
+| `connector_create` | Validate and create a built-in or Custom OAuth/OIDC connector, sealing client credentials. |
+| `connector_update` | Create a new connector version; require re-consent when security-relevant fields change. |
+| `connector_delete` | Remove a connector only when no live grants reference it, unless the owner explicitly cascades revocation. |
+| `enrollment_create` | Issue a short-lived, connector/scopes/redirect-bound capability for one consent transaction. |
+
+Constrained workload use plane:
 
 | Operation | Purpose | Secret returned to workload? |
 | --- | --- | --- |
-| `status` | List non-secret policy/client/grant health and denial state | No |
-| `client_put` | Create or replace a sealed client registration under a gateway policy | No |
-| `client_delete` | Remove a registration only when no live grants reference it, unless explicitly cascading | No |
-| `authorization_start` | Validate policy, client, redirect URI, scopes, and grant intent; create a short-lived one-time transaction; return the provider authorization URL | No |
-| `authorization_complete` | Validate transaction/state, exchange the authorization code on the gateway, and atomically store the resulting grant | At most the initial short-lived access token and non-secret metadata |
-| `access_token` | Resolve `grant_id`, refresh/cache under its policy, and return a scoped short-lived lease | Yes, access token only |
+| `status` | List non-secret connector/grant health and denial state visible to the instance | No |
+| `authorization_start` | Consume an owner-issued enrollment capability, validate connector/redirect/scopes, and return the authorization URL and state | No |
+| `authorization_complete` | Validate enrollment transaction/state, exchange the code on the gateway, and atomically store the resulting grant | At most the initial short-lived access token and non-secret metadata |
+| `access_token` | Resolve `grant_id`, refresh/cache under its connector version, and return a scoped short-lived lease | Yes, access token only |
 | `revoke` | Serialize against refresh, attempt provider revocation, and delete the local grant regardless of provider outcome | No |
 
 `authorization_start` / `authorization_complete` are preferred over a generic
-`deposit` for owner-supplied confidential clients. They keep both the OAuth
+`deposit` for owner-supplied confidential connectors. They keep both the OAuth
 client secret and refresh-token response out of durable workload storage and
 give the gateway control of state, redirect URI, scope, and exchange shape.
 Schema-v1 `deposit` remains supported for the existing Codex seam during the
 migration.
 
 Authorization transactions must be short-lived, one-time, random, sealed or
-gateway-stored, bound to the client registration, grant ID, exact redirect URI,
-requested scopes, and OAuth state. Completion consumes the transaction even on
-a terminal provider response so an authorization code cannot be replayed.
+gateway-stored, bound to the connector version, grant intent, exact redirect
+URI, requested scopes, owner enrollment authorization, and OAuth state.
+Completion consumes the transaction even on a terminal provider response so an
+authorization code cannot be replayed.
 
 ## 6. Workload lease delivery
 
-The generic workload primitive should be an `exec`-style lease injector:
+The generic workload primitive should be an `exec`-style lease injector driven
+by a built-in or user-created binding:
 
 ```text
-oauth-lease-exec \
-  --grant-id <opaque-id> \
-  --env GOG_ACCESS_TOKEN \
-  -- /usr/local/libexec/gog-real <original arguments>
+alphaclaw oauth exec --binding gog-work -- gog gmail labels list
 ```
 
 It should:
@@ -197,7 +283,7 @@ It should:
 1. request a lease immediately before launching the child;
 2. reject a broker response already inside the consumer's minimum validity
    margin;
-3. add the token only to the child environment (or approved flag/stdin seam);
+3. add the token through the binding's approved delivery seam;
 4. avoid logging the environment, request response, or reconstructed command;
 5. preserve stdin/stdout/stderr, signals, exit code, and working directory via
    `exec`; and
@@ -207,10 +293,33 @@ The generic runner is not an authorization boundary against workload root; root
 can call the broker and read the returned access token. Its purpose is correct,
 repeatable delivery without durable storage.
 
-Consumer manifests may describe simple delivery seams such as environment
-variable name, real executable path, minimum lease lifetime, and fixed scopes.
-Argument interpretation that affects grant selection must be implemented by a
-small reviewed shim when it cannot be expressed safely.
+Supported binding types should include:
+
+- environment variable (preferred for most CLIs);
+- a credential-process/helper protocol where the CLI supports one;
+- stdin or a dedicated inherited file descriptor;
+- an argv flag only as an explicit opt-in because process listings and command
+  logs may expose it; and
+- raw token output as an advanced escape hatch with prominent leakage warnings,
+  not the default agent path.
+
+The runner must execute an argv vector directly, never reconstruct a shell
+command. A user can create a binding such as:
+
+```yaml
+name: acme-work
+grant_id: grnt_opaque
+executable: /usr/local/bin/acme
+delivery:
+  type: environment
+  name: ACME_ACCESS_TOKEN
+minimum_lifetime_seconds: 300
+```
+
+That is sufficient for a previously unknown CLI that accepts
+`ACME_ACCESS_TOKEN`; no AlphaClaw release or application-specific refresh code
+is needed. Argument interpretation that affects multi-account grant selection
+still needs declarative selector rules or a small reviewed shim.
 
 ### gog shim
 
@@ -238,11 +347,13 @@ agent shell path.
 
 For a brokered Google account:
 
-1. The dashboard stores the owner-supplied client registration on the gateway
-   and keeps only its opaque ID, client ID, redirect URI, and display name in
-   workload state.
-2. Connect calls `authorization_start`; the gateway returns a fixed-policy
-   Google authorization URL and transaction/state value.
+1. The owner creates a Google connector from a built-in template (or equivalent
+   Custom OAuth connector), and the gateway seals the client registration.
+   Workload state keeps only the connector ID, client ID, redirect URI, and
+   display metadata.
+2. The owner starts account enrollment. AlphaClaw receives a short-lived
+   enrollment capability and calls `authorization_start`; the gateway returns
+   the connector-bound Google authorization URL and transaction/state value.
 3. Google's callback still lands on AlphaClaw, which forwards the code and
    transaction/state to `authorization_complete`.
 4. The gateway exchanges the code with the sealed client secret, stores the
@@ -255,7 +366,7 @@ For a brokered Google account:
    disconnected, and retains a durable non-secret closeout journal until remote
    revocation has completed, matching the Codex fail-closed lifecycle.
 
-The userinfo/email check should use the new access token (or a policy-pinned
+The userinfo/email check should use the new access token (or a connector-pinned
 gateway metadata operation) and must verify it matches any requested account.
 An email typed before consent is a hint, not proof of the granted identity.
 
@@ -267,6 +378,11 @@ An email typed before consent is a hint, not proof of the granted identity.
   `<consumer>__<provider>.json`. Use an opaque-ID namespace and retain the same
   lock, atomic-replace, fsync, sealing, deny-marker, and rotation-containment
   guarantees.
+- Connector definitions, versions, and grants live on the gateway. Workload
+  state contains only non-secret connector/grant identifiers and bindings.
+- A new standards-compliant provider should require a management-plane
+  connector record, not a new host-asset bundle. A bundle is required only for
+  a new connector protocol/driver or host-installed consumer tooling.
 - Fresh provisions are the first target. They can receive the new gateway asset,
   reviewed gog binary, shim, and AlphaClaw UI together.
 - Existing Google refresh tokens should migrate at the next explicit consent,
@@ -279,39 +395,55 @@ An email typed before consent is a hint, not proof of the granted identity.
 
 ## 9. Implementation sequence and consultation gates
 
-1. **Approve this object model and protocol boundary.** In particular, approve
-   gateway-owned authorization-code exchange and separate client registrations.
-2. **Implement schema v2 in clawctl's gateway asset** while preserving v1.
-   Extend subprocess tests for multiple grants under one policy, client/grant
-   reference integrity, authorization transaction replay/expiry, scope and
-   redirect rejection, refresh rotation, revoke races, at-rest sealing, and
-   secret-free status.
-3. **Port the exact gateway asset to TeamYou** and open a TeamYou PR. Do not let
-   the two vendored copies drift.
-4. **Implement a generic AlphaClaw v2 client and lease-exec primitive**, with a
-   fake broker and child process tests proving no token is logged or persisted
-   and that signals/exit status are preserved.
-5. **Perform a bounded gog upgrade review** and choose a production pin at or
+1. **Approve this revised object model and capability boundary.** In particular,
+   approve owner-created Custom OAuth/OIDC connectors, gateway-owned code
+   exchange, and separation of connector management from workload token use.
+2. **Design the owner management path before gateway code.** Decide whether
+   TeamYou owns connector management directly or issues a short-lived gateway
+   administration capability. Threat-model SSRF, connector mutation, enrollment
+   authorization, audit, and recovery. Stop for owner review.
+3. **Implement schema v2 in clawctl's gateway asset** while preserving v1.
+   Include standard OAuth2/OIDC connector types, connector versioning, multiple
+   grants, enrollment capabilities, and the current locking/sealing/durability
+   guarantees. Test private-network/metadata endpoint rejection, DNS rebinding,
+   connector/grant integrity, transaction replay/expiry, scope and redirect
+   rejection, rotation, revoke races, and secret-free status.
+4. **Port the exact gateway asset and management integration to TeamYou** and
+   open a TeamYou PR. Do not let the vendored assets drift.
+5. **Implement generic AlphaClaw connector/grant status, binding management,
+   and lease-exec**, with fake broker/child tests proving no token is logged or
+   persisted and that signals/exit status are preserved. Include a test binding
+   for an otherwise unknown CLI.
+6. **Perform a bounded gog upgrade review** and choose a production pin at or
    above 0.12.0. Test representative read, write, large-download, Gmail watch,
    multi-account, and error paths with direct-token auth.
-6. **Implement the gog shim and Google dashboard migration** using the generic
+7. **Implement the gog shim and Google dashboard migration** using the generic
    primitives. Remove local client-secret and keyring persistence only after
    broker commit, with a crash-recoverable journal.
-7. **Publish a new clawctl host-asset bundle** and update the TeamYou pin for a
+8. **Publish a new clawctl host-asset bundle** and update the TeamYou pin for a
    fresh beta provision. This phase changes both the gateway broker asset and
    workload-installed executables, so an AlphaClaw package release alone is not
    sufficient.
-8. **Run live acceptance** before cutting the beta release.
+9. **Run live acceptance** before cutting the beta release.
 
-Stop for owner consultation after steps 1, 2, and 5. Those are material policy,
-protocol, and third-party-version decisions; later implementation should not
-silently choose them.
+Stop for owner consultation after steps 1, 2, 3, and 6. Those are material
+policy, protocol, security-management, and third-party-version decisions; later
+implementation should not silently choose them.
 
-## 10. Acceptance criteria for the gog seam
+## 10. Acceptance criteria for the framework and gog seam
 
 On a fresh dual-VPS provision:
 
-- connect two Google accounts using two named client registrations;
+- create a Custom OAuth/OIDC connector through the owner management plane
+  without rebuilding or republishing the gateway asset;
+- prove the ordinary workload identity cannot create or mutate connectors;
+- reject custom endpoints resolving to loopback, private/link-local ranges, and
+  cloud metadata services, including a DNS-rebinding test;
+- create an environment-variable binding for a test CLI unknown to AlphaClaw
+  and prove it receives a lease without product-specific code or token files;
+- demonstrate and document the fail-closed error for a refresh-store-only test
+  consumer;
+- connect two Google accounts using two named connectors/client registrations;
 - verify gateway status distinguishes both opaque grant IDs without exposing
   client secrets, refresh tokens, or cached access tokens;
 - recursively scan workload files, process arguments, journals, logs, and gog
@@ -335,6 +467,20 @@ On a fresh dual-VPS provision:
 Proceed with this framework before adding the gog production seam. The current
 broker core is a strong foundation, but extending schema v1 with one
 `(consumer, provider)` pair per application would create exactly the adapter and
-single-account scaling problem identified by the owner. Policy + client
-registration + grant objects, combined with a generic lease runner, preserve
-the security property while keeping future standard OAuth additions bounded.
+single-account scaling problem identified by the owner. The combination of
+owner-managed connectors, per-account grants, and user-defined bindings
+preserves the security property and gives us the useful form of arbitrary
+support: new standard providers and token-compatible CLIs without product
+releases. Refresh-store-only binaries and non-standard OAuth dialects remain
+explicit integration cases rather than silently weakening durable-secret
+custody.
+
+## 12. External reference model
+
+- [Vercel Connect generic OAuth connector](https://vercel.com/connect/oauth) —
+  owner registers an OAuth/OIDC connector; application code requests runtime
+  tokens through a common interface.
+- [Vercel Connect guide](https://vercel.com/kb/guide/vercel-connect) — separates
+  customer-managed Custom OAuth connector registration from SDK/CLI runtime
+  token retrieval. This document adopts that separation without adopting
+  Vercel's control plane or workload identity.
