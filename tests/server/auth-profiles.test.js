@@ -899,6 +899,46 @@ describe("server/auth-profiles", () => {
     expect(rawDatabase).not.toContain("retry-physical-refresh");
   }, 15_000);
 
+  it("physically scrubs brokered access tokens when they rotate or are removed", () => {
+    const databasePath = path.join(
+      tmpDir,
+      ".openclaw",
+      "agents",
+      "main",
+      "agent",
+      "openclaw-agent.sqlite",
+    );
+    const readRawDatabaseFamily = () =>
+      [databasePath, `${databasePath}-wal`, `${databasePath}-shm`]
+        .filter((filePath) => fs.existsSync(filePath))
+        .map((filePath) => fs.readFileSync(filePath).toString("utf8"))
+        .join("\n");
+
+    ap.upsertCodexProfile({
+      access: "broker-access-before-rotation",
+      refresh: "alphaclaw-oauth-broker:v1:openclaw-codex:openai",
+      expires: 9999999999999,
+    });
+    expect(readRawDatabaseFamily()).toContain("broker-access-before-rotation");
+
+    ap.upsertCodexProfile({
+      access: "broker-access-after-rotation",
+      refresh: "alphaclaw-oauth-broker:v1:openclaw-codex:openai",
+      expires: 9999999999999,
+    });
+    expect(readRawDatabaseFamily()).not.toContain(
+      "broker-access-before-rotation",
+    );
+    expect(readRawDatabaseFamily()).toContain("broker-access-after-rotation");
+
+    expect(ap.removeCodexProfiles()).toBe(true);
+    const rawDatabase = readRawDatabaseFamily();
+    expect(rawDatabase).not.toContain("broker-access-after-rotation");
+    expect(rawDatabase).not.toContain(
+      "alphaclaw-oauth-broker:v1:openclaw-codex:openai",
+    );
+  });
+
   it("scrubs the configured OpenClaw OAuth directory", () => {
     const oauthDir = path.join(tmpDir, "custom-oauth");
     const sidecarDir = path.join(oauthDir, "auth-profiles");

@@ -642,6 +642,7 @@ describe("server/codex-broker-service", () => {
     expect(harness.getAccessPublicationPending()).toBe(false);
     expect(publishCredentials).toHaveBeenCalledTimes(2);
     expect(harness.brokerClient.getCodexAccessToken).toHaveBeenCalledTimes(1);
+    expect(harness.authProfiles.upsertCodexProfile).toHaveBeenCalledTimes(2);
   });
 
   it("keeps the durable grant contained and retries when runtime publication fails", async () => {
@@ -789,6 +790,60 @@ describe("server/codex-broker-service", () => {
     expect(harness.publishCredentials.mock.invocationCallOrder[0]).toBeLessThan(
       harness.brokerClient.revokeCodexGrant.mock.invocationCallOrder[0],
     );
+  });
+
+  it("retries pending gateway revocation on a short bounded backoff", async () => {
+    const unavailable = Object.assign(new Error("down"), {
+      code: "ssh_failed",
+    });
+    const harness = createHarness({
+      profile: {
+        type: "oauth",
+        provider: "openai",
+        access: "old",
+        refresh: CODEX_BROKER_REFRESH_PLACEHOLDER,
+        expires: 1_700_003_600_000,
+      },
+    });
+    harness.brokerClient.revokeCodexGrant.mockRejectedValue(unavailable);
+    await harness.service.start();
+
+    await expect(harness.service.disconnect()).resolves.toMatchObject({
+      ok: false,
+      revocationPending: true,
+    });
+
+    const retryTimers = [];
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      const timer = harness.timers.find(
+        (candidate) =>
+          [5_000, 15_000, 30_000, 60_000].includes(candidate.delay) &&
+          !retryTimers.includes(candidate),
+      );
+      expect(timer).toBeDefined();
+      retryTimers.push(timer);
+      await timer.callback();
+    }
+    expect(retryTimers.map((timer) => timer.delay)).toEqual([
+      5_000,
+      15_000,
+      30_000,
+      60_000,
+    ]);
+
+    const cappedTimer = harness.timers.find(
+      (candidate) =>
+        candidate.delay === 60_000 && !retryTimers.includes(candidate),
+    );
+    expect(cappedTimer).toBeDefined();
+    harness.brokerClient.revokeCodexGrant.mockResolvedValue({
+      revoked: true,
+      provider_revocation: "succeeded",
+    });
+    await cappedTimer.callback();
+
+    expect(harness.brokerClient.revokeCodexGrant).toHaveBeenCalledTimes(6);
+    expect(harness.service.getStatus().revocationPending).toBe(false);
   });
 
   it("keeps the profile when revocation intent cannot be journaled", async () => {
