@@ -13,6 +13,7 @@ referenced from it.
 | [`vault-brokered-model-keys-spec.md`](vault-brokered-model-keys-spec.md) | Agent Vault brokering for model/gateway API keys (placeholder substitution; shipped) |
 | [`vault-brokered-channels-spec.md`](vault-brokered-channels-spec.md) | Channel credential taxonomy (Tiers S/S-te/D/C/L), classification governance, deny-list enforcement, Phase E sealed custody (all shipped; WhatsApp shelved — see §4 note) |
 | [`oauth-refresh-broker-spec.md`](oauth-refresh-broker-spec.md) | Gateway-brokered OAuth refresh tokens (Codex/Claude-CLI/gog) — the class substitution can't serve; approved D1–D6; Phase A shipped |
+| [`oauth-broker-v2-consumer-framework.md`](oauth-broker-v2-consumer-framework.md) | Architecture spike for multi-account grants, gateway-held OAuth client registrations, declarative provider policy, and generic short-lived token delivery; gog is the first proposed consumer |
 | [`egress-flow-log-inventory.md`](egress-flow-log-inventory.md) | Empirical NAT flow-log inventory from the enforced test instance — the Phase 3 planning input |
 
 ## Cross-repo
