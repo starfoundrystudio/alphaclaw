@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const {
+  patchSeededBootstrapConnectStep,
   resolveSetupUiUrl,
   syncBootstrapPromptFiles,
 } = require("../../lib/server/onboarding/workspace");
@@ -175,6 +176,83 @@ describe("server/onboarding/workspace", () => {
       const tools = getWrittenToolsContent(written);
       expect(tools).toContain("Composio CLI");
       expect(tools).not.toContain("## Available Google Accounts");
+    });
+  });
+
+  describe("patchSeededBootstrapConnectStep", () => {
+    // Mirrors openclaw's seeded BOOTSTRAP.md: the Connect section sits
+    // between the file-update instructions and the completion section.
+    const seededBootstrap = [
+      "# BOOTSTRAP.md - Hello, World",
+      "",
+      "## After You Know Who You Are",
+      "",
+      "Update these files with what you learned.",
+      "",
+      "## Connect (Optional)",
+      "",
+      "Ask how they want to reach you, then guide them through setup for whichever channel(s) they pick (WhatsApp, Telegram, Discord, and more).",
+      "",
+      "## When You Are Done",
+      "",
+      "Delete this file.",
+    ].join("\n");
+
+    const createBootstrapFs = (content) => {
+      const files = new Map();
+      if (content !== null) {
+        files.set(path.join("/ws", "BOOTSTRAP.md"), content);
+      }
+      return {
+        files,
+        mockFs: {
+          existsSync: (p) => files.has(String(p)),
+          readFileSync: (p) => {
+            if (!files.has(String(p))) {
+              throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+            }
+            return files.get(String(p));
+          },
+          writeFileSync: (p, data) => files.set(String(p), String(data)),
+        },
+      };
+    };
+
+    it("rewrites the optional Connect section into the required Clawbridge version", () => {
+      const { files, mockFs } = createBootstrapFs(seededBootstrap);
+
+      expect(
+        patchSeededBootstrapConnectStep({ fs: mockFs, workspaceDir: "/ws" }),
+      ).toBe(true);
+
+      const patched = files.get(path.join("/ws", "BOOTSTRAP.md"));
+      expect(patched).toContain("## Connect (Required)");
+      expect(patched).not.toContain("## Connect (Optional)");
+      expect(patched).toContain("Slack, Telegram, or Discord");
+      expect(patched).toContain("Channels card on the General screen");
+      expect(patched).not.toContain("WhatsApp, Telegram, Discord, and more");
+      // Surrounding sections survive untouched.
+      expect(patched).toContain("## After You Know Who You Are");
+      expect(patched).toContain("## When You Are Done");
+    });
+
+    it("is idempotent and a no-op when BOOTSTRAP.md is missing or already patched", () => {
+      const { files, mockFs } = createBootstrapFs(seededBootstrap);
+      patchSeededBootstrapConnectStep({ fs: mockFs, workspaceDir: "/ws" });
+      const once = files.get(path.join("/ws", "BOOTSTRAP.md"));
+
+      expect(
+        patchSeededBootstrapConnectStep({ fs: mockFs, workspaceDir: "/ws" }),
+      ).toBe(false);
+      expect(files.get(path.join("/ws", "BOOTSTRAP.md"))).toBe(once);
+
+      const missing = createBootstrapFs(null);
+      expect(
+        patchSeededBootstrapConnectStep({
+          fs: missing.mockFs,
+          workspaceDir: "/ws",
+        }),
+      ).toBe(false);
     });
   });
 });
