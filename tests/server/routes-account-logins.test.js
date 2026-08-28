@@ -13,8 +13,14 @@ const createApp = ({
   configured = false,
   loginProcesses,
   spawnFn,
+  claudeBrokerService,
   upsertClaudeCliProfile = vi.fn(() => {
     configured = true;
+  }),
+  removeClaudeCliProfile = vi.fn(() => {
+    const changed = configured;
+    configured = false;
+    return changed;
   }),
 } = {}) => {
   const app = express();
@@ -25,8 +31,11 @@ const createApp = ({
     gatewayEnv: () => ({ HOME: "/tmp/alphaclaw" }),
     loginProcesses,
     spawnFn,
+    claudeBrokerService,
     authProfiles: {
+      getClaudeCliProfile: vi.fn(() => null),
       hasClaudeCliProfile: vi.fn(() => configured),
+      removeClaudeCliProfile,
       upsertClaudeCliProfile,
     },
   });
@@ -174,6 +183,9 @@ describe("server/routes/account-logins", () => {
       "claude",
       ["auth", "login", "--claudeai"],
       expect.objectContaining({
+        env: expect.objectContaining({
+          ALPHACLAW_CLAUDE_LOGIN_BYPASS: "1",
+        }),
         stdio: ["pipe", "pipe", "pipe"],
       }),
     );
@@ -185,5 +197,74 @@ describe("server/routes/account-logins", () => {
     expect(inputRes.status).toBe(200);
     expect(inputRes.body.ok).toBe(true);
     expect(writes).toEqual(["abc-123\n"]);
+  });
+
+  it("adopts a logged-in Claude grant through the broker service", async () => {
+    const shellCmd = vi.fn(async (cmd) => {
+      if (cmd === "command -v claude") return "/usr/local/bin/claude\n";
+      if (cmd === "claude --version") return "2.1.236 (Claude Code)\n";
+      return JSON.stringify({
+        loggedIn: true,
+        authMethod: "claude.ai",
+        email: "user@example.com",
+      });
+    });
+    const claudeBrokerService = {
+      adopt: vi.fn(async () => ({ brokered: true })),
+      status: vi.fn(async () => ({
+        configured: true,
+        grantPresent: true,
+        brokered: true,
+      })),
+    };
+    const { app } = createApp({ shellCmd, claudeBrokerService });
+
+    const res = await request(app).post("/api/account-logins/claude-cli/adopt");
+
+    expect(res.status).toBe(200);
+    expect(claudeBrokerService.adopt).toHaveBeenCalledWith({
+      email: "user@example.com",
+      loginMethod: "claude.ai",
+    });
+  });
+
+  it("returns a retryable failure after local disconnect when broker revocation is pending", async () => {
+    const shellCmd = vi.fn(async (cmd) => {
+      if (cmd === "command -v claude") return "/usr/local/bin/claude\n";
+      if (cmd === "claude --version") return "2.1.236 (Claude Code)\n";
+      return JSON.stringify({ loggedIn: false, authMethod: "none" });
+    });
+    const claudeBrokerService = {
+      disconnect: vi.fn(async () => ({
+        ok: false,
+        changed: true,
+        brokered: true,
+        revocationPending: true,
+        error: "broker_unavailable",
+      })),
+      status: vi.fn(async () => ({
+        configured: true,
+        grantPresent: false,
+        brokered: false,
+        revocationPending: true,
+      })),
+    };
+    const { app } = createApp({
+      shellCmd,
+      configured: true,
+      claudeBrokerService,
+    });
+
+    const res = await request(app).post(
+      "/api/account-logins/claude-cli/disconnect",
+    );
+
+    expect(res.status).toBe(503);
+    expect(res.body).toMatchObject({
+      changed: true,
+      revocationPending: true,
+      error: "broker_unavailable",
+      status: { configured: false, loggedIn: false },
+    });
   });
 });

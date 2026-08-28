@@ -322,6 +322,43 @@ describe("server/auth-profiles", () => {
     expect(config.auth.order.openai).toEqual(["openai:codex-cli"]);
   });
 
+  it("stores and removes a non-secret brokered Claude CLI profile", () => {
+    ap.upsertClaudeCliProfile({
+      email: "owner@example.com",
+      loginMethod: "claude.ai",
+      brokered: true,
+    });
+
+    let store = readAuthStore();
+    expect(store.profiles["anthropic:claude-cli"]).toEqual({
+      type: "oauth",
+      provider: "claude-cli",
+      updatedAt: expect.any(Number),
+      brokered: true,
+      email: "owner@example.com",
+      loginMethod: "claude.ai",
+    });
+    expect(store.order.anthropic).toEqual(["anthropic:claude-cli"]);
+    expect(store.lastGood).toMatchObject({
+      anthropic: "anthropic:claude-cli",
+      "claude-cli": "anthropic:claude-cli",
+    });
+    expect(readJson("openclaw.json").auth.profiles["anthropic:claude-cli"]).toEqual({
+      provider: "claude-cli",
+      mode: "oauth",
+    });
+
+    expect(ap.removeClaudeCliProfile()).toBe(true);
+    store = readAuthStore();
+    expect(store.profiles["anthropic:claude-cli"]).toBeUndefined();
+    expect(store.order.anthropic).toEqual([]);
+    expect(store.lastGood?.anthropic).toBeUndefined();
+    expect(store.lastGood?.["claude-cli"]).toBeUndefined();
+    expect(
+      readJson("openclaw.json").auth?.profiles?.["anthropic:claude-cli"],
+    ).toBeUndefined();
+  });
+
   it("retires a stale legacy JSON store after migrating its contents to SQLite", () => {
     const legacyPath = path.join(
       tmpDir,

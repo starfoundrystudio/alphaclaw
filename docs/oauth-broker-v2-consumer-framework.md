@@ -1,6 +1,8 @@
 # OAuth Broker v2 — Connector, Grant, and Consumer Framework
 
-**Status:** OBJECT MODEL APPROVED 2026-08-27; MANAGEMENT PLANE PENDING REVIEW.
+**Status:** SHELVED BY OWNER 2026-08-28. Retained as an architecture record;
+current implementation work is limited to the known Claude subscription and
+gog CLI seams.
 This document defines the recommended next phase after the Codex seam. The
 revision incorporates the
 Vercel Connect distinction between owner-managed connector registration and

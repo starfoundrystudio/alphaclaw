@@ -1,7 +1,8 @@
 # OAuth Broker v2 — Owner Management Plane
 
-**Status:** PROPOSED IMPLEMENTATION GATE 2026-08-27. The connector/grant/
-binding object model in `oauth-broker-v2-consumer-framework.md` is approved.
+**Status:** SHELVED BY OWNER 2026-08-28. The connector/grant/
+binding object model in `oauth-broker-v2-consumer-framework.md` remains an
+architecture record, not an active implementation gate.
 This document maps that model onto the provisioned dual-VPS topology and
 recommends the owner-authentication, consent, SSRF, audit, and recovery
 contracts. It is intentionally a consultation gate: no schema-v2 gateway

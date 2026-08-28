@@ -93,6 +93,68 @@ describe("server/oauth-broker-client", () => {
     ]);
   });
 
+  it("emits only the fixed Claude consumer/provider protocol contract", async () => {
+    const requests = [];
+    const client = createOAuthBrokerClient({
+      requestImpl: async (request) => {
+        requests.push(request);
+        if (request.operation === "deposit") {
+          return { schema_version: 1, operation: "deposit", ok: true };
+        }
+        if (request.operation === "access_token") {
+          return {
+            schema_version: 1,
+            operation: "access_token",
+            ok: true,
+            access_token: "short-lived",
+            expires_at: 1800000000,
+            scopes: ["user:inference"],
+            scopes_known: true,
+            refreshed: true,
+          };
+        }
+        return {
+          schema_version: 1,
+          operation: "revoke",
+          ok: true,
+          revoked: true,
+          provider_revocation: "succeeded",
+        };
+      },
+    });
+
+    await client.depositClaudeGrant({ refreshToken: "durable-secret" });
+    await client.getClaudeAccessToken();
+    await client.revokeClaudeGrant();
+
+    expect(requests).toEqual([
+      {
+        schema_version: 1,
+        operation: "deposit",
+        consumer: "claude-cli",
+        provider: "anthropic",
+        grant: {
+          client_id: "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
+          refresh_token: "durable-secret",
+          scopes: ["user:inference"],
+          extra_params: { expires_in: "3600" },
+        },
+      },
+      {
+        schema_version: 1,
+        operation: "access_token",
+        consumer: "claude-cli",
+        provider: "anthropic",
+      },
+      {
+        schema_version: 1,
+        operation: "revoke",
+        consumer: "claude-cli",
+        provider: "anthropic",
+      },
+    ]);
+  });
+
   it("invokes SSH by its absolute system path", async () => {
     let invokedCommand;
     const child = new (require("events").EventEmitter)();
