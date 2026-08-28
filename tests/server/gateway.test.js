@@ -44,8 +44,8 @@ const createSocket = (isRunning) => {
   };
 };
 
-const createChild = () => ({
-  pid: 1234,
+const createChild = (pid = 1234) => ({
+  pid,
   stdout: { on: vi.fn() },
   stderr: { on: vi.fn() },
   on: vi.fn(),
@@ -56,6 +56,7 @@ const createChild = () => ({
 
 describe("server/gateway restart behavior", () => {
   afterEach(() => {
+    vi.useRealTimers();
     childProcess.spawn = originalSpawn;
     childProcess.execSync = originalExecSync;
     fs.existsSync = originalExistsSync;
@@ -313,6 +314,91 @@ describe("server/gateway restart behavior", () => {
       }),
     );
     expect(spawnMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("shuts down an owned gateway child without invoking the OpenClaw CLI", () => {
+    const child = createChild();
+    const spawnMock = vi.fn(() => child);
+    const execSyncMock = vi.fn(() => "");
+    childProcess.spawn = spawnMock;
+    childProcess.execSync = execSyncMock;
+    fs.existsSync = vi.fn(() => false);
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const exitProcess = vi.fn();
+
+    gateway.launchGatewayProcess();
+    const handleSignal = gateway.createGatewaySignalHandler({ exitProcess });
+    handleSignal();
+    handleSignal();
+
+    expect(child.kill).toHaveBeenCalledTimes(1);
+    expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+    expect(execSyncMock).not.toHaveBeenCalled();
+    expect(exitProcess).toHaveBeenCalledTimes(1);
+    expect(exitProcess).toHaveBeenCalledWith(0);
+  });
+
+  it("shuts down cleanly without an owned gateway child or OpenClaw CLI call", () => {
+    const execSyncMock = vi.fn(() => "");
+    childProcess.execSync = execSyncMock;
+    fs.existsSync = vi.fn(() => false);
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const exitProcess = vi.fn();
+
+    gateway.createGatewaySignalHandler({ exitProcess })();
+
+    expect(execSyncMock).not.toHaveBeenCalled();
+    expect(exitProcess).toHaveBeenCalledWith(0);
+  });
+
+  it("delays and retries an initial launch blocked by the migration lease", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-28T22:13:30.000Z"));
+    const firstChild = createChild(1234);
+    const retryChild = createChild(5678);
+    const spawnMock = vi
+      .fn()
+      .mockReturnValueOnce(firstChild)
+      .mockReturnValueOnce(retryChild);
+    childProcess.spawn = spawnMock;
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const exitHandler = vi.fn();
+    gateway.setGatewayExitHandler(exitHandler);
+
+    gateway.launchGatewayProcess();
+    const [, onStderr] = firstChild.stderr.on.mock.calls.find(
+      ([event]) => event === "data",
+    );
+    onStderr(
+      Buffer.from(
+        "OpenClaw startup migrations are already running for this state directory; retry after the other gateway finishes or after 2026-08-28T22:13:40.000Z.\n",
+      ),
+    );
+    const [, onExit] = firstChild.on.mock.calls.find(
+      ([event]) => event === "exit",
+    );
+    onExit(1, null);
+
+    expect(exitHandler).toHaveBeenCalledWith(
+      expect.objectContaining({ code: 1, expectedExit: true }),
+    );
+    expect(spawnMock).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(12_999);
+    expect(spawnMock).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+
+    expect(spawnMock).toHaveBeenCalledTimes(2);
+    expect(spawnMock).toHaveBeenLastCalledWith(
+      "openclaw",
+      ["gateway", "run"],
+      expect.objectContaining({ env: expect.any(Object) }),
+    );
   });
 
   it("does not treat auth-only openclaw config as onboarded", () => {
@@ -1246,6 +1332,7 @@ describe("server/gateway restart behavior", () => {
 
 describe("server/gateway parseMigrationLockRetryAfterMs", () => {
   const {
+    getMigrationLockRetryDelayMs,
     parseMigrationLockRetryAfterMs,
   } = require("../../lib/server/gateway");
 
@@ -1264,5 +1351,21 @@ describe("server/gateway parseMigrationLockRetryAfterMs", () => {
     expect(parseMigrationLockRetryAfterMs("Gateway service disabled.")).toBe(null);
     expect(parseMigrationLockRetryAfterMs("")).toBe(null);
     expect(parseMigrationLockRetryAfterMs(null)).toBe(null);
+  });
+
+  it("bounds migration-lock delays and includes a post-expiry grace period", () => {
+    const output =
+      "OpenClaw startup migrations are already running; retry after the other gateway finishes or after 2026-08-28T22:13:40.000Z.";
+
+    expect(
+      getMigrationLockRetryDelayMs(output, {
+        nowMs: Date.parse("2026-08-28T22:13:30.000Z"),
+      }),
+    ).toBe(13_000);
+    expect(
+      getMigrationLockRetryDelayMs(output, {
+        nowMs: Date.parse("2026-08-28T22:00:00.000Z"),
+      }),
+    ).toBe(null);
   });
 });

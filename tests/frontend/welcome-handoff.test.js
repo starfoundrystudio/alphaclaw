@@ -169,6 +169,32 @@ describe("frontend/welcome handoff", () => {
     expect(probe).toHaveBeenCalledTimes(5);
   });
 
+  it("reports a slow gateway start once while continuing to poll", async () => {
+    const { waitForInstanceReady } = await loadWelcomeHook();
+    const onSlowStart = vi.fn();
+    let calls = 0;
+    const probe = vi.fn(async () => {
+      calls += 1;
+      return false;
+    });
+
+    await expect(
+      waitForInstanceReady({
+        setupUrl: "https://alphaclaw.tail123.ts.net",
+        probe,
+        waitMs: async () => {},
+        initialDelayMs: 0,
+        intervalMs: 0,
+        slowStartHintDelayMs: 0,
+        tailnetHintDelayMs: Number.MAX_SAFE_INTEGER,
+        onSlowStart,
+        isCancelled: () => calls >= 5,
+      }),
+    ).resolves.toBe(false);
+    expect(onSlowStart).toHaveBeenCalledTimes(1);
+    expect(probe).toHaveBeenCalledTimes(5);
+  });
+
   it("recognizes interrupted final onboarding responses as recoverable", async () => {
     const { isRecoverableOnboardCompletionError } = await loadWelcomeHook();
     const emptyResponseError = new Error("empty");

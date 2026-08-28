@@ -63,6 +63,7 @@ const createBaseDeps = ({
     writeEnvFile: vi.fn(),
     reloadEnv: vi.fn(),
     isOnboarded: vi.fn(() => onboarded),
+    isGatewayRunning: vi.fn(async () => true),
     resolveGithubRepoUrl: vi.fn((value) => value),
     resolveModelProvider: vi.fn((modelKey) => String(modelKey).split("/")[0]),
     hasCodexOauthProfile: vi.fn(() => hasCodexOauth),
@@ -289,6 +290,42 @@ describe("server/routes/onboarding", () => {
     expect(res.headers["cache-control"]).toBe("no-store");
     expect(res.headers["content-type"]).toMatch(/^image\/svg\+xml/);
     expect(Buffer.from(res.body).toString("utf8")).toContain("<svg");
+  });
+
+  it("keeps the successor runtime image unavailable until the gateway is listening", async () => {
+    const markedAt = "2026-08-27T23:11:37.000Z";
+    const deps = createBaseDeps({
+      onboarded: true,
+      processStartedAtMs: Date.parse(markedAt) + 29_000,
+    });
+    deps.fs.readFileSync.mockReturnValue(
+      JSON.stringify({
+        onboarded: true,
+        markedAt,
+        hostFinalizationScheduled: true,
+      }),
+    );
+    deps.isGatewayRunning.mockResolvedValue(false);
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/onboard/runtime-ready.svg");
+
+    expect(res.status).toBe(503);
+    expect(res.headers["cache-control"]).toBe("no-store");
+    expect(res.headers["content-type"]).toMatch(/^text\/plain/);
+  });
+
+  it("fails the readiness image closed when the gateway check errors", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.readFileSync.mockReturnValue(
+      JSON.stringify({ onboarded: true, hostFinalizationScheduled: false }),
+    );
+    deps.isGatewayRunning.mockRejectedValue(new Error("socket failure"));
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/onboard/runtime-ready.svg");
+
+    expect(res.status).toBe(503);
   });
 
   it("serves the runtime image when finalization scheduling was cancelled", async () => {
