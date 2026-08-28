@@ -155,6 +155,76 @@ describe("server/oauth-broker-client", () => {
     ]);
   });
 
+  it("limits gog grants and leases to the five fixed Google account slots", async () => {
+    const requests = [];
+    const client = createOAuthBrokerClient({
+      requestImpl: async (request) => {
+        requests.push(request);
+        if (request.operation === "deposit") {
+          return { schema_version: 1, operation: "deposit", ok: true };
+        }
+        if (request.operation === "access_token") {
+          return {
+            schema_version: 1,
+            operation: "access_token",
+            ok: true,
+            access_token: "short-lived",
+            expires_at: 1800000000,
+            scopes: ["openid"],
+            scopes_known: true,
+          };
+        }
+        return {
+          schema_version: 1,
+          operation: "revoke",
+          ok: true,
+          revoked: true,
+          provider_revocation: "succeeded",
+        };
+      },
+    });
+
+    await client.depositGogGrant({
+      consumer: "gog-2",
+      clientId: "owner-client",
+      clientSecret: "owner-secret",
+      refreshToken: "durable-secret",
+      scopes: ["openid"],
+    });
+    await client.getGogAccessToken({ consumer: "gog-2" });
+    await client.revokeGogGrant({ consumer: "gog-2" });
+    await expect(
+      client.getGogAccessToken({ consumer: "gog-owner-controlled" }),
+    ).rejects.toMatchObject({ code: "invalid_consumer" });
+
+    expect(requests).toEqual([
+      {
+        schema_version: 1,
+        operation: "deposit",
+        consumer: "gog-2",
+        provider: "google",
+        grant: {
+          client_id: "owner-client",
+          client_secret: "owner-secret",
+          refresh_token: "durable-secret",
+          scopes: ["openid"],
+        },
+      },
+      {
+        schema_version: 1,
+        operation: "access_token",
+        consumer: "gog-2",
+        provider: "google",
+      },
+      {
+        schema_version: 1,
+        operation: "revoke",
+        consumer: "gog-2",
+        provider: "google",
+      },
+    ]);
+  });
+
   it("invokes SSH by its absolute system path", async () => {
     let invokedCommand;
     const child = new (require("events").EventEmitter)();

@@ -84,12 +84,14 @@ and never write them to Envars or Runtime Configuration:
   anywhere else — entered in the Agent Vault console directly, an Envar, or
   chat — never reaches the channel and leaves it broken with a stale
   credential.
-- **Subscription OAuth** (Codex OAuth, and other dashboard-supported OAuth
-  connections): direct the user to the matching dashboard connect/reconnect
-  flow. On managed instances, the durable refresh grant is held by the
-  security-gateway broker; the local auth store contains only a short-lived
-  access token and a non-secret broker marker. Never replace that marker,
-  copy the auth-store entry, or try to refresh the grant yourself.
+- **Dashboard-supported OAuth** (Codex OAuth, Claude subscription OAuth, and
+  gog Google Workspace accounts): direct the user to the matching dashboard
+  connect/reconnect flow. On managed instances, the durable refresh grant is
+  held by the security-gateway broker. Codex keeps only a short-lived access
+  token plus a non-secret broker marker; Claude and gog receive a short-lived
+  token at invocation time. Never run `gog auth`, pass a gog access token,
+  replace a broker marker, copy an auth-store entry, or try to refresh a grant
+  yourself.
 - **Pairing-based channels** (WhatsApp, Signal, and similar): these
   authenticate with device-pairing crypto material that must live on this
   instance to function. It is custody-protected, not vault-brokered — do not

@@ -8,6 +8,8 @@ const createApp = ({
     clientId: "client-id",
     clientSecret: "client-secret",
   }),
+  gogBrokerService,
+  gogCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" })),
 } = {}) => {
   const app = express();
   app.use(express.json());
@@ -23,10 +25,11 @@ const createApp = ({
       unlinkSync: vi.fn(),
     },
     isGatewayRunning: vi.fn(async () => true),
-    gogCmd: vi.fn(async () => ({ ok: true, stdout: "", stderr: "" })),
+    gogCmd,
     getSetupBaseUrl: () => "https://setup.tail123.ts.net",
     getPublicBaseUrl: () => "https://callbacks.example.com",
     readGoogleCredentials,
+    gogBrokerService,
     getApiEnableUrl: vi.fn(() => "https://console.cloud.google.com"),
     constants: {
       GOG_CONFIG_DIR: "/tmp/gogcli",
@@ -47,6 +50,10 @@ const createApp = ({
 };
 
 describe("server/routes/google", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("uses the public callback URL as the Google OAuth redirect_uri", async () => {
     const app = createApp();
 
@@ -70,9 +77,175 @@ describe("server/routes/google", () => {
 
     expect(response.status).toBe(200);
     expect(response.text).toContain("window.opener?.postMessage");
-    expect(response.text).toContain("google: 'error'");
+    expect(response.text).toContain('"google":"error"');
     expect(response.text).toContain("access_denied");
     expect(response.text).not.toContain("/setup?google=error");
+  });
+
+  it("deposits a Google refresh grant through the managed gog broker seam", async () => {
+    const gogBrokerService = {
+      isBrokeredMode: vi.fn(() => true),
+      adoptGrant: vi.fn(async () => ({ consumer: "gog-1", brokered: true })),
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          access_token: "short-lived",
+          refresh_token: "durable-refresh",
+          scope: "openid https://www.googleapis.com/auth/gmail.readonly",
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ email: "owner@example.com" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const app = createApp({ gogBrokerService });
+    const startResponse = await request(app).get(
+      "/auth/google/start?accountId=account-1&client=default&email=owner@example.com&services=gmail:read",
+    );
+    const oauthState = new URL(startResponse.headers.location).searchParams.get(
+      "state",
+    );
+
+    const response = await request(app).get(
+      `/auth/google/callback?code=authorization-code&state=${oauthState}`,
+    );
+
+    expect(response.text).toContain('"google":"success"');
+    expect(gogBrokerService.adoptGrant).toHaveBeenCalledWith({
+      account: expect.objectContaining({
+        id: "account-1",
+        email: "owner@example.com",
+        authenticated: true,
+      }),
+      clientId: "client-id",
+      clientSecret: "client-secret",
+      refreshToken: "durable-refresh",
+      scopes: [
+        "openid",
+        "https://www.googleapis.com/auth/gmail.readonly",
+      ],
+    });
+  });
+
+  it("rejects consent for a different Google account than the one requested", async () => {
+    const gogBrokerService = {
+      isBrokeredMode: vi.fn(() => true),
+      adoptGrant: vi.fn(),
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            access_token: "short-lived",
+            refresh_token: "durable-refresh",
+            scope: "openid",
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ email: "other@example.com" }),
+        }),
+    );
+    const app = createApp({ gogBrokerService });
+    const startResponse = await request(app).get(
+      "/auth/google/start?client=default&email=owner@example.com&services=gmail:read",
+    );
+    const oauthState = new URL(startResponse.headers.location).searchParams.get(
+      "state",
+    );
+
+    const response = await request(app).get(
+      `/auth/google/callback?code=authorization-code&state=${oauthState}`,
+    );
+
+    expect(response.text).toContain('"google":"error"');
+    expect(response.text).toContain("other@example.com");
+    expect(gogBrokerService.adoptGrant).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when Google userinfo cannot bind the authorized account", async () => {
+    const gogBrokerService = {
+      isBrokeredMode: vi.fn(() => true),
+      adoptGrant: vi.fn(),
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            access_token: "short-lived",
+            refresh_token: "durable-refresh",
+            scope: "openid",
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          json: async () => ({ error: "invalid_token" }),
+        }),
+    );
+    const app = createApp({ gogBrokerService });
+    const startResponse = await request(app).get(
+      "/auth/google/start?client=default&email=owner@example.com&services=gmail:read",
+    );
+    const oauthState = new URL(startResponse.headers.location).searchParams.get(
+      "state",
+    );
+
+    const response = await request(app).get(
+      `/auth/google/callback?code=authorization-code&state=${oauthState}`,
+    );
+
+    expect(response.text).toContain(
+      "Google did not return the authorized account identity",
+    );
+    expect(gogBrokerService.adoptGrant).not.toHaveBeenCalled();
+  });
+
+  it("rejects unknown or replayed Google OAuth state before token exchange", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const app = createApp();
+
+    const response = await request(app).get(
+      "/auth/google/callback?code=authorization-code&state=attacker-controlled",
+    );
+
+    expect(response.text).toContain("Google OAuth state is invalid or expired");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps a newly entered gog client secret in the removable plaintext file", async () => {
+    const gogCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const app = createApp({ gogCmd });
+
+    const response = await request(app)
+      .post("/api/google/credentials")
+      .send({
+        accountId: "account-1",
+        client: "default",
+        clientId: "client-id",
+        clientSecret: "client-secret",
+        email: "owner@example.com",
+        services: ["gmail:read"],
+      });
+
+    expect(response.body.ok).toBe(true);
+    expect(gogCmd).toHaveBeenCalledWith(
+      expect.stringContaining("auth credentials set"),
+      { quiet: true, authBypass: true },
+    );
+    expect(
+      gogCmd.mock.calls.some(([command]) => command.includes("--insecure")),
+    ).toBe(true);
   });
 
   describe("google provider endpoints", () => {

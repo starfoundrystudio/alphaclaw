@@ -123,10 +123,9 @@ describe("server/gog-skill", () => {
     });
 
     expect(content).toContain("## Runtime Notes");
-    expect(content).toContain("$OPENCLAW_STATE_DIR");
-    expect(content).toContain(
-      'XDG_CONFIG_HOME="${OPENCLAW_STATE_DIR:-$OPENCLAW_HOME/.openclaw}"',
-    );
+    expect(content).toContain("managed launcher obtains a short-lived access token");
+    expect(content).toContain("Do not run `gog auth`");
+    expect(content).not.toContain("$OPENCLAW_STATE_DIR");
     expect(content).toContain("--account <email>");
   });
 });
