@@ -13,7 +13,8 @@ referenced from it.
 | [`vault-brokered-model-keys-spec.md`](vault-brokered-model-keys-spec.md) | Agent Vault brokering for model/gateway API keys (placeholder substitution; shipped) |
 | [`vault-brokered-channels-spec.md`](vault-brokered-channels-spec.md) | Channel credential taxonomy (Tiers S/S-te/D/C/L), classification governance, deny-list enforcement, Phase E sealed custody (all shipped; WhatsApp shelved — see §4 note) |
 | [`oauth-refresh-broker-spec.md`](oauth-refresh-broker-spec.md) | Gateway-brokered OAuth refresh tokens (Codex/Claude-CLI/gog) — the class substitution can't serve; approved D1–D6; Phase A shipped |
-| [`oauth-broker-v2-consumer-framework.md`](oauth-broker-v2-consumer-framework.md) | Revised architecture spike for owner-created Custom OAuth/OIDC connectors, multi-account grants, separated management/use capabilities, and user-defined short-lived-token bindings for unknown CLIs; gog is the first proposed built-in binding |
+| [`oauth-broker-v2-consumer-framework.md`](oauth-broker-v2-consumer-framework.md) | Approved object model for owner-created Custom OAuth/OIDC connectors, multi-account grants, separated management/use capabilities, and user-defined short-lived-token bindings for unknown CLIs; implementation remains gated |
+| [`oauth-broker-v2-management-plane.md`](oauth-broker-v2-management-plane.md) | Proposed TeamYou-signed, browser-to-gateway owner management path for connector secrets and consent, including callback ownership, SSRF/DNS-rebinding controls, audit, recovery, and the decisions required before schema-v2 code |
 | [`egress-flow-log-inventory.md`](egress-flow-log-inventory.md) | Empirical NAT flow-log inventory from the enforced test instance — the Phase 3 planning input |
 
 ## Cross-repo

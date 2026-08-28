@@ -1,12 +1,16 @@
 # OAuth Broker v2 — Connector, Grant, and Consumer Framework
 
-**Status:** REVISED ARCHITECTURE SPIKE 2026-08-27. This document defines the
-recommended next phase after the Codex seam. The revision incorporates the
+**Status:** OBJECT MODEL APPROVED 2026-08-27; MANAGEMENT PLANE PENDING REVIEW.
+This document defines the recommended next phase after the Codex seam. The
+revision incorporates the
 Vercel Connect distinction between owner-managed connector registration and
 runtime token retrieval: standard OAuth/OIDC providers and token-compatible
 CLIs should be addable without an AlphaClaw or gateway release. It is not yet an
-implementation decision or a release commitment. The existing schema-v1 broker
-and Codex integration remain authoritative until v2 is approved and shipped.
+shipping implementation or a release commitment. The existing schema-v1 broker
+and Codex integration remain authoritative until v2 is implemented and shipped.
+The proposed owner-authentication, consent, SSRF, audit, and recovery contracts
+are in `oauth-broker-v2-management-plane.md` and must be reviewed before
+schema-v2 gateway code.
 
 **Why this companion exists:** `oauth-refresh-broker-spec.md` correctly defines
 the custody boundary, but its original gog plan assumed another proactive
@@ -244,24 +248,24 @@ Owner-authorized management plane:
 | `connector_create` | Validate and create a built-in or Custom OAuth/OIDC connector, sealing client credentials. |
 | `connector_update` | Create a new connector version; require re-consent when security-relevant fields change. |
 | `connector_delete` | Remove a connector only when no live grants reference it, unless the owner explicitly cascades revocation. |
-| `enrollment_create` | Issue a short-lived, connector/scopes/redirect-bound capability for one consent transaction. |
+| `authorization_start` | Create a gateway-owned, owner-session-bound consent transaction and redirect the browser to the provider. The management-plane proposal removes the need to give this capability to the workload. |
+| `authorization_complete` | Receive the provider callback on the gateway, exchange the code, and atomically store the grant. |
 
 Constrained workload use plane:
 
 | Operation | Purpose | Secret returned to workload? |
 | --- | --- | --- |
 | `status` | List non-secret connector/grant health and denial state visible to the instance | No |
-| `authorization_start` | Consume an owner-issued enrollment capability, validate connector/redirect/scopes, and return the authorization URL and state | No |
-| `authorization_complete` | Validate enrollment transaction/state, exchange the code on the gateway, and atomically store the resulting grant | At most the initial short-lived access token and non-secret metadata |
 | `access_token` | Resolve `grant_id`, refresh/cache under its connector version, and return a scoped short-lived lease | Yes, access token only |
 | `revoke` | Serialize against refresh, attempt provider revocation, and delete the local grant regardless of provider outcome | No |
 
-`authorization_start` / `authorization_complete` are preferred over a generic
-`deposit` for owner-supplied confidential connectors. They keep both the OAuth
-client secret and refresh-token response out of durable workload storage and
-give the gateway control of state, redirect URI, scope, and exchange shape.
-Schema-v1 `deposit` remains supported for the existing Codex seam during the
-migration.
+The pending management-plane recommendation keeps `authorization_start` and
+`authorization_complete` on a separately owner-authenticated gateway browser
+surface. This is preferable to giving the workload an enrollment capability:
+it keeps the OAuth client secret, authorization code, and refresh-token
+response out of TeamYou and workload handling while giving the gateway control
+of state, redirect URI, scope, and exchange shape. Schema-v1 `deposit` remains
+supported for the existing Codex seam during the migration.
 
 Authorization transactions must be short-lived, one-time, random, sealed or
 gateway-stored, bound to the connector version, grant intent, exact redirect
@@ -351,14 +355,12 @@ For a brokered Google account:
    Custom OAuth connector), and the gateway seals the client registration.
    Workload state keeps only the connector ID, client ID, redirect URI, and
    display metadata.
-2. The owner starts account enrollment. AlphaClaw receives a short-lived
-   enrollment capability and calls `authorization_start`; the gateway returns
-   the connector-bound Google authorization URL and transaction/state value.
-3. Google's callback still lands on AlphaClaw, which forwards the code and
-   transaction/state to `authorization_complete`.
+2. The owner starts account enrollment through a TeamYou-authenticated browser
+   redirect to the gateway OAuth administration surface. The gateway creates
+   the connector-bound authorization transaction and redirects to Google.
+3. Google's callback lands on the gateway's Tailscale-only operator origin.
 4. The gateway exchanges the code with the sealed client secret, stores the
-   refresh grant, and returns non-secret grant metadata plus, if needed, the
-   first short-lived access token.
+   refresh grant and returns only non-secret grant metadata to the owner flow.
 5. AlphaClaw maps its account ID/email/client to the opaque `grant_id` and
    deletes legacy gog credentials/keyring artifacts.
 6. Dashboard checks and agent commands obtain leases by `grant_id`.
@@ -395,16 +397,20 @@ An email typed before consent is a hint, not proof of the granted identity.
 
 ## 9. Implementation sequence and consultation gates
 
-1. **Approve this revised object model and capability boundary.** In particular,
-   approve owner-created Custom OAuth/OIDC connectors, gateway-owned code
-   exchange, and separation of connector management from workload token use.
-2. **Design the owner management path before gateway code.** Decide whether
-   TeamYou owns connector management directly or issues a short-lived gateway
-   administration capability. Threat-model SSRF, connector mutation, enrollment
-   authorization, audit, and recovery. Stop for owner review.
+1. **Approve this revised object model and capability boundary. COMPLETE
+   2026-08-27.** The owner approved beginning the framework with Custom
+   OAuth/OIDC connectors, gateway-owned code exchange, and separate connector
+   management/workload token-use authority.
+2. **Design the owner management path before gateway code. PROPOSED
+   2026-08-27; OWNER REVIEW REQUIRED.** The recommended contract reuses
+   TeamYou's signed owner-claim pattern and the gateway's Tailscale-only operator
+   origin, while sending connector secrets browser-to-gateway and keeping the
+   provider callback/code exchange on the gateway. See
+   `oauth-broker-v2-management-plane.md` for the SSRF, mutation, audit, and
+   recovery decisions.
 3. **Implement schema v2 in clawctl's gateway asset** while preserving v1.
    Include standard OAuth2/OIDC connector types, connector versioning, multiple
-   grants, enrollment capabilities, and the current locking/sealing/durability
+   grants, owner-session consent, and the current locking/sealing/durability
    guarantees. Test private-network/metadata endpoint rejection, DNS rebinding,
    connector/grant integrity, transaction replay/expiry, scope and redirect
    rejection, rotation, revoke races, and secret-free status.
