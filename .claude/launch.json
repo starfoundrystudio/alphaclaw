@@ -5,13 +5,15 @@
       "name": "ui-setup",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev:ui:setup"],
-      "port": 3001
+      "port": 3001,
+      "autoPort": true
     },
     {
       "name": "ui-dashboard",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev:ui"],
-      "port": 3001
+      "port": 3001,
+      "autoPort": true
     },
     {
       "name": "teamyou-beta-worktree",
