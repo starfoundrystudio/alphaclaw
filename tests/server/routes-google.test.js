@@ -10,6 +10,7 @@ const createApp = ({
   }),
   gogBrokerService,
   gogCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" })),
+  fsOverrides = {},
 } = {}) => {
   const app = express();
   app.use(express.json());
@@ -23,6 +24,9 @@ const createApp = ({
       }),
       writeFileSync: vi.fn(),
       unlinkSync: vi.fn(),
+      renameSync: vi.fn(),
+      chmodSync: vi.fn(),
+      ...fsOverrides,
     },
     isGatewayRunning: vi.fn(async () => true),
     gogCmd,
@@ -225,7 +229,8 @@ describe("server/routes/google", () => {
 
   it("keeps a newly entered gog client secret in the removable plaintext file", async () => {
     const gogCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
-    const app = createApp({ gogCmd });
+    const renameSync = vi.fn();
+    const app = createApp({ gogCmd, fsOverrides: { renameSync } });
 
     const response = await request(app)
       .post("/api/google/credentials")
@@ -246,6 +251,44 @@ describe("server/routes/google", () => {
     expect(
       gogCmd.mock.calls.some(([command]) => command.includes("--insecure")),
     ).toBe(true);
+    expect(renameSync).toHaveBeenCalledWith(
+      expect.stringMatching(/credentials\.json\.pending-[a-f0-9]{16}$/),
+      "/tmp/gogcli/credentials.json",
+    );
+  });
+
+  it("removes staged Google client credentials when gog keyring setup fails", async () => {
+    const gogCmd = vi.fn(async () => ({
+      ok: false,
+      stdout: "",
+      stderr: "keyring unavailable",
+    }));
+    const unlinkSync = vi.fn();
+    const renameSync = vi.fn();
+    const app = createApp({
+      gogCmd,
+      fsOverrides: { unlinkSync, renameSync },
+    });
+
+    const response = await request(app)
+      .post("/api/google/credentials")
+      .send({
+        accountId: "account-1",
+        client: "personal",
+        clientId: "client-id",
+        clientSecret: "client-secret",
+        email: "owner@example.com",
+        services: ["gmail:read"],
+      });
+
+    expect(response.body).toMatchObject({
+      ok: false,
+      error: "keyring unavailable",
+    });
+    expect(unlinkSync).toHaveBeenCalledWith(
+      expect.stringMatching(/credentials\.json\.pending-[a-f0-9]{16}$/),
+    );
+    expect(renameSync).not.toHaveBeenCalled();
   });
 
   describe("google provider endpoints", () => {
