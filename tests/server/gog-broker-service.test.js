@@ -203,13 +203,87 @@ describe("server/gog-broker-service", () => {
 
     await expect(
       harness.service.disconnect({ account: brokeredAccount }),
-    ).resolves.toMatchObject({ revocationPending: true });
+    ).resolves.toMatchObject({
+      localDisconnected: true,
+      revocationPending: true,
+    });
     expect(readGoogleState({ fs, statePath: harness.statePath }).accounts).toEqual([]);
 
     await harness.service.start();
     expect(harness.brokerClient.revokeGogGrant).toHaveBeenCalledTimes(2);
     expect(
       fs.existsSync(path.join(harness.markerDir, "gog-1-revocation-pending.json")),
+    ).toBe(false);
+  });
+
+  it("reports the requested account result when another revocation is still pending", async () => {
+    const harness = createHarness();
+    roots.push(harness.root);
+    const first = await harness.service.adoptGrant({
+      account,
+      clientId: "client",
+      clientSecret: "secret",
+      refreshToken: "refresh-one",
+      scopes: ["openid"],
+    });
+    fs.writeFileSync(
+      harness.credentialsPath("second"),
+      JSON.stringify({ web: { client_id: "client-2", client_secret: "secret-2" } }),
+      { mode: 0o600 },
+    );
+    const secondAccount = {
+      ...account,
+      id: "account-2",
+      email: "second@example.com",
+      client: "second",
+    };
+    const second = await harness.service.adoptGrant({
+      account: secondAccount,
+      clientId: "client-2",
+      clientSecret: "secret-2",
+      refreshToken: "refresh-two",
+      scopes: ["openid"],
+    });
+    const firstBrokeredAccount = {
+      ...account,
+      authenticated: true,
+      brokerConsumer: first.consumer,
+    };
+    const secondBrokeredAccount = {
+      ...secondAccount,
+      authenticated: true,
+      brokerConsumer: second.consumer,
+    };
+    fs.mkdirSync(harness.markerDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(harness.markerDir, "gog-1-revocation-pending.json"),
+      JSON.stringify({
+        phase: "requested",
+        consumer: first.consumer,
+        account: firstBrokeredAccount,
+      }),
+      { mode: 0o600 },
+    );
+    harness.brokerClient.revokeGogGrant.mockImplementation(async ({ consumer }) => {
+      if (consumer === first.consumer) {
+        throw Object.assign(new Error("unavailable"), {
+          code: "broker_unavailable",
+        });
+      }
+      return { revoked: true };
+    });
+
+    await expect(
+      harness.service.disconnect({ account: secondBrokeredAccount }),
+    ).resolves.toMatchObject({
+      localDisconnected: true,
+      revocationPending: false,
+    });
+    expect(
+      fs.existsSync(path.join(harness.markerDir, "gog-1-revocation-pending.json")),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.join(harness.markerDir, "gog-2-revocation-pending.json")),
     ).toBe(false);
   });
 });

@@ -291,6 +291,57 @@ describe("server/routes/google", () => {
     expect(renameSync).not.toHaveBeenCalled();
   });
 
+  it("reports queued gateway revocation after local gog cleanup succeeds", async () => {
+    const account = {
+      id: "account-1",
+      email: "owner@example.com",
+      client: "default",
+      authenticated: true,
+      brokerConsumer: "gog-1",
+      services: ["gmail:read"],
+    };
+    const state = {
+      version: 2,
+      googleProvider: "gog",
+      accounts: [account],
+      gmailPush: { token: "", topics: {} },
+    };
+    const gogBrokerService = {
+      disconnect: vi.fn(async () => ({
+        brokered: true,
+        localDisconnected: true,
+        revocationPending: true,
+        error: "ssh_failed",
+      })),
+    };
+    const app = createApp({
+      gogBrokerService,
+      fsOverrides: {
+        existsSync: vi.fn((filePath) => filePath === "/tmp/gogcli/state.json"),
+        readFileSync: vi.fn((filePath) => {
+          if (filePath === "/tmp/gogcli/state.json") {
+            return JSON.stringify(state);
+          }
+          throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+        }),
+      },
+    });
+
+    const response = await request(app)
+      .post("/api/google/disconnect")
+      .send({ accountId: account.id });
+
+    expect(response.body).toEqual({
+      ok: false,
+      localDisconnected: true,
+      revocationPending: true,
+      error: "ssh_failed",
+    });
+    expect(gogBrokerService.disconnect).toHaveBeenCalledWith({
+      account: expect.objectContaining({ id: account.id }),
+    });
+  });
+
   describe("google provider endpoints", () => {
     const kOriginalProviderEnv = process.env.ALPHACLAW_GOOGLE_PROVIDER;
 
