@@ -40,6 +40,7 @@ const createHarness = () => {
   let profile = null;
   const authProfiles = {
     getClaudeCliProfile: vi.fn(() => profile),
+    hasClaudeCliProfile: vi.fn(() => !!profile),
     removeClaudeCliProfile: vi.fn(() => {
       const changed = !!profile;
       profile = null;
@@ -114,6 +115,44 @@ describe("server/claude-broker-service", () => {
     const stored = JSON.parse(fs.readFileSync(harness.credentialsPath, "utf8"));
     expect(stored).toEqual({ unrelated: { keep: true } });
     expect(fs.statSync(harness.credentialsPath).mode & 0o777).toBe(0o600);
+  });
+
+  it("discards a partial unadopted Claude login without touching unrelated state", async () => {
+    const harness = createHarness();
+    roots.push(harness.root);
+    fs.mkdirSync(path.dirname(harness.credentialsPath), { recursive: true });
+    fs.writeFileSync(
+      harness.credentialsPath,
+      JSON.stringify({
+        unrelated: { keep: true },
+        claudeAiOauth: { accessToken: "partial-access" },
+      }),
+      { mode: 0o600 },
+    );
+
+    await expect(harness.service.discardPendingLogin()).resolves.toEqual({
+      changed: true,
+    });
+
+    expect(
+      JSON.parse(fs.readFileSync(harness.credentialsPath, "utf8")),
+    ).toEqual({ unrelated: { keep: true } });
+  });
+
+  it("preserves Claude credentials when an adopted profile already exists", async () => {
+    const harness = createHarness();
+    roots.push(harness.root);
+    writeCredential(harness.credentialsPath);
+    harness.authProfiles.upsertClaudeCliProfile({ brokered: true });
+
+    await expect(harness.service.discardPendingLogin()).resolves.toEqual({
+      changed: false,
+      preserved: true,
+    });
+
+    expect(
+      readClaudeCredential({ credentialsPath: harness.credentialsPath }),
+    ).toMatchObject({ refreshToken: "durable-refresh" });
   });
 
   it("deposits the refresh grant before removing it from the workload", async () => {

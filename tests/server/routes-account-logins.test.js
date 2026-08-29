@@ -14,6 +14,10 @@ const createApp = ({
   loginProcesses,
   spawnFn,
   claudeBrokerService,
+  loginTimeoutMs,
+  loginTerminationGraceMs,
+  setTimeoutFn,
+  clearTimeoutFn,
   upsertClaudeCliProfile = vi.fn(() => {
     configured = true;
   }),
@@ -32,6 +36,10 @@ const createApp = ({
     loginProcesses,
     spawnFn,
     claudeBrokerService,
+    loginTimeoutMs,
+    loginTerminationGraceMs,
+    setTimeoutFn,
+    clearTimeoutFn,
     authProfiles: {
       getClaudeCliProfile: vi.fn(() => null),
       hasClaudeCliProfile: vi.fn(() => configured),
@@ -197,6 +205,153 @@ describe("server/routes/account-logins", () => {
     expect(inputRes.status).toBe(200);
     expect(inputRes.body.ok).toBe(true);
     expect(writes).toEqual(["abc-123\n"]);
+  });
+
+  it("cancels the exact running Claude login and discards partial credentials", async () => {
+    const child = new EventEmitter();
+    child.stdout = new PassThrough();
+    child.stderr = new PassThrough();
+    child.stdin = new PassThrough();
+    child.kill = vi.fn((signal) => {
+      child.emit("exit", null, signal);
+      return true;
+    });
+    const loginProcesses = new Map();
+    const claudeBrokerService = {
+      discardPendingLogin: vi.fn(async () => ({ changed: true })),
+    };
+    const { app } = createApp({
+      loginProcesses,
+      spawnFn: vi.fn(() => child),
+      claudeBrokerService,
+    });
+    const startRes = await request(app).post(
+      "/api/account-logins/claude-cli/login/start",
+    );
+
+    const cancelRes = await request(app).post(
+      `/api/account-logins/claude-cli/login/${startRes.body.id}/cancel`,
+    );
+
+    expect(cancelRes.status).toBe(200);
+    expect(cancelRes.body).toMatchObject({
+      ok: true,
+      changed: true,
+      status: "cancelled",
+    });
+    expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+    expect(claudeBrokerService.discardPendingLogin).toHaveBeenCalledTimes(1);
+    expect(loginProcesses.get(startRes.body.id)?.status).toBe("cancelled");
+  });
+
+  it("cleans up when cancellation races with a completed login", async () => {
+    const child = new EventEmitter();
+    child.stdout = new PassThrough();
+    child.stderr = new PassThrough();
+    child.stdin = new PassThrough();
+    const claudeBrokerService = {
+      discardPendingLogin: vi.fn(async () => ({ changed: true })),
+    };
+    const { app } = createApp({
+      spawnFn: vi.fn(() => child),
+      claudeBrokerService,
+    });
+    const startRes = await request(app).post(
+      "/api/account-logins/claude-cli/login/start",
+    );
+    child.emit("exit", 0, null);
+
+    const cancelRes = await request(app).post(
+      `/api/account-logins/claude-cli/login/${startRes.body.id}/cancel`,
+    );
+
+    expect(cancelRes.body).toMatchObject({
+      ok: true,
+      changed: true,
+      status: "cancelled",
+    });
+    expect(claudeBrokerService.discardPendingLogin).toHaveBeenCalledTimes(1);
+  });
+
+  it("cleans up partial credentials after an unsuccessful CLI exit", async () => {
+    const child = new EventEmitter();
+    child.stdout = new PassThrough();
+    child.stderr = new PassThrough();
+    child.stdin = new PassThrough();
+    const claudeBrokerService = {
+      discardPendingLogin: vi.fn(async () => ({ changed: true })),
+    };
+    const { app } = createApp({
+      spawnFn: vi.fn(() => child),
+      claudeBrokerService,
+    });
+    await request(app).post("/api/account-logins/claude-cli/login/start");
+
+    child.emit("exit", 1, null);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(claudeBrokerService.discardPendingLogin).toHaveBeenCalledTimes(1);
+  });
+
+  it("terminates and cleans up a Claude login when its deadline expires", async () => {
+    vi.useFakeTimers();
+    try {
+      const child = new EventEmitter();
+      child.stdout = new PassThrough();
+      child.stderr = new PassThrough();
+      child.stdin = new PassThrough();
+      child.kill = vi.fn((signal) => {
+        child.emit("exit", null, signal);
+        return true;
+      });
+      const loginProcesses = new Map();
+      const claudeBrokerService = {
+        discardPendingLogin: vi.fn(async () => ({ changed: true })),
+      };
+      const { app } = createApp({
+        loginProcesses,
+        spawnFn: vi.fn(() => child),
+        claudeBrokerService,
+        loginTimeoutMs: 1000,
+      });
+      const startRes = await request(app).post(
+        "/api/account-logins/claude-cli/login/start",
+      );
+
+      await vi.advanceTimersByTimeAsync(1000);
+
+      expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+      expect(claudeBrokerService.discardPendingLogin).toHaveBeenCalledTimes(1);
+      expect(loginProcesses.get(startRes.body.id)).toMatchObject({
+        status: "timed_out",
+        error: "Claude login timed out after 10 minutes",
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("reuses a running Claude login instead of spawning an orphan", async () => {
+    const child = new EventEmitter();
+    child.stdout = new PassThrough();
+    child.stderr = new PassThrough();
+    child.stdin = new PassThrough();
+    const spawnFn = vi.fn(() => child);
+    const { app } = createApp({ spawnFn });
+    const first = await request(app).post(
+      "/api/account-logins/claude-cli/login/start",
+    );
+
+    const second = await request(app).post(
+      "/api/account-logins/claude-cli/login/start",
+    );
+
+    expect(second.body).toMatchObject({
+      ok: true,
+      id: first.body.id,
+      reused: true,
+    });
+    expect(spawnFn).toHaveBeenCalledTimes(1);
   });
 
   it("adopts a logged-in Claude grant through the broker service", async () => {
