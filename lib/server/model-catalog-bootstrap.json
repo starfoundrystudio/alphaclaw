@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-27T21:43:40.407Z",
+  "generatedAt": "2026-08-31T23:03:01.971Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1785,15 +1785,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/allenai/olmo-3-32b-think",
-              "provider": "openrouter",
-              "label": "AllenAI: Olmo 3 32B Think",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/amazon/nova-2-lite-v1",
               "provider": "openrouter",
               "label": "Amazon: Nova 2 Lite",
@@ -2091,15 +2082,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/arcee-ai/virtuoso-large",
-              "provider": "openrouter",
-              "label": "Arcee AI: Virtuoso Large",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/openrouter/auto",
               "provider": "openrouter",
               "label": "Auto Router",
@@ -2362,6 +2344,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/deepseek/deepseek-v4-flash-0731:batch",
+              "provider": "openrouter",
+              "label": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/deepseek/deepseek-v4-flash-vision-exp",
               "provider": "openrouter",
               "label": "DeepSeek: DeepSeek V4 Flash Vision Exp",
@@ -2383,6 +2374,15 @@
               "key": "openrouter/deepseek/deepseek-v4-pro-0813",
               "provider": "openrouter",
               "label": "DeepSeek: DeepSeek V4 Pro 0813",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/deepseek/deepseek-v4-pro-0813:batch",
+              "provider": "openrouter",
+              "label": "DeepSeek: DeepSeek V4 Pro 0813 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -2731,6 +2731,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/google/gemma-4-31b-it:batch",
+              "provider": "openrouter",
+              "label": "Google: Gemma 4 31B (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/google/gemma-4-31b-it:free",
               "provider": "openrouter",
               "label": "Google: Gemma 4 31B (free)",
@@ -2840,18 +2849,18 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/inception/mercury-2",
+              "key": "openrouter/ibm-granite/granite-4.2-8b",
               "provider": "openrouter",
-              "label": "Inception: Mercury 2",
+              "label": "IBM: Granite 4.2 8B",
               "accessModes": [
                 "gateway"
               ],
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/kwaipilot/kat-coder-air-v2.5",
+              "key": "openrouter/inception/mercury-2",
               "provider": "openrouter",
-              "label": "Kwaipilot: KAT-Coder-Air V2.5",
+              "label": "Inception: Mercury 2",
               "accessModes": [
                 "gateway"
               ],
@@ -3005,6 +3014,15 @@
               "key": "openrouter/meta/muse-glimmer-30b",
               "provider": "openrouter",
               "label": "Meta: Muse Glimmer 30B",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/meta/muse-glimmer-30b:batch",
+              "provider": "openrouter",
+              "label": "Meta: Muse Glimmer 30B (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3173,6 +3191,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/mistralai/codestral-2508:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Codestral 2508 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/mistralai/devstral-2512",
               "provider": "openrouter",
               "label": "Mistral: Devstral 2 2512",
@@ -3209,9 +3236,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/mistralai/ministral-8b-2512:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Ministral 3 8B 2512 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/mistralai/mistral-large-2512",
               "provider": "openrouter",
               "label": "Mistral: Mistral Large 3 2512",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/mistralai/mistral-large-2512:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Mistral Large 3 2512 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3236,9 +3281,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/mistralai/mistral-medium-3.1:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Mistral Medium 3.1 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/mistralai/mistral-medium-3-5",
               "provider": "openrouter",
               "label": "Mistral: Mistral Medium 3.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/mistralai/mistral-medium-3-5:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Mistral Medium 3.5 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3284,6 +3347,15 @@
               "key": "openrouter/mistralai/mistral-small-2603",
               "provider": "openrouter",
               "label": "Mistral: Mistral Small 4",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/mistralai/mistral-small-2603:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Mistral Small 4 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3380,18 +3452,18 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/moonshotai/kimi-k2.7-code:batch",
+              "key": "openrouter/moonshotai/kimi-k3",
               "provider": "openrouter",
-              "label": "MoonshotAI: Kimi K2.7 Code (batch)",
+              "label": "MoonshotAI: Kimi K3",
               "accessModes": [
                 "gateway"
               ],
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/moonshotai/kimi-k3",
+              "key": "openrouter/moonshotai/kimi-k3:batch",
               "provider": "openrouter",
-              "label": "MoonshotAI: Kimi K3",
+              "label": "MoonshotAI: Kimi K3 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3839,15 +3911,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/gpt-5-codex:batch",
-              "provider": "openrouter",
-              "label": "OpenAI: GPT-5 Codex (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/openai/gpt-5-image",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5 Image",
@@ -4244,9 +4307,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-oss-120b:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: gpt-oss-120b (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-oss-20b",
               "provider": "openrouter",
               "label": "OpenAI: gpt-oss-20b",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-oss-20b:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: gpt-oss-20b (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -4271,27 +4352,9 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/o1:batch",
-              "provider": "openrouter",
-              "label": "OpenAI: o1 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/openai/o1-pro",
               "provider": "openrouter",
               "label": "OpenAI: o1-pro",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/openai/o1-pro:batch",
-              "provider": "openrouter",
-              "label": "OpenAI: o1-pro (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -4343,27 +4406,9 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/o3-mini-high:batch",
-              "provider": "openrouter",
-              "label": "OpenAI: o3 Mini High (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/openai/o3-pro",
               "provider": "openrouter",
               "label": "OpenAI: o3 Pro",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/openai/o3-pro:batch",
-              "provider": "openrouter",
-              "label": "OpenAI: o3 Pro (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -4391,15 +4436,6 @@
               "key": "openrouter/openai/o4-mini-high",
               "provider": "openrouter",
               "label": "OpenAI: o4 Mini High",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/openai/o4-mini-high:batch",
-              "provider": "openrouter",
-              "label": "OpenAI: o4 Mini High (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -4847,6 +4883,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/qwen/qwen3.5-9b:batch",
+              "provider": "openrouter",
+              "label": "Qwen: Qwen3.5-9B (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/qwen/qwen3.5-flash-02-23",
               "provider": "openrouter",
               "label": "Qwen: Qwen3.5-Flash",
@@ -4931,6 +4976,15 @@
               "key": "openrouter/qwen/qwen3.8-2.4t-a95b",
               "provider": "openrouter",
               "label": "Qwen: Qwen3.8 2.4T A95B",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/qwen/qwen3.8-2.4t-a95b:batch",
+              "provider": "openrouter",
+              "label": "Qwen: Qwen3.8 2.4T A95B (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -5198,6 +5252,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/tencent/hy4-preview",
+              "provider": "openrouter",
+              "label": "Tencent: Hy4 preview",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/thedrummer/cydonia-24b-v4.1",
               "provider": "openrouter",
               "label": "TheDrummer: Cydonia 24B V4.1",
@@ -5255,6 +5318,15 @@
               "key": "openrouter/thinkingmachines/inkling-small",
               "provider": "openrouter",
               "label": "Thinking Machines: Inkling Small",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/thinkingmachines/inkling-small:batch",
+              "provider": "openrouter",
+              "label": "Thinking Machines: Inkling Small (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -5462,6 +5534,15 @@
               "key": "openrouter/z-ai/glm-5.3-flash",
               "provider": "openrouter",
               "label": "Z.ai: GLM 5.3 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/z-ai/glm-5.3-flash:batch",
+              "provider": "openrouter",
+              "label": "Z.ai: GLM 5.3 Flash (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -6944,7 +7025,7 @@
             {
               "key": "vercel-ai-gateway/minimax/minimax-m2.7",
               "provider": "vercel-ai-gateway",
-              "label": "Minimax M2.7",
+              "label": "MiniMax M2.7",
               "accessModes": [
                 "gateway"
               ],
@@ -6953,7 +7034,7 @@
             {
               "key": "vercel-ai-gateway/minimax/minimax-m2.7-free",
               "provider": "vercel-ai-gateway",
-              "label": "Minimax M2.7 (Free)",
+              "label": "MiniMax M2.7 (Free)",
               "accessModes": [
                 "gateway"
               ],
@@ -7410,6 +7491,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/alibaba/qwen3.8-flash-next",
+              "provider": "vercel-ai-gateway",
+              "label": "Qwen 3.8 Flash Next",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/alibaba/qwen3.8-max",
               "provider": "vercel-ai-gateway",
               "label": "Qwen 3.8 Max",
@@ -7647,6 +7737,15 @@
               "key": "vercel-ai-gateway/tencent/hy-mt2-pro",
               "provider": "vercel-ai-gateway",
               "label": "Tencent Hy-MT2-Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/tencent/hy4-preview",
+              "provider": "vercel-ai-gateway",
+              "label": "Tencent Hy4 Preview",
               "accessModes": [
                 "gateway"
               ],
@@ -8346,15 +8445,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/allenai/olmo-3-32b-think",
-      "provider": "openrouter",
-      "label": "AllenAI: Olmo 3 32B Think",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/amazon/nova-2-lite-v1",
       "provider": "openrouter",
       "label": "Amazon: Nova 2 Lite",
@@ -8652,15 +8742,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/arcee-ai/virtuoso-large",
-      "provider": "openrouter",
-      "label": "Arcee AI: Virtuoso Large",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/openrouter/auto",
       "provider": "openrouter",
       "label": "Auto Router",
@@ -8937,6 +9018,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/deepseek/deepseek-v4-flash-0731:batch",
+      "provider": "openrouter",
+      "label": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/deepseek/deepseek-v4-flash-vision-exp",
       "provider": "openrouter",
       "label": "DeepSeek: DeepSeek V4 Flash Vision Exp",
@@ -8958,6 +9048,15 @@
       "key": "openrouter/deepseek/deepseek-v4-pro-0813",
       "provider": "openrouter",
       "label": "DeepSeek: DeepSeek V4 Pro 0813",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/deepseek/deepseek-v4-pro-0813:batch",
+      "provider": "openrouter",
+      "label": "DeepSeek: DeepSeek V4 Pro 0813 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9306,6 +9405,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/google/gemma-4-31b-it:batch",
+      "provider": "openrouter",
+      "label": "Google: Gemma 4 31B (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/google/gemma-4-31b-it:free",
       "provider": "openrouter",
       "label": "Google: Gemma 4 31B (free)",
@@ -9415,18 +9523,18 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/inception/mercury-2",
+      "key": "openrouter/ibm-granite/granite-4.2-8b",
       "provider": "openrouter",
-      "label": "Inception: Mercury 2",
+      "label": "IBM: Granite 4.2 8B",
       "accessModes": [
         "gateway"
       ],
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/kwaipilot/kat-coder-air-v2.5",
+      "key": "openrouter/inception/mercury-2",
       "provider": "openrouter",
-      "label": "Kwaipilot: KAT-Coder-Air V2.5",
+      "label": "Inception: Mercury 2",
       "accessModes": [
         "gateway"
       ],
@@ -9580,6 +9688,15 @@
       "key": "openrouter/meta/muse-glimmer-30b",
       "provider": "openrouter",
       "label": "Meta: Muse Glimmer 30B",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/meta/muse-glimmer-30b:batch",
+      "provider": "openrouter",
+      "label": "Meta: Muse Glimmer 30B (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9748,6 +9865,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/mistralai/codestral-2508:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Codestral 2508 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/mistralai/devstral-2512",
       "provider": "openrouter",
       "label": "Mistral: Devstral 2 2512",
@@ -9784,9 +9910,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/mistralai/ministral-8b-2512:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Ministral 3 8B 2512 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/mistralai/mistral-large-2512",
       "provider": "openrouter",
       "label": "Mistral: Mistral Large 3 2512",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/mistralai/mistral-large-2512:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Mistral Large 3 2512 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9811,9 +9955,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/mistralai/mistral-medium-3.1:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Mistral Medium 3.1 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/mistralai/mistral-medium-3-5",
       "provider": "openrouter",
       "label": "Mistral: Mistral Medium 3.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/mistralai/mistral-medium-3-5:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Mistral Medium 3.5 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9859,6 +10021,15 @@
       "key": "openrouter/mistralai/mistral-small-2603",
       "provider": "openrouter",
       "label": "Mistral: Mistral Small 4",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/mistralai/mistral-small-2603:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Mistral Small 4 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9955,18 +10126,18 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/moonshotai/kimi-k2.7-code:batch",
+      "key": "openrouter/moonshotai/kimi-k3",
       "provider": "openrouter",
-      "label": "MoonshotAI: Kimi K2.7 Code (batch)",
+      "label": "MoonshotAI: Kimi K3",
       "accessModes": [
         "gateway"
       ],
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/moonshotai/kimi-k3",
+      "key": "openrouter/moonshotai/kimi-k3:batch",
       "provider": "openrouter",
-      "label": "MoonshotAI: Kimi K3",
+      "label": "MoonshotAI: Kimi K3 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -10414,15 +10585,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/openai/gpt-5-codex:batch",
-      "provider": "openrouter",
-      "label": "OpenAI: GPT-5 Codex (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/openai/gpt-5-image",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5 Image",
@@ -10832,9 +10994,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-oss-120b:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: gpt-oss-120b (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-oss-20b",
       "provider": "openrouter",
       "label": "OpenAI: gpt-oss-20b",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-oss-20b:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: gpt-oss-20b (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -10859,27 +11039,9 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/openai/o1:batch",
-      "provider": "openrouter",
-      "label": "OpenAI: o1 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/openai/o1-pro",
       "provider": "openrouter",
       "label": "OpenAI: o1-pro",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/openai/o1-pro:batch",
-      "provider": "openrouter",
-      "label": "OpenAI: o1-pro (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -10931,27 +11093,9 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/openai/o3-mini-high:batch",
-      "provider": "openrouter",
-      "label": "OpenAI: o3 Mini High (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/openai/o3-pro",
       "provider": "openrouter",
       "label": "OpenAI: o3 Pro",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/openai/o3-pro:batch",
-      "provider": "openrouter",
-      "label": "OpenAI: o3 Pro (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -10979,15 +11123,6 @@
       "key": "openrouter/openai/o4-mini-high",
       "provider": "openrouter",
       "label": "OpenAI: o4 Mini High",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/openai/o4-mini-high:batch",
-      "provider": "openrouter",
-      "label": "OpenAI: o4 Mini High (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -11435,6 +11570,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/qwen/qwen3.5-9b:batch",
+      "provider": "openrouter",
+      "label": "Qwen: Qwen3.5-9B (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/qwen/qwen3.5-flash-02-23",
       "provider": "openrouter",
       "label": "Qwen: Qwen3.5-Flash",
@@ -11519,6 +11663,15 @@
       "key": "openrouter/qwen/qwen3.8-2.4t-a95b",
       "provider": "openrouter",
       "label": "Qwen: Qwen3.8 2.4T A95B",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/qwen/qwen3.8-2.4t-a95b:batch",
+      "provider": "openrouter",
+      "label": "Qwen: Qwen3.8 2.4T A95B (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -11786,6 +11939,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/tencent/hy4-preview",
+      "provider": "openrouter",
+      "label": "Tencent: Hy4 preview",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/thedrummer/cydonia-24b-v4.1",
       "provider": "openrouter",
       "label": "TheDrummer: Cydonia 24B V4.1",
@@ -11843,6 +12005,15 @@
       "key": "openrouter/thinkingmachines/inkling-small",
       "provider": "openrouter",
       "label": "Thinking Machines: Inkling Small",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/thinkingmachines/inkling-small:batch",
+      "provider": "openrouter",
+      "label": "Thinking Machines: Inkling Small (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -12050,6 +12221,15 @@
       "key": "openrouter/z-ai/glm-5.3-flash",
       "provider": "openrouter",
       "label": "Z.ai: GLM 5.3 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/z-ai/glm-5.3-flash:batch",
+      "provider": "openrouter",
+      "label": "Z.ai: GLM 5.3 Flash (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -13918,7 +14098,7 @@
     {
       "key": "vercel-ai-gateway/minimax/minimax-m2.7",
       "provider": "vercel-ai-gateway",
-      "label": "Minimax M2.7",
+      "label": "MiniMax M2.7",
       "accessModes": [
         "gateway"
       ],
@@ -13927,7 +14107,7 @@
     {
       "key": "vercel-ai-gateway/minimax/minimax-m2.7-free",
       "provider": "vercel-ai-gateway",
-      "label": "Minimax M2.7 (Free)",
+      "label": "MiniMax M2.7 (Free)",
       "accessModes": [
         "gateway"
       ],
@@ -14384,6 +14564,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/alibaba/qwen3.8-flash-next",
+      "provider": "vercel-ai-gateway",
+      "label": "Qwen 3.8 Flash Next",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/alibaba/qwen3.8-max",
       "provider": "vercel-ai-gateway",
       "label": "Qwen 3.8 Max",
@@ -14621,6 +14810,15 @@
       "key": "vercel-ai-gateway/tencent/hy-mt2-pro",
       "provider": "vercel-ai-gateway",
       "label": "Tencent Hy-MT2-Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/tencent/hy4-preview",
+      "provider": "vercel-ai-gateway",
+      "label": "Tencent Hy4 Preview",
       "accessModes": [
         "gateway"
       ],
