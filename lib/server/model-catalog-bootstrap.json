@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-08-31T23:03:01.971Z",
+  "generatedAt": "2026-09-02T06:34:33.014Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1875,6 +1875,24 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/anthropic/claude-fable-5.1",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Fable 5.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-fable-5.1:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Fable 5.1 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/~anthropic/claude-fable-latest",
               "provider": "openrouter",
               "label": "Anthropic: Claude Fable Latest",
@@ -1983,27 +2001,9 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/anthropic/claude-opus-4.7-fast",
-              "provider": "openrouter",
-              "label": "Anthropic: Claude Opus 4.7 (Fast)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/anthropic/claude-opus-4.8:batch",
               "provider": "openrouter",
               "label": "Anthropic: Claude Opus 4.8 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/anthropic/claude-opus-4.8-fast",
-              "provider": "openrouter",
-              "label": "Anthropic: Claude Opus 4.8 (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -2203,15 +2203,6 @@
               "key": "openrouter/anthropic/claude-opus-5:batch",
               "provider": "openrouter",
               "label": "Claude Opus 5 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/anthropic/claude-opus-5-fast",
-              "provider": "openrouter",
-              "label": "Claude Opus 5 (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -2867,6 +2858,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/inception/mercury-2.5-preview",
+              "provider": "openrouter",
+              "label": "Inception: Mercury 2.5 Preview",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/kwaipilot/kat-coder-pro-v2",
               "provider": "openrouter",
               "label": "Kwaipilot: KAT-Coder-Pro V2",
@@ -3191,15 +3191,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/mistralai/codestral-2508:batch",
-              "provider": "openrouter",
-              "label": "Mistral: Codestral 2508 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/mistralai/devstral-2512",
               "provider": "openrouter",
               "label": "Mistral: Devstral 2 2512",
@@ -3236,27 +3227,9 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/mistralai/ministral-8b-2512:batch",
-              "provider": "openrouter",
-              "label": "Mistral: Ministral 3 8B 2512 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/mistralai/mistral-large-2512",
               "provider": "openrouter",
               "label": "Mistral: Mistral Large 3 2512",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/mistralai/mistral-large-2512:batch",
-              "provider": "openrouter",
-              "label": "Mistral: Mistral Large 3 2512 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3275,15 +3248,6 @@
               "key": "openrouter/mistralai/mistral-medium-3.1",
               "provider": "openrouter",
               "label": "Mistral: Mistral Medium 3.1",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/mistralai/mistral-medium-3.1:batch",
-              "provider": "openrouter",
-              "label": "Mistral: Mistral Medium 3.1 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3347,15 +3311,6 @@
               "key": "openrouter/mistralai/mistral-small-2603",
               "provider": "openrouter",
               "label": "Mistral: Mistral Small 4",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/mistralai/mistral-small-2603:batch",
-              "provider": "openrouter",
-              "label": "Mistral: Mistral Small 4 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -5558,6 +5513,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/~z-ai/glm-flash-latest",
+              "provider": "openrouter",
+              "label": "Z.ai: GLM Flash Latest",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/~z-ai/glm-latest",
               "provider": "openrouter",
               "label": "Z.ai: GLM Latest",
@@ -5648,6 +5612,15 @@
               "key": "vercel-ai-gateway/anthropic/claude-fable-5",
               "provider": "vercel-ai-gateway",
               "label": "Claude Fable 5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-fable-5.1",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Fable 5.1",
               "accessModes": [
                 "gateway"
               ],
@@ -5756,15 +5729,6 @@
               "key": "vercel-ai-gateway/cohere/command-a",
               "provider": "vercel-ai-gateway",
               "label": "Command A",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/deepseek/deepseek-v3",
-              "provider": "vercel-ai-gateway",
-              "label": "DeepSeek V3 0324",
               "accessModes": [
                 "gateway"
               ],
@@ -6978,6 +6942,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/xiaomi/mimo-v2.5-pro-ultraspeed",
+              "provider": "vercel-ai-gateway",
+              "label": "MiMo V2.5 Pro UltraSpeed",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/minimax/minimax-m2",
               "provider": "vercel-ai-gateway",
               "label": "MiniMax M2",
@@ -7647,6 +7620,15 @@
               "key": "vercel-ai-gateway/alibaba/qwen3.8-27b",
               "provider": "vercel-ai-gateway",
               "label": "Qwen3.8 27B",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/alibaba/qwen3.8-max-0902",
+              "provider": "vercel-ai-gateway",
+              "label": "Qwen3.8 Max 0902",
               "accessModes": [
                 "gateway"
               ],
@@ -8535,6 +8517,24 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/anthropic/claude-fable-5.1",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Fable 5.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-fable-5.1:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Fable 5.1 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/~anthropic/claude-fable-latest",
       "provider": "openrouter",
       "label": "Anthropic: Claude Fable Latest",
@@ -8643,27 +8643,9 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/anthropic/claude-opus-4.7-fast",
-      "provider": "openrouter",
-      "label": "Anthropic: Claude Opus 4.7 (Fast)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/anthropic/claude-opus-4.8:batch",
       "provider": "openrouter",
       "label": "Anthropic: Claude Opus 4.8 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/anthropic/claude-opus-4.8-fast",
-      "provider": "openrouter",
-      "label": "Anthropic: Claude Opus 4.8 (Fast)",
       "accessModes": [
         "gateway"
       ],
@@ -8863,15 +8845,6 @@
       "key": "openrouter/anthropic/claude-opus-5:batch",
       "provider": "openrouter",
       "label": "Claude Opus 5 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/anthropic/claude-opus-5-fast",
-      "provider": "openrouter",
-      "label": "Claude Opus 5 (Fast)",
       "accessModes": [
         "gateway"
       ],
@@ -9541,6 +9514,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/inception/mercury-2.5-preview",
+      "provider": "openrouter",
+      "label": "Inception: Mercury 2.5 Preview",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/kwaipilot/kat-coder-pro-v2",
       "provider": "openrouter",
       "label": "Kwaipilot: KAT-Coder-Pro V2",
@@ -9865,15 +9847,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/mistralai/codestral-2508:batch",
-      "provider": "openrouter",
-      "label": "Mistral: Codestral 2508 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/mistralai/devstral-2512",
       "provider": "openrouter",
       "label": "Mistral: Devstral 2 2512",
@@ -9910,27 +9883,9 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/mistralai/ministral-8b-2512:batch",
-      "provider": "openrouter",
-      "label": "Mistral: Ministral 3 8B 2512 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/mistralai/mistral-large-2512",
       "provider": "openrouter",
       "label": "Mistral: Mistral Large 3 2512",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/mistralai/mistral-large-2512:batch",
-      "provider": "openrouter",
-      "label": "Mistral: Mistral Large 3 2512 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -9949,15 +9904,6 @@
       "key": "openrouter/mistralai/mistral-medium-3.1",
       "provider": "openrouter",
       "label": "Mistral: Mistral Medium 3.1",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/mistralai/mistral-medium-3.1:batch",
-      "provider": "openrouter",
-      "label": "Mistral: Mistral Medium 3.1 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -10021,15 +9967,6 @@
       "key": "openrouter/mistralai/mistral-small-2603",
       "provider": "openrouter",
       "label": "Mistral: Mistral Small 4",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/mistralai/mistral-small-2603:batch",
-      "provider": "openrouter",
-      "label": "Mistral: Mistral Small 4 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -12245,6 +12182,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/~z-ai/glm-flash-latest",
+      "provider": "openrouter",
+      "label": "Z.ai: GLM Flash Latest",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/~z-ai/glm-latest",
       "provider": "openrouter",
       "label": "Z.ai: GLM Latest",
@@ -12686,6 +12632,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/anthropic/claude-fable-5.1",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Fable 5.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/anthropic/claude-haiku-4.5",
       "provider": "vercel-ai-gateway",
       "label": "Claude Haiku 4.5",
@@ -12816,15 +12771,6 @@
       "key": "vercel-ai-gateway/cohere/command-a",
       "provider": "vercel-ai-gateway",
       "label": "Command A",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/deepseek/deepseek-v3",
-      "provider": "vercel-ai-gateway",
-      "label": "DeepSeek V3 0324",
       "accessModes": [
         "gateway"
       ],
@@ -14051,6 +13997,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/xiaomi/mimo-v2.5-pro-ultraspeed",
+      "provider": "vercel-ai-gateway",
+      "label": "MiMo V2.5 Pro UltraSpeed",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/minimax/minimax-m2",
       "provider": "vercel-ai-gateway",
       "label": "MiniMax M2",
@@ -14720,6 +14675,15 @@
       "key": "vercel-ai-gateway/alibaba/qwen3.8-27b",
       "provider": "vercel-ai-gateway",
       "label": "Qwen3.8 27B",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/alibaba/qwen3.8-max-0902",
+      "provider": "vercel-ai-gateway",
+      "label": "Qwen3.8 Max 0902",
       "accessModes": [
         "gateway"
       ],
