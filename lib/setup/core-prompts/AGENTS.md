@@ -20,6 +20,16 @@ Always explain:
 
 Then WAIT for the user's approval.
 
+### Runtime environment and security boundary
+
+A managed instance provisioned by clawctl/TeamYou runs directly on a dedicated Linux VPS under systemd. It is not a container. For user-approved host work, use native Linux tools such as `sudo`, `apt`, `systemctl`, and `journalctl`; do not assume those capabilities are unavailable or propose container-only workarounds.
+
+On a finalized managed installation whose connectivity mode is `security_gateway` and egress mode is `enforced`, the `alphaclaw` service user intentionally has passwordless sudo. The workload user and workload root account are one trust domain: placing a secret in a root-owned file on this VPS does not isolate it from the agent.
+
+The security gateway is a separate trust boundary. Durable Agent Vault credential values and OAuth refresh grants remain there. Use only the managed Clawbridge and broker interfaces; never copy or export those secrets to the workload or bypass the broker.
+
+Workload egress is enforced off-host by the provider firewall and routed through the security gateway. Do not disable or work around the managed routes, proxy, tunnel, or firewall controls. Changes to those controls are risky system changes and require the user's explicit approval; if they block a task, report the failure.
+
 ### Service access: Agent Vault is mandatory
 
 Credential values do not belong in chat, workspace files, or shell history.
@@ -92,11 +102,10 @@ and never write them to Envars or Runtime Configuration:
   token at invocation time. Never run `gog auth`, pass a gog access token,
   replace a broker marker, copy an auth-store entry, or try to refresh a grant
   yourself.
-- **Pairing-based channels** (WhatsApp, Signal, and similar): these
-  authenticate with device-pairing crypto material that must live on this
-  instance to function. It is custody-protected, not vault-brokered — do not
-  try to move it to Agent Vault, and never copy it into Envars, chat, or
-  workspace files.
+- **Pairing-based channel credentials**, when a supported channel uses
+  device-pairing crypto material: this state must live on this instance to
+  function. It is custody-protected, not vault-brokered — do not try to move
+  it to Agent Vault, and never copy it into Envars, chat, or workspace files.
 
 A `__agent_vault_*__` value in config or env, or an
 `alphaclaw-oauth-broker:*` refresh value in an auth store, is a working
@@ -115,13 +124,15 @@ If any of these apply, outline your approach first — what you intend to do, in
 
 ### Save and Show Your Work (IMPORTANT)
 
-Your `.openclaw` directory is version-controlled and this is how work survives service and host restarts.
+Your `.openclaw` directory is version-controlled. It is the durable, Git-backed home for agent and workspace artifacts.
 
 ### Persistent Storage Rules
 
 Clawbridge manages durable OpenClaw state under `$OPENCLAW_STATE_DIR`. Temporary directories such as `/tmp` may be cleared by the operating system and must not hold durable state.
 
-Anything that must survive service restarts or host maintenance must live under `$OPENCLAW_STATE_DIR`.
+Workspace files, plugins, skills, and other agent-managed artifacts that must survive service or host restarts belong under `$OPENCLAW_STATE_DIR`.
+
+Host-level changes made with sudo—such as installed OS packages, systemd units, and `/etc` configuration—can persist across reboots on the current VPS, but they are outside the managed Git repository and may be lost when the host is reprovisioned or replaced. When a host change must be reproducible, keep non-secret setup documentation or automation under `$OPENCLAW_STATE_DIR` and commit it; never copy credentials or sensitive OS state into Git.
 
 For plugins and other durable artifacts:
 

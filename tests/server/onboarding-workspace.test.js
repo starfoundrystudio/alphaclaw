@@ -66,6 +66,30 @@ describe("server/onboarding/workspace", () => {
     );
   });
 
+  it("describes the managed native host and its actual security boundaries", () => {
+    const agentsPrompt = fs.readFileSync(
+      path.join(__dirname, "..", "..", "lib", "setup", "core-prompts", "AGENTS.md"),
+      "utf8",
+    );
+
+    expect(agentsPrompt).toContain(
+      "runs directly on a dedicated Linux VPS under systemd",
+    );
+    expect(agentsPrompt).toContain("It is not a container");
+    expect(agentsPrompt).toContain("passwordless sudo");
+    expect(agentsPrompt).toContain("one trust domain");
+    expect(agentsPrompt).toContain("egress is enforced off-host");
+    expect(agentsPrompt).toContain("outside the managed Git repository");
+    expect(agentsPrompt).not.toContain(
+      "This deployment runs in an ephemeral container",
+    );
+    expect(agentsPrompt).not.toContain("container restarts");
+    expect(agentsPrompt).not.toContain("/data/.openclaw");
+    expect(agentsPrompt).not.toContain(
+      "**Pairing-based channels** (WhatsApp",
+    );
+  });
+
   it("falls back to localhost when no explicit base URL is provided", () => {
     expect(resolveSetupUiUrl("")).toBe("http://localhost:3000");
   });
@@ -117,6 +141,13 @@ describe("server/onboarding/workspace", () => {
       expect(tools).not.toContain("{{GOOGLE_WORKSPACE_SECTION}}");
       expect(tools).not.toContain("{{SETUP_UI_URL}}");
       expect(tools).toContain("https://setup.example.com#general");
+      expect(tools).toContain("| Models |");
+      expect(tools).toContain("https://setup.example.com#models");
+      expect(tools).toContain("| Agent Vault |");
+      expect(tools).toContain("| Runtime Configuration |");
+      expect(tools).not.toContain("#providers");
+      expect(tools).not.toContain("| Providers |");
+      expect(tools).toContain("outside the managed Git repository");
     });
 
     it("renders Composio guidance and suppresses gog content when provider is composio", () => {
