@@ -55,6 +55,7 @@ const createDeps = ({
     },
     constants: kConstants,
     getProcessStartedAtMs: vi.fn(() => processStartedAtMs),
+    isRuntimeReady: vi.fn(async () => true),
     requestGateway: vi.fn(async (method) => {
       if (method === "sessions.list") return { sessions: [] };
       if (method === "chat.send") return { runId: "run-1" };
@@ -239,6 +240,19 @@ describe("server/bootstrap-kickoff", () => {
 
     expect(result).toMatchObject({ ok: true, reason: "kickoff_sent" });
     expect(deps.delay).toHaveBeenCalledTimes(2);
+  });
+
+  it("waits for runtime and repair readiness before starting the first agent turn", async () => {
+    const deps = createDeps();
+    deps.isRuntimeReady.mockResolvedValueOnce(false).mockResolvedValueOnce(false);
+    deps.delay.mockImplementation(async () => {
+      expect(deps.requestGateway).not.toHaveBeenCalled();
+      expect(deps.fs.writeFileSync).not.toHaveBeenCalled();
+    });
+    const service = createBootstrapKickoffService(deps);
+    expect(await service.maybeRunBootstrapKickoff()).toMatchObject({ reason: "kickoff_sent" });
+    expect(deps.delay).toHaveBeenCalledTimes(2);
+    expect(deps.requestGateway.mock.calls.filter(([method]) => method === "chat.send")).toHaveLength(1);
   });
 
   it("gives up without a marker so the next boot can retry", async () => {

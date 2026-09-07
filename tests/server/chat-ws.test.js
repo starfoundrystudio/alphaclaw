@@ -289,6 +289,7 @@ describe("server/chat-ws", () => {
           JSON.stringify({
             type: "history",
             sessionKey: kSessionKey,
+            historyRequestId: 9,
           }),
         );
       requestHistory();
@@ -301,7 +302,7 @@ describe("server/chat-ws", () => {
       requestHistory();
       expect(
         await waitForMessage((message) => message.type === "history"),
-      ).toMatchObject({ messages: [], sessionKey: kSessionKey });
+      ).toMatchObject({ messages: [], sessionKey: kSessionKey, historyRequestId: 9 });
       expect(attempts).toBe(2);
     });
 

@@ -9,12 +9,14 @@ const setup = () => {
     restartInProgress: false,
     updatedAt: 1,
   };
+  const watchdog = { operationInProgress: false, gatewayPid: 1, uptimeStartedAt: "boot-1" };
   const deps = {
+    getWatchdogStatus: vi.fn(() => ({ ...watchdog })),
     getRestartSnapshot: vi.fn(async () => ({ ...state })),
     isAgentVaultReady: vi.fn(async () => true),
     requestGateway: vi.fn(async () => ({ messages: [] })),
   };
-  return { state, ...deps, ready: createOnboardingRuntimeReadiness(deps) };
+  return { state, watchdog, ...deps, ready: createOnboardingRuntimeReadiness(deps) };
 };
 
 describe("onboarding runtime readiness", () => {
@@ -44,6 +46,25 @@ describe("onboarding runtime readiness", () => {
     });
     expect(await check.ready()).toBe(true);
   });
+
+  it("blocks a listening gateway during watchdog repair and recovers afterward", async () => {
+    const check = setup();
+    check.watchdog.operationInProgress = true;
+    expect(await check.ready()).toBe(false);
+    expect(check.requestGateway).not.toHaveBeenCalled();
+    check.watchdog.operationInProgress = false;
+    expect(await check.ready()).toBe(true);
+  });
+
+  it.each(["operationInProgress", "gatewayPid", "uptimeStartedAt"])(
+    "rejects a watchdog transition during chat: %s", async (field) => {
+      const check = setup();
+      check.requestGateway.mockImplementationOnce(async () => {
+        check.watchdog[field] = field === "operationInProgress" ? true : "changed";
+      });
+      expect(await check.ready()).toBe(false);
+    },
+  );
 
   it("waits for Vault enrollment and discovery before probing chat", async () => {
     const check = setup();
