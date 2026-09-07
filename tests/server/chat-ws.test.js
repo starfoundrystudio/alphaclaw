@@ -160,7 +160,7 @@ describe("server/chat-ws", () => {
      * connected through handleUpgrade. `onChatSend(socket, frame)` decides
      * how the gateway answers chat.send (and may emit events first).
      */
-    const startBridge = async ({ onChatSend }) => {
+    const startBridge = async ({ onChatSend, onConnect, onChatHistory }) => {
       gatewayServer = new WebSocketServer({ host: "127.0.0.1", port: 0 });
       await waitForListening(gatewayServer);
       gatewayServer.on("connection", (socket) => {
@@ -169,6 +169,7 @@ describe("server/chat-ws", () => {
         socket.on("message", (rawData) => {
           const frame = JSON.parse(String(rawData || ""));
           if (frame.method === "connect") {
+            if (onConnect) return onConnect(socket, frame);
             socket.send(
               JSON.stringify({
                 type: "res",
@@ -181,6 +182,9 @@ describe("server/chat-ws", () => {
           }
           if (frame.method === "chat.send") {
             onChatSend(socket, frame);
+          }
+          if (frame.method === "chat.history" && onChatHistory) {
+            onChatHistory(socket, frame);
           }
         });
       });
@@ -240,6 +244,66 @@ describe("server/chat-ws", () => {
 
       return { received, waitForMessage, sendChat };
     };
+
+    it("reports gateway startup as retryable and serves history once it is ready", async () => {
+      let attempts = 0;
+      let firstClosed;
+      const { waitForMessage } = await startBridge({
+        onConnect: (socket, frame) => {
+          attempts += 1;
+          if (attempts === 1) {
+            firstClosed = new Promise((resolve) =>
+              socket.once("close", resolve),
+            );
+            socket.send(
+              JSON.stringify({
+                type: "res",
+                id: frame.id,
+                ok: false,
+                error: { message: "gateway starting; retry shortly" },
+              }),
+            );
+            return;
+          }
+          socket.send(
+            JSON.stringify({
+              type: "res",
+              id: frame.id,
+              ok: true,
+              payload: { type: "hello-ok" },
+            }),
+          );
+        },
+        onChatHistory: (socket, frame) =>
+          socket.send(
+            JSON.stringify({
+              type: "res",
+              id: frame.id,
+              ok: true,
+              payload: { messages: [] },
+            }),
+          ),
+      });
+      const requestHistory = () =>
+        browserSocket.send(
+          JSON.stringify({
+            type: "history",
+            sessionKey: kSessionKey,
+          }),
+        );
+      requestHistory();
+      const error = await waitForMessage((message) => message.type === "error");
+      expect(error).toMatchObject({
+        scope: "connection",
+        message: "The gateway is starting. Chat will reconnect automatically.",
+      });
+      await firstClosed;
+      requestHistory();
+      expect(
+        await waitForMessage((message) => message.type === "history"),
+      ).toMatchObject({ messages: [], sessionKey: kSessionKey });
+      expect(attempts).toBe(2);
+    });
 
     it("ignores a concurrent side run instead of hijacking the user's stream", async () => {
       // Reproduces the active-memory recall race: a second run in the same

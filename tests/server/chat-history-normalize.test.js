@@ -49,6 +49,9 @@ describe("server/chat-ws normalizeHistoryMessages", () => {
       isConnectionLevelError(new Error("OpenClaw chat.history request timed out")),
     ).toBe(true);
     expect(
+      isConnectionLevelError(new Error("gateway starting; retry shortly")),
+    ).toBe(true);
+    expect(
       isConnectionLevelError(new Error("gateway request failed: bad params")),
     ).toBe(false);
     expect(isConnectionLevelError(new Error("Something went wrong."))).toBe(

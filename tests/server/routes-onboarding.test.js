@@ -64,6 +64,7 @@ const createBaseDeps = ({
     reloadEnv: vi.fn(),
     isOnboarded: vi.fn(() => onboarded),
     isGatewayRunning: vi.fn(async () => true),
+    isOnboardingRuntimeReady: vi.fn(async () => true),
     resolveGithubRepoUrl: vi.fn((value) => value),
     resolveModelProvider: vi.fn((modelKey) => String(modelKey).split("/")[0]),
     hasCodexOauthProfile: vi.fn(() => hasCodexOauth),
@@ -310,9 +311,19 @@ describe("server/routes/onboarding", () => {
 
     const res = await request(app).get("/api/onboard/runtime-ready.svg");
 
+    expect(deps.isOnboardingRuntimeReady).toHaveBeenCalled();
     expect(res.status).toBe(503);
     expect(res.headers["cache-control"]).toBe("no-store");
     expect(res.headers["content-type"]).toMatch(/^text\/plain/);
+  });
+
+  it("does not hand off a listening gateway before chat and Vault are ready", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.readFileSync.mockReturnValue(JSON.stringify({ onboarded: true }));
+    deps.isOnboardingRuntimeReady.mockResolvedValueOnce(false).mockResolvedValue(true);
+    const app = createApp(deps);
+    expect((await request(app).get("/api/onboard/runtime-ready.svg")).status).toBe(503);
+    expect((await request(app).get("/api/onboard/runtime-ready.svg")).status).toBe(200);
   });
 
   it("fails the readiness image closed when the gateway check errors", async () => {
