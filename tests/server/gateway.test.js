@@ -385,7 +385,7 @@ describe("server/gateway restart behavior", () => {
     onExit(1, null);
 
     expect(exitHandler).toHaveBeenCalledWith(
-      expect.objectContaining({ code: 1, expectedExit: true }),
+      expect.objectContaining({ code: 1, expectedExit: true, expectedExitReason: "migration_retry", recoveryWindowMs: 133000 }),
     );
     expect(spawnMock).toHaveBeenCalledTimes(1);
 

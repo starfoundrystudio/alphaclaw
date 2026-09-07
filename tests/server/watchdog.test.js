@@ -655,6 +655,23 @@ describe("server/watchdog", () => {
     );
   });
 
+  it.each(["managed_restart", "migration_retry"])(
+    "leaves scheduled %s recovery to the controller until its deadline", async (expectedExitReason) => {
+      vi.useFakeTimers();
+      const { watchdog, shellCmd, launchGatewayProcess } = createHarness({
+        fetchImpl: async () => { throw new Error("gateway restarting"); },
+      });
+      watchdog.onGatewayExit({ code: 1, expectedExit: true, expectedExitReason, recoveryWindowMs: 60000 });
+      await vi.advanceTimersByTimeAsync(45000);
+      expect(watchdog.getStatus()).toMatchObject({ lifecycle: "restarting", crashCountInWindow: 0 });
+      expect(launchGatewayProcess).not.toHaveBeenCalled();
+      expect(shellCmd).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(20000);
+      expect(shellCmd).toHaveBeenCalledWith(kGuardedDoctorRepairCommand, kExpectedRepairCommandArgs);
+      watchdog.stop();
+    },
+  );
+
   it("treats non-zero expected exits as crashes", () => {
     const { watchdog, insertWatchdogEvent } = createHarness({
       autoRepair: false,

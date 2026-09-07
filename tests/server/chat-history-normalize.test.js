@@ -21,6 +21,22 @@ describe("server/chat-ws normalizeHistoryMessages", () => {
     ]);
   });
 
+  it("keeps recovery-only history empty so greeting polling continues", () => {
+    const recovery = "[System] Your previous turn was interrupted by a gateway restart while OpenClaw was waiting on tool/model work. Continue from the existing transcript and finish the interrupted response.";
+    const rawMessages = [
+      { role: "user", content: kBootstrapKickoffMessage },
+      { role: "user", content: [{ type: "text", text: recovery }] },
+    ];
+    expect(normalizeHistoryMessages(rawMessages).messages).toEqual([]);
+    rawMessages.push({ role: "assistant", content: "Hi, let’s get started." });
+    expect(normalizeHistoryMessages(rawMessages).messages.map(m => m.content)).toEqual(["Hi, let’s get started."]);
+    expect(normalizeHistoryMessages([
+      { role: "user", content: "[System] My own note" },
+      { role: "assistant", content: recovery },
+    ]).messages).toHaveLength(2);
+    expect(normalizeHistoryMessages([{ role: "user", content: recovery + '\n\nNote: The interrupted final reply was captured: "hello"' }]).messages).toEqual([]);
+  });
+
   it("keeps the kickoff message aligned with the hidden-note marker", () => {
     expect(kBootstrapKickoffMessage.startsWith(kClawbridgeSystemNotePrefix)).toBe(
       true,
