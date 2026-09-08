@@ -17,6 +17,44 @@ describe("Agent Vault onboarding readiness", () => {
     else process.env.ALPHACLAW_ROOT_DIR = oldRoot;
     fs.rmSync(rootDir, { recursive: true, force: true });
   });
+  it("reconciles Vault configuration before the first managed gateway can launch", async () => {
+    const openclawDir = path.join(rootDir, ".openclaw");
+    fs.mkdirSync(openclawDir, { recursive: true });
+    const configPath = path.join(openclawDir, "openclaw.json");
+    fs.writeFileSync(configPath, JSON.stringify({ gateway: { mode: "local" } }));
+    const { writeAgentVaultRuntime } = require("../../lib/server/agent-vault/runtime-store");
+    writeAgentVaultRuntime({ token: "av_runtime_token_123456789", vault: "default", mode: "brokered",
+      operatorUrl: "https://vault.tail123.ts.net", tokenAcknowledged: true, handoffComplete: true });
+    const { createAgentVaultService } = require("../../lib/server/agent-vault/service");
+    const { createGatewayBootPreparation } = require("../../lib/server/gateway-boot-preparation");
+    const restart = vi.fn();
+    let boot;
+    const applyRuntime = vi.fn(async () => { if (boot.hasStarted()) restart(); });
+    const service = createAgentVaultService({
+      env: { ALPHACLAW_CONNECTIVITY_MODE: "security_gateway" }, openclawDir,
+      fetchImpl: async () => Response.json({ services: [], available_credentials: [] }),
+      readEnvFile: () => [], writeEnvFile: vi.fn(), reloadEnv: vi.fn(),
+      onRuntimeRestartRequired: applyRuntime,
+    });
+    const start = vi.fn(() => {
+      const config = JSON.parse(fs.readFileSync(configPath));
+      expect(config.proxy.enabled).toBe(true);
+      expect(config.plugins.deny.length).toBeGreaterThan(0);
+    });
+    boot = createGatewayBootPreparation({ prepare: () => service.reconcileRuntime(), start });
+    await Promise.all([boot.start(), service.reconcileRuntime()]);
+    expect(start).toHaveBeenCalledTimes(1);
+    expect(applyRuntime).toHaveBeenCalled();
+    expect(restart).not.toHaveBeenCalled();
+    expect(await service.isRuntimeReady()).toBe(true);
+    // Later configuration changes still request a real restart.
+    const config = JSON.parse(fs.readFileSync(configPath));
+    config.proxy.enabled = false;
+    fs.writeFileSync(configPath, JSON.stringify(config));
+    await service.reconcileRuntime();
+    expect(restart).toHaveBeenCalledTimes(1);
+  });
+
   it("holds managed readiness until enrollment settles and discovery succeeds", async () => {
     let tick;
     let stop = () => {};

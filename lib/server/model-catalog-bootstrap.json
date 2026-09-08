@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-07T21:11:40.104Z",
+  "generatedAt": "2026-09-08T18:04:08.588Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2353,6 +2353,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/deepseek/deepseek-v4-flash-vision-exp:batch",
+              "provider": "openrouter",
+              "label": "DeepSeek: DeepSeek V4 Flash Vision Exp (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/deepseek/deepseek-v4-pro",
               "provider": "openrouter",
               "label": "DeepSeek: DeepSeek V4 Pro 0423",
@@ -3473,24 +3482,6 @@
               "key": "openrouter/gryphe/mythomax-l2-13b",
               "provider": "openrouter",
               "label": "MythoMax 13B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/nex-agi/nex-n2-mini",
-              "provider": "openrouter",
-              "label": "Nex AGI: Nex-N2-Mini",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/nex-agi/nex-n2-pro",
-              "provider": "openrouter",
-              "label": "Nex AGI: Nex-N2-Pro",
               "accessModes": [
                 "gateway"
               ],
@@ -5540,9 +5531,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/z-ai/glm-5.2:batch",
+              "provider": "openrouter",
+              "label": "Z.ai: GLM 5.2 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/z-ai/glm-5.3",
               "provider": "openrouter",
               "label": "Z.ai: GLM 5.3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/z-ai/glm-5.3:batch",
+              "provider": "openrouter",
+              "label": "Z.ai: GLM 5.3 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -5873,6 +5882,15 @@
               "key": "vercel-ai-gateway/deepseek/deepseek-v4-pro-0813",
               "provider": "vercel-ai-gateway",
               "label": "DeepSeek V4 Pro 0813",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/deepseek/deepseek-v4.1-flash-beta",
+              "provider": "vercel-ai-gateway",
+              "label": "DeepSeek V4.1 Flash Beta",
               "accessModes": [
                 "gateway"
               ],
@@ -9135,6 +9153,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/deepseek/deepseek-v4-flash-vision-exp:batch",
+      "provider": "openrouter",
+      "label": "DeepSeek: DeepSeek V4 Flash Vision Exp (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/deepseek/deepseek-v4-pro",
       "provider": "openrouter",
       "label": "DeepSeek: DeepSeek V4 Pro 0423",
@@ -10255,24 +10282,6 @@
       "key": "openrouter/gryphe/mythomax-l2-13b",
       "provider": "openrouter",
       "label": "MythoMax 13B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/nex-agi/nex-n2-mini",
-      "provider": "openrouter",
-      "label": "Nex AGI: Nex-N2-Mini",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/nex-agi/nex-n2-pro",
-      "provider": "openrouter",
-      "label": "Nex AGI: Nex-N2-Pro",
       "accessModes": [
         "gateway"
       ],
@@ -12335,9 +12344,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/z-ai/glm-5.2:batch",
+      "provider": "openrouter",
+      "label": "Z.ai: GLM 5.2 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/z-ai/glm-5.3",
       "provider": "openrouter",
       "label": "Z.ai: GLM 5.3",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/z-ai/glm-5.3:batch",
+      "provider": "openrouter",
+      "label": "Z.ai: GLM 5.3 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -13041,6 +13068,15 @@
       "key": "vercel-ai-gateway/deepseek/deepseek-v4-pro-0813",
       "provider": "vercel-ai-gateway",
       "label": "DeepSeek V4 Pro 0813",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/deepseek/deepseek-v4.1-flash-beta",
+      "provider": "vercel-ai-gateway",
+      "label": "DeepSeek V4.1 Flash Beta",
       "accessModes": [
         "gateway"
       ],

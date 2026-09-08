@@ -24,6 +24,7 @@ const kOriginalNotificationsDisabled = process.env.WATCHDOG_NOTIFICATIONS_DISABL
 const kOriginalFetch = global.fetch;
 
 const createHarness = ({
+  isGatewayLifecycleBusy,
   autoRepair = true,
   notificationsDisabled = false,
   clawCmdImpl,
@@ -67,6 +68,7 @@ const createHarness = ({
   global.fetch = vi.fn(fetchImpl);
 
   const watchdog = createWatchdog({
+    isGatewayLifecycleBusy,
     clawCmd,
     shellCmd,
     launchGatewayProcess,
@@ -120,6 +122,25 @@ describe("server/watchdog", () => {
     }
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  it("defers doctor while the lifecycle controller owns startup, then permits recovery", async () => {
+    vi.useFakeTimers();
+    let busy = true;
+    const { watchdog, shellCmd } = createHarness({
+      isGatewayLifecycleBusy: () => busy,
+      fetchImpl: async () => { throw new Error("connection refused"); },
+    });
+    watchdog.start();
+    await vi.advanceTimersByTimeAsync(90000);
+    expect(shellCmd).not.toHaveBeenCalled();
+    expect(watchdog.getStatus().operationInProgress).toBe(true);
+    expect((await watchdog.triggerRepair()).reason).toBe("gateway_lifecycle_in_progress");
+    busy = false;
+    await watchdog.triggerRepair();
+    expect(shellCmd).toHaveBeenCalled();
+    watchdog.stop();
+    vi.useRealTimers();
   });
 
   it("logs startup-grace health failures as skipped ok events", async () => {

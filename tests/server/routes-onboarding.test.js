@@ -30,7 +30,7 @@ const createBaseDeps = ({
       copyFileSync: vi.fn(),
       rmSync: vi.fn(),
       renameSync: vi.fn(),
-      readFileSync: vi.fn(() => "{}"),
+      readFileSync: vi.fn(() => JSON.stringify(onboarded ? { onboarded: true } : {})),
       writeFileSync: vi.fn(),
       appendFileSync: vi.fn(),
     },
@@ -180,6 +180,7 @@ describe("server/routes/onboarding", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
       onboarded: true,
+      initialRuntimePending: false,
       workspaceBootstrap: { complete: false, reason: "workspace_missing" },
     });
   });
@@ -241,6 +242,7 @@ describe("server/routes/onboarding", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
       onboarded: true,
+      initialRuntimePending: false,
       workspaceBootstrap: { complete: false, reason: "workspace_missing" },
       setupUrl: "https://alphaclaw.tail123.ts.net",
       publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
@@ -315,6 +317,103 @@ describe("server/routes/onboarding", () => {
     expect(res.status).toBe(503);
     expect(res.headers["cache-control"]).toBe("no-store");
     expect(res.headers["content-type"]).toMatch(/^text\/plain/);
+  });
+
+  it("gates direct login until the successor runtime is ready, then preserves repair access", async () => {
+    const deps = createBaseDeps({ onboarded: true, processStartedAtMs: Date.parse("2026-09-08T17:41:00Z") });
+    let marker = { onboarded: true, hostFinalizationScheduled: true, initialRuntimeCheckRequired: true, markedAt: "2026-09-08T17:40:00Z" };
+    deps.fs.readFileSync.mockImplementation(() => JSON.stringify(marker));
+    deps.fs.writeFileSync.mockImplementation((file, data) => { marker = JSON.parse(data); });
+    deps.isOnboardingRuntimeReady.mockResolvedValue(false);
+    const app = createApp(deps);
+    expect((await request(app).get("/api/onboard/status")).body.initialRuntimePending).toBe(true);
+    expect(marker.initialRuntimeReadyAt).toBeUndefined();
+    deps.isOnboardingRuntimeReady.mockResolvedValue(true);
+    expect((await request(app).get("/api/onboard/status")).body.initialRuntimePending).toBe(false);
+    expect(marker.initialRuntimeReadyAt).toBeTruthy();
+    deps.isOnboardingRuntimeReady.mockResolvedValue(false);
+    expect((await request(app).get("/api/onboard/status")).body.initialRuntimePending).toBe(false);
+  });
+
+  it("does not reuse a restored source instance's readiness proof", async () => {
+    const deps = createBaseDeps({ onboarded: true, processStartedAtMs: Date.parse("2026-09-08T17:41:00Z") });
+    deps.fs.readFileSync.mockReturnValue(JSON.stringify({ onboarded: true, hostFinalizationScheduled: true, initialRuntimeCheckRequired: true,
+      markedAt: "2026-09-08T17:40:00Z", initialRuntimeReadyAt: "2026-09-08T17:40:30Z", initialRuntimeReadyInstanceId: "inst_source" }));
+    deps.isOnboardingRuntimeReady.mockResolvedValue(false);
+    expect((await request(createApp(deps)).get("/api/onboard/status")).body.initialRuntimePending).toBe(true);
+  });
+
+  it.each(["unreadable", "malformed"])("keeps direct login gated for an %s onboarding marker", async (failure) => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.readFileSync.mockImplementation(() => {
+      if (failure === "unreadable") throw new Error("permission denied");
+      return "{partial";
+    });
+    const app = createApp(deps);
+    const status = (await request(app).get("/api/onboard/status")).body;
+    expect(status.onboarded).toBe(true);
+    expect(status.initialRuntimePending).toBe(true);
+    expect((await request(app).get("/api/onboard/runtime-ready.svg")).status).toBe(503);
+  });
+
+  it("does not certify readiness if the marker reread fails before persistence", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.readFileSync.mockReturnValueOnce(JSON.stringify({ onboarded: true })).mockReturnValue("{partial");
+    expect((await request(createApp(deps)).get("/api/onboard/runtime-ready.svg")).status).toBe(503);
+    expect(deps.fs.writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it("preserves the onboarding marker after a partial readiness write fails", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "onboard-atomic-"));
+    const markerPath = path.join(root, "onboarded.json");
+    const original = JSON.stringify({ onboarded: true, initialRuntimeCheckRequired: true });
+    fs.writeFileSync(markerPath, original);
+    try {
+      const deps = createBaseDeps({ onboarded: true });
+      deps.constants.kOnboardingMarkerPath = markerPath;
+      deps.fs = { ...fs, writeFileSync: (file, data) => {
+        fs.writeFileSync(file, data.slice(0, 10));
+        throw Object.assign(new Error("disk full"), { code: "ENOSPC" });
+      } };
+      const app = createApp(deps);
+      expect((await request(app).get("/api/onboard/runtime-ready.svg")).status).toBe(503);
+      expect(fs.readFileSync(markerPath, "utf8")).toBe(original);
+      expect(fs.readdirSync(root)).toEqual(["onboarded.json"]);
+      deps.isOnboardingRuntimeReady.mockResolvedValue(false);
+      expect((await request(app).get("/api/onboard/status")).body.initialRuntimePending).toBe(true);
+    } finally { fs.rmSync(root, { recursive: true, force: true }); }
+  });
+
+  it("fails closed if initial readiness cannot be persisted", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.readFileSync.mockReturnValue(JSON.stringify({ onboarded: true }));
+    deps.fs.writeFileSync.mockImplementation(() => { throw new Error("disk full"); });
+    expect((await request(createApp(deps)).get("/api/onboard/runtime-ready.svg")).status).toBe(503);
+  });
+
+  it("cannot certify the outgoing setup process through a direct login", async () => {
+    const deps = createBaseDeps({ onboarded: true, processStartedAtMs: Date.parse("2026-09-08T17:39:00Z") });
+    deps.fs.readFileSync.mockReturnValue(JSON.stringify({ onboarded: true, hostFinalizationScheduled: true, initialRuntimeCheckRequired: true, markedAt: "2026-09-08T17:40:00Z" }));
+    const app = createApp(deps);
+    expect((await request(app).get("/api/onboard/status")).body.initialRuntimePending).toBe(true);
+    expect(deps.isOnboardingRuntimeReady).not.toHaveBeenCalled();
+  });
+
+  it("keeps historical installations accessible for repair after upgrade", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.readFileSync.mockReturnValue(JSON.stringify({ onboarded: true, hostFinalizationScheduled: true, markedAt: "2026-09-07T12:00:00Z" }));
+    deps.isOnboardingRuntimeReady.mockResolvedValue(false);
+    expect((await request(createApp(deps)).get("/api/onboard/status")).body.initialRuntimePending).toBe(false);
+    expect(deps.isOnboardingRuntimeReady).not.toHaveBeenCalled();
+  });
+
+  it("finishes readiness polling when finalization uses its no-restart fallback", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.readFileSync.mockReturnValue(JSON.stringify({ onboarded: true, hostFinalizationScheduled: false, initialRuntimeCheckRequired: true }));
+    deps.isOnboardingRuntimeReady.mockResolvedValueOnce(false).mockResolvedValue(true);
+    const app = createApp(deps);
+    expect((await request(app).get("/api/onboard/status")).body.initialRuntimePending).toBe(true);
+    expect((await request(app).get("/api/onboard/status")).body.initialRuntimePending).toBe(false);
   });
 
   it("does not hand off a listening gateway before chat and Vault are ready", async () => {
