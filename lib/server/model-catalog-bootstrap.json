@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-08T18:04:08.588Z",
+  "generatedAt": "2026-09-08T20:01:05.090Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2876,9 +2876,9 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/inception/mercury-2.5-preview",
+              "key": "openrouter/inception/mercury-2.5",
               "provider": "openrouter",
-              "label": "Inception: Mercury 2.5 Preview",
+              "label": "Inception: Mercury 2.5",
               "accessModes": [
                 "gateway"
               ],
@@ -3482,6 +3482,24 @@
               "key": "openrouter/gryphe/mythomax-l2-13b",
               "provider": "openrouter",
               "label": "MythoMax 13B",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/nex-agi/nex-n2.5-mini:free",
+              "provider": "openrouter",
+              "label": "Nex AGI: Nex-N2.5-Mini (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/nex-agi/nex-n2.5-pro:free",
+              "provider": "openrouter",
+              "label": "Nex AGI: Nex-N2.5-Pro (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -7059,6 +7077,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/inception/mercury-2.5",
+              "provider": "vercel-ai-gateway",
+              "label": "Mercury 2.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/inception/mercury-coder-small",
               "provider": "vercel-ai-gateway",
               "label": "Mercury Coder Small Beta",
@@ -7080,15 +7107,6 @@
               "key": "vercel-ai-gateway/xiaomi/mimo-v2.5-pro",
               "provider": "vercel-ai-gateway",
               "label": "MiMo V2.5 Pro",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/xiaomi/mimo-v2.5-pro-ultraspeed",
-              "provider": "vercel-ai-gateway",
-              "label": "MiMo V2.5 Pro UltraSpeed",
               "accessModes": [
                 "gateway"
               ],
@@ -9676,9 +9694,9 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/inception/mercury-2.5-preview",
+      "key": "openrouter/inception/mercury-2.5",
       "provider": "openrouter",
-      "label": "Inception: Mercury 2.5 Preview",
+      "label": "Inception: Mercury 2.5",
       "accessModes": [
         "gateway"
       ],
@@ -10282,6 +10300,24 @@
       "key": "openrouter/gryphe/mythomax-l2-13b",
       "provider": "openrouter",
       "label": "MythoMax 13B",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/nex-agi/nex-n2.5-mini:free",
+      "provider": "openrouter",
+      "label": "Nex AGI: Nex-N2.5-Mini (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/nex-agi/nex-n2.5-pro:free",
+      "provider": "openrouter",
+      "label": "Nex AGI: Nex-N2.5-Pro (free)",
       "accessModes": [
         "gateway"
       ],
@@ -14258,6 +14294,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/inception/mercury-2.5",
+      "provider": "vercel-ai-gateway",
+      "label": "Mercury 2.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/inception/mercury-coder-small",
       "provider": "vercel-ai-gateway",
       "label": "Mercury Coder Small Beta",
@@ -14279,15 +14324,6 @@
       "key": "vercel-ai-gateway/xiaomi/mimo-v2.5-pro",
       "provider": "vercel-ai-gateway",
       "label": "MiMo V2.5 Pro",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/xiaomi/mimo-v2.5-pro-ultraspeed",
-      "provider": "vercel-ai-gateway",
-      "label": "MiMo V2.5 Pro UltraSpeed",
       "accessModes": [
         "gateway"
       ],

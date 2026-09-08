@@ -43,10 +43,19 @@ describe("server/ui-sandbox", () => {
           vars: [{ key: "ANTHROPIC_API_KEY", value: "sk-ant-sandbox" }],
           modelKey: "anthropic/claude-opus-4-8",
           tailscaleApiToken: "tskey-api-sandbox_123456789",
-        });
+      });
       expect(setup.status).toBe(200);
-      expect(setup.body).toMatchObject({ ok: true, sandbox: true });
+      expect(setup.body).toMatchObject({
+        ok: true,
+        handoffViaBootstrapOrigin: true,
+        sandbox: true,
+      });
       expect(setup.body.setupUrl).toContain("localhost:3101");
+
+      expect(
+        (await request(sandbox.app).get("/api/onboard/runtime-ready.svg"))
+          .status,
+      ).toBe(503);
 
       const after = await request(sandbox.app).get("/api/onboard/status");
       expect(after.body.onboarded).toBe(true);

@@ -148,18 +148,34 @@ describe("server/routes/auth", () => {
     expect(protectedRes.body).toEqual({ error: "Unauthorized" });
   });
 
-  it("allows only read-only requests to the exact runtime readiness image", async () => {
+  it("preserves the legacy private readiness probe but authenticates public handoff", async () => {
     const { app } = createTestApp({ setupPassword: "secret" });
 
-    const getResponse = await request(app).get(
+    const legacyResponse = await request(app).get(
       "/api/onboard/runtime-ready.svg?ready-probe=1",
     );
+    expect(legacyResponse.status).toBe(200);
+
+    const anonymousHandoffResponse = await request(app)
+      .get("/api/onboard/runtime-ready.svg?ready-probe=1")
+      .set("x-alphaclaw-ingress-surface", "handoff");
+    expect(anonymousHandoffResponse.status).toBe(401);
+
+    const login = await request(app)
+      .post("/api/auth/login")
+      .send({ password: "secret" });
+    const cookie = login.headers["set-cookie"][0].split(";")[0];
+    const getResponse = await request(app)
+      .get("/api/onboard/runtime-ready.svg?ready-probe=1")
+      .set("x-alphaclaw-ingress-surface", "handoff")
+      .set("Cookie", cookie);
     expect(getResponse.status).toBe(200);
     expect(getResponse.headers["content-type"]).toMatch(/^image\/svg\+xml/);
 
-    const headResponse = await request(app).head(
-      "/api/onboard/runtime-ready.svg?ready-probe=2",
-    );
+    const headResponse = await request(app)
+      .head("/api/onboard/runtime-ready.svg?ready-probe=2")
+      .set("x-alphaclaw-ingress-surface", "handoff")
+      .set("Cookie", cookie);
     expect(headResponse.status).toBe(200);
 
     const postResponse = await request(app).post(
