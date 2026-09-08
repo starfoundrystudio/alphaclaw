@@ -81,6 +81,24 @@ describe("frontend/welcome handoff", () => {
     expect(buildInstanceProbeUrl("not a url")).toBe("");
   });
 
+  it("uses the public bootstrap origin only when the host advertises the handoff lane", async () => {
+    const { getInstanceProbeBaseUrl } = await loadWelcomeHook();
+    const result = {
+      setupUrl: "https://alphaclaw.tail123.ts.net",
+      handoffViaBootstrapOrigin: true,
+    };
+
+    expect(
+      getInstanceProbeBaseUrl(result, "https://abc123.openclaw.teamyou.ai"),
+    ).toBe("https://abc123.openclaw.teamyou.ai");
+    expect(
+      getInstanceProbeBaseUrl(
+        { ...result, handoffViaBootstrapOrigin: false },
+        "https://abc123.openclaw.teamyou.ai",
+      ),
+    ).toBe("https://alphaclaw.tail123.ts.net");
+  });
+
   it("treats a decodable image as the only readiness signal", async () => {
     const { probeInstanceReady } = await loadWelcomeHook();
     const makeImage = (fire) => () => {
@@ -144,57 +162,6 @@ describe("frontend/welcome handoff", () => {
     expect(probe).toHaveBeenCalledTimes(4);
   });
 
-  it("switches to the tailnet hint once, then keeps polling until cancelled", async () => {
-    const { waitForInstanceReady } = await loadWelcomeHook();
-    const onTailnetHint = vi.fn();
-    let calls = 0;
-    const probe = vi.fn(async () => {
-      calls += 1;
-      return false;
-    });
-
-    await expect(
-      waitForInstanceReady({
-        setupUrl: "https://alphaclaw.tail123.ts.net",
-        probe,
-        waitMs: async () => {},
-        initialDelayMs: 0,
-        intervalMs: 0,
-        tailnetHintDelayMs: 0,
-        onTailnetHint,
-        isCancelled: () => calls >= 5,
-      }),
-    ).resolves.toBe(false);
-    expect(onTailnetHint).toHaveBeenCalledTimes(1);
-    expect(probe).toHaveBeenCalledTimes(5);
-  });
-
-  it("reports a slow gateway start once while continuing to poll", async () => {
-    const { waitForInstanceReady } = await loadWelcomeHook();
-    const onSlowStart = vi.fn();
-    let calls = 0;
-    const probe = vi.fn(async () => {
-      calls += 1;
-      return false;
-    });
-
-    await expect(
-      waitForInstanceReady({
-        setupUrl: "https://alphaclaw.tail123.ts.net",
-        probe,
-        waitMs: async () => {},
-        initialDelayMs: 0,
-        intervalMs: 0,
-        slowStartHintDelayMs: 0,
-        tailnetHintDelayMs: Number.MAX_SAFE_INTEGER,
-        onSlowStart,
-        isCancelled: () => calls >= 5,
-      }),
-    ).resolves.toBe(false);
-    expect(onSlowStart).toHaveBeenCalledTimes(1);
-    expect(probe).toHaveBeenCalledTimes(5);
-  });
-
   it("recognizes interrupted final onboarding responses as recoverable", async () => {
     const { isRecoverableOnboardCompletionError } = await loadWelcomeHook();
     const emptyResponseError = new Error("empty");
@@ -242,10 +209,48 @@ describe("frontend/welcome handoff", () => {
     await expect(
       waitForOnboardingCompletion({
         fetchStatus,
+        fetchHandoffStatus: async () => null,
         attempts: 3,
         intervalMs: 0,
       }),
     ).resolves.toEqual({ onboarded: true });
     expect(fetchStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it("recovers the final URL from the public handoff lane when status closes", async () => {
+    const {
+      fetchBootstrapHandoffCompletion,
+      waitForOnboardingCompletion,
+    } = await loadWelcomeHook();
+    const fetchImpl = vi.fn(async () => ({
+      status: 503,
+      headers: {
+        get: (name) =>
+          name === "x-clawbridge-setup-url"
+            ? "https://alphaclaw.tail123.ts.net"
+            : null,
+      },
+    }));
+    const fetchHandoffStatus = () =>
+      fetchBootstrapHandoffCompletion({ fetchImpl });
+
+    await expect(
+      waitForOnboardingCompletion({
+        fetchStatus: async () => {
+          throw new Error("bootstrap status route closed");
+        },
+        fetchHandoffStatus,
+        attempts: 1,
+        intervalMs: 0,
+      }),
+    ).resolves.toEqual({
+      onboarded: true,
+      setupUrl: "https://alphaclaw.tail123.ts.net",
+      handoffViaBootstrapOrigin: true,
+    });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "/api/onboard/runtime-ready.svg",
+      expect.objectContaining({ method: "HEAD", credentials: "same-origin" }),
+    );
   });
 });

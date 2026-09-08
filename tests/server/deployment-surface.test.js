@@ -5,6 +5,7 @@ const {
   createPublicIngressGuard,
   getConfiguredPublicPathPrefixes,
   isPublicPathAllowed,
+  isTrustedBootstrapHandoffRequest,
   resolvePrivateUiBaseUrl,
   resolvePublicCallbackBaseUrl,
 } = require("../../lib/server/deployment-surface");
@@ -31,6 +32,9 @@ const createGuardedApp = (env = {}) => {
   );
   app.get("/health", (req, res) =>
     res.json({ ok: true, route: "/health" }),
+  );
+  app.get("/api/onboard/runtime-ready.svg", (req, res) =>
+    res.json({ ok: true, route: "/api/onboard/runtime-ready.svg" }),
   );
   app.get("/hooks", (req, res) => res.json({ ok: true, route: "/hooks" }));
   app.all("/hooks/:name", (req, res) =>
@@ -202,6 +206,47 @@ describe("server/deployment-surface", () => {
     );
 
     expect(response.status).toBe(404);
+  });
+
+  it("admits only the read-only handoff route stamped by the trusted gateway", async () => {
+    const allowedEnv = {
+      ALPHACLAW_SETUP_URL: "https://setup.tail123.ts.net",
+      ALPHACLAW_PUBLIC_BASE_URL: "https://setup.tail123.ts.net:8443",
+      ALPHACLAW_GATEWAY_TRUSTED_PROXY_IP: "10.0.0.3",
+    };
+    const makeRequest = ({
+      method = "get",
+      path = "/api/onboard/runtime-ready.svg",
+      surface = "handoff",
+    } = {}) =>
+      request(createGuardedApp(allowedEnv))[method](path)
+        .set("host", "workload.inst-test.internal")
+        .set("x-forwarded-host", "abc123.openclaw.teamyou.ai")
+        .set("x-forwarded-proto", "https")
+        .set("x-forwarded-for", "203.0.113.8, 10.0.0.3")
+        .set("x-alphaclaw-ingress-surface", surface);
+
+    const allowed = await makeRequest();
+    expect(allowed.status).toBe(200);
+
+    expect((await makeRequest({ surface: "private" })).status).toBe(404);
+    expect((await makeRequest({ path: "/api/onboard/status" })).status).toBe(404);
+    expect((await makeRequest({ method: "post" })).status).toBe(404);
+
+    expect(
+      isTrustedBootstrapHandoffRequest(
+        {
+          method: "GET",
+          originalUrl: "/api/onboard/runtime-ready.svg",
+          headers: {
+            "x-alphaclaw-ingress-surface": "handoff",
+            "x-forwarded-for": "203.0.113.8, 10.0.0.4",
+          },
+          socket: { remoteAddress: "127.0.0.1" },
+        },
+        { ALPHACLAW_GATEWAY_TRUSTED_PROXY_IP: "10.0.0.3" },
+      ),
+    ).toBe(false);
   });
 
   describe("direct loopback requests in strict mode", () => {

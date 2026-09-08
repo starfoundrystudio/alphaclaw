@@ -233,6 +233,7 @@ describe("server/routes/onboarding", () => {
         setupUrl: "https://alphaclaw.tail123.ts.net",
         publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
         tailscaleDns: "alphaclaw.tail123.ts.net",
+        handoffViaBootstrapOrigin: true,
       }),
     );
     const app = createApp(deps);
@@ -247,7 +248,32 @@ describe("server/routes/onboarding", () => {
       setupUrl: "https://alphaclaw.tail123.ts.net",
       publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
       tailscaleDns: "alphaclaw.tail123.ts.net",
+      handoffViaBootstrapOrigin: true,
     });
+  });
+
+  it("persists and returns bootstrap-origin handoff capability", async () => {
+    const deps = createBaseDeps();
+    deps.tailscaleFinalizer.finalizeTailscaleOnboarding.mockResolvedValueOnce({
+      setupUrl: "https://alphaclaw.tail123.ts.net",
+      publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
+      dnsName: "alphaclaw.tail123.ts.net",
+      handoffViaBootstrapOrigin: true,
+    });
+    mockGithubVerifyAndCreate();
+    const res = await request(createApp(deps))
+      .post("/api/onboard")
+      .send(makeValidBody());
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      ...kExpectedOnboardSuccess,
+      handoffViaBootstrapOrigin: true,
+    });
+    const markerCall = deps.fs.writeFileSync.mock.calls.find(
+      ([targetPath]) => targetPath === deps.constants.kOnboardingMarkerPath,
+    );
+    expect(JSON.parse(markerCall[1]).handoffViaBootstrapOrigin).toBe(true);
   });
 
   it("keeps the runtime image unavailable in the process that scheduled finalization", async () => {
@@ -317,6 +343,27 @@ describe("server/routes/onboarding", () => {
     expect(res.status).toBe(503);
     expect(res.headers["cache-control"]).toBe("no-store");
     expect(res.headers["content-type"]).toMatch(/^text\/plain/);
+  });
+
+  it("exposes the final URL on the authenticated handoff lane before readiness", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.readFileSync.mockReturnValue(
+      JSON.stringify({
+        onboarded: true,
+        setupUrl: "https://alphaclaw.tail123.ts.net",
+        handoffViaBootstrapOrigin: true,
+      }),
+    );
+    deps.isOnboardingRuntimeReady.mockResolvedValue(false);
+
+    const res = await request(createApp(deps)).head(
+      "/api/onboard/runtime-ready.svg",
+    );
+
+    expect(res.status).toBe(503);
+    expect(res.headers["x-clawbridge-setup-url"]).toBe(
+      "https://alphaclaw.tail123.ts.net",
+    );
   });
 
   it("gates direct login until the successor runtime is ready, then preserves repair access", async () => {
@@ -424,6 +471,27 @@ describe("server/routes/onboarding", () => {
     expect((await request(app).get("/api/onboard/runtime-ready.svg")).status).toBe(503);
     expect((await request(app).get("/api/onboard/runtime-ready.svg")).status).toBe(200);
   });
+
+  it("keeps first entry gated until the bootstrap kickoff has a durable decision", async () => {
+    const deps = createBaseDeps({ onboarded: true });
+    deps.fs.readFileSync.mockReturnValue(
+      JSON.stringify({ onboarded: true, initialRuntimeCheckRequired: true }),
+    );
+    deps.isInitialHandoffReady = vi
+      .fn()
+      .mockResolvedValueOnce(false)
+      .mockResolvedValue(true);
+    const app = createApp(deps);
+
+    expect(
+      (await request(app).get("/api/onboard/status")).body.initialRuntimePending,
+    ).toBe(true);
+    expect(
+      (await request(app).get("/api/onboard/status")).body.initialRuntimePending,
+    ).toBe(false);
+    expect(deps.isOnboardingRuntimeReady).not.toHaveBeenCalled();
+  });
+
 
   it("fails the readiness image closed when the gateway check errors", async () => {
     const deps = createBaseDeps({ onboarded: true });
