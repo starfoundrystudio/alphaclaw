@@ -44,9 +44,14 @@ const createSocket = (isRunning) => {
   };
 };
 
-const createChild = (pid = 1234) => ({
+const createChild = (pid = 1234, { announcesReady = true } = {}) => ({
   pid,
-  stdout: { on: vi.fn() },
+  stdout: { on: vi.fn((event, handler) => {
+    const args = childProcess.spawn.mock?.calls.at(-1)?.[1];
+    if (announcesReady && event === "data" && args?.includes("--force")) {
+      setImmediate(() => handler("http server listening (3 plugins; 7.0s)"));
+    }
+  }) },
   stderr: { on: vi.fn() },
   on: vi.fn(),
   kill: vi.fn(),
@@ -365,6 +370,7 @@ describe("server/gateway restart behavior", () => {
     childProcess.spawn = spawnMock;
     childProcess.execSync = vi.fn(() => "");
     fs.existsSync = vi.fn(() => false);
+    net.createConnection = vi.fn(() => createSocket(false));
     delete require.cache[modulePath];
     const gateway = require(modulePath);
     const exitHandler = vi.fn();
@@ -391,7 +397,7 @@ describe("server/gateway restart behavior", () => {
 
     await vi.advanceTimersByTimeAsync(12_999);
     expect(spawnMock).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(1);
+    await vi.advanceTimersByTimeAsync(2);
 
     expect(spawnMock).toHaveBeenCalledTimes(2);
     expect(spawnMock).toHaveBeenLastCalledWith(
@@ -399,6 +405,212 @@ describe("server/gateway restart behavior", () => {
       ["gateway", "run"],
       expect.objectContaining({ env: expect.any(Object) }),
     );
+  });
+
+  it("keeps one restart owner through migration backoff and tracks its recovered child", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-08T17:41:00Z"));
+    const first = createChild(101);
+    const second = createChild(102);
+    const spawnMock = vi.fn().mockReturnValueOnce(first).mockReturnValueOnce(second);
+    childProcess.spawn = spawnMock;
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    let running = false;
+    net.createConnection = vi.fn(() => createSocket(() => running));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const exits = vi.fn();
+    gateway.setGatewayExitHandler(exits);
+    const restart = gateway.restartGateway(vi.fn());
+    const anotherRestart = gateway.restartGateway(vi.fn());
+    await Promise.resolve();
+    expect(spawnMock).toHaveBeenCalledTimes(1);
+    first.stderr.on.mock.calls.find(([event]) => event === "data")[1](
+      "OpenClaw startup migrations are already running; retry after 2026-09-08T17:46:00.000Z.");
+    first.exitCode = 1;
+    first.on.mock.calls.find(([event]) => event === "exit")[1](1, null);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(exits).toHaveBeenCalledWith(expect.objectContaining({ expectedExitReason: "migration_retry" }));
+    expect(gateway.launchGatewayProcess()).toBe(null);
+    await vi.advanceTimersByTimeAsync(302000);
+    expect(spawnMock).toHaveBeenCalledTimes(2);
+    running = true;
+    await vi.advanceTimersByTimeAsync(1000);
+    await Promise.all([restart, anotherRestart]);
+    expect(gateway.hasActiveManagedGatewayChild()).toBe(true);
+    gateway.launchGatewayProcess();
+    expect(spawnMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not kill a gateway still completing its initial migrations", async () => {
+    vi.useFakeTimers();
+    const first = createChild(101);
+    const second = createChild(102);
+    childProcess.spawn = vi.fn().mockReturnValueOnce(first).mockReturnValueOnce(second);
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    let running = false;
+    net.createConnection = vi.fn(() => createSocket(() => running));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    gateway.launchGatewayProcess();
+    const restart = gateway.restartGateway(vi.fn());
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(first.kill).not.toHaveBeenCalled();
+    expect(childProcess.spawn).toHaveBeenCalledTimes(1);
+    running = true;
+    await vi.advanceTimersByTimeAsync(1000);
+    await restart;
+    expect(first.kill).toHaveBeenCalledTimes(1);
+    expect(childProcess.spawn).toHaveBeenCalledTimes(2);
+  });
+
+  it("applies a configuration change requested after the current restart spawned", async () => {
+    vi.useFakeTimers();
+    childProcess.spawn = vi.fn().mockImplementation(() => createChild(100 + childProcess.spawn.mock.calls.length));
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    let running = false;
+    net.createConnection = vi.fn(() => createSocket(() => running));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const first = gateway.restartGateway(vi.fn());
+    await Promise.resolve();
+    expect(childProcess.spawn).toHaveBeenCalledTimes(1);
+    const laterChange = gateway.restartGateway(vi.fn());
+    expect(childProcess.spawn).toHaveBeenCalledTimes(1);
+    running = true;
+    await vi.advanceTimersByTimeAsync(1000);
+    await Promise.all([first, laterChange]);
+    expect(childProcess.spawn).toHaveBeenCalledTimes(2);
+  });
+
+  it("replaces a hung initial child after the bounded startup window", async () => {
+    vi.useFakeTimers();
+    const first = createChild(101);
+    let running = false;
+    childProcess.spawn = vi.fn().mockReturnValueOnce(first).mockImplementation(() => {
+      running = true;
+      return createChild(102);
+    });
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    net.createConnection = vi.fn(() => createSocket(() => running));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    gateway.launchGatewayProcess();
+    await vi.advanceTimersByTimeAsync(10000);
+    const restart = gateway.restartGateway(vi.fn());
+    await vi.advanceTimersByTimeAsync(109000);
+    expect(first.kill).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(2000);
+    await restart;
+    expect(first.kill).toHaveBeenCalledTimes(1);
+    expect(childProcess.spawn).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not grant a new startup window to a previously listening child", async () => {
+    const first = createChild(101);
+    let running = false;
+    childProcess.spawn = vi.fn().mockReturnValueOnce(first).mockImplementation(() => {
+      running = true;
+      return createChild(102);
+    });
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    net.createConnection = vi.fn(() => createSocket(() => running));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    gateway.setGatewayLaunchHandler(vi.fn());
+    gateway.launchGatewayProcess();
+    first.stdout.on.mock.calls.find(([event]) => event === "data")[1]("listening on ws://127.0.0.1:18789");
+    await gateway.restartGateway(vi.fn());
+    expect(first.kill).toHaveBeenCalledTimes(1);
+  });
+
+  it("cannot mistake an outgoing listener for the replacement's readiness", async () => {
+    vi.useFakeTimers();
+    const child = createChild(101, { announcesReady: false });
+    childProcess.spawn = vi.fn(() => child);
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    net.createConnection = vi.fn(() => createSocket(true));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    let completed = false;
+    const restart = gateway.restartGateway(vi.fn()).then(() => { completed = true; });
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(completed).toBe(false);
+    expect(gateway.isGatewayLifecycleBusy()).toBe(true);
+    const onData = child.stdout.on.mock.calls.find(([event]) => event === "data")[1];
+    onData("another gateway instance is already listening on ws://127.0.0.1:18789");
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(completed).toBe(false);
+    onData("http server listening (3 plugins; 7.0s)");
+    await vi.advanceTimersByTimeAsync(1000);
+    await restart;
+    expect(completed).toBe(true);
+    expect(gateway.isGatewayLifecycleBusy()).toBe(false);
+  });
+
+  it("recognizes the pinned OpenClaw startup log even across chunks", () => {
+    const child = createChild(101);
+    childProcess.spawn = vi.fn(() => child);
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const ready = vi.fn();
+    gateway.setGatewayLaunchHandler(ready);
+    gateway.launchGatewayProcess();
+    expect(gateway.isGatewayLifecycleBusy()).toBe(true);
+    const onData = child.stderr.on.mock.calls.find(([event]) => event === "data")[1];
+    onData("http server list");
+    onData("ening (3 plugins; 7.0s)");
+    expect(ready).toHaveBeenCalledTimes(1);
+    expect(gateway.isGatewayLifecycleBusy()).toBe(false);
+  });
+
+  it("queues a cold restart behind Doctor and permits only the repair owner's launch", async () => {
+    const doctorChild = createChild(101);
+    const replacement = createChild(102);
+    childProcess.spawn = vi.fn().mockReturnValueOnce(doctorChild).mockReturnValueOnce(replacement);
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    net.createConnection = vi.fn(() => createSocket(true));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const lifecycleOwner = gateway.tryAcquireGatewayRepair();
+    expect(lifecycleOwner).toBeTruthy();
+    const restart = gateway.restartGateway(vi.fn());
+    await Promise.resolve();
+    expect(childProcess.spawn).not.toHaveBeenCalled();
+    expect(gateway.launchGatewayProcess()).toBe(null);
+    expect(gateway.launchGatewayProcess({ lifecycleOwner })).toBe(doctorChild);
+    doctorChild.stdout.on.mock.calls.find(([event]) => event === "data")[1]("http server listening (3 plugins; 7.0s)");
+    expect(childProcess.spawn).toHaveBeenCalledTimes(1);
+    lifecycleOwner.release();
+    await restart;
+    expect(childProcess.spawn).toHaveBeenCalledTimes(2);
+    expect(gateway.isGatewayLifecycleBusy()).toBe(false);
+  });
+
+  it("keeps startup evidence enabled when the operator suppresses info logs", () => {
+    const previous = process.env.OPENCLAW_LOG_LEVEL;
+    try {
+      process.env.OPENCLAW_LOG_LEVEL = "warn";
+      childProcess.spawn = vi.fn(() => createChild(101));
+      childProcess.execSync = vi.fn(() => "");
+      fs.existsSync = vi.fn(() => false);
+      delete require.cache[modulePath];
+      const gateway = require(modulePath);
+      gateway.launchGatewayProcess();
+      expect(childProcess.spawn.mock.calls[0][2].env.OPENCLAW_LOG_LEVEL).toBe("info");
+    } finally {
+      if (previous === undefined) delete process.env.OPENCLAW_LOG_LEVEL;
+      else process.env.OPENCLAW_LOG_LEVEL = previous;
+    }
   });
 
   it("does not treat auth-only openclaw config as onboarded", () => {
