@@ -286,4 +286,79 @@ describe("server/gog-broker-service", () => {
       fs.existsSync(path.join(harness.markerDir, "gog-2-revocation-pending.json")),
     ).toBe(false);
   });
+
+  it("validates restored brokered Google accounts on startup", async () => {
+    const harness = createHarness();
+    roots.push(harness.root);
+    writeGoogleState({
+      fs,
+      statePath: harness.statePath,
+      state: {
+        ...createEmptyGoogleState(),
+        accounts: [{ ...account, brokerConsumer: "gog-1" }],
+      },
+    });
+
+    await expect(harness.service.start()).resolves.toMatchObject({
+      configured: true,
+      validation: [
+        {
+          accountId: "account-1",
+          checked: true,
+          healthy: true,
+          reconnectRequired: false,
+          checkedAt: kNowMs,
+        },
+      ],
+    });
+    expect(harness.service.getAccountHealth("account-1")).toMatchObject({
+      healthy: true,
+      reconnectRequired: false,
+    });
+  });
+
+  it("distinguishes provider rejection from a temporary Google broker failure", async () => {
+    const harness = createHarness();
+    roots.push(harness.root);
+    writeGoogleState({
+      fs,
+      statePath: harness.statePath,
+      state: {
+        ...createEmptyGoogleState(),
+        accounts: [
+          { ...account, brokerConsumer: "gog-1" },
+          {
+            ...account,
+            id: "account-2",
+            email: "second@example.com",
+            brokerConsumer: "gog-2",
+          },
+        ],
+      },
+    });
+    harness.brokerClient.getGogAccessToken
+      .mockRejectedValueOnce(
+        Object.assign(new Error("invalid grant"), {
+          code: "provider_http_400",
+        }),
+      )
+      .mockRejectedValueOnce(
+        Object.assign(new Error("gateway unavailable"), {
+          code: "broker_unavailable",
+        }),
+      );
+
+    await harness.service.start();
+
+    expect(harness.service.getAccountHealth("account-1")).toMatchObject({
+      healthy: false,
+      reconnectRequired: true,
+      error: "provider_http_400",
+    });
+    expect(harness.service.getAccountHealth("account-2")).toMatchObject({
+      healthy: false,
+      reconnectRequired: false,
+      error: "broker_unavailable",
+    });
+  });
 });

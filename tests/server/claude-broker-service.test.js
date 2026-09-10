@@ -311,4 +311,54 @@ describe("server/claude-broker-service", () => {
       refreshToken: "durable-refresh",
     });
   });
+
+  it("validates a restored brokered grant with a live access-token lease", async () => {
+    const harness = createHarness();
+    roots.push(harness.root);
+    harness.authProfiles.upsertClaudeCliProfile({
+      email: "owner@example.com",
+      brokered: true,
+    });
+
+    await expect(harness.service.start()).resolves.toMatchObject({
+      brokered: true,
+      healthy: true,
+      reconnectRequired: false,
+      lastValidatedAt: kNowMs,
+    });
+    expect(harness.brokerClient.getClaudeAccessToken).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks a provider-rejected restored grant as reconnect-required", async () => {
+    const harness = createHarness();
+    roots.push(harness.root);
+    harness.authProfiles.upsertClaudeCliProfile({ brokered: true });
+    harness.brokerClient.getClaudeAccessToken.mockRejectedValueOnce(
+      Object.assign(new Error("invalid grant"), { code: "provider_http_401" }),
+    );
+
+    await harness.service.start();
+    await expect(harness.service.status()).resolves.toMatchObject({
+      brokered: true,
+      healthy: false,
+      reconnectRequired: true,
+      error: "provider_http_401",
+      lastValidatedAt: kNowMs,
+    });
+  });
+
+  it("marks a missing restored grant as reconnect-required", async () => {
+    const harness = createHarness();
+    roots.push(harness.root);
+    harness.authProfiles.upsertClaudeCliProfile({ brokered: true });
+    harness.brokerClient.status.mockResolvedValue({ grants: [] });
+
+    await harness.service.start();
+    await expect(harness.service.status()).resolves.toMatchObject({
+      brokered: true,
+      healthy: false,
+      reconnectRequired: true,
+      error: "grant_not_found",
+    });
+  });
 });

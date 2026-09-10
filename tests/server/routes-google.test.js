@@ -342,6 +342,53 @@ describe("server/routes/google", () => {
     });
   });
 
+  it("surfaces sanitized broker health on the existing Google account response", async () => {
+    const account = {
+      id: "account-1",
+      email: "owner@example.com",
+      client: "default",
+      authenticated: true,
+      brokerConsumer: "gog-1",
+      services: ["gmail:read"],
+    };
+    const state = {
+      version: 2,
+      googleProvider: "gog",
+      accounts: [account],
+      gmailPush: { token: "", topics: {} },
+    };
+    const oauthHealth = {
+      checked: true,
+      healthy: false,
+      reconnectRequired: true,
+      error: "provider_http_401",
+      checkedAt: 1_700_000_000_000,
+    };
+    const gogBrokerService = {
+      getAccountHealth: vi.fn(() => oauthHealth),
+    };
+    const app = createApp({
+      gogBrokerService,
+      fsOverrides: {
+        existsSync: vi.fn((filePath) => filePath === "/tmp/gogcli/state.json"),
+        readFileSync: vi.fn((filePath) => {
+          if (filePath === "/tmp/gogcli/state.json") return JSON.stringify(state);
+          throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+        }),
+      },
+    });
+
+    const response = await request(app).get("/api/google/accounts");
+
+    expect(response.body.accounts[0]).toMatchObject({
+      id: account.id,
+      authenticated: true,
+      oauthHealth,
+    });
+    expect(JSON.stringify(response.body)).not.toContain("access_token");
+    expect(JSON.stringify(response.body)).not.toContain("refresh_token");
+  });
+
   describe("google provider endpoints", () => {
     const kOriginalProviderEnv = process.env.ALPHACLAW_GOOGLE_PROVIDER;
 
