@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-08T20:01:05.090Z",
+  "generatedAt": "2026-09-10T22:58:19.550Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2389,6 +2389,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/deepseek/deepseek-v4.1-flash",
+              "provider": "openrouter",
+              "label": "DeepSeek: DeepSeek V4.1 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/deepseek/deepseek-r1",
               "provider": "openrouter",
               "label": "DeepSeek: R1",
@@ -2921,6 +2930,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/inclusionai/ling-3.0-flash-vl:free",
+              "provider": "openrouter",
+              "label": "inclusionAI: Ling 3.0 Flash VL (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/kwaipilot/kat-coder-pro-v2",
               "provider": "openrouter",
               "label": "Kwaipilot: KAT-Coder-Pro V2",
@@ -3227,6 +3245,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/mistralai/codestral-2508:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Codestral 2508 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/mistralai/devstral-2512",
               "provider": "openrouter",
               "label": "Mistral: Devstral 2 2512",
@@ -3263,9 +3290,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/mistralai/ministral-8b-2512:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Ministral 3 8B 2512 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/mistralai/mistral-large-2512",
               "provider": "openrouter",
               "label": "Mistral: Mistral Large 3 2512",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/mistralai/mistral-large-2512:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Mistral Large 3 2512 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3284,6 +3329,15 @@
               "key": "openrouter/mistralai/mistral-medium-3.1",
               "provider": "openrouter",
               "label": "Mistral: Mistral Medium 3.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/mistralai/mistral-medium-3.1:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Mistral Medium 3.1 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3347,6 +3401,15 @@
               "key": "openrouter/mistralai/mistral-small-2603",
               "provider": "openrouter",
               "label": "Mistral: Mistral Small 4",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/mistralai/mistral-small-2603:batch",
+              "provider": "openrouter",
+              "label": "Mistral: Mistral Small 4 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -3527,15 +3590,6 @@
               "key": "openrouter/nousresearch/hermes-4-405b",
               "provider": "openrouter",
               "label": "Nous: Hermes 4 405B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/nousresearch/hermes-4-70b",
-              "provider": "openrouter",
-              "label": "Nous: Hermes 4 70B",
               "accessModes": [
                 "gateway"
               ],
@@ -5906,9 +5960,9 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/deepseek/deepseek-v4.1-flash-beta",
+              "key": "vercel-ai-gateway/deepseek/deepseek-v4.1-flash",
               "provider": "vercel-ai-gateway",
-              "label": "DeepSeek V4.1 Flash Beta",
+              "label": "DeepSeek V4.1 Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -6206,15 +6260,6 @@
               "key": "vercel-ai-gateway/zai/glm-5.3",
               "provider": "vercel-ai-gateway",
               "label": "GLM 5.3",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/zai/glm-5.3-promo-50",
-              "provider": "vercel-ai-gateway",
-              "label": "GLM 5.3 (50% off)",
               "accessModes": [
                 "gateway"
               ],
@@ -7620,15 +7665,6 @@
               "key": "vercel-ai-gateway/alibaba/qwen3.8-flash",
               "provider": "vercel-ai-gateway",
               "label": "Qwen 3.8 Flash",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/alibaba/qwen3.8-flash-next",
-              "provider": "vercel-ai-gateway",
-              "label": "Qwen 3.8 Flash Next",
               "accessModes": [
                 "gateway"
               ],
@@ -9207,6 +9243,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/deepseek/deepseek-v4.1-flash",
+      "provider": "openrouter",
+      "label": "DeepSeek: DeepSeek V4.1 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/deepseek/deepseek-r1",
       "provider": "openrouter",
       "label": "DeepSeek: R1",
@@ -9739,6 +9784,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/inclusionai/ling-3.0-flash-vl:free",
+      "provider": "openrouter",
+      "label": "inclusionAI: Ling 3.0 Flash VL (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/kwaipilot/kat-coder-pro-v2",
       "provider": "openrouter",
       "label": "Kwaipilot: KAT-Coder-Pro V2",
@@ -10045,6 +10099,15 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/mistralai/codestral-2508:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Codestral 2508 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/mistralai/devstral-2512",
       "provider": "openrouter",
       "label": "Mistral: Devstral 2 2512",
@@ -10081,9 +10144,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/mistralai/ministral-8b-2512:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Ministral 3 8B 2512 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/mistralai/mistral-large-2512",
       "provider": "openrouter",
       "label": "Mistral: Mistral Large 3 2512",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/mistralai/mistral-large-2512:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Mistral Large 3 2512 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -10102,6 +10183,15 @@
       "key": "openrouter/mistralai/mistral-medium-3.1",
       "provider": "openrouter",
       "label": "Mistral: Mistral Medium 3.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/mistralai/mistral-medium-3.1:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Mistral Medium 3.1 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -10165,6 +10255,15 @@
       "key": "openrouter/mistralai/mistral-small-2603",
       "provider": "openrouter",
       "label": "Mistral: Mistral Small 4",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/mistralai/mistral-small-2603:batch",
+      "provider": "openrouter",
+      "label": "Mistral: Mistral Small 4 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -10345,15 +10444,6 @@
       "key": "openrouter/nousresearch/hermes-4-405b",
       "provider": "openrouter",
       "label": "Nous: Hermes 4 405B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/nousresearch/hermes-4-70b",
-      "provider": "openrouter",
-      "label": "Nous: Hermes 4 70B",
       "accessModes": [
         "gateway"
       ],
@@ -13110,9 +13200,9 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/deepseek/deepseek-v4.1-flash-beta",
+      "key": "vercel-ai-gateway/deepseek/deepseek-v4.1-flash",
       "provider": "vercel-ai-gateway",
-      "label": "DeepSeek V4.1 Flash Beta",
+      "label": "DeepSeek V4.1 Flash",
       "accessModes": [
         "gateway"
       ],
@@ -13410,15 +13500,6 @@
       "key": "vercel-ai-gateway/zai/glm-5.3",
       "provider": "vercel-ai-gateway",
       "label": "GLM 5.3",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/zai/glm-5.3-promo-50",
-      "provider": "vercel-ai-gateway",
-      "label": "GLM 5.3 (50% off)",
       "accessModes": [
         "gateway"
       ],
@@ -14837,15 +14918,6 @@
       "key": "vercel-ai-gateway/alibaba/qwen3.8-flash",
       "provider": "vercel-ai-gateway",
       "label": "Qwen 3.8 Flash",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/alibaba/qwen3.8-flash-next",
-      "provider": "vercel-ai-gateway",
-      "label": "Qwen 3.8 Flash Next",
       "accessModes": [
         "gateway"
       ],
