@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-10T22:58:19.550Z",
+  "generatedAt": "2026-09-15T20:59:38.044Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1830,24 +1830,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/~anthropic/claude-haiku-latest",
-              "provider": "openrouter",
-              "label": "Anthropic Claude Haiku Latest",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/~anthropic/claude-sonnet-latest",
-              "provider": "openrouter",
-              "label": "Anthropic Claude Sonnet Latest",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/anthropic/claude-3-haiku",
               "provider": "openrouter",
               "label": "Anthropic: Claude 3 Haiku",
@@ -1914,6 +1896,15 @@
               "key": "openrouter/anthropic/claude-haiku-4.5:batch",
               "provider": "openrouter",
               "label": "Anthropic: Claude Haiku 4.5 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~anthropic/claude-haiku-latest",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Haiku Latest",
               "accessModes": [
                 "gateway"
               ],
@@ -2010,6 +2001,24 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/anthropic/claude-opus-5",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Opus 5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-opus-5:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Opus 5 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/~anthropic/claude-opus-latest",
               "provider": "openrouter",
               "label": "Anthropic: Claude Opus Latest",
@@ -2067,6 +2076,15 @@
               "key": "openrouter/anthropic/claude-sonnet-5:batch",
               "provider": "openrouter",
               "label": "Anthropic: Claude Sonnet 5 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~anthropic/claude-sonnet-latest",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Sonnet Latest",
               "accessModes": [
                 "gateway"
               ],
@@ -2191,24 +2209,6 @@
               "accessLabel": "via OpenRouter"
             },
             {
-              "key": "openrouter/anthropic/claude-opus-5",
-              "provider": "openrouter",
-              "label": "Claude Opus 5",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/anthropic/claude-opus-5:batch",
-              "provider": "openrouter",
-              "label": "Claude Opus 5 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/cohere/command-a",
               "provider": "openrouter",
               "label": "Cohere: Command A",
@@ -2254,9 +2254,18 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/~deepseek/deepseek-v4-flash-latest",
+              "key": "openrouter/~deepseek/deepseek-flash-latest",
               "provider": "openrouter",
-              "label": "DeepSeek V4 Flash Latest",
+              "label": "DeepSeek: DeepSeek Flash Latest",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~deepseek/deepseek-pro-latest",
+              "provider": "openrouter",
+              "label": "DeepSeek: DeepSeek Pro Latest",
               "accessModes": [
                 "gateway"
               ],
@@ -2338,6 +2347,15 @@
               "key": "openrouter/deepseek/deepseek-v4-flash-0731:batch",
               "provider": "openrouter",
               "label": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~deepseek/deepseek-v4-flash-latest",
+              "provider": "openrouter",
+              "label": "DeepSeek: DeepSeek V4 Flash Latest",
               "accessModes": [
                 "gateway"
               ],
@@ -2443,24 +2461,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/~google/gemini-flash-latest",
-              "provider": "openrouter",
-              "label": "Google Gemini Flash Latest",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/~google/gemini-pro-latest",
-              "provider": "openrouter",
-              "label": "Google Gemini Pro Latest",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/google/gemini-2.5-flash",
               "provider": "openrouter",
               "label": "Google: Gemini 2.5 Flash",
@@ -2509,15 +2509,6 @@
               "key": "openrouter/google/gemini-2.5-pro:batch",
               "provider": "openrouter",
               "label": "Google: Gemini 2.5 Pro (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/google/gemini-2.5-pro-preview-05-06",
-              "provider": "openrouter",
-              "label": "Google: Gemini 2.5 Pro Preview 05-06",
               "accessModes": [
                 "gateway"
               ],
@@ -2689,6 +2680,24 @@
               "key": "openrouter/google/gemini-3.8-flash:batch",
               "provider": "openrouter",
               "label": "Google: Gemini 3.8 Flash (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~google/gemini-flash-latest",
+              "provider": "openrouter",
+              "label": "Google: Gemini Flash Latest",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~google/gemini-pro-latest",
+              "provider": "openrouter",
+              "label": "Google: Gemini Pro Latest",
               "accessModes": [
                 "gateway"
               ],
@@ -2930,9 +2939,36 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/inclusionai/ling-3.0-flash-vl",
+              "provider": "openrouter",
+              "label": "inclusionAI: Ling 3.0 Flash VL",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/inclusionai/ling-3.0-flash-vl:free",
               "provider": "openrouter",
               "label": "inclusionAI: Ling 3.0 Flash VL (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/inference-net/schematron-v2-small",
+              "provider": "openrouter",
+              "label": "Inference.net: Schematron V2 Small",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/inference-net/schematron-v2-turbo",
+              "provider": "openrouter",
+              "label": "Inference.net: Schematron V2 Turbo",
               "accessModes": [
                 "gateway"
               ],
@@ -3443,15 +3479,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/~moonshotai/kimi-latest",
-              "provider": "openrouter",
-              "label": "MoonshotAI Kimi Latest",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/moonshotai/kimi-k2",
               "provider": "openrouter",
               "label": "MoonshotAI: Kimi K2 0711",
@@ -3518,6 +3545,15 @@
               "key": "openrouter/moonshotai/kimi-k3:batch",
               "provider": "openrouter",
               "label": "MoonshotAI: Kimi K3 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~moonshotai/kimi-latest",
+              "provider": "openrouter",
+              "label": "MoonshotAI: Kimi Latest",
               "accessModes": [
                 "gateway"
               ],
@@ -3686,18 +3722,9 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/~openai/gpt-latest",
+              "key": "openrouter/~openai/gpt-astra-latest",
               "provider": "openrouter",
-              "label": "OpenAI GPT Latest",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/~openai/gpt-mini-latest",
-              "provider": "openrouter",
-              "label": "OpenAI GPT Mini Latest",
+              "label": "OpenAI: GPT Astra Latest",
               "accessModes": [
                 "gateway"
               ],
@@ -3725,6 +3752,42 @@
               "key": "openrouter/openai/gpt-chat-latest",
               "provider": "openrouter",
               "label": "OpenAI: GPT Chat Latest",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~openai/gpt-luna-latest",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT Luna Latest",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~openai/gpt-mini-latest",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT Mini Latest",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~openai/gpt-sol-latest",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT Sol Latest",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/~openai/gpt-terra-latest",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT Terra Latest",
               "accessModes": [
                 "gateway"
               ],
@@ -3797,15 +3860,6 @@
               "key": "openrouter/openai/gpt-4-turbo:batch",
               "provider": "openrouter",
               "label": "OpenAI: GPT-4 Turbo (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/openai/gpt-4-turbo-preview",
-              "provider": "openrouter",
-              "label": "OpenAI: GPT-4 Turbo Preview",
               "accessModes": [
                 "gateway"
               ],
@@ -5162,9 +5216,27 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/sakana/fugu-max",
+              "provider": "openrouter",
+              "label": "Sakana: Fugu Max",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/sakana/fugu-ultra",
               "provider": "openrouter",
               "label": "Sakana: Fugu Ultra",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "openrouter/sakana/fugu-ultra-v2",
+              "provider": "openrouter",
+              "label": "Sakana: Fugu Ultra v2",
               "accessModes": [
                 "gateway"
               ],
@@ -5612,6 +5684,15 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "openrouter/z-ai/glm-5.2:free",
+              "provider": "openrouter",
+              "label": "Z.ai: GLM 5.2 (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "openrouter/z-ai/glm-5.3",
               "provider": "openrouter",
               "label": "Z.ai: GLM 5.3",
@@ -5978,18 +6059,9 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/mistral/devstral-2",
+              "key": "vercel-ai-gateway/sakana/fugu-max",
               "provider": "vercel-ai-gateway",
-              "label": "Devstral 2",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/mistral/devstral-small-2",
-              "provider": "vercel-ai-gateway",
-              "label": "Devstral Small 2",
+              "label": "Fugu Max",
               "accessModes": [
                 "gateway"
               ],
@@ -5999,6 +6071,15 @@
               "key": "vercel-ai-gateway/sakana/fugu-ultra",
               "provider": "vercel-ai-gateway",
               "label": "Fugu Ultra",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/sakana/fugu-ultra-v2",
+              "provider": "vercel-ai-gateway",
+              "label": "Fugu Ultra v2",
               "accessModes": [
                 "gateway"
               ],
@@ -7068,6 +7149,24 @@
               "source": "public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-vl",
+              "provider": "vercel-ai-gateway",
+              "label": "Ling 3.0 Flash VL",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-vl-free",
+              "provider": "vercel-ai-gateway",
+              "label": "Ling 3.0 Flash VL (Free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/meta/llama-3.1-70b",
               "provider": "vercel-ai-gateway",
               "label": "Llama 3.1 70B Instruct",
@@ -7269,15 +7368,6 @@
               "key": "vercel-ai-gateway/mistral/mistral-large-3",
               "provider": "vercel-ai-gateway",
               "label": "Mistral Large 3",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/mistral/mistral-medium",
-              "provider": "vercel-ai-gateway",
-              "label": "Mistral Medium 3.1",
               "accessModes": [
                 "gateway"
               ],
@@ -7548,15 +7638,6 @@
               "key": "vercel-ai-gateway/openai/o4-mini-fast",
               "provider": "vercel-ai-gateway",
               "label": "o4-mini (Fast)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/mistral/pixtral-12b",
-              "provider": "vercel-ai-gateway",
-              "label": "Pixtral 12B 2409",
               "accessModes": [
                 "gateway"
               ],
@@ -7845,6 +7926,15 @@
               "key": "vercel-ai-gateway/bytedance/seed-1.6",
               "provider": "vercel-ai-gateway",
               "label": "Seed 1.6",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/bytedance/seed-2.1-turbo",
+              "provider": "vercel-ai-gateway",
+              "label": "Seed 2.1 Turbo",
               "accessModes": [
                 "gateway"
               ],
@@ -8670,24 +8760,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/~anthropic/claude-haiku-latest",
-      "provider": "openrouter",
-      "label": "Anthropic Claude Haiku Latest",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/~anthropic/claude-sonnet-latest",
-      "provider": "openrouter",
-      "label": "Anthropic Claude Sonnet Latest",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/anthropic/claude-3-haiku",
       "provider": "openrouter",
       "label": "Anthropic: Claude 3 Haiku",
@@ -8754,6 +8826,15 @@
       "key": "openrouter/anthropic/claude-haiku-4.5:batch",
       "provider": "openrouter",
       "label": "Anthropic: Claude Haiku 4.5 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~anthropic/claude-haiku-latest",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Haiku Latest",
       "accessModes": [
         "gateway"
       ],
@@ -8850,6 +8931,24 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/anthropic/claude-opus-5",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Opus 5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-opus-5:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Opus 5 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/~anthropic/claude-opus-latest",
       "provider": "openrouter",
       "label": "Anthropic: Claude Opus Latest",
@@ -8907,6 +9006,15 @@
       "key": "openrouter/anthropic/claude-sonnet-5:batch",
       "provider": "openrouter",
       "label": "Anthropic: Claude Sonnet 5 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~anthropic/claude-sonnet-latest",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Sonnet Latest",
       "accessModes": [
         "gateway"
       ],
@@ -9031,24 +9139,6 @@
       "accessLabel": "via OpenRouter"
     },
     {
-      "key": "openrouter/anthropic/claude-opus-5",
-      "provider": "openrouter",
-      "label": "Claude Opus 5",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/anthropic/claude-opus-5:batch",
-      "provider": "openrouter",
-      "label": "Claude Opus 5 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/anthropic/claude-sonnet-4.6",
       "provider": "openrouter",
       "label": "Claude Sonnet 4.6",
@@ -9108,9 +9198,18 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/~deepseek/deepseek-v4-flash-latest",
+      "key": "openrouter/~deepseek/deepseek-flash-latest",
       "provider": "openrouter",
-      "label": "DeepSeek V4 Flash Latest",
+      "label": "DeepSeek: DeepSeek Flash Latest",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~deepseek/deepseek-pro-latest",
+      "provider": "openrouter",
+      "label": "DeepSeek: DeepSeek Pro Latest",
       "accessModes": [
         "gateway"
       ],
@@ -9192,6 +9291,15 @@
       "key": "openrouter/deepseek/deepseek-v4-flash-0731:batch",
       "provider": "openrouter",
       "label": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~deepseek/deepseek-v4-flash-latest",
+      "provider": "openrouter",
+      "label": "DeepSeek: DeepSeek V4 Flash Latest",
       "accessModes": [
         "gateway"
       ],
@@ -9297,24 +9405,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/~google/gemini-flash-latest",
-      "provider": "openrouter",
-      "label": "Google Gemini Flash Latest",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/~google/gemini-pro-latest",
-      "provider": "openrouter",
-      "label": "Google Gemini Pro Latest",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/google/gemini-2.5-flash",
       "provider": "openrouter",
       "label": "Google: Gemini 2.5 Flash",
@@ -9363,15 +9453,6 @@
       "key": "openrouter/google/gemini-2.5-pro:batch",
       "provider": "openrouter",
       "label": "Google: Gemini 2.5 Pro (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/google/gemini-2.5-pro-preview-05-06",
-      "provider": "openrouter",
-      "label": "Google: Gemini 2.5 Pro Preview 05-06",
       "accessModes": [
         "gateway"
       ],
@@ -9543,6 +9624,24 @@
       "key": "openrouter/google/gemini-3.8-flash:batch",
       "provider": "openrouter",
       "label": "Google: Gemini 3.8 Flash (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~google/gemini-flash-latest",
+      "provider": "openrouter",
+      "label": "Google: Gemini Flash Latest",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~google/gemini-pro-latest",
+      "provider": "openrouter",
+      "label": "Google: Gemini Pro Latest",
       "accessModes": [
         "gateway"
       ],
@@ -9784,9 +9883,36 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/inclusionai/ling-3.0-flash-vl",
+      "provider": "openrouter",
+      "label": "inclusionAI: Ling 3.0 Flash VL",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/inclusionai/ling-3.0-flash-vl:free",
       "provider": "openrouter",
       "label": "inclusionAI: Ling 3.0 Flash VL (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/inference-net/schematron-v2-small",
+      "provider": "openrouter",
+      "label": "Inference.net: Schematron V2 Small",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/inference-net/schematron-v2-turbo",
+      "provider": "openrouter",
+      "label": "Inference.net: Schematron V2 Turbo",
       "accessModes": [
         "gateway"
       ],
@@ -10297,15 +10423,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/~moonshotai/kimi-latest",
-      "provider": "openrouter",
-      "label": "MoonshotAI Kimi Latest",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/moonshotai/kimi-k2",
       "provider": "openrouter",
       "label": "MoonshotAI: Kimi K2 0711",
@@ -10372,6 +10489,15 @@
       "key": "openrouter/moonshotai/kimi-k3:batch",
       "provider": "openrouter",
       "label": "MoonshotAI: Kimi K3 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~moonshotai/kimi-latest",
+      "provider": "openrouter",
+      "label": "MoonshotAI: Kimi Latest",
       "accessModes": [
         "gateway"
       ],
@@ -10540,18 +10666,9 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/~openai/gpt-latest",
+      "key": "openrouter/~openai/gpt-astra-latest",
       "provider": "openrouter",
-      "label": "OpenAI GPT Latest",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/~openai/gpt-mini-latest",
-      "provider": "openrouter",
-      "label": "OpenAI GPT Mini Latest",
+      "label": "OpenAI: GPT Astra Latest",
       "accessModes": [
         "gateway"
       ],
@@ -10579,6 +10696,42 @@
       "key": "openrouter/openai/gpt-chat-latest",
       "provider": "openrouter",
       "label": "OpenAI: GPT Chat Latest",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~openai/gpt-luna-latest",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT Luna Latest",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~openai/gpt-mini-latest",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT Mini Latest",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~openai/gpt-sol-latest",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT Sol Latest",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/~openai/gpt-terra-latest",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT Terra Latest",
       "accessModes": [
         "gateway"
       ],
@@ -10651,15 +10804,6 @@
       "key": "openrouter/openai/gpt-4-turbo:batch",
       "provider": "openrouter",
       "label": "OpenAI: GPT-4 Turbo (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/openai/gpt-4-turbo-preview",
-      "provider": "openrouter",
-      "label": "OpenAI: GPT-4 Turbo Preview",
       "accessModes": [
         "gateway"
       ],
@@ -12029,9 +12173,27 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "openrouter/sakana/fugu-max",
+      "provider": "openrouter",
+      "label": "Sakana: Fugu Max",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "openrouter/sakana/fugu-ultra",
       "provider": "openrouter",
       "label": "Sakana: Fugu Ultra",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/sakana/fugu-ultra-v2",
+      "provider": "openrouter",
+      "label": "Sakana: Fugu Ultra v2",
       "accessModes": [
         "gateway"
       ],
@@ -12473,6 +12635,15 @@
       "key": "openrouter/z-ai/glm-5.2:batch",
       "provider": "openrouter",
       "label": "Z.ai: GLM 5.2 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "openrouter/z-ai/glm-5.2:free",
+      "provider": "openrouter",
+      "label": "Z.ai: GLM 5.2 (free)",
       "accessModes": [
         "gateway"
       ],
@@ -13218,18 +13389,9 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/mistral/devstral-2",
+      "key": "vercel-ai-gateway/sakana/fugu-max",
       "provider": "vercel-ai-gateway",
-      "label": "Devstral 2",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/mistral/devstral-small-2",
-      "provider": "vercel-ai-gateway",
-      "label": "Devstral Small 2",
+      "label": "Fugu Max",
       "accessModes": [
         "gateway"
       ],
@@ -13239,6 +13401,15 @@
       "key": "vercel-ai-gateway/sakana/fugu-ultra",
       "provider": "vercel-ai-gateway",
       "label": "Fugu Ultra",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/sakana/fugu-ultra-v2",
+      "provider": "vercel-ai-gateway",
+      "label": "Fugu Ultra v2",
       "accessModes": [
         "gateway"
       ],
@@ -14321,6 +14492,24 @@
       "source": "public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-vl",
+      "provider": "vercel-ai-gateway",
+      "label": "Ling 3.0 Flash VL",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-vl-free",
+      "provider": "vercel-ai-gateway",
+      "label": "Ling 3.0 Flash VL (Free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/meta/llama-3.1-70b",
       "provider": "vercel-ai-gateway",
       "label": "Llama 3.1 70B Instruct",
@@ -14522,15 +14711,6 @@
       "key": "vercel-ai-gateway/mistral/mistral-large-3",
       "provider": "vercel-ai-gateway",
       "label": "Mistral Large 3",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/mistral/mistral-medium",
-      "provider": "vercel-ai-gateway",
-      "label": "Mistral Medium 3.1",
       "accessModes": [
         "gateway"
       ],
@@ -14801,15 +14981,6 @@
       "key": "vercel-ai-gateway/openai/o4-mini-fast",
       "provider": "vercel-ai-gateway",
       "label": "o4-mini (Fast)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/mistral/pixtral-12b",
-      "provider": "vercel-ai-gateway",
-      "label": "Pixtral 12B 2409",
       "accessModes": [
         "gateway"
       ],
@@ -15098,6 +15269,15 @@
       "key": "vercel-ai-gateway/bytedance/seed-1.6",
       "provider": "vercel-ai-gateway",
       "label": "Seed 1.6",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/bytedance/seed-2.1-turbo",
+      "provider": "vercel-ai-gateway",
+      "label": "Seed 2.1 Turbo",
       "accessModes": [
         "gateway"
       ],
