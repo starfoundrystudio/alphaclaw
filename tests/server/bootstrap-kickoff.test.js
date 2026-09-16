@@ -244,6 +244,102 @@ describe("server/bootstrap-kickoff", () => {
     });
   });
 
+  it("waits for a usable model before sending the greeting", async () => {
+    const deps = createDeps();
+    deps.isModelAuthReady = vi.fn(async () => false);
+    deps.maxAttempts = 2;
+    const service = createBootstrapKickoffService(deps);
+
+    const result = await service.maybeRunBootstrapKickoff();
+
+    expect(result).toMatchObject({ ok: false, reason: "gave_up" });
+    expect(deps.requestGateway).not.toHaveBeenCalledWith(
+      "chat.send",
+      expect.anything(),
+    );
+    expect(readWrittenMarker(deps)).toBeNull();
+  });
+
+  it("re-sends a greeting the agent never answered once the model is usable", async () => {
+    const deps = createDeps({ kickoffMarker: true });
+    deps.fs.readFileSync = vi.fn((targetPath) => {
+      if (targetPath === kConstants.kBootstrapKickoffMarkerPath) {
+        return JSON.stringify({
+          kickedOff: true,
+          reason: "kickoff_sent",
+          sessionKey: "agent:main:main",
+          agentId: "main",
+          runId: "run-0",
+        });
+      }
+      if (targetPath === kConstants.kOnboardingMarkerPath) {
+        return JSON.stringify({ onboarded: true });
+      }
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+    deps.requestGateway = vi.fn(async (method) => {
+      if (method === "chat.history") {
+        return { messages: [{ role: "user", content: "[Clawbridge] hello" }] };
+      }
+      if (method === "chat.send") return { runId: "run-2" };
+      throw new Error(`unexpected method: ${method}`);
+    });
+    const service = createBootstrapKickoffService(deps);
+
+    const result = await service.retryUnansweredKickoff();
+
+    expect(result).toMatchObject({ ok: true, reason: "kickoff_resent", runId: "run-2" });
+    expect(deps.requestGateway).toHaveBeenCalledWith("chat.send", {
+      sessionKey: "agent:main:main",
+      message: kBootstrapKickoffMessage,
+      idempotencyKey: expect.any(String),
+    });
+    expect(readWrittenMarker(deps)).toMatchObject({
+      reason: "kickoff_sent",
+      replyRetries: 1,
+      runId: "run-2",
+    });
+  });
+
+  it("does not re-send a greeting that was answered, or past the retry budget", async () => {
+    const marker = (replyRetries) =>
+      JSON.stringify({
+        kickedOff: true,
+        reason: "kickoff_sent",
+        sessionKey: "agent:main:main",
+        replyRetries,
+      });
+    const answered = createDeps({ kickoffMarker: true });
+    answered.fs.readFileSync = vi.fn((targetPath) =>
+      targetPath === kConstants.kBootstrapKickoffMarkerPath
+        ? marker(0)
+        : JSON.stringify({ onboarded: true }),
+    );
+    answered.requestGateway = vi.fn(async (method) => {
+      if (method === "chat.history") {
+        return { messages: [{ role: "assistant", content: "Hi, I am your agent." }] };
+      }
+      throw new Error(`unexpected method: ${method}`);
+    });
+    const answeredResult =
+      await createBootstrapKickoffService(answered).retryUnansweredKickoff();
+    expect(answeredResult).toMatchObject({ ok: false, reason: "already_answered" });
+
+    const exhausted = createDeps({ kickoffMarker: true });
+    exhausted.fs.readFileSync = vi.fn((targetPath) =>
+      targetPath === kConstants.kBootstrapKickoffMarkerPath
+        ? marker(3)
+        : JSON.stringify({ onboarded: true }),
+    );
+    const exhaustedResult =
+      await createBootstrapKickoffService(exhausted).retryUnansweredKickoff();
+    expect(exhaustedResult).toMatchObject({
+      ok: false,
+      reason: "reply_retries_exhausted",
+    });
+    expect(exhausted.requestGateway).not.toHaveBeenCalled();
+  });
+
   it("skips the kickoff when agent sessions already exist", async () => {
     const deps = createDeps();
     deps.requestGateway.mockImplementation(async (method) => {
