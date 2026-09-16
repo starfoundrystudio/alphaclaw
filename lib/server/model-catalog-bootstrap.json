@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-15T20:59:38.044Z",
+  "generatedAt": "2026-09-16T19:44:22.984Z",
   "openclawVersion": "2026.7.1 (2d2ddc4)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2767,15 +2767,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/google/gemma-4-31b-it:batch",
-              "provider": "openrouter",
-              "label": "Google: Gemma 4 31B (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/google/gemma-4-31b-it:free",
               "provider": "openrouter",
               "label": "Google: Gemma 4 31B (free)",
@@ -4460,15 +4451,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/gpt-oss-20b:batch",
-              "provider": "openrouter",
-              "label": "OpenAI: gpt-oss-20b (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "openrouter/openai/gpt-oss-safeguard-20b",
               "provider": "openrouter",
               "label": "OpenAI: gpt-oss-safeguard-20b",
@@ -5486,18 +5468,18 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/thinkingmachines/inkling-small:batch",
+              "key": "openrouter/thinkingmachines/inkling-small:free",
               "provider": "openrouter",
-              "label": "Thinking Machines: Inkling Small (batch)",
+              "label": "Thinking Machines: Inkling Small (free)",
               "accessModes": [
                 "gateway"
               ],
               "source": "public-provider-catalog"
             },
             {
-              "key": "openrouter/thinkingmachines/inkling-small:free",
+              "key": "openrouter/stealth/union-alpha",
               "provider": "openrouter",
-              "label": "Thinking Machines: Inkling Small (free)",
+              "label": "Union Alpha",
               "accessModes": [
                 "gateway"
               ],
@@ -6978,42 +6960,6 @@
               "source": "public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/kwaipilot/kat-coder-air-v2.5",
-              "provider": "vercel-ai-gateway",
-              "label": "Kat Coder Air V2.5",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/kwaipilot/kat-coder-pro-v2",
-              "provider": "vercel-ai-gateway",
-              "label": "Kat Coder Pro V2",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/kwaipilot/kat-coder-pro-v2.5",
-              "provider": "vercel-ai-gateway",
-              "label": "Kat Coder Pro V2.5",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/kwaipilot/kat-coder-pro-v1",
-              "provider": "vercel-ai-gateway",
-              "label": "KAT-Coder-Pro V1",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/moonshotai/kimi-k2",
               "provider": "vercel-ai-gateway",
               "label": "Kimi K2 Instruct",
@@ -7917,6 +7863,24 @@
               "key": "vercel-ai-gateway/sakana/namazu",
               "provider": "vercel-ai-gateway",
               "label": "Sakana Namazu",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/inference-net/schematron-v2-small",
+              "provider": "vercel-ai-gateway",
+              "label": "Schematron V2 Small",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/inference-net/schematron-v2-turbo",
+              "provider": "vercel-ai-gateway",
+              "label": "Schematron V2 Turbo",
               "accessModes": [
                 "gateway"
               ],
@@ -9711,15 +9675,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/google/gemma-4-31b-it:batch",
-      "provider": "openrouter",
-      "label": "Google: Gemma 4 31B (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/google/gemma-4-31b-it:free",
       "provider": "openrouter",
       "label": "Google: Gemma 4 31B (free)",
@@ -11417,15 +11372,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/openai/gpt-oss-20b:batch",
-      "provider": "openrouter",
-      "label": "OpenAI: gpt-oss-20b (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "openrouter/openai/gpt-oss-safeguard-20b",
       "provider": "openrouter",
       "label": "OpenAI: gpt-oss-safeguard-20b",
@@ -12443,18 +12389,18 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/thinkingmachines/inkling-small:batch",
+      "key": "openrouter/thinkingmachines/inkling-small:free",
       "provider": "openrouter",
-      "label": "Thinking Machines: Inkling Small (batch)",
+      "label": "Thinking Machines: Inkling Small (free)",
       "accessModes": [
         "gateway"
       ],
       "source": "public-provider-catalog"
     },
     {
-      "key": "openrouter/thinkingmachines/inkling-small:free",
+      "key": "openrouter/stealth/union-alpha",
       "provider": "openrouter",
-      "label": "Thinking Machines: Inkling Small (free)",
+      "label": "Union Alpha",
       "accessModes": [
         "gateway"
       ],
@@ -14321,42 +14267,6 @@
       "source": "public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/kwaipilot/kat-coder-air-v2.5",
-      "provider": "vercel-ai-gateway",
-      "label": "Kat Coder Air V2.5",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/kwaipilot/kat-coder-pro-v2",
-      "provider": "vercel-ai-gateway",
-      "label": "Kat Coder Pro V2",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/kwaipilot/kat-coder-pro-v2.5",
-      "provider": "vercel-ai-gateway",
-      "label": "Kat Coder Pro V2.5",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/kwaipilot/kat-coder-pro-v1",
-      "provider": "vercel-ai-gateway",
-      "label": "KAT-Coder-Pro V1",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/moonshotai/kimi-k2",
       "provider": "vercel-ai-gateway",
       "label": "Kimi K2 Instruct",
@@ -15260,6 +15170,24 @@
       "key": "vercel-ai-gateway/sakana/namazu",
       "provider": "vercel-ai-gateway",
       "label": "Sakana Namazu",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/inference-net/schematron-v2-small",
+      "provider": "vercel-ai-gateway",
+      "label": "Schematron V2 Small",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/inference-net/schematron-v2-turbo",
+      "provider": "vercel-ai-gateway",
+      "label": "Schematron V2 Turbo",
       "accessModes": [
         "gateway"
       ],
