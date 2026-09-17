@@ -28,14 +28,16 @@ hosts whose bootstrap SSH firewall has been removed, but this operator machine
 did not have a usable Tailscale CLI path at audit time. Their runtime versions
 remain unverified.
 
-## Gate status
+## Sequencing decision
 
-G0 runtime verification remains open until:
+On 2026-09-16, Bill decided that a fleet-wide runtime sweep should not block
+the start of upgrade implementation. G0 runtime-policy work is complete once
+the repository guards and Node 26 provisioning behavior are merged into the
+execution branches.
 
-1. `alphaclaw-mat-starfoundry-1` is upgraded to a supported Node runtime.
-2. The seven unreachable workload hosts are checked through their managed
-   Tailscale/operator access path.
-3. The authoritative fleet registry is reconciled with the ten-record local
-   snapshot before declaring coverage complete.
+These first-pass results are a baseline, not an immediate remediation queue.
+Each internal or production target must pass the Node and SQLite pre-check
+immediately before its G3 or G4 install. Any noncompliant host is upgraded
+before AlphaClaw/OpenClaw is installed on that host.
 
 No host was changed during this pass.
