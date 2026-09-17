@@ -236,7 +236,7 @@ npm run test:watch      # Watch mode
 npm run test:coverage   # Coverage report
 ```
 
-**Requirements:** Node.js ≥ 24.15.0 is recommended. OpenClaw also supports Node.js ≥ 22.22.3 < 23 and ≥ 25.9.0.
+**Requirements:** Node.js ≥ 26.1.0 is recommended for new provisions. Existing managed hosts may remain on Node.js ≥ 24.16.0 < 25. The supported range is `>=24.16.0 <25 || >=26.1.0`.
 
 ## License
 

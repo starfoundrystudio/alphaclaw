@@ -23,7 +23,7 @@ Runtime model:
 
 ### Key Technologies
 
-- Node.js 24.15+ is the recommended runtime. The supported engine range is `>=22.22.3 <23 || >=24.15.0 <25 || >=25.9.0`.
+- Node.js 26.1+ is the recommended runtime for new provisions. Existing managed hosts may remain on Node.js 24.16+; the supported engine range is `>=24.16.0 <25 || >=26.1.0`.
 - Express-based HTTP API server.
 - `http-proxy` for gateway proxy behavior.
 - OpenClaw CLI/gateway process orchestration.
