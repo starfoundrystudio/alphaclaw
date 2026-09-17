@@ -24,7 +24,7 @@ describe("server/init/runtime-init", () => {
       constants,
       startEnvWatcher: vi.fn(),
       attachGatewaySignalHandlers: vi.fn(),
-      cleanupStaleImportTempDirs: vi.fn(),
+      cleanupLegacyImportTempDirs: vi.fn(),
       migrateManagedInternalFiles: vi.fn(),
     };
   };
@@ -36,7 +36,7 @@ describe("server/init/runtime-init", () => {
 
     expect(deps.startEnvWatcher).toHaveBeenCalledTimes(1);
     expect(deps.attachGatewaySignalHandlers).toHaveBeenCalledTimes(1);
-    expect(deps.cleanupStaleImportTempDirs).toHaveBeenCalledTimes(1);
+    expect(deps.cleanupLegacyImportTempDirs).toHaveBeenCalledTimes(1);
     expect(deps.migrateManagedInternalFiles).not.toHaveBeenCalled();
   });
 

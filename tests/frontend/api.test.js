@@ -66,7 +66,6 @@ describe("frontend/api", () => {
           vars,
           modelKey,
           agentRuntimeId: "codex",
-          importMode: false,
           tailscaleApiToken: "tskey-api-test_123456789",
         }),
         headers: expect.any(Headers),
@@ -86,68 +85,6 @@ describe("frontend/api", () => {
 
     await expect(api.runOnboard([], "openai/gpt-5.1-codex")).rejects.toMatchObject({
       code: "ONBOARD_RESPONSE_EMPTY",
-    });
-  });
-
-  it("scanImportRepo posts the temp dir payload", async () => {
-    global.fetch.mockResolvedValue(mockJsonResponse(200, { ok: true, hasOpenclawSetup: true }));
-    const api = await loadApiModule();
-
-    const result = await api.scanImportRepo("/tmp/alphaclaw-import-1234");
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/onboard/import/scan",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({ tempDir: "/tmp/alphaclaw-import-1234" }),
-        headers: expect.any(Headers),
-      }),
-    );
-    expectLastFetchHeaders("application/json");
-    expect(result).toEqual({ ok: true, hasOpenclawSetup: true });
-  });
-
-  it("applyImport posts import approval payload", async () => {
-    global.fetch.mockResolvedValue(
-      mockJsonResponse(200, {
-        ok: true,
-        envVarsImported: 2,
-        placeholderReview: {
-          found: true,
-          count: 1,
-          vars: [{ key: "SLACK_BOT_TOKEN", status: "missing" }],
-        },
-      }),
-    );
-    const api = await loadApiModule();
-
-    const result = await api.applyImport({
-      tempDir: "/tmp/alphaclaw-import-1234",
-      approvedSecrets: [{ suggestedEnvVar: "OPENAI_API_KEY", value: "sk-123" }],
-      skipSecretExtraction: false,
-    });
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/onboard/import/apply",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({
-          tempDir: "/tmp/alphaclaw-import-1234",
-          approvedSecrets: [{ suggestedEnvVar: "OPENAI_API_KEY", value: "sk-123" }],
-          skipSecretExtraction: false,
-        }),
-        headers: expect.any(Headers),
-      }),
-    );
-    expectLastFetchHeaders("application/json");
-    expect(result).toEqual({
-      ok: true,
-      envVarsImported: 2,
-      placeholderReview: {
-        found: true,
-        count: 1,
-        vars: [{ key: "SLACK_BOT_TOKEN", status: "missing" }],
-      },
     });
   });
 

@@ -4,7 +4,6 @@ const path = require("path");
 
 const {
   buildOnboardArgs,
-  writeManagedImportOpenclawConfig,
   writeSanitizedOpenclawConfig,
 } = require("../../lib/server/onboarding/openclaw");
 
@@ -290,43 +289,6 @@ describe("server/onboarding/openclaw", () => {
     expect(next.plugins.entries.anthropic).toEqual({ enabled: true });
   });
 
-  it("configures Codex runtime for imported OpenClaw configs when requested", () => {
-    const openclawDir = createTempOpenclawDir();
-    const configPath = path.join(openclawDir, "openclaw.json");
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(
-        {
-          plugins: { allow: [], load: { paths: [] }, entries: {} },
-          channels: {},
-        },
-        null,
-        2,
-      ),
-      "utf8",
-    );
-
-    writeManagedImportOpenclawConfig({
-      fs,
-      openclawDir,
-      varMap: {},
-      agentRuntimeId: "codex",
-    });
-
-    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.agents.defaults.agentRuntime).toBeUndefined();
-    expect(next.models.providers.openai.agentRuntime).toEqual({ id: "codex" });
-    expect(next.plugins.allow).toContain("codex");
-    expect(next.plugins.entries.codex).toEqual({ enabled: true });
-    expect(next.tools.web.search).toEqual({
-      enabled: true,
-      openaiCodex: {
-        enabled: true,
-        mode: "cached",
-      },
-    });
-  });
-
   it("leaves Codex native web search unset when Codex runtime is not requested", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
@@ -445,130 +407,6 @@ describe("server/onboarding/openclaw", () => {
     expect(next.plugins.bundledDiscovery).toBeUndefined();
   });
 
-  it("preserves imported global web search opt-out when enabling Codex runtime", () => {
-    const openclawDir = createTempOpenclawDir();
-    const configPath = path.join(openclawDir, "openclaw.json");
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(
-        {
-          plugins: { allow: [], load: { paths: [] }, entries: {} },
-          channels: {},
-          tools: {
-            web: {
-              search: {
-                enabled: false,
-              },
-            },
-          },
-        },
-        null,
-        2,
-      ),
-      "utf8",
-    );
-
-    writeManagedImportOpenclawConfig({
-      fs,
-      openclawDir,
-      varMap: {},
-      agentRuntimeId: "codex",
-    });
-
-    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.agents.defaults.agentRuntime).toBeUndefined();
-    expect(next.models.providers.openai.agentRuntime).toEqual({ id: "codex" });
-    expect(next.tools.web.search).toEqual({
-      enabled: false,
-    });
-  });
-
-  it("preserves imported Codex native web search options when enabling defaults", () => {
-    const openclawDir = createTempOpenclawDir();
-    const configPath = path.join(openclawDir, "openclaw.json");
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(
-        {
-          plugins: { allow: [], load: { paths: [] }, entries: {} },
-          channels: {},
-          tools: {
-            web: {
-              search: {
-                openaiCodex: {
-                  mode: "live",
-                  contextSize: "high",
-                },
-              },
-            },
-          },
-        },
-        null,
-        2,
-      ),
-      "utf8",
-    );
-
-    writeManagedImportOpenclawConfig({
-      fs,
-      openclawDir,
-      varMap: {},
-      agentRuntimeId: "codex",
-    });
-
-    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.tools.web.search).toEqual({
-      enabled: true,
-      openaiCodex: {
-        enabled: true,
-        mode: "live",
-        contextSize: "high",
-      },
-    });
-  });
-
-  it("preserves imported managed web search provider when enabling Codex runtime", () => {
-    const openclawDir = createTempOpenclawDir();
-    const configPath = path.join(openclawDir, "openclaw.json");
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(
-        {
-          plugins: { allow: ["brave"], load: { paths: [] }, entries: {} },
-          channels: {},
-          tools: {
-            web: {
-              search: {
-                enabled: true,
-                provider: "brave",
-              },
-            },
-          },
-        },
-        null,
-        2,
-      ),
-      "utf8",
-    );
-
-    writeManagedImportOpenclawConfig({
-      fs,
-      openclawDir,
-      varMap: {},
-      agentRuntimeId: "codex",
-    });
-
-    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.tools.web.search).toEqual({
-      enabled: true,
-      provider: "brave",
-      openaiCodex: {
-        enabled: true,
-        mode: "cached",
-      },
-    });
-  });
-
   it("preserves existing gateway HTTP endpoint settings when API exposure is opted in", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
@@ -617,59 +455,6 @@ describe("server/onboarding/openclaw", () => {
       enabled: true,
       maxBodyBytes: 5678,
     });
-  });
-
-  it("resets imported allowlist dmPolicy to pairing when re-enabling discord", () => {
-    const openclawDir = createTempOpenclawDir();
-    const configPath = path.join(openclawDir, "openclaw.json");
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(
-        {
-          plugins: { allow: [], load: { paths: [] }, entries: {} },
-          channels: {
-            discord: {
-              enabled: false,
-              dmPolicy: "allowlist",
-              allowFrom: [],
-            },
-          },
-        },
-        null,
-        2,
-      ),
-      "utf8",
-    );
-
-    writeManagedImportOpenclawConfig({
-      fs,
-      openclawDir,
-      varMap: { DISCORD_BOT_TOKEN: "discord-live-secret" },
-    });
-
-    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.channels.discord.enabled).toBe(true);
-    expect(next.channels.discord.dmPolicy).toBe("pairing");
-    expect(next.channels.discord.token).toBe("${DISCORD_BOT_TOKEN}");
-    expect(next.plugins.entries["active-memory"]).toEqual({
-      enabled: true,
-      config: {
-        agents: ["main"],
-        allowedChatTypes: ["direct", "channel"],
-        queryMode: "recent",
-        promptStyle: "balanced",
-        timeoutMs: 15000,
-        maxSummaryChars: 220,
-        persistTranscripts: false,
-        logging: true,
-        enabled: false,
-      },
-    });
-    expect(next.plugins.slots).toBeUndefined();
-    expect(next.skills.entries.teamyou).toEqual({ enabled: false });
-    expect(next.agents.defaults.heartbeat).toBeUndefined();
-    expect(next.agents.defaults.memorySearch).toBeUndefined();
-    expect(next.update.checkOnStart).toBe(false);
   });
 
   it("preserves unrelated update settings while disabling startup update checks", () => {
@@ -796,59 +581,6 @@ describe("server/onboarding/openclaw", () => {
     // leaves whatever OpenClaw or clawctl wrote untouched.
     expect(next.plugins.slots.memory).toBe("openclaw-teamyou-memory");
     expect(next.skills.entries.teamyou).toEqual({ enabled: false });
-  });
-
-  it("keeps TeamYou memory enabled on import when the workspace already completed bootstrap", () => {
-    const openclawDir = createTempOpenclawDir();
-    const workspaceDir = path.join(openclawDir, "workspace");
-    fs.mkdirSync(workspaceDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(workspaceDir, "openclaw-workspace-state.json"),
-      JSON.stringify({
-        version: 1,
-        bootstrapSeededAt: "2026-07-01T00:00:00.000Z",
-        setupCompletedAt: "2026-07-01T00:05:00.000Z",
-      }),
-      "utf8",
-    );
-    const configPath = path.join(openclawDir, "openclaw.json");
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(
-        {
-          plugins: {
-            allow: ["openclaw-teamyou-memory", "active-memory"],
-            load: { paths: [] },
-            entries: {
-              "active-memory": { enabled: true, config: { queryMode: "recent" } },
-              "openclaw-teamyou-memory": {
-                enabled: true,
-                config: { apiKey: "${TEAMYOU_API_KEY}" },
-              },
-            },
-            slots: { memory: "openclaw-teamyou-memory" },
-          },
-          skills: { entries: { teamyou: { enabled: true } } },
-          channels: {},
-          agents: { defaults: { workspace: workspaceDir } },
-        },
-        null,
-        2,
-      ),
-      "utf8",
-    );
-
-    writeManagedImportOpenclawConfig({
-      fs,
-      openclawDir,
-      varMap: {},
-    });
-
-    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.plugins.slots.memory).toBe("openclaw-teamyou-memory");
-    expect(next.plugins.entries["openclaw-teamyou-memory"].enabled).toBe(true);
-    expect(next.plugins.entries["active-memory"].config.enabled).toBeUndefined();
-    expect(next.skills.entries.teamyou).toEqual({ enabled: true });
   });
 
   it("preserves a user-selected unmanaged memory slot while gating fresh bootstrap", () => {
@@ -1009,48 +741,6 @@ describe("server/onboarding/openclaw", () => {
     expect(next.agents.defaults.memorySearch).toBeUndefined();
   });
 
-  it("leaves imported memory search settings untouched", () => {
-    const openclawDir = createTempOpenclawDir();
-    const configPath = path.join(openclawDir, "openclaw.json");
-    const importedMemorySearch = {
-      enabled: true,
-      query: { maxResults: 12 },
-      provider: "gemini",
-      model: "gemini-embedding-001",
-      remote: {
-        baseUrl: "https://example.com/v1",
-        apiKey: "${GEMINI_API_KEY}",
-        headers: { "x-test": "1" },
-      },
-    };
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(
-        {
-          plugins: { allow: [], load: { paths: [] }, entries: {} },
-          channels: {},
-          agents: {
-            defaults: {
-              memorySearch: importedMemorySearch,
-            },
-          },
-        },
-        null,
-        2,
-      ),
-      "utf8",
-    );
-
-    writeManagedImportOpenclawConfig({
-      fs,
-      openclawDir,
-      varMap: { AI_GATEWAY_API_KEY: "vck_live_test" },
-    });
-
-    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.agents.defaults.memorySearch).toEqual(importedMemorySearch);
-  });
-
   it('stamps discovery.mdns.mode during fresh onboarding when OPENCLAW_DISCOVERY_MDNS_MODE="off"', () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
@@ -1091,43 +781,4 @@ describe("server/onboarding/openclaw", () => {
     });
   });
 
-  it('stamps discovery.mdns.mode during import onboarding when OPENCLAW_DISCOVERY_MDNS_MODE="off"', () => {
-    const openclawDir = createTempOpenclawDir();
-    const configPath = path.join(openclawDir, "openclaw.json");
-    const previousMode = process.env.OPENCLAW_DISCOVERY_MDNS_MODE;
-    process.env.OPENCLAW_DISCOVERY_MDNS_MODE = "off";
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(
-        {
-          plugins: { allow: [], load: { paths: [] }, entries: {} },
-          channels: {},
-        },
-        null,
-        2,
-      ),
-      "utf8",
-    );
-
-    try {
-      writeManagedImportOpenclawConfig({
-        fs,
-        openclawDir,
-        varMap: {},
-      });
-    } finally {
-      if (previousMode === undefined) {
-        delete process.env.OPENCLAW_DISCOVERY_MDNS_MODE;
-      } else {
-        process.env.OPENCLAW_DISCOVERY_MDNS_MODE = previousMode;
-      }
-    }
-
-    const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    expect(next.discovery).toEqual({
-      mdns: {
-        mode: "off",
-      },
-    });
-  });
 });

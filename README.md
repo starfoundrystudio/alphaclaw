@@ -47,18 +47,6 @@
 
 AlphaClaw simply wraps OpenClaw, it's not a dependency. Remove AlphaClaw and your agent keeps running. Nothing proprietary, nothing to migrate.
 
-## Migrate An Existing OpenClaw Setup
-
-If you have an older standalone OpenClaw instance and want to move it into a
-fresh AlphaClaw installation, use the migration guide:
-
-- [OpenClaw To AlphaClaw Migration](docs/openclaw-to-alphaclaw-migration.md)
-
-The repo also includes helper scripts to automate most of the prep work:
-
-- [scripts/prepare-openclaw-migration.sh](scripts/prepare-openclaw-migration.sh)
-- [scripts/publish-openclaw-migration.sh](scripts/publish-openclaw-migration.sh)
-
 ## Quick Start
 
 ### Deploy (recommended)

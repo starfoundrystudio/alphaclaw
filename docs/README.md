@@ -28,7 +28,7 @@ referenced from it.
 ## Background / historical
 
 `security-gateway-rollout-notes.md`, `fork-deviations.md`,
-`openclaw-to-alphaclaw-migration.md`, `teamyou-memory-integration-analysis.md`,
+`teamyou-memory-integration-analysis.md`,
 `security-architecture.html` — context that predates or sits beside the
 current program; not required reading to work a current thread.
 
