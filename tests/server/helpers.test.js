@@ -3,7 +3,6 @@ const {
   parseJwtPayload,
   getCodexAccountId,
   getClientKey,
-  resolveGithubRepoUrl,
   normalizeOnboardingModels,
 } = require("../../lib/server/helpers");
 const { CODEX_JWT_CLAIM_PATH } = require("../../lib/server/constants");
@@ -25,18 +24,6 @@ describe("server/helpers", () => {
   it("returns null when noisy output has no valid JSON", () => {
     expect(parseJsonFromNoisyOutput("no braces here")).toBeNull();
     expect(parseJsonFromNoisyOutput("start {bad json} end")).toBeNull();
-  });
-
-  it("normalizes GitHub repository URLs and shorthands", () => {
-    expect(resolveGithubRepoUrl("owner/repo")).toBe("owner/repo");
-    expect(resolveGithubRepoUrl("git@github.com:owner/repo.git")).toBe("owner/repo");
-    expect(resolveGithubRepoUrl("https://github.com/owner/repo")).toBe("owner/repo");
-  });
-
-  it("throws when repo input is not owner/repo format", () => {
-    expect(() => resolveGithubRepoUrl("just-owner")).toThrow(
-      'GITHUB_WORKSPACE_REPO must be in "owner/repo" format.',
-    );
   });
 
   it("parses JWT payload and extracts Codex account id", () => {

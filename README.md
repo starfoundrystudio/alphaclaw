@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" /></a>
 </p>
 
-<p align="center">AlphaClaw wraps <a href="https://github.com/openclaw/openclaw">OpenClaw</a> with a convenient setup wizard, self-healing watchdog, Git-backed rollback, and full browser-based observability. Ships with anti-drift prompt hardening to keep your agent disciplined, and simplifies integrations (e.g. Google Workspace, Google Pub/Sub, Telegram Topics, Slack, Discord) so you can manage multiple agents from one UI instead of config files.</p>
+<p align="center">AlphaClaw wraps <a href="https://github.com/openclaw/openclaw">OpenClaw</a> with a convenient setup wizard, self-healing watchdog, and full browser-based observability. Ships with anti-drift prompt hardening to keep your agent disciplined, and simplifies integrations (e.g. Google Workspace, Google Pub/Sub, Telegram Topics, Slack, Discord) so you can manage multiple agents from one UI instead of config files.</p>
 
 <p align="center"><em>First deploy to first message in under five minutes.</em></p>
 
@@ -22,7 +22,7 @@
 ## Features
 
 - **Setup UI:** Password-protected web dashboard for onboarding, configuration, and day-to-day management.
-- **Guided Onboarding:** Step-by-step setup wizard — model selection, provider credentials, optional GitHub backup, channel pairing.
+- **Guided Onboarding:** Step-by-step setup wizard for model selection, provider credentials, and channel pairing.
 - **Multi-Agent Management:** Sidebar-driven agent navigation with create, rename, and delete flows. Per-agent overview cards, channel bindings, and URL-driven agent selection.
 - **Gateway Manager:** Spawns, monitors, restarts, and proxies the OpenClaw gateway as a managed child process.
 - **Watchdog:** Crash detection, crash-loop recovery, auto-repair (`openclaw doctor --fix`), Telegram/Discord/Slack notifications, and a live interactive terminal for monitoring gateway output directly from the browser.
@@ -31,9 +31,8 @@
 - **Cron Jobs:** Dedicated cron tab with job management, an interactive rolling calendar, run-history drilldowns, trend analytics, and per-run usage breakdowns.
 - **Nodes:** Guided local-node setup for VPS deployments with per-node browser attach checks, reconnect commands, and routing/pairing controls.
 - **Webhooks:** Named webhook endpoints with per-hook transform modules, request logging, payload inspection, editable delivery destinations, and OAuth callback support for third-party auth flows.
-- **File Explorer:** Browser-based workspace explorer with file visibility, inline edits, diff view, and Git-aware sync for quick fixes without SSH.
-- **Prompt Hardening:** Ships anti-drift bootstrap prompts (`AGENTS.md`, `TOOLS.md`) injected into your agent's system prompt on every message — enforcing safe practices, commit discipline, and change summaries out of the box.
-- **Git Sync:** Optional automatic hourly commits of your OpenClaw workspace to GitHub with configurable cron schedule. Combined with prompt hardening, every agent action can be version-controlled and auditable.
+- **File Explorer:** Browser-based workspace explorer with file visibility, inline edits, and diff view for quick fixes without SSH.
+- **Prompt Hardening:** Ships anti-drift bootstrap prompts (`AGENTS.md`, `TOOLS.md`) injected into your agent's system prompt on every message — enforcing safe practices and clear change summaries out of the box.
 - **Version Management:** In-place updates for both AlphaClaw and OpenClaw with in-app release notes, changelog review, and one-click apply.
 - **Codex OAuth:** Built-in PKCE flow for OpenAI Codex CLI model access.
 
@@ -90,8 +89,8 @@ Before enabling it, make sure:
 
 | Tab           | What it manages                                                                                                          |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **General**   | Gateway status, channel health, pending pairings, Google Workspace, repo sync schedule, OpenClaw dashboard               |
-| **Browse**    | File explorer for workspace visibility, inline edits, diff review, and Git-backed sync                                   |
+| **General**   | Gateway status, channel health, pending pairings, Google Workspace, and OpenClaw dashboard                               |
+| **Browse**    | File explorer for workspace visibility, inline edits, and diff review                                                    |
 | **Usage**     | Token summaries, per-session and per-agent cost and token breakdown with source/agent dimension comparisons              |
 | **Cron**      | Cron job management, interactive rolling calendar, run-history drilldowns, trend analytics, and per-run usage breakdowns |
 | **Nodes**     | Guided local-node setup for VPS deployments, per-node browser attach, reconnect commands, and routing/pairing controls   |
@@ -105,7 +104,6 @@ Before enabling it, make sure:
 | Command                                                    | Description                                   |
 | ---------------------------------------------------------- | --------------------------------------------- |
 | `alphaclaw start`                                          | Start the server (Setup UI + gateway manager) |
-| `alphaclaw git-sync -m "message"`                          | Commit and push the OpenClaw workspace        |
 | `alphaclaw telegram topic add --thread <id> --name <text>` | Register a Telegram topic mapping             |
 | `alphaclaw version`                                        | Print version                                 |
 | `alphaclaw help`                                           | Show help                                     |
@@ -148,8 +146,6 @@ The built-in watchdog monitors gateway health and recovers from failures automat
 | --------------------------------- | -------- | -------------------------------------------------- |
 | `SETUP_PASSWORD`                  | Yes      | Password for the Setup UI                          |
 | `OPENCLAW_GATEWAY_TOKEN`          | Auto     | Gateway auth token (auto-generated if unset)       |
-| `GITHUB_TOKEN`                    | Optional | GitHub PAT for workspace backup repo               |
-| `GITHUB_WORKSPACE_REPO`           | Optional | GitHub repo for workspace sync (e.g. `owner/repo`) |
 | `ALPHACLAW_SETUP_URL`             | Optional | Canonical private Setup UI URL                     |
 | `ALPHACLAW_PUBLIC_BASE_URL`       | Optional | Canonical public webhook/OAuth callback URL        |
 | `ALPHACLAW_PUBLIC_EXTRA_PATH_PREFIXES` | Optional | Extra public callback path prefixes (comma-separated) |
@@ -172,7 +168,7 @@ The built-in watchdog monitors gateway health and recovers from failures automat
 
 ## OpenAI-compatible `/v1` proxy
 
-AlphaClaw can expose an OpenAI-compatible API surface on the same public port as the Setup UI. It is disabled by default. Enable it from the Setup UI under General -> Features -> API; the setting is persisted in `alphaclaw.json` in the OpenClaw repo so workspace sync can commit the change.
+AlphaClaw can expose an OpenAI-compatible API surface on the same public port as the Setup UI. It is disabled by default. Enable it from the Setup UI under General -> Features -> API; the setting is persisted in `alphaclaw.json`.
 
 | Path                            | Method  | Notes                                                              |
 | ------------------------------- | ------- | ------------------------------------------------------------------ |

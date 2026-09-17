@@ -14,24 +14,25 @@ behind it — not as deviations pending re-evaluation.
 last sync. The `openclaw` dependency is a separate, still-active upstream and
 is not covered by this note.)
 
-## GitHub sync only when explicitly configured
+## Managed GitHub workspace sync removed
 
-Area: runtime prompt / managed sync cron
+Area: runtime prompt / onboarding / workspace management
 
 Behavior:
 
-- AlphaClaw retains the GitHub sync setup, `alphaclaw git-sync` command, sync
-  schedule UI, and import behavior.
-- The managed hourly GitHub sync cron is only installed/run when both
-  `GITHUB_TOKEN` and `GITHUB_WORKSPACE_REPO` are configured.
-- The runtime OpenClaw agent is told to commit locally, and only push when a
-  GitHub sync remote is configured or the user explicitly asks for a push.
+- AlphaClaw does not configure or operate a GitHub workspace remote.
+- The `alphaclaw git-sync` command, managed sync cron, sync UI, and GitHub-backed
+  onboarding flow have been removed.
+- Existing managed sync artifacts are retired during startup migration.
+- The runtime OpenClaw agent is told not to initialize, commit, or push a
+  repository unless the user explicitly asks it to manage one they control.
 
 Why:
 
-- GitHub sync setup can be skipped during onboarding.
-- Without this guard, the packaged agent prompt and legacy/stale cron state can
-  make OpenClaw try to push even when the user never configured a sync repo.
+- A managed installation should not expose a second persistence and sharing
+  model that can conflict with TeamYou-managed artifacts and policy.
+- Removing implicit repository operations prevents stale credentials, cron
+  state, or agent guidance from pushing customer state unexpectedly.
 
 ## Import-managed runtime token handling
 

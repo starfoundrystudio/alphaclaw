@@ -11,54 +11,6 @@ describe("frontend/welcome-config", () => {
     ]);
   });
 
-  it("allows skipping GitHub entirely during a fresh setup", async () => {
-    const welcomeConfig = await loadWelcomeConfig();
-
-    expect(
-      welcomeConfig.getWelcomeGroupError("github", {
-        _GITHUB_FLOW: welcomeConfig.kGithubFlowFresh,
-        GITHUB_TOKEN: "",
-        GITHUB_WORKSPACE_REPO: "",
-      }),
-    ).toBe("");
-  });
-
-  it("reports a target repo format error for invalid GitHub input", async () => {
-    const welcomeConfig = await loadWelcomeConfig();
-
-    expect(
-      welcomeConfig.getWelcomeGroupError("github", {
-        GITHUB_TOKEN: "ghp_123",
-        GITHUB_WORKSPACE_REPO: "owner-only",
-      }),
-    ).toBe('Target repo must be in "owner/repo" format.');
-  });
-
-  it("requires a token when a GitHub repo is provided for fresh setup", async () => {
-    const welcomeConfig = await loadWelcomeConfig();
-
-    expect(
-      welcomeConfig.getWelcomeGroupError("github", {
-        _GITHUB_FLOW: welcomeConfig.kGithubFlowFresh,
-        GITHUB_TOKEN: "",
-        GITHUB_WORKSPACE_REPO: "owner/repo",
-      }),
-    ).toBe("Enter a GitHub personal access token to continue.");
-  });
-
-  it("requires a source repo when import mode is selected", async () => {
-    const welcomeConfig = await loadWelcomeConfig();
-
-    expect(
-      welcomeConfig.getWelcomeGroupError("github", {
-        _GITHUB_FLOW: welcomeConfig.kGithubFlowImport,
-        GITHUB_TOKEN: "ghp_123",
-        GITHUB_WORKSPACE_REPO: "owner/target-repo",
-        _GITHUB_SOURCE_REPO: "",
-      }),
-    ).toBe('Enter the source repo as "owner/repo".');
-  });
-
   it("returns a Codex-specific auth message for the AI step", async () => {
     const welcomeConfig = await loadWelcomeConfig();
 

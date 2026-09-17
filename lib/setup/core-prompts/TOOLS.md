@@ -10,13 +10,13 @@ Do not deflect actionable requests to the Setup UI. If a command or tool is avai
 
 | Tab       | URL                          | What it helps with                                                                                                                                                                         |
 | --------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| General   | `{{SETUP_UI_URL}}#general`   | Gateway status & restart, channel health (Telegram/Discord), pending pairings, feature health (Embeddings/Audio), Google Workspace connection, repo auto-sync schedule, OpenClaw dashboard |
+| General   | `{{SETUP_UI_URL}}#general`   | Gateway status & restart, channel health (Telegram/Discord), pending pairings, feature health (Embeddings/Audio), Google Workspace connection, OpenClaw dashboard |
 | Watchdog  | `{{SETUP_UI_URL}}#watchdog`  | Gateway watchdog lifecycle, crash-loop visibility, restart diagnostics, and auto-repair feature                                                                                            |
 | Models | `{{SETUP_UI_URL}}#models` | AI provider credentials (Anthropic, OpenAI, Gemini, Mistral, Voyage, Groq, Deepgram), feature capabilities, Codex OAuth                                                                       |
 | Agent Vault | `{{SETUP_UI_URL}}#credentials` | Agent Vault connection, credential names, and service-access proposals. Credential values are entered only on Agent Vault approval pages                                                  |
 | Runtime Configuration | `{{SETUP_UI_URL}}#envars` | View/edit/add non-secret runtime configuration, gateway restart to apply changes                                                                                                       |
 | Webhooks  | `{{SETUP_UI_URL}}#webhooks`  | Webhook endpoint visibility, create flow, request history, and gateway delivery debugging                                                                                                  |
-| Browse    | `{{SETUP_UI_URL}}#browse`    | File browser and editor rooted at `.openclaw`, markdown preview/edit flow, and git-aware save workflow                                                                                     |
+| Browse    | `{{SETUP_UI_URL}}#browse`    | File browser and editor rooted at `.openclaw`, with markdown preview and edit flows                                                                                                      |
 
 ### Environment variables
 
@@ -34,7 +34,7 @@ Clawbridge manages durable OpenClaw state under `$OPENCLAW_STATE_DIR`. Temporary
 
 Workspace artifacts that must persist belong under `$OPENCLAW_STATE_DIR`.
 
-Host-level packages and system configuration can persist across reboots on the current VPS, but they are outside the managed Git repository and may be lost on reprovision or replacement. Keep non-secret setup notes or automation under `$OPENCLAW_STATE_DIR` when reproducibility matters; never copy credentials into Git.
+Host-level packages and system configuration can persist across reboots on the current VPS, but they are outside managed OpenClaw state and may be lost on reprovision or replacement. Keep non-secret setup notes or automation under `$OPENCLAW_STATE_DIR` when reproducibility matters; never copy credentials into workspace files.
 
 For plugins and local tooling:
 

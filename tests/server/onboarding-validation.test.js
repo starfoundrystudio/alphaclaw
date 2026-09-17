@@ -1,15 +1,6 @@
 const { validateOnboardingInput } = require("../../lib/server/onboarding/validation");
 
-const kBaseVars = ({
-  includeChannel = true,
-  includeGithub = true,
-} = {}) => [
-  ...(includeGithub
-    ? [
-        { key: "GITHUB_TOKEN", value: "ghp_test" },
-        { key: "GITHUB_WORKSPACE_REPO", value: "owner/repo" },
-      ]
-    : []),
+const kBaseVars = ({ includeChannel = true } = {}) => [
   ...(includeChannel
     ? [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_tok" }]
     : []),
@@ -190,10 +181,10 @@ describe("onboarding/validation", () => {
     expect(res.error).toBe("Claude CLI runtime requires an Anthropic model");
   });
 
-  it("accepts fresh onboarding without GitHub backup configured", () => {
+  it("accepts fresh onboarding without a workspace repository", () => {
     const res = validateOnboardingInput({
       vars: [
-        ...kBaseVars({ includeChannel: false, includeGithub: false }),
+        ...kBaseVars({ includeChannel: false }),
         { key: "OPENROUTER_API_KEY", value: "sk-or-test" },
       ],
       modelKey: "openrouter/nvidia/nemotron-3-nano",
@@ -201,38 +192,6 @@ describe("onboarding/validation", () => {
       hasCodexOauthProfile: () => false,
     });
     expect(res.ok).toBe(true);
-  });
-
-  it("rejects partial GitHub backup input for fresh onboarding", () => {
-    const res = validateOnboardingInput({
-      vars: [
-        ...kBaseVars({ includeChannel: false, includeGithub: false }),
-        { key: "GITHUB_WORKSPACE_REPO", value: "owner/repo" },
-        { key: "OPENROUTER_API_KEY", value: "sk-or-test" },
-      ],
-      modelKey: "openrouter/nvidia/nemotron-3-nano",
-      resolveModelProvider: kResolveProvider,
-      hasCodexOauthProfile: () => false,
-    });
-    expect(res.ok).toBe(false);
-    expect(res.error).toBe("GITHUB_TOKEN must be set to enable GitHub backup");
-  });
-
-  it("requires GitHub backup config for import onboarding", () => {
-    const res = validateOnboardingInput({
-      vars: [
-        ...kBaseVars({ includeChannel: false, includeGithub: false }),
-        { key: "OPENROUTER_API_KEY", value: "sk-or-test" },
-      ],
-      modelKey: "openrouter/nvidia/nemotron-3-nano",
-      resolveModelProvider: kResolveProvider,
-      hasCodexOauthProfile: () => false,
-      importMode: true,
-    });
-    expect(res.ok).toBe(false);
-    expect(res.error).toBe(
-      "GitHub token and workspace repo are required to import an existing setup",
-    );
   });
 
   it("rejects openrouter model when only unrelated API keys are present", () => {
@@ -249,8 +208,6 @@ describe("onboarding/validation", () => {
   it("accepts whatsapp owner number as the required channel credential", () => {
     const res = validateOnboardingInput({
       vars: [
-        { key: "GITHUB_TOKEN", value: "ghp_test" },
-        { key: "GITHUB_WORKSPACE_REPO", value: "owner/repo" },
         { key: "WHATSAPP_OWNER_NUMBER", value: "+15551234567" },
         { key: "OPENAI_API_KEY", value: "sk-test-123" },
       ],

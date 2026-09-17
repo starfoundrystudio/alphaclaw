@@ -33,10 +33,14 @@ const createSystemDeps = () => {
         features: ["Models"],
         visibleInEnvars: false,
       },
-      { key: "GITHUB_TOKEN", label: "GitHub Access Token", group: "github", hint: "" },
     ],
-    kKnownKeys: new Set(["OPENAI_API_KEY", "ANTHROPIC_TOKEN", "GITHUB_TOKEN"]),
-    kSystemVars: new Set(["PORT", "SETUP_PASSWORD"]),
+    kKnownKeys: new Set(["OPENAI_API_KEY", "ANTHROPIC_TOKEN"]),
+    kSystemVars: new Set([
+      "PORT",
+      "SETUP_PASSWORD",
+      "GITHUB_TOKEN",
+      "GITHUB_WORKSPACE_REPO",
+    ]),
     syncChannelConfig: vi.fn(),
     isGatewayRunning: vi.fn(async () => true),
     isOnboarded: vi.fn(() => true),
@@ -94,12 +98,6 @@ const createSystemDeps = () => {
       upsertApiKeyProfileForEnvVar: vi.fn(),
       removeApiKeyProfileForEnvVar: vi.fn(),
     },
-    resolveGithubRepoUrl: vi.fn((value) =>
-      String(value || "")
-        .trim()
-        .replace(/^https:\/\/github\.com\//, "")
-        .replace(/\.git$/, ""),
-    ),
     OPENCLAW_DIR: "/tmp/openclaw",
     ensureGatewayProxyConfig: vi.fn(() => false),
     getBaseUrl: vi.fn(() => "https://setup.example.com"),
@@ -197,11 +195,6 @@ describe("server/routes/system", () => {
           source: "env_file",
         }),
         expect.objectContaining({
-          key: "GITHUB_TOKEN",
-          value: "",
-          source: "unset",
-        }),
-        expect.objectContaining({
           key: "CUSTOM_FLAG",
           value: "1",
           group: "custom",
@@ -217,6 +210,7 @@ describe("server/routes/system", () => {
       expect.arrayContaining([
         "PORT",
         "SETUP_PASSWORD",
+        "GITHUB_TOKEN",
         "GITHUB_WORKSPACE_REPO",
         "GOG_KEYRING_PASSWORD",
       ]),
@@ -514,70 +508,8 @@ describe("server/routes/system", () => {
             },
           },
         },
-        syncCron: expect.objectContaining({
-          enabled: false,
-          schedule: "0 * * * *",
-        }),
       }),
     );
-  });
-
-  it("configures GitHub sync through the dashboard endpoint", async () => {
-    const previousFetch = global.fetch;
-    global.fetch = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        headers: { get: () => "repo" },
-        json: async () => ({ login: "owner" }),
-      })
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        statusText: "Not Found",
-        json: async () => ({ message: "Not Found" }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        headers: { get: () => "" },
-        json: async () => [],
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        json: async () => ({ full_name: "owner/repo" }),
-      });
-    const deps = createSystemDeps();
-    const app = createApp(deps);
-
-    try {
-      const res = await request(app).post("/api/github-sync/config").send({
-        repo: "owner/repo",
-        token: "ghp_test_123456789",
-        schedule: "0 * * * *",
-      });
-
-      expect(res.status).toBe(200);
-      expect(res.body).toMatchObject({
-        ok: true,
-        repo: "owner/repo",
-        syncCron: {
-          enabled: true,
-          schedule: "0 * * * *",
-        },
-      });
-      expect(deps.writeEnvFile).toHaveBeenCalledWith([
-        { key: "GITHUB_TOKEN", value: "ghp_test_123456789" },
-        { key: "GITHUB_WORKSPACE_REPO", value: "owner/repo" },
-      ]);
-      expect(deps.reloadEnv).toHaveBeenCalled();
-      expect(deps.fs.writeFileSync).toHaveBeenCalledWith(
-        "/tmp/openclaw/cron/system-sync.json",
-        JSON.stringify({ enabled: true, schedule: "0 * * * *" }, null, 2),
-      );
-    } finally {
-      global.fetch = previousFetch;
-    }
   });
 
   it("returns tokenized dashboard URL when OpenClaw CLI prints a token", async () => {
@@ -780,53 +712,6 @@ describe("server/routes/system", () => {
       if (previousEnvToken === undefined) delete process.env.OPENCLAW_GATEWAY_TOKEN;
       else process.env.OPENCLAW_GATEWAY_TOKEN = previousEnvToken;
     }
-  });
-
-  it("returns sync cron status on GET /api/sync-cron", async () => {
-    const deps = createSystemDeps();
-    deps.fs.readFileSync.mockReturnValueOnce(
-      JSON.stringify({ enabled: false, schedule: "*/30 * * * *" }),
-    );
-    const app = createApp(deps);
-
-    const res = await request(app).get("/api/sync-cron");
-
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual(
-      expect.objectContaining({
-        ok: true,
-        enabled: false,
-        schedule: "*/30 * * * *",
-      }),
-    );
-  });
-
-  it("updates sync cron config on PUT /api/sync-cron", async () => {
-    const deps = createSystemDeps();
-    deps.fs.readFileSync.mockReturnValueOnce(
-      JSON.stringify({ enabled: true, schedule: "0 * * * *" }),
-    );
-    const app = createApp(deps);
-
-    const res = await request(app).put("/api/sync-cron").send({
-      enabled: true,
-      schedule: "*/15 * * * *",
-    });
-
-    expect(res.status).toBe(200);
-    expect(deps.fs.mkdirSync).toHaveBeenCalledWith("/tmp/openclaw/cron", {
-      recursive: true,
-    });
-    expect(deps.fs.writeFileSync).toHaveBeenCalledWith(
-      "/tmp/openclaw/cron/system-sync.json",
-      expect.stringContaining('"schedule": "*/15 * * * *"'),
-    );
-    expect(deps.fs.writeFileSync).toHaveBeenCalledWith(
-      "/etc/cron.d/openclaw-hourly-sync",
-      expect.stringContaining('*/15 * * * * root bash "/tmp/openclaw/.alphaclaw/hourly-git-sync.sh"'),
-      expect.objectContaining({ mode: 0o644 }),
-    );
-    expect(res.body.ok).toBe(true);
   });
 
   it("returns AlphaClaw config on GET /api/alphaclaw/config", async () => {

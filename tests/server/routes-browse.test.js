@@ -40,11 +40,6 @@ describe("server/routes/browse", () => {
       "[]\n",
       "utf8",
     );
-    fs.writeFileSync(
-      path.join(rootDir, ".alphaclaw", "hourly-git-sync.sh"),
-      "#!/bin/bash\n",
-      "utf8",
-    );
     const app = createApp(rootDir);
 
     const res = await request(app).get("/api/browse/tree");
@@ -410,26 +405,6 @@ describe("server/routes/browse", () => {
     expect(fs.readFileSync(lockedPath, "utf8")).toBe("before\n");
   });
 
-  it("rejects writes to locked managed files under .alphaclaw", async () => {
-    const rootDir = createTestRoot();
-    const lockedPath = path.join(rootDir, ".alphaclaw", "hourly-git-sync.sh");
-    fs.mkdirSync(path.dirname(lockedPath), { recursive: true });
-    fs.writeFileSync(lockedPath, "before\n", "utf8");
-    const app = createApp(rootDir);
-
-    const res = await request(app).put("/api/browse/write").send({
-      path: ".alphaclaw/hourly-git-sync.sh",
-      content: "after\n",
-    });
-
-    expect(res.status).toBe(403);
-    expect(res.body).toEqual({
-      ok: false,
-      error: "This file is managed by Clawbridge and cannot be edited.",
-    });
-    expect(fs.readFileSync(lockedPath, "utf8")).toBe("before\n");
-  });
-
   it("moves regular workspace files between folders", async () => {
     const rootDir = createTestRoot();
     const sourcePath = path.join(rootDir, "workspace", "drafts", "notes.txt");
@@ -632,68 +607,4 @@ describe("server/routes/browse", () => {
     expect(fs.readFileSync(filePath, "utf8")).toBe('{"restore":true}\n');
   });
 
-  it("returns non-repo git summary outside git repositories", async () => {
-    const rootDir = createTestRoot();
-    const app = createApp(rootDir);
-
-    const res = await request(app).get("/api/browse/git-summary");
-
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual(
-      expect.objectContaining({
-        ok: true,
-        isRepo: false,
-        repoPath: path.resolve(rootDir),
-      }),
-    );
-  });
-
-  it("rejects git sync outside git repositories", async () => {
-    const rootDir = createTestRoot();
-    const app = createApp(rootDir);
-
-    const res = await request(app).post("/api/browse/git-sync").send({
-      message: "sync changes",
-    });
-
-    expect(res.status).toBe(400);
-    expect(res.body).toEqual({
-      ok: false,
-      error: "No git repo at this root",
-    });
-  });
-
-  it("rejects git sync before committing when GitHub sync is not configured", async () => {
-    const rootDir = createTestRoot();
-    const previousRepo = process.env.GITHUB_WORKSPACE_REPO;
-    delete process.env.GITHUB_WORKSPACE_REPO;
-    fs.writeFileSync(path.join(rootDir, "openclaw.json"), '{"ok":true}\n', "utf8");
-    runGit(rootDir, "init -b main");
-    runGit(rootDir, "config user.email test@example.com");
-    runGit(rootDir, "config user.name Test");
-    runGit(rootDir, "add openclaw.json");
-    runGit(rootDir, "commit -m \"initial\"");
-    const commitBefore = runGit(rootDir, "rev-parse HEAD");
-    fs.writeFileSync(path.join(rootDir, "openclaw.json"), '{"ok":false}\n', "utf8");
-    const app = createApp(rootDir);
-
-    try {
-      const res = await request(app).post("/api/browse/git-sync").send({
-        message: "sync changes",
-      });
-
-      expect(res.status).toBe(400);
-      expect(res.body).toEqual({
-        ok: false,
-        error: "GitHub sync is not configured. Set up GitHub sync before syncing changes.",
-      });
-      expect(runGit(rootDir, "rev-parse HEAD")).toBe(commitBefore);
-    } finally {
-      if (previousRepo === undefined) {
-        delete process.env.GITHUB_WORKSPACE_REPO;
-      } else {
-        process.env.GITHUB_WORKSPACE_REPO = previousRepo;
-      }
-    }
-  });
 });

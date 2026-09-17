@@ -12,15 +12,8 @@ const {
 assertSafeNodeSqliteRuntime();
 
 const {
-  normalizeGitSyncFilePath,
-  validateGitSyncFilePath,
   resolveRealGitPath,
-  shouldRefreshHourlyGitSyncScript,
 } = require("../lib/cli/git-runtime");
-const {
-  ensureMainUpstream,
-  restoreMissingOpenclawConfigFromRemote,
-} = require("../lib/cli/openclaw-config-restore");
 const {
   reconcileOpenclawPlugins,
 } = require("../lib/cli/openclaw-plugin-compat");
@@ -39,7 +32,6 @@ const {
   inspectOpenclawStartupState,
 } = require("../lib/cli/openclaw-startup-state-repair");
 const {
-  buildManagedPaths,
   migrateManagedInternalFiles,
 } = require("../lib/server/internal-files-migration");
 const {
@@ -121,7 +113,6 @@ Usage: alphaclaw <command> [options]
 
 Commands:
   start     Start the AlphaClaw server (Setup UI + gateway manager)
-  git-sync  Commit and push the managed OpenClaw workspace using GITHUB_TOKEN
   migrate   Inspect or apply AlphaClaw-owned upgrade migrations
   finalize-openclaw-startup-state  Archive residual legacy state after doctor
   verify-openclaw-startup-state  Fail if doctor left known startup blockers
@@ -138,10 +129,6 @@ Global options:
 start options:
 --root-dir <path>   Persistent data directory (default: ~/.alphaclaw)
 --port <number>     Server port (default: 3000)
-
-git-sync options:
-  --message, -m <text> Commit message
-  --file, -f <path>    Optional file path in .openclaw to sync only one file
 
 migrate options:
   --fix                    Apply pending AlphaClaw migrations
@@ -163,8 +150,6 @@ telegram topic add options:
   --group <id>        Optional group ID override (auto-resolves when one group exists)
 
 Examples:
-  alphaclaw git-sync --message "sync workspace"
-  alphaclaw git-sync --message "update config" --file "workspace/app/config.json"
   alphaclaw migrate
   alphaclaw migrate --fix
   alphaclaw finalize-openclaw-startup-state
@@ -178,14 +163,6 @@ Examples:
 `);
   process.exit(0);
 }
-
-const quoteArg = (value) => `'${String(value || "").replace(/'/g, "'\"'\"'")}'`;
-const resolveGithubRepoPath = (value) =>
-  String(value || "")
-    .trim()
-    .replace(/^git@github\.com:/, "")
-    .replace(/^https:\/\/github\.com\//, "")
-    .replace(/\.git$/, "");
 
 // ---------------------------------------------------------------------------
 // 1. Resolve root directory (before requiring any lib/ modules)
@@ -225,7 +202,6 @@ const shouldInitializeManagedRuntime = shouldInitializeManagedOpenclawRuntime({
   onboardingMarkerPath,
   openclawDir,
 });
-const { hourlyGitSyncPath } = buildManagedPaths({ openclawDir });
 if (shouldInitializeManagedRuntime) {
   fs.mkdirSync(openclawDir, { recursive: true });
   migrateManagedInternalFiles({
@@ -282,152 +258,6 @@ if (fs.existsSync(envFilePath)) {
     if (value) process.env[key] = value;
   }
   console.log("[alphaclaw] Loaded .env");
-}
-
-const runGitSync = () => {
-  const githubToken = String(process.env.GITHUB_TOKEN || "").trim();
-  const githubRepo = resolveGithubRepoPath(
-    process.env.GITHUB_WORKSPACE_REPO || "",
-  );
-  const commitMessage = String(
-    flagValue(commandArgs, "--message", "-m") || "",
-  ).trim();
-  const requestedFilePath = String(
-    flagValue(commandArgs, "--file", "-f") || "",
-  ).trim();
-  const normalizedFilePath = normalizeGitSyncFilePath(requestedFilePath);
-  if (!commitMessage) {
-    console.error("[alphaclaw] Missing --message for git-sync");
-    return 1;
-  }
-  if (normalizedFilePath) {
-    const pathValidation = validateGitSyncFilePath(normalizedFilePath);
-    if (!pathValidation.ok) {
-      console.error(pathValidation.error);
-      return 1;
-    }
-  }
-  if (!githubToken) {
-    console.error("[alphaclaw] Missing GITHUB_TOKEN for git-sync");
-    return 1;
-  }
-  if (!githubRepo) {
-    console.error("[alphaclaw] Missing GITHUB_WORKSPACE_REPO for git-sync");
-    return 1;
-  }
-  if (!fs.existsSync(path.join(openclawDir, ".git"))) {
-    console.error(`[alphaclaw] No git repository at ${openclawDir}`);
-    return 1;
-  }
-
-  const realGitPath = resolveRealGitPath({
-    shimPath: "/usr/local/bin/git",
-  });
-  if (!realGitPath) {
-    console.error(
-      "[alphaclaw] Missing git binary for git-sync; install git in the runtime image",
-    );
-    return 1;
-  }
-
-  const originUrl = `https://github.com/${githubRepo}.git`;
-  let branch = "main";
-  try {
-    branch =
-      String(
-        execSync("git symbolic-ref --short HEAD", {
-          cwd: openclawDir,
-          encoding: "utf8",
-          stdio: ["ignore", "pipe", "ignore"],
-        }),
-      ).trim() || "main";
-  } catch {}
-  const askPassPath = path.join(
-    os.tmpdir(),
-    `alphaclaw-git-askpass-${process.pid}.sh`,
-  );
-  const runGit = (gitCommand, { withAuth = false } = {}) => {
-    const cmd = withAuth
-      ? `GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=${quoteArg(askPassPath)} ${quoteArg(realGitPath)} ${gitCommand}`
-      : `${quoteArg(realGitPath)} ${gitCommand}`;
-    return execSync(cmd, {
-      cwd: openclawDir,
-      stdio: "pipe",
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        GITHUB_TOKEN: githubToken,
-      },
-    });
-  };
-
-  try {
-    fs.writeFileSync(
-      askPassPath,
-      [
-        "#!/usr/bin/env sh",
-        'case "$1" in',
-        '  *Username*) echo "x-access-token" ;;',
-        '  *Password*) echo "${GITHUB_TOKEN:-}" ;;',
-        '  *) echo "" ;;',
-        "esac",
-        "",
-      ].join("\n"),
-      { mode: 0o700 },
-    );
-
-    runGit(`remote set-url origin ${quoteArg(originUrl)}`);
-    runGit(`config user.name ${quoteArg("AlphaClaw Agent")}`);
-    runGit(`config user.email ${quoteArg("agent@alphaclaw.md")}`);
-    try {
-      runGit(`ls-remote --exit-code --heads origin ${quoteArg(branch)}`, {
-        withAuth: true,
-      });
-      runGit(`pull --rebase --autostash origin ${quoteArg(branch)}`, {
-        withAuth: true,
-      });
-    } catch {
-      console.log(
-        `[alphaclaw] Remote branch "${branch}" not found, skipping pull`,
-      );
-    }
-    if (normalizedFilePath) {
-      runGit(`add -A -- ${quoteArg(normalizedFilePath)}`);
-    } else {
-      runGit("add -A");
-    }
-    try {
-      runGit("diff --cached --quiet");
-      console.log("[alphaclaw] No changes to commit");
-      return 0;
-    } catch {}
-    if (normalizedFilePath) {
-      runGit(
-        `commit -m ${quoteArg(commitMessage)} -- ${quoteArg(normalizedFilePath)}`,
-      );
-    } else {
-      runGit(`commit -m ${quoteArg(commitMessage)}`);
-    }
-    runGit(`push origin ${quoteArg(branch)}`, { withAuth: true });
-    const hash = String(runGit("rev-parse --short HEAD")).trim();
-    console.log(`[alphaclaw] Git sync complete (${hash})`);
-    console.log(
-      `[alphaclaw] Commit URL: https://github.com/${githubRepo}/commit/${hash}`,
-    );
-    return 0;
-  } catch (e) {
-    const details = String(e.stderr || e.stdout || e.message || "").trim();
-    console.error(`[alphaclaw] git-sync failed: ${details.slice(0, 400)}`);
-    return 1;
-  } finally {
-    try {
-      fs.rmSync(askPassPath, { force: true });
-    } catch {}
-  }
-};
-
-if (command === "git-sync") {
-  process.exit(runGitSync());
 }
 
 const hasFlag = (argv, ...flags) => flags.some((flag) => argv.includes(flag));
@@ -913,80 +743,6 @@ if (resolvedGoogleProvider === "composio" && !commandExists("composio")) {
 }
 
 // ---------------------------------------------------------------------------
-// 9. Install/reconcile system cron entry
-// ---------------------------------------------------------------------------
-
-const packagedHourlyGitSyncPath = path.join(setupDir, "hourly-git-sync.sh");
-const hasGithubSyncConfig =
-  !!String(process.env.GITHUB_TOKEN || "").trim() &&
-  !!String(process.env.GITHUB_WORKSPACE_REPO || "").trim();
-
-try {
-  if (shouldInitializeManagedRuntime && fs.existsSync(packagedHourlyGitSyncPath)) {
-    const packagedSyncScript = fs.readFileSync(
-      packagedHourlyGitSyncPath,
-      "utf8",
-    );
-    const installedSyncScript = fs.existsSync(hourlyGitSyncPath)
-      ? fs.readFileSync(hourlyGitSyncPath, "utf8")
-      : "";
-    if (
-      shouldRefreshHourlyGitSyncScript({
-        packagedSyncScript,
-        installedSyncScript,
-      })
-    ) {
-      fs.writeFileSync(hourlyGitSyncPath, packagedSyncScript, { mode: 0o755 });
-      console.log("[alphaclaw] Refreshed hourly git sync script");
-    }
-  }
-} catch (e) {
-  console.log(
-    `[alphaclaw] Hourly git sync script refresh skipped: ${e.message}`,
-  );
-}
-
-if (fs.existsSync(hourlyGitSyncPath)) {
-  try {
-    const syncCronConfig = path.join(openclawDir, "cron", "system-sync.json");
-    let cronEnabled = hasGithubSyncConfig;
-    let cronSchedule = "0 * * * *";
-
-    if (fs.existsSync(syncCronConfig)) {
-      try {
-        const cfg = JSON.parse(fs.readFileSync(syncCronConfig, "utf8"));
-        cronEnabled = hasGithubSyncConfig && cfg.enabled !== false;
-        const schedule = String(cfg.schedule || "").trim();
-        if (/^(\S+\s+){4}\S+$/.test(schedule)) cronSchedule = schedule;
-      } catch {}
-    }
-
-    const cronFilePath = "/etc/cron.d/openclaw-hourly-sync";
-    if (cronEnabled) {
-      const cronContent = [
-        "SHELL=/bin/bash",
-        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-        `${cronSchedule} root bash "${hourlyGitSyncPath}" >> /var/log/openclaw-hourly-sync.log 2>&1`,
-        "",
-      ].join("\n");
-      fs.writeFileSync(cronFilePath, cronContent, { mode: 0o644 });
-      console.log("[alphaclaw] System cron entry installed");
-    } else {
-      try {
-        fs.unlinkSync(cronFilePath);
-      } catch {}
-      console.log(
-        hasGithubSyncConfig
-          ? "[alphaclaw] System cron entry disabled"
-          : "[alphaclaw] System cron entry skipped; GitHub sync is not configured",
-      );
-    }
-  } catch (e) {
-    console.log(`[alphaclaw] Cron setup skipped: ${e.message}`);
-  }
-}
-
-// ---------------------------------------------------------------------------
 // 9. Start cron daemon if available
 // ---------------------------------------------------------------------------
 
@@ -1005,57 +761,6 @@ try {
 // ---------------------------------------------------------------------------
 
 const configPath = path.join(openclawDir, "openclaw.json");
-const githubRepo = process.env.GITHUB_WORKSPACE_REPO;
-
-if (fs.existsSync(path.join(openclawDir, ".git"))) {
-  if (githubRepo) {
-    const repoUrl = githubRepo
-      .replace(/^git@github\.com:/, "")
-      .replace(/^https:\/\/github\.com\//, "")
-      .replace(/\.git$/, "");
-    const remoteUrl = `https://github.com/${repoUrl}.git`;
-    try {
-      execSync(`git remote set-url origin "${remoteUrl}"`, {
-        cwd: openclawDir,
-        stdio: "ignore",
-      });
-      console.log("[alphaclaw] Repo ready");
-    } catch {}
-  }
-
-  // Migration path: scrub persisted PATs from existing GitHub origin URLs.
-  try {
-    const existingOrigin = execSync("git remote get-url origin", {
-      cwd: openclawDir,
-      stdio: ["ignore", "pipe", "ignore"],
-      encoding: "utf8",
-    }).trim();
-    const match = existingOrigin.match(/^https:\/\/[^/@]+@github\.com\/(.+)$/i);
-    if (match?.[1]) {
-      const cleanedPath = String(match[1]).replace(/\.git$/i, "");
-      const cleanedOrigin = `https://github.com/${cleanedPath}.git`;
-      execSync(`git remote set-url origin "${cleanedOrigin}"`, {
-        cwd: openclawDir,
-        stdio: "ignore",
-      });
-      console.log("[alphaclaw] Scrubbed tokenized GitHub remote URL");
-    }
-  } catch {}
-
-  restoreMissingOpenclawConfigFromRemote({
-    openclawDir,
-    configPath,
-    env: process.env,
-  });
-  if (
-    ensureMainUpstream({
-      openclawDir,
-      gitEnv: process.env,
-    })
-  ) {
-    console.log("[alphaclaw] Set main upstream to origin/main");
-  }
-}
 
 if (fs.existsSync(configPath)) {
   console.log("[alphaclaw] Config exists; running startup plugin reconciliation");

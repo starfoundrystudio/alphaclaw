@@ -135,10 +135,6 @@ describe("server/ui-sandbox", () => {
       expect(read.status).toBe(200);
       expect(read.body.content).toContain("Clawbridge UI Sandbox");
 
-      const git = await request(sandbox.app).get("/api/browse/git-summary");
-      expect(git.status).toBe(200);
-      expect(git.body.isRepo).toBe(true);
-      expect(git.body.changedFilesCount).toBeGreaterThan(0);
     } finally {
       sandbox.cleanup();
     }

@@ -36,7 +36,6 @@
     "hooks/bootstrap/tools.md",
     "skills/gog-cli",
     "skills/composio",
-    ".alphaclaw/hourly-git-sync.sh",
     ".alphaclaw/.cli-device-auto-approved"
   ]
 }

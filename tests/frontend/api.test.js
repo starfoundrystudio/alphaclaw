@@ -89,58 +89,6 @@ describe("frontend/api", () => {
     });
   });
 
-  it("verifyGithubOnboardingRepo posts repo, token, and mode", async () => {
-    global.fetch.mockResolvedValue(mockJsonResponse(200, { ok: true, repoExists: true }));
-    const api = await loadApiModule();
-
-    const result = await api.verifyGithubOnboardingRepo(
-      "my-org/source-repo",
-      "ghp_123",
-      "existing",
-    );
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/onboard/github/verify",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({
-          repo: "my-org/source-repo",
-          token: "ghp_123",
-          mode: "existing",
-        }),
-        headers: expect.any(Headers),
-      }),
-    );
-    expectLastFetchHeaders("application/json");
-    expect(result).toEqual({ ok: true, repoExists: true });
-  });
-
-  it("configureGithubSync posts repo, token, and schedule", async () => {
-    global.fetch.mockResolvedValue(mockJsonResponse(200, { ok: true, repo: "owner/repo" }));
-    const api = await loadApiModule();
-
-    const result = await api.configureGithubSync({
-      repo: "owner/repo",
-      token: "ghp_123",
-      schedule: "0 * * * *",
-    });
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/github-sync/config",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({
-          repo: "owner/repo",
-          token: "ghp_123",
-          schedule: "0 * * * *",
-        }),
-        headers: expect.any(Headers),
-      }),
-    );
-    expectLastFetchHeaders("application/json");
-    expect(result).toEqual({ ok: true, repo: "owner/repo" });
-  });
-
   it("scanImportRepo posts the temp dir payload", async () => {
     global.fetch.mockResolvedValue(mockJsonResponse(200, { ok: true, hasOpenclawSetup: true }));
     const api = await loadApiModule();
@@ -177,8 +125,6 @@ describe("frontend/api", () => {
       tempDir: "/tmp/alphaclaw-import-1234",
       approvedSecrets: [{ suggestedEnvVar: "OPENAI_API_KEY", value: "sk-123" }],
       skipSecretExtraction: false,
-      githubRepo: "owner/target-repo",
-      githubToken: "ghp_123",
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
@@ -189,8 +135,6 @@ describe("frontend/api", () => {
           tempDir: "/tmp/alphaclaw-import-1234",
           approvedSecrets: [{ suggestedEnvVar: "OPENAI_API_KEY", value: "sk-123" }],
           skipSecretExtraction: false,
-          githubRepo: "owner/target-repo",
-          githubToken: "ghp_123",
         }),
         headers: expect.any(Headers),
       }),
@@ -467,24 +411,6 @@ describe("frontend/api", () => {
     );
     expectLastFetchHeaders("application/json");
     expect(result).toEqual({ ok: true, accountId: "acct-1" });
-  });
-
-  it("syncBrowseChanges posts commit message", async () => {
-    global.fetch.mockResolvedValue(mockJsonResponse(200, { ok: true, committed: true }));
-    const api = await loadApiModule();
-
-    const result = await api.syncBrowseChanges("sync changes");
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "/api/browse/git-sync",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({ message: "sync changes" }),
-        headers: expect.any(Headers),
-      }),
-    );
-    expectLastFetchHeaders("application/json");
-    expect(result).toEqual({ ok: true, committed: true });
   });
 
   it("fetchBrowseTree defaults to a bounded tree depth", async () => {

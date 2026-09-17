@@ -1,7 +1,13 @@
 # OpenClaw To AlphaClaw Migration
 
-This guide walks through preparing an existing OpenClaw setup for import into a
-fresh AlphaClaw installation.
+This guide walks an operator through preparing an existing OpenClaw setup for
+an assisted import into a fresh AlphaClaw installation.
+
+AlphaClaw no longer exposes GitHub import or workspace-sync controls to users.
+The migration snapshot must be transferred to the destination host by an
+operator and applied through the internal import workflow. Publishing the
+snapshot to GitHub remains available as an optional operator transport, not as
+an AlphaClaw runtime dependency or ongoing backup.
 
 It is aimed at older standalone OpenClaw layouts where the real state lives in
 something like `~/.openclaw/`, and the main workspace may live somewhere else
@@ -9,7 +15,7 @@ such as `~/clawd/`.
 
 ## What AlphaClaw Expects
 
-For a full import, AlphaClaw expects the source repository root to look like an
+For a full import, AlphaClaw expects the source snapshot root to look like an
 OpenClaw root:
 
 - `openclaw.json` at the repository root
@@ -17,7 +23,7 @@ OpenClaw root:
 - optional portable `cron/jobs.json` export (generated from SQLite by the helper)
 - optional `memory/`
 - optional workspaces such as `workspace/` and `workspace-personal/`
-- optional custom `skills/`, `hooks/`, and related repo-backed assets
+- optional custom `skills/`, `hooks/`, and related workspace assets
 
 AlphaClaw does not accept a source where the config is still nested under
 `.openclaw/openclaw.json`. If your old machine looks like this:
@@ -65,14 +71,15 @@ survive the standard import flow.
 ## Recommended Workflow
 
 1. Prepare a clean migration snapshot from the old OpenClaw machine.
-2. Publish that snapshot to a private GitHub repository.
+2. Transfer the snapshot to a temporary directory on the destination host using
+   an operator-controlled secure channel.
 3. Start a new AlphaClaw installation.
-4. In AlphaClaw onboarding, choose `Import existing setup`.
-5. Use the snapshot repo as the `Source Repo`.
-6. Use a different new or empty private repo as the `New Workspace Repo`.
+4. Have an operator scan, review, and apply that local snapshot through the
+   internal import workflow.
+5. Finish onboarding and re-establish pairings and machine-specific services.
 
-Do not use the same GitHub repo for both the source snapshot and the new live
-AlphaClaw-managed repo.
+Do not leave the migration snapshot on the destination after import. AlphaClaw
+does not create or maintain a live workspace repository.
 
 ## Helper Scripts
 
@@ -81,7 +88,8 @@ This repo includes two scripts for the workflow:
 - [scripts/prepare-openclaw-migration.sh](../scripts/prepare-openclaw-migration.sh)
   builds a curated import snapshot
 - [scripts/publish-openclaw-migration.sh](../scripts/publish-openclaw-migration.sh)
-  initializes git and pushes the snapshot to GitHub
+  optionally initializes Git and pushes the snapshot to a private GitHub repo
+  for operator-controlled transport
 
 ### Prepare The Snapshot
 
@@ -139,7 +147,7 @@ Important defaults:
 
 ### Review The Snapshot
 
-Before pushing, inspect the prepared tree:
+Before transferring the snapshot, inspect the prepared tree:
 
 ```bash
 cd ~/alphaclaw-migration
@@ -167,7 +175,11 @@ The root should usually include things like:
 ./workspace-personal/
 ```
 
-### Publish To GitHub
+### Optional: Publish To GitHub For Operator Transport
+
+Skip this section when transferring the snapshot directly with another secure
+channel. AlphaClaw does not read this repository itself and will not sync the
+imported workspace back to it.
 
 If the GitHub repo already exists:
 
@@ -194,22 +206,25 @@ The publishing helper expects:
 - a configured git commit identity via `git config user.name` and
   `git config user.email`
 
-## Onboarding In The New AlphaClaw Instance
+## Import On The New AlphaClaw Instance
 
-Once the snapshot repo is pushed:
+The current flow is operator-assisted:
 
-1. Open the new AlphaClaw setup UI.
-2. Choose `Import existing setup`.
-3. Set `Source Repo` to the snapshot repo, for example
-   `YOUR_USER/openclaw-migration`.
-4. Set `New Workspace Repo` to a different repo that the new AlphaClaw install
-   will own going forward, for example `YOUR_USER/my-new-agent`.
-5. Provide a GitHub token that can read the source repo and create or access the
-   new target repo.
-6. Review detected secrets and env vars during import.
-7. Finish onboarding.
-8. Re-establish pairings and any machine-specific host integrations after the
+1. Transfer or clone the prepared snapshot into a temporary directory on the
+   destination host.
+2. Start the new AlphaClaw instance and keep it in onboarding mode.
+3. Use the authenticated internal import scan endpoint with that temporary
+   directory and review the detected secrets and environment values.
+4. Apply the approved snapshot through the authenticated internal import apply
+   endpoint.
+5. Finish onboarding in the setup UI.
+6. Re-establish pairings and any machine-specific host integrations after the
    new instance is live.
+7. Remove the temporary snapshot from the destination host.
+
+This workflow is intentionally not presented as a customer-facing GitHub form.
+Coordinate the transfer and review with the TeamYou operator responsible for
+the managed installation.
 
 ## Manual Equivalent
 
@@ -226,17 +241,20 @@ If you prefer not to use the helper script, the manual version is:
    job working directories point to AlphaClaw defaults under
    `~/.alphaclaw/.openclaw/`.
 6. Fail the prep step if stale source-machine path references remain.
-7. Commit the snapshot to a private GitHub repo.
-8. Import it through a new AlphaClaw installation.
+7. Transfer the snapshot to the destination host through a secure operator
+   channel.
+8. Scan and apply it through AlphaClaw's internal import workflow.
 
 ## Security Notes
 
-- Use a private repo for migration snapshots.
-- If `.env` is included, secrets will be committed into git history.
+- If GitHub is used for transport, use a private repo and delete it when its
+  retention is no longer required.
+- If `.env` is included in a GitHub transport, secrets will be committed into
+  Git history.
 - The same caution applies to exported `auth-profiles.json` files and any
   custom workspace files that contain sensitive material.
 - Never commit a live `openclaw.sqlite`, `openclaw-agent.sqlite`, `-wal`, or
   `-shm` file. Besides containing mixed sensitive state, copying a live SQLite
   file without its matching WAL can silently lose recent data.
-- If you do not want secrets in GitHub at all, remove `.env` before pushing and
-  re-enter secrets during AlphaClaw import.
+- If you do not want secrets in GitHub at all, use a different secure transport
+  or remove `.env` before publishing and re-enter secrets during import.

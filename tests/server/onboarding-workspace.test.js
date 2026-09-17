@@ -79,7 +79,7 @@ describe("server/onboarding/workspace", () => {
     expect(agentsPrompt).toContain("passwordless sudo");
     expect(agentsPrompt).toContain("one trust domain");
     expect(agentsPrompt).toContain("egress is enforced off-host");
-    expect(agentsPrompt).toContain("outside the managed Git repository");
+    expect(agentsPrompt).toContain("outside managed OpenClaw state");
     expect(agentsPrompt).not.toContain(
       "This deployment runs in an ephemeral container",
     );
@@ -147,7 +147,7 @@ describe("server/onboarding/workspace", () => {
       expect(tools).toContain("| Runtime Configuration |");
       expect(tools).not.toContain("#providers");
       expect(tools).not.toContain("| Providers |");
-      expect(tools).toContain("outside the managed Git repository");
+      expect(tools).toContain("outside managed OpenClaw state");
     });
 
     it("renders Composio guidance and suppresses gog content when provider is composio", () => {

@@ -11,87 +11,78 @@ const createTempOpenclawDir = () =>
   fs.mkdtempSync(path.join(os.tmpdir(), "alphaclaw-managed-files-test-"));
 
 describe("server/internal-files-migration", () => {
-  it("moves legacy managed files into .alphaclaw", () => {
+  it("removes retired GitHub sync artifacts and preserves unrelated gitignore rules", () => {
     const openclawDir = createTempOpenclawDir();
-    const legacyScriptPath = path.join(openclawDir, "hourly-git-sync.sh");
-    const legacyMarkerPath = path.join(openclawDir, ".cli-device-auto-approved");
-    fs.writeFileSync(legacyScriptPath, "echo legacy\n", { mode: 0o755 });
-    fs.writeFileSync(legacyMarkerPath, '{"approvedAt":"x"}\n', "utf8");
-
-    const managedPaths = migrateManagedInternalFiles({
-      fs,
-      openclawDir,
-      logger: { error: vi.fn() },
-    });
-
-    expect(fs.existsSync(legacyScriptPath)).toBe(false);
-    expect(fs.existsSync(legacyMarkerPath)).toBe(false);
-    expect(fs.existsSync(managedPaths.hourlyGitSyncPath)).toBe(true);
-    expect(fs.existsSync(managedPaths.cliDeviceAutoApprovedPath)).toBe(true);
-    expect(fs.readFileSync(managedPaths.hourlyGitSyncPath, "utf8")).toContain("legacy");
-  });
-
-  it("keeps new paths as source of truth when both old and new exist", () => {
-    const openclawDir = createTempOpenclawDir();
+    const systemCronPath = path.join(openclawDir, "openclaw-hourly-sync.cron");
     const managedPaths = buildManagedPaths({ openclawDir });
+    const gitignorePath = path.join(openclawDir, ".gitignore");
     fs.mkdirSync(managedPaths.internalDir, { recursive: true });
-    fs.writeFileSync(managedPaths.hourlyGitSyncPath, "echo new\n", "utf8");
-    fs.writeFileSync(managedPaths.cliDeviceAutoApprovedPath, '{"approvedAt":"new"}\n', "utf8");
-    fs.writeFileSync(managedPaths.legacyHourlyGitSyncPath, "echo old\n", "utf8");
-    fs.writeFileSync(managedPaths.legacyCliDeviceAutoApprovedPath, '{"approvedAt":"old"}\n', "utf8");
+    fs.mkdirSync(path.dirname(managedPaths.retiredHourlyGitSyncConfigPath), {
+      recursive: true,
+    });
+    for (const retiredPath of [
+      managedPaths.retiredHourlyGitSyncPath,
+      managedPaths.legacyHourlyGitSyncPath,
+      managedPaths.retiredHourlyGitSyncConfigPath,
+      systemCronPath,
+    ]) {
+      fs.writeFileSync(retiredPath, "retired\n", "utf8");
+    }
+    fs.writeFileSync(gitignorePath, "custom-rule\n", "utf8");
 
     migrateManagedInternalFiles({
       fs,
       openclawDir,
+      systemCronPath,
       logger: { error: vi.fn() },
     });
 
+    expect(fs.existsSync(managedPaths.retiredHourlyGitSyncPath)).toBe(false);
     expect(fs.existsSync(managedPaths.legacyHourlyGitSyncPath)).toBe(false);
+    expect(fs.existsSync(managedPaths.retiredHourlyGitSyncConfigPath)).toBe(false);
+    expect(fs.existsSync(systemCronPath)).toBe(false);
+    expect(fs.readFileSync(gitignorePath, "utf8")).toBe("custom-rule\n");
+  });
+
+  it("still moves the legacy CLI approval marker into the managed directory", () => {
+    const openclawDir = createTempOpenclawDir();
+    const managedPaths = buildManagedPaths({ openclawDir });
+    fs.writeFileSync(
+      managedPaths.legacyCliDeviceAutoApprovedPath,
+      '{"approvedAt":"old"}\n',
+      "utf8",
+    );
+
+    migrateManagedInternalFiles({
+      fs,
+      openclawDir,
+      systemCronPath: path.join(openclawDir, "missing-system-cron"),
+      logger: { error: vi.fn() },
+    });
+
     expect(fs.existsSync(managedPaths.legacyCliDeviceAutoApprovedPath)).toBe(false);
-    expect(fs.readFileSync(managedPaths.hourlyGitSyncPath, "utf8")).toBe("echo new\n");
     expect(fs.readFileSync(managedPaths.cliDeviceAutoApprovedPath, "utf8")).toBe(
-      '{"approvedAt":"new"}\n',
+      '{"approvedAt":"old"}\n',
     );
   });
 
-  it("appends managed gitignore entries when missing", () => {
+  it("is idempotent across repeated cleanup runs", () => {
     const openclawDir = createTempOpenclawDir();
-    const gitignorePath = path.join(openclawDir, ".gitignore");
-    fs.writeFileSync(gitignorePath, "*\n!cron/\n!cron/jobs.json\n", "utf8");
-
-    migrateManagedInternalFiles({
-      fs,
-      openclawDir,
-      logger: { error: vi.fn() },
-    });
-
-    const next = fs.readFileSync(gitignorePath, "utf8");
-    expect(next).toContain("state/**");
-    expect(next).toContain("cron/**");
-    expect(next).toContain("agents/*/agent/*.sqlite-*");
-    expect(next).toContain("!hooks/");
-    expect(next).toContain("!pages/");
-    expect(next).toContain("!pages/**");
-  });
-
-  it("is idempotent across repeated runs", () => {
-    const openclawDir = createTempOpenclawDir();
-    fs.writeFileSync(path.join(openclawDir, "hourly-git-sync.sh"), "echo script\n", "utf8");
-
-    migrateManagedInternalFiles({
-      fs,
-      openclawDir,
-      logger: { error: vi.fn() },
-    });
-    migrateManagedInternalFiles({
-      fs,
-      openclawDir,
-      logger: { error: vi.fn() },
-    });
-
+    const systemCronPath = path.join(openclawDir, "openclaw-hourly-sync.cron");
     const managedPaths = buildManagedPaths({ openclawDir });
-    expect(fs.existsSync(managedPaths.hourlyGitSyncPath)).toBe(true);
-    expect(fs.existsSync(managedPaths.legacyHourlyGitSyncPath)).toBe(false);
+    fs.mkdirSync(managedPaths.internalDir, { recursive: true });
+    fs.writeFileSync(managedPaths.retiredHourlyGitSyncPath, "retired\n", "utf8");
+
+    for (let index = 0; index < 2; index += 1) {
+      migrateManagedInternalFiles({
+        fs,
+        openclawDir,
+        systemCronPath,
+        logger: { error: vi.fn() },
+      });
+    }
+
+    expect(fs.existsSync(managedPaths.retiredHourlyGitSyncPath)).toBe(false);
     expect(fs.existsSync(managedPaths.internalDir)).toBe(true);
   });
 });

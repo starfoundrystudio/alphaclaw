@@ -124,7 +124,7 @@ If any of these apply, outline your approach first — what you intend to do, in
 
 ### Save and Show Your Work (IMPORTANT)
 
-Your `.openclaw` directory is version-controlled. It is the durable, Git-backed home for agent and workspace artifacts.
+Your `.openclaw` directory is the durable home for agent and workspace artifacts. Do not assume it is a Git repository or that changes are synchronized to an external remote.
 
 ### Persistent Storage Rules
 
@@ -132,7 +132,7 @@ Clawbridge manages durable OpenClaw state under `$OPENCLAW_STATE_DIR`. Temporary
 
 Workspace files, plugins, skills, and other agent-managed artifacts that must survive service or host restarts belong under `$OPENCLAW_STATE_DIR`.
 
-Host-level changes made with sudo—such as installed OS packages, systemd units, and `/etc` configuration—can persist across reboots on the current VPS, but they are outside the managed Git repository and may be lost when the host is reprovisioned or replaced. When a host change must be reproducible, keep non-secret setup documentation or automation under `$OPENCLAW_STATE_DIR` and commit it; never copy credentials or sensitive OS state into Git.
+Host-level changes made with sudo—such as installed OS packages, systemd units, and `/etc` configuration—can persist across reboots on the current VPS, but they are outside managed OpenClaw state and may be lost when the host is reprovisioned or replaced. When a host change must be reproducible, keep non-secret setup documentation or automation under `$OPENCLAW_STATE_DIR`; never copy credentials or sensitive OS state into workspace files.
 
 For plugins and other durable artifacts:
 
@@ -146,7 +146,7 @@ For user-facing static pages, dashboards, reports, and lightweight browser tools
 
 `$OPENCLAW_STATE_DIR/pages/<slug>/`
 
-This pages directory is git-tracked as part of the Clawbridge/OpenClaw state repo. Do not move static pages into `/workspace/pages`, and do not create symlinks from `$OPENCLAW_STATE_DIR/pages/` back to `/workspace/pages`; Tailscale serve is configured for the canonical pages directory above.
+This pages directory is part of the durable Clawbridge/OpenClaw state. Do not move static pages into `/workspace/pages`, and do not create symlinks from `$OPENCLAW_STATE_DIR/pages/` back to `/workspace/pages`; Tailscale serve is configured for the canonical pages directory above.
 
 Each page should include an `index.html` entrypoint. Use relative asset paths such as `./style.css`, not root-relative paths such as `/style.css`, because pages are served under `/pages/<slug>/`.
 
@@ -156,11 +156,4 @@ When a page is ready, tell the user it is available at:
 
 `/pages/<slug>/`
 
-Anytime you add, edit, or remove workspace files, openclaw.json, cron.json, skills, or external resources (third-party pages, databases, integrations), **commit your changes to git**. Push only when a GitHub sync remote is configured for this deployment or the user explicitly asks you to push. Never force push; always pull first if there might be remote changes.
-
-Whenever you commit changes, end your message with a **Changes committed** summary. Use workspace-relative paths for local files.
-
-```
-Changes committed (abc1234): <-- abbreviated hash, link it only when the commit was pushed
-• path/or/resource (new|edit|delete) — brief description
-```
+Anytime you add, edit, or remove workspace files, `openclaw.json`, cron jobs, skills, or external resources, tell the user what changed and identify any follow-up needed to preserve or export it. Never initialize a repository, create a remote, commit, or push unless the user explicitly asks you to manage a repository they control.
