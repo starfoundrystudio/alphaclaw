@@ -1,0 +1,77 @@
+// Stand-in for Clawbridge: same-origin front door at :8080 that (a) serves a stub
+// "Clawbridge page" with a cookie session + WebSocket, and (b) reverse-proxies
+// everything else to the 9.4 Gateway with trusted-proxy identity headers.
+import http from "node:http";
+import httpProxy from "http-proxy";
+import { WebSocketServer } from "ws";
+
+const GATEWAY = "http://127.0.0.1:18989";
+const PORT = 8080;
+const IDENTITY = process.env.SPIKE_USER || "bill@example.com";
+const proxy = httpProxy.createProxyServer({ target: GATEWAY, ws: true, changeOrigin: false, xfwd: false });
+proxy.on("error", (err, _req, res) => { try { res.writeHead?.(502); res.end?.("proxy error: " + err.message); } catch {} });
+proxy.on("proxyReq", (proxyReq) => {
+  proxyReq.setHeader("x-forwarded-user", IDENTITY);
+  proxyReq.setHeader("x-forwarded-proto", "http");
+  proxyReq.setHeader("x-forwarded-host", `localhost:${PORT}`);
+  proxyReq.setHeader("x-forwarded-for", "10.0.0.5"); // non-loopback client, as on the tailnet
+});
+proxy.on("proxyReqWs", (proxyReq) => {
+  proxyReq.setHeader("x-forwarded-user", IDENTITY);
+  proxyReq.setHeader("x-forwarded-proto", "http");
+  proxyReq.setHeader("x-forwarded-host", `localhost:${PORT}`);
+  proxyReq.setHeader("x-forwarded-for", "10.0.0.5");
+});
+
+const stub = `<!doctype html><html><head><meta charset="utf-8"><title>Clawbridge stub</title>
+<style>body{font-family:system-ui;padding:12px;background:#f5f7fa;color:#123} .ok{color:#0a7} .bad{color:#c00}</style></head>
+<body><h4>Clawbridge stub page (served by the front door at /)</h4>
+<ul>
+<li>origin: <span id="origin"></span> framed=<span id="framed"></span></li>
+<li>document.cookie: <span id="cookie"></span></li>
+<li>/spike/whoami (credentials:include): <span id="whoami">pending</span></li>
+<li>WebSocket echo: <span id="ws">pending</span></li>
+<li>localStorage: <span id="ls">pending</span></li>
+</ul>
+<script>
+document.getElementById('origin').textContent = location.origin;
+document.getElementById('framed').textContent = String(window.top !== window.self);
+document.getElementById('cookie').textContent = document.cookie || '(none)';
+try { localStorage.setItem('spike','1'); document.getElementById('ls').textContent = 'ok:' + localStorage.getItem('spike'); document.getElementById('ls').className='ok'; }
+catch (e) { document.getElementById('ls').textContent = 'blocked: ' + e.message; document.getElementById('ls').className='bad'; }
+fetch('/spike/whoami', { credentials: 'include' }).then(r => r.json()).then(j => {
+  const el = document.getElementById('whoami'); el.textContent = JSON.stringify(j); el.className = j.cookie ? 'ok' : 'bad';
+}).catch(e => { const el=document.getElementById('whoami'); el.textContent='error '+e.message; el.className='bad'; });
+try {
+  const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/spike/ws');
+  ws.onopen = () => ws.send('ping');
+  ws.onmessage = (m) => { const el=document.getElementById('ws'); el.textContent='ok:'+m.data; el.className='ok'; ws.close(); };
+  ws.onerror = () => { const el=document.getElementById('ws'); el.textContent='error'; el.className='bad'; };
+} catch (e) { document.getElementById('ws').textContent = 'error ' + e.message; }
+</script></body></html>`;
+
+const server = http.createServer((req, res) => {
+  const url = new URL(req.url, `http://localhost:${PORT}`);
+  if (url.pathname === "/spike.html") {
+    const hasCookie = /(^|;\s*)cb_session=/.test(req.headers.cookie || "");
+    const headers = { "Content-Type": "text/html; charset=utf-8" };
+    if (!hasCookie) headers["Set-Cookie"] = "cb_session=spike1; Path=/; HttpOnly; SameSite=Lax";
+    res.writeHead(200, headers); res.end(stub); return;
+  }
+  if (url.pathname === "/spike/whoami") {
+    const cookie = /(^|;\s*)cb_session=/.test(req.headers.cookie || "");
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ cookie, ua: (req.headers["user-agent"] || "").slice(0, 40) })); return;
+  }
+  proxy.web(req, res);
+});
+const wss = new WebSocketServer({ noServer: true });
+server.on("upgrade", (req, socket, head) => {
+  const url = new URL(req.url, `http://localhost:${PORT}`);
+  if (url.pathname === "/spike/ws") {
+    wss.handleUpgrade(req, socket, head, (ws) => { ws.on("message", (m) => ws.send("echo:" + m)); });
+    return;
+  }
+  proxy.ws(req, socket, head);
+});
+server.listen(PORT, "127.0.0.1", () => console.log(`[spike-proxy] listening on http://localhost:${PORT} -> ${GATEWAY} as ${IDENTITY}`));

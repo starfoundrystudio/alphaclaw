@@ -1,0 +1,40 @@
+import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+
+const page = `<!doctype html><html><head><meta charset="utf-8"><title>Clawbridge spike tab</title>
+<style>body{font-family:system-ui;margin:0;padding:12px;background:#111;color:#eee} iframe{width:100%;height:420px;border:1px solid #444;background:#fff} pre{background:#222;padding:8px}</style></head>
+<body><h3>Plugin tab document (served by the Gateway plugin route)</h3>
+<pre id="outer">outer: cookie=[${"${document.cookie}"}] origin=${"${location.origin}"}</pre>
+<p>Nested same-origin frame → Clawbridge stub at <code>/spike.html</code>:</p>
+<iframe id="cb" src="/spike.html"></iframe>
+<script>
+document.getElementById('outer').textContent = 'outer: cookie=[' + document.cookie + '] origin=' + location.origin + ' sandboxed=' + (window.origin === 'null');
+</script></body></html>`;
+
+export default definePluginEntry({
+  id: "clawbridge-spike",
+  name: "Clawbridge Spike",
+  description: "Spike: host a same-origin Clawbridge page as a Control UI tab.",
+  register(api) {
+    api.registerHttpRoute({
+      path: "/clawbridge-spike",
+      auth: "gateway",
+      match: "exact",
+      handler: (_req, res) => {
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+        res.end(page);
+      },
+    });
+    api.session.controls.registerControlUiDescriptor({
+      surface: "tab",
+      id: "spike",
+      label: "Clawbridge",
+      description: "Spike tab hosting a Clawbridge page",
+      icon: "sun",
+      group: "control",
+      slug: "clawbridge",
+      path: "/clawbridge-spike",
+      requiredScopes: ["operator.admin"],
+    });
+    api.logger?.info?.("clawbridge-spike registered");
+  },
+});
