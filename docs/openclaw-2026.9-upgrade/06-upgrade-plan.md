@@ -24,7 +24,7 @@ snapshots, Backblaze, and the workspace export; restore from teamyou.com).
 ## 2. Sequencing and gates
 
 ```
-G0  Prerequisites            compliant fleet Node; Node 26 for new provisions; git-sync removal
+G0  Prerequisites            runtime policy; Node 26 for new provisions; git-sync removal
 G1  Branch complete          AlphaClaw 9.4 branch with W1–W6 merged, vitest green
 G2  Disposable instance      first install on a throwaway dual-VPS instance; test plan T1–T10 pass
 G3  Beta                     beta tag published; install on the internal instance(s); soak
@@ -36,7 +36,9 @@ a database migration (rollback = restore the verified pre-upgrade backup with
 the 7.1 package); "ASK BILL before any release or install" applies to every
 publish and every fleet install.
 The explicit G3 production-go checkpoint occurs after the beta soak and before
-the first G4 production install.
+the first G4 production install. Fleet-wide Node/SQLite verification is not a
+G0 blocker: each target is checked and, if necessary, remediated immediately
+before its G3 or G4 install.
 
 ## 3. Workstreams (what the branch contains)
 
@@ -47,8 +49,9 @@ implementation order; workstreams W1–W3 are the boot-critical core.
 
 - clawctl: raise `node-runtime.sh` ranges to
   `>=24.16.0 <25 || >=26.1.0`; use Node 26 for new provisions while accepting
-  already-managed hosts on a compliant Node 24 runtime; verify the installed
-  Node and SQLite on every managed host before the OpenClaw upgrade [A1].
+  already-managed hosts on a compliant Node 24 runtime. Do not block branch
+  work on a fleet-wide sweep; the per-instance G3/G4 pre-check verifies the
+  installed Node and SQLite before that host's OpenClaw upgrade [A1].
 - Remove GitHub sync from Clawbridge (git-sync CLI, hourly cron, sidebar git
   panel, GitHub config routes, `.gitignore` whitelist machinery) — decided
   2026-09-14; ideally lands before the pin bump so the 9.4 branch does not
@@ -287,6 +290,9 @@ Bill approved these defaults after the plan review:
 5. The AlphaClaw service-HOME / OpenClaw-state separation and Claude
    continuity acceptance test are same-release work.
 6. The production-go checkpoint precedes G4.
+7. Fleet-wide Node/SQLite verification is deferred from G0. Runtime policy and
+   Node 26 provisioning land now; each host is verified and remediated, if
+   necessary, immediately before its beta or production install.
 
 This plan is a starting contract, not a prohibition on learning during
 execution. When implementation or test evidence requires a different choice,
