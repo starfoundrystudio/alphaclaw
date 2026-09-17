@@ -1,6 +1,12 @@
 # Clawbridge vs the OpenClaw 2.0 Control UI (Phase 5)
 
-Status: **draft for Bill's review (Checkpoint 2).** Inputs:
+> **Decision-history note (2026-09-17):** the daily-Control-UI-shell and
+> hosted-Clawbridge-section direction in §§4–6 has been superseded by §8.
+> It remains here to preserve the evidence and reasoning that led to the
+> revised managed-experience decision.
+
+Status: **historical analysis; Checkpoint 2 closed 2026-09-16 and the original
+direction was superseded 2026-09-17 by §8.** Inputs:
 [`A2-clawbridge-feature-inventory.md`](A2-clawbridge-feature-inventory.md)
 (what Clawbridge does today, file by file) and
 [`A3-control-ui-9.4-audit.md`](A3-control-ui-9.4-audit.md) (what the
@@ -122,6 +128,11 @@ Bill's decision (2026-09-16): use the Control UI as the daily shell and host
 Clawbridge sections inside it; the exact set and naming of sections is
 **open**. The mechanism must be proven first (see §4.4).
 
+**Superseded 2026-09-17.** Hands-on evaluation showed that even a technically
+successful hosted-section approach leaves customers navigating two competing
+management models and exposes a powerful upstream surface whose concepts and
+changes TeamYou does not fully control. See §8 for the replacement decision.
+
 ### 4.1 Principles
 
 - **Split by trust boundary, not by feature.** Anything that touches the
@@ -225,3 +236,42 @@ as a standalone screen (folds into Models & keys / Integrations), and backups
 - Bootstrap ritual is incremental and follows the rewritten `BOOTSTRAP.md` (asks what to call the agent first; name/timezone were inferred from the local Codex identity, which managed instances will not have). Confirms matrix H4.
 - Channel setup wizards in the Control UI are clunky compared with Clawbridge's; Clawbridge keeps channel setup (never on the freeze list).
 - Model configuration in the Control UI is reachable and cannot be hidden; the experience is weaker than Clawbridge's. Handled by I6 (config writes refused) plus keeping Clawbridge's models screen active as a hosted section.
+
+## 8. Superseding managed-experience decision (2026-09-17 — APPROVED)
+
+The architectural spike proved that Clawbridge sections *can* be hosted in
+the Control UI. It did not prove that this is the right customer experience.
+Trying to make the Control UI both the daily shell and an advanced upstream
+console creates ambiguous ownership, two overlapping vocabularies, and a
+larger support and security surface. The new direction is:
+
+1. **Clawbridge is the supported managed interface.** It owns onboarding,
+   host/Gateway supervision, Agent Vault, channel policy, agent configuration,
+   and the workflows TeamYou promises to customers. It expands selectively
+   for those workflows rather than chasing complete Control UI parity.
+2. **The Control UI is optional advanced access, not the daily shell.** Do not
+   host Clawbridge sections inside it. Keep access only behind an
+   authenticated TeamYou-branded interstitial, signed session-scoped
+   acknowledgement, audit trail, complete HTTP/WebSocket/deep-link gating, no
+   direct Gateway bypass, and a persistent amber **Advanced — unmanaged
+   changes** label.
+3. **Read-only remains the launch boundary.** Preserve
+   `OPENCLAW_CONFIG_READONLY=1`; prefer scope-capped read-only operator access
+   when it can be added without delaying the upgrade. A warning alone is not
+   a security control, and any future timed write/admin elevation needs an
+   explicit design, config diff, and restore-to-managed-baseline path.
+4. **The agent follows a managed-capability contract.** Runtime prompts,
+   tools, config, Clawbridge UI, and tests are versioned together so the agent
+   never directs a customer to a Control-UI-only operation. Unsupported
+   functionality is disabled where possible and described as TeamYou-managed
+   where it cannot be hidden.
+5. **TeamYou is the customer-facing brand.** The internal company name does
+   not appear in product copy. TeamYou is also the likely long-term home for
+   shared artifacts that outgrow instance-local Pages, but that migration is
+   not required for this upgrade.
+
+The interstitial is a transitional launch measure and operational record, not
+a waiver or substitute for access controls. Final legal phrasing should be
+reviewed by counsel. This decision replaces the daily-shell, trusted-proxy
+admin-owner, hosted-section, and freeze assumptions in §§4–6 wherever they
+conflict; the upgrade plan's §11 is authoritative for execution.

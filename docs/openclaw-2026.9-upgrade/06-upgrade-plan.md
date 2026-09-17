@@ -2,10 +2,11 @@
 
 Status: **APPROVED by Bill at Checkpoint 3, 2026-09-16** (all five §9 items),
 then amended with Bill's approval on 2026-09-16 to resolve the execution gaps
-recorded in §10. Execution is tracked in the TeamYou project named in §8. This
-is the plan that project follows. It assumes every decision recorded in
+recorded in §10, and amended again on 2026-09-17 by the managed-experience
+decision in §11. Execution is tracked in the TeamYou project named in §8.
+This is the plan that project follows. It assumes every decision recorded in
 [`03-impact-matrix.md`](03-impact-matrix.md) (§M, §K, §I2) and
-[`05-clawbridge-vs-control-ui.md`](05-clawbridge-vs-control-ui.md) (§4, §6),
+[`05-clawbridge-vs-control-ui.md`](05-clawbridge-vs-control-ui.md) (§8),
 and the spike result in [`S1-hosting-spike.md`](S1-hosting-spike.md).
 
 ## 1. Goals and non-goals
@@ -14,12 +15,16 @@ Goals: pin AlphaClaw to `openclaw@2026.9.4` (or the then-current stable on
 the same line), keep every managed instance's data and custody guarantees
 intact through the migration, adopt the decided operating model (external
 supervision, read-only config, vault-exclusive secrets, managed defaults), and
-ship the Control UI handoff with hosted Clawbridge sections.
+make Clawbridge the supported managed interface. Native Control UI access is
+an optional advanced interface behind an authenticated TeamYou-branded gate;
+no supported workflow may require it.
 
-Non-goals for this upgrade: white-labelling the Control UI, native feature
-plugins, per-person identities and operator roles, adopting OpenClaw's secret
-store, multi-tenant hardening, and any backup surface (backups are provider
-snapshots, Backblaze, and the workspace export; restore from teamyou.com).
+Non-goals for this upgrade: white-labelling or embedding Clawbridge sections
+inside the Control UI, native feature plugins, per-person identities and
+operator roles, a complete Clawbridge reimplementation of every Control UI
+feature, adopting OpenClaw's secret store, multi-tenant hardening, and any
+backup surface (backups are provider snapshots, Backblaze, and the workspace
+export; restore from teamyou.com).
 
 ## 2. Sequencing and gates
 
@@ -130,7 +135,10 @@ implementation order; workstreams W1–W3 are the boot-critical core.
 - `OPENCLAW_CONFIG_READONLY=1` on managed Gateway/CLI processes; Clawbridge
   is the sole config writer; maintenance flows (Doctor `--fix`, plugin
   reconcile, onboarding, `config set`) run from Clawbridge/clawctl with the
-  variable unset [I6].
+  variable unset [I6]. Do not relax this global protection merely to enable
+  the advanced Control UI. A future scoped write/admin mode requires its own
+  design and approval because upstream config RPCs are globally refused under
+  this setting.
 - Update refusal: `OPENCLAW_DISABLE_UPDATE_CHECK=1`, `OPENCLAW_NO_AUTO_UPDATE=1`,
   `update.checkOnStart=false` [K].
 
@@ -146,26 +154,35 @@ choose an explicit size; verify the CPX value in T6), `subagents.maxSpawnDepth`
 and session reset at upstream defaults,
 `agents.defaults.memorySearch` no longer written.
 
-### W5. Control UI integration (decided, Phase 5)
+### W5. Managed surface and advanced Control UI access (decided 2026-09-17)
 
-- Managed config: `gateway.controlUi.basePath="/openclaw"`,
-  `allowedOrigins=[<Clawbridge origin>]`, `embedSandbox="trusted"`,
-  `environment={label,color}`, `communityInvite=false`.
-- Trusted-proxy handoff: `gateway.auth.mode="trusted-proxy"`,
-  `trustedProxies=["127.0.0.1"]`, `trustedProxy.allowLoopback=true`,
-  `userHeader`, `requiredHeaders`, `deviceAutoApprove`, `identityScopes`
-  mapping the owner to `operator.admin`; Clawbridge sets the identity header
-  from its own session and strips client-supplied forwarded headers; the
-  device-pairing launcher and its modal are removed.
-- Managed Clawbridge plugin (bundled like usage-tracker/agent-vault): one
-  `auth: "gateway"` HTTP route and one tab descriptor (`slug`, `group:
-  "control"`, `order`, `requiredScopes`) per hosted section.
-- Clawbridge embed render mode (no shell chrome, no login redirect when
-  framed, Control UI theme tokens); the release ships exactly the initial
-  hosted-section set **Models & keys**, **Integrations**, and **Instance**.
-  Files is deferred; names and grouping may be refined after release.
-- Freeze: agents, cron, nodes, sessions, terminal screens (bug fixes only,
-  "Open in OpenClaw" links); Chat retained until T7 passes.
+- Clawbridge is the primary and supported managed interface. Remove the
+  previous daily-Control-UI-shell and hosted-Clawbridge-section direction;
+  keep the products as separate trust and experience surfaces.
+- Define a versioned managed-capability contract across runtime prompts,
+  tools, config, Clawbridge affordances, and tests. The OpenClaw agent must
+  not recommend or depend on a capability that requires the customer to open
+  the Control UI. Unsupported surfaces are disabled where configuration
+  permits and described as managed by TeamYou where they cannot be hidden.
+- Keep `/openclaw` behind AlphaClaw authentication and add a TeamYou-branded
+  interstitial before any Control UI HTML, deep link, service worker, or
+  Gateway WebSocket can be reached. The acknowledgement is signed and
+  session-scoped; audit user, instance, warning version, timestamp, and the
+  managed-config revision. Do not permit a direct Gateway-origin bypass.
+- After acknowledgement, show a persistent amber environment label such as
+  **Advanced — unmanaged changes**. The warning is expectation-setting and
+  operational evidence, not a security boundary or legal waiver; counsel
+  reviews final legal language. User-facing copy says **TeamYou**, never the
+  internal company name.
+- Preserve `OPENCLAW_CONFIG_READONLY=1` for the initial release. Prefer
+  scope-capped read-only Control UI authority if it can be delivered without
+  blocking the upgrade; otherwise the global read-only config guard remains
+  the minimum boundary. Time-limited write elevation, a managed-config diff,
+  and restore-to-managed-baseline are follow-ups, not implicit launch scope.
+- Expand Clawbridge selectively for the supported configuration workflows:
+  channel DM/group policy, allowlists, groups/rooms, mention/activation
+  behavior; and agent model/fallback, thinking level, speed/fast mode when
+  available, tools, skills, and bindings.
 
 ### W6. Tests, docs, and release hygiene
 
@@ -211,8 +228,9 @@ Per instance, operator-driven, one at a time:
 6. **Start**: Clawbridge starts the Gateway under external supervision;
    readiness by `/startupz` (`status: "started"`) then `/readyz`.
 7. **Verify** (T-list subset): vault-brokered model call, channel login and
-   message round trip, cron run, pairing approval, restart handoff, Control
-   UI handoff and one hosted section, Doctor lint clean.
+   message round trip, cron run, pairing approval, restart handoff, Clawbridge
+   managed workflows, the TeamYou advanced-access interstitial and audit,
+   Control UI bypass prevention, persistent advanced label, Doctor lint clean.
 8. **Rollback** (only before step 5 completes): restore the recovery point
    with the 7.1 package. After Doctor has migrated, rollback means restore
    from backup, never a package downgrade.
@@ -226,12 +244,12 @@ Per instance, operator-driven, one at a time:
 | T1 | Migration from a copied production-shaped 7.1 state dir: boot 9.4 under Clawbridge, record startup migrations, stop, Doctor, diff `migration_runs` | Every expected step present (sessions, exec-approvals, mcp-oauth, shared-auth-store, cron run logs); no refusal; roster and auth store where W1 expects them |
 | T2 | Vault routing on 9.4: model call, channel send, `web_fetch` | Traffic exits via the vault proxy with placeholder substitution; nothing dials direct |
 | T3 | Supervisor restart: `openclaw gateway restart`, in-process restart, crash | Handoff consumed, relaunch without Doctor, `/startupz` gate honoured, no crash classification; forced stop after drain window works |
-| T4 | Read-only config: Control UI Settings save, Model Setup, plugin enable, Labs toggle; Clawbridge model config; watchdog Doctor | Control UI writes refused with a clear message; Clawbridge writes succeed; Doctor from Clawbridge with the var unset succeeds |
+| T4 | Managed config ownership: Control UI Settings save, Model Setup, plugin enable, Labs toggle; Clawbridge model config; watchdog Doctor | Control UI config writes are refused with a clear managed-by-TeamYou message; Clawbridge writes succeed; Doctor from Clawbridge with the var unset succeeds |
 | T5 | Token sweep: paste a Telegram token in the Control UI wizard (with read-only off, to simulate a bypass) and via the Secrets page | Value quarantined within one tick, proposal opened, banner shown, config and `.bak*` clean |
 | T6 | Managed defaults: dreaming, swarm, cliAgents, terminal, telemetry, egress proxy, `maxConcurrent` | Each observed off/limited in `openclaw config get` and Control UI |
 | T7 | Bootstrap ritual and CLI-runtime continuity on a managed instance with no native identity | Ritual completes; `BOOTSTRAP.md` handling and TeamYou memory activation gate work; Claude login/adoption preserves a three-turn conversation across an MCP/tool turn and Gateway restart without the temporary projects symlink; managed Codex still uses its agent-owned `CODEX_HOME` |
-| T8 | Control UI handoff and hosted sections: trusted-proxy sign-on, no pairing modal, sections visible for the owner, cookies and WebSocket inside frames, deep links | As in the spike, on the real topology |
-| T9 | Trusted-proxy security review: forged identity headers from a non-proxy source, loopback without proxy, `requiredHeaders` missing | All refused per upstream's rules |
+| T8 | Advanced Control UI gate: direct `/openclaw`, deep links, service-worker requests, and Gateway WebSocket before and after acknowledgement; expiry/new session; persistent amber label | Every entry path is blocked until a signed session-scoped TeamYou acknowledgement; acknowledgement is audited with the required fields; no direct Gateway-origin bypass exists; the advanced label persists afterward |
+| T9 | Authority and agent-behavior review: scope-capped read-only access where feasible, forged/proxy headers, Control-UI-only prompts and tools, managed channel/agent configuration | Unauthorized and bypass paths are refused; global config read-only remains enforced; the agent does not direct customers to the Control UI; supported workflows are available in Clawbridge or explicitly deferred |
 | T10 | Backup crossing: restore the pre-upgrade recovery point onto a fresh instance with 7.1, then upgrade it again | Round trip succeeds |
 
 ## 6. Risks specific to execution
@@ -240,8 +258,8 @@ Per instance, operator-driven, one at a time:
   Doctor (W1.2 and runbook step 5 must land together).
 - The disposable instance must be production-shaped (vault enrolled, enforced
   egress, a channel bound) or T2/T5/T8 are not meaningful.
-- Trusted-proxy misconfiguration; mitigated by T9 and the loopback bind plus
-  host firewall.
+- Advanced-access gate or trusted-proxy misconfiguration; mitigated by T8/T9,
+  gating both HTTP and WebSocket paths, loopback bind, and the host firewall.
 - AlphaClaw's HOME override can leave Claude native transcripts and credentials
   in a different domain from the Gateway; W1 and T7 make the product fix part
   of this release rather than assuming OpenClaw 9.4 fixes it [A4].
@@ -250,11 +268,14 @@ Per instance, operator-driven, one at a time:
 
 ## 7. Deferred follow-ups (tracked in the project, not in this release)
 
-Child-env scrubbing for the Control UI terminal; Agent Vault native feature
-plugin; refinement of the hosted-section set and naming beyond the initial
-three sections; `openclaw backup` as the
-provisioning-side export primitive; operator roles once per-person logins
-exist; retiring the frozen wrapper screens; Files section decision.
+Child-env scrubbing for any future Control UI terminal access; Agent Vault
+native feature plugin; time-limited Control UI write/admin elevation;
+managed-config diff and restore-to-managed-baseline; richer Clawbridge channel
+and agent controls beyond the release-critical subset; TeamYou-hosted and
+shared artifacts as the long-term successor to instance-local Pages;
+`openclaw backup` as the provisioning-side export primitive; operator roles
+once per-person logins exist; retiring redundant wrapper screens only after
+their managed replacements are proven.
 
 ## 8. Execution project
 
@@ -285,8 +306,8 @@ Bill approved these defaults after the plan review:
    remain on Node 24 for this upgrade.
 2. `agents.defaults.maxConcurrent=3` on CPX-class hosts.
 3. G2 means all tests T1–T10 pass.
-4. The release ships Models & keys, Integrations, and Instance as the initial
-   hosted Clawbridge sections; Files remains deferred.
+4. **Superseded by §11.** The release no longer ships hosted Clawbridge
+   sections or treats the Control UI as the daily shell.
 5. The AlphaClaw service-HOME / OpenClaw-state separation and Claude
    continuity acceptance test are same-release work.
 6. The production-go checkpoint precedes G4.
@@ -299,3 +320,37 @@ execution. When implementation or test evidence requires a different choice,
 record the material decision in the execution project, update this document
 when it changes release scope or a safety invariant, and continue through the
 existing human gates rather than stopping for speculative pre-decisions.
+
+## 11. Approved managed-experience amendment (2026-09-17)
+
+Bill approved the following rollout after evaluating the 9.4 Control UI in
+practice:
+
+1. Clawbridge is the supported managed interface and the intended daily
+   experience. The Control UI is not the product shell, and Clawbridge is not
+   embedded inside it.
+2. Control UI access may remain available for launch speed, but only as an
+   explicitly advanced, separately gated surface. The first release uses a
+   TeamYou-branded interstitial, signed session acknowledgement, audit trail,
+   complete HTTP/WebSocket/deep-link coverage, no direct Gateway bypass, and
+   a persistent **Advanced — unmanaged changes** label.
+3. The initial release retains `OPENCLAW_CONFIG_READONLY=1`. Read-only
+   operator scopes are preferred when practical without delaying the core
+   upgrade. Timed write elevation, diff, and restore are later design work.
+4. AlphaClaw maintains a versioned capability contract so the agent, prompts,
+   tools, config, and supported UI agree. No managed workflow may require the
+   customer to use the Control UI.
+5. Clawbridge gains the channel-policy and agent-configuration controls needed
+   for managed operation; breadth is driven by supported workflows, not by
+   one-for-one parity with every upstream screen.
+6. TeamYou is the only brand named in customer-facing copy. The internal
+   company name must not appear in the interstitial, labels, helper text, or
+   other user-visible product copy.
+7. Instance-local Pages remain supported for now, but TeamYou is the likely
+   long-term home for shareable team artifacts. That product migration is not
+   a blocker for the 9.4 upgrade.
+
+This amendment supersedes the Phase 5 choice to use the Control UI as the
+daily shell with hosted Clawbridge sections. The earlier comparison remains
+in the project as decision history; §8 of that document records the
+superseding rationale.
