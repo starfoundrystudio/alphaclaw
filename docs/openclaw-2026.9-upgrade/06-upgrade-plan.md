@@ -1,7 +1,9 @@
 # OpenClaw 2026.7.1 → 2026.9.4 upgrade plan (Phase 6)
 
-Status: **APPROVED by Bill at Checkpoint 3, 2026-09-16** (all five §9 items). Execution tracked in the TeamYou project named in §8. This is the plan a
-separate execution project will follow. It assumes every decision recorded in
+Status: **APPROVED by Bill at Checkpoint 3, 2026-09-16** (all five §9 items),
+then amended with Bill's approval on 2026-09-16 to resolve the execution gaps
+recorded in §10. Execution is tracked in the TeamYou project named in §8. This
+is the plan that project follows. It assumes every decision recorded in
 [`03-impact-matrix.md`](03-impact-matrix.md) (§M, §K, §I2) and
 [`05-clawbridge-vs-control-ui.md`](05-clawbridge-vs-control-ui.md) (§4, §6),
 and the spike result in [`S1-hosting-spike.md`](S1-hosting-spike.md).
@@ -22,9 +24,9 @@ snapshots, Backblaze, and the workspace export; restore from teamyou.com).
 ## 2. Sequencing and gates
 
 ```
-G0  Prerequisites            Node ≥ 24.16 on the fleet (clawctl), git-sync removal branch
+G0  Prerequisites            compliant fleet Node; Node 26 for new provisions; git-sync removal
 G1  Branch complete          AlphaClaw 9.4 branch with W1–W6 merged, vitest green
-G2  Disposable instance      first install on a throwaway dual-VPS instance; test plan T1–T8 pass
+G2  Disposable instance      first install on a throwaway dual-VPS instance; test plan T1–T10 pass
 G3  Beta                     beta tag published; install on the internal instance(s); soak
 G4  Production runbook       manual, one instance at a time, with the pre-upgrade backup verified
 ```
@@ -33,6 +35,8 @@ Rules: nothing reaches a customer before G2 passes in full; no downgrade after
 a database migration (rollback = restore the verified pre-upgrade backup with
 the 7.1 package); "ASK BILL before any release or install" applies to every
 publish and every fleet install.
+The explicit G3 production-go checkpoint occurs after the beta soak and before
+the first G4 production install.
 
 ## 3. Workstreams (what the branch contains)
 
@@ -41,9 +45,10 @@ implementation order; workstreams W1–W3 are the boot-critical core.
 
 ### W0. Prerequisites (before the branch is installable anywhere)
 
-- clawctl: raise `NODE_MAJOR` policy and `node-runtime.sh` ranges to
-  `>=24.16.0 <25 || >=26.1.0`; decide 24.x vs 26.x for new provisions;
-  verify the installed Node and SQLite on every managed host [A1].
+- clawctl: raise `node-runtime.sh` ranges to
+  `>=24.16.0 <25 || >=26.1.0`; use Node 26 for new provisions while accepting
+  already-managed hosts on a compliant Node 24 runtime; verify the installed
+  Node and SQLite on every managed host before the OpenClaw upgrade [A1].
 - Remove GitHub sync from Clawbridge (git-sync CLI, hourly cron, sidebar git
   panel, GitHub config routes, `.gitignore` whitelist machinery) — decided
   2026-09-14; ideally lands before the pin bump so the 9.4 branch does not
@@ -64,7 +69,12 @@ implementation order; workstreams W1–W3 are the boot-critical core.
    plus `--secret-input-mode ref`; preinstall `codex` with
    `--accept-capabilities` when the Codex runtime is selected; use `--json`
    and inspect reported health [H1, H2, H3, F2].
-4. AlphaClaw engines and `node-sqlite-safety.js` ranges [A1].
+4. HOME-domain fix: preserve the original service-user HOME for every
+   OpenClaw-owned process while keeping AlphaClaw and OpenClaw state on the
+   explicit `ALPHACLAW_*` / `OPENCLAW_*` paths; stage Claude credentials under
+   the service HOME, leave managed Codex on its explicit agent-owned
+   `CODEX_HOME`, and add an entrypoint-level regression test [A4].
+5. AlphaClaw engines and `node-sqlite-safety.js` ranges [A1].
 
 ### W2. Same-release correctness (S1)
 
@@ -91,6 +101,14 @@ implementation order; workstreams W1–W3 are the boot-critical core.
   store or CLI [B9].
 - Retired config keys: audit every managed writer against D12; CI check
   running `openclaw doctor --lint --all` on a copied production config [B6].
+- Close the remaining matrix compatibility rows rather than relying on broad
+  regression coverage: migrate memory-search key handling; route raw config
+  writers through the shared guarded writer; verify Gateway-token env refs,
+  rate-limit-sensitive RPCs, Agent Vault provider hosts, channel and cron
+  payloads, Skill Workshop ownership, and preservation of Doctor originals
+  [B3, B8, D8, D9, E4, G7, H7, J1, J2].
+- Re-test bundled plugin hook signatures and every parsed OpenClaw CLI JSON
+  shape, not only the external TeamYou memory plugin [F5, F7].
 
 ### W3. Supervision and config ownership (decided)
 
@@ -120,8 +138,9 @@ implementation order; workstreams W1–W3 are the boot-critical core.
 `gateway.cliAgents.enabled=false`, `gateway.terminal.enabled=false`,
 `telemetry.enabled=false`, `secrets.egressProxy.enabled=false`, the agent
 `secrets` tool denied in the managed tools policy, explicit
-`agents.defaults.maxConcurrent` (proposal: 3 on CPX-class hosts; confirm in
-T6), `subagents.maxSpawnDepth` and session reset at upstream defaults,
+`agents.defaults.maxConcurrent=3` on CPX-class hosts (future host classes must
+choose an explicit size; verify the CPX value in T6), `subagents.maxSpawnDepth`
+and session reset at upstream defaults,
 `agents.defaults.memorySearch` no longer written.
 
 ### W5. Control UI integration (decided, Phase 5)
@@ -139,8 +158,9 @@ T6), `subagents.maxSpawnDepth` and session reset at upstream defaults,
   `auth: "gateway"` HTTP route and one tab descriptor (`slug`, `group:
   "control"`, `order`, `requiredScopes`) per hosted section.
 - Clawbridge embed render mode (no shell chrome, no login redirect when
-  framed, Control UI theme tokens); hosted sections per 05 §4.3 (working
-  set: Models & keys, Integrations, Instance; Files undecided).
+  framed, Control UI theme tokens); the release ships exactly the initial
+  hosted-section set **Models & keys**, **Integrations**, and **Instance**.
+  Files is deferred; names and grouping may be refined after release.
 - Freeze: agents, cron, nodes, sessions, terminal screens (bug fixes only,
   "Open in OpenClaw" links); Chat retained until T7 passes.
 
@@ -155,14 +175,21 @@ T6), `subagents.maxSpawnDepth` and session reset at upstream defaults,
 - Memory/gating: verify the TeamYou memory plugin against 9.4
   (`plugin-entry` shape, manifest, consent, `assets/icon.png`) and rebuild
   if needed [F5, D10].
+- CLI-runtime continuity: test Claude login/adoption, three-turn history, an
+  MCP/tool turn, and a Gateway restart without relying on the temporary
+  projects symlink; smoke-test managed Codex across the same HOME change and
+  confirm its agent-owned `CODEX_HOME` is unchanged [A4].
+- Before G1, close every S0–S2 row in `03-impact-matrix.md` as implemented,
+  explicitly deferred, or covered by a named G2 test. Unmapped rows block G1.
 
 ## 4. Managed-instance runbook (replaces `openclaw update`)
 
 Per instance, operator-driven, one at a time:
 
-1. **Pre-checks**: Node ≥ 24.16 and SQLite ≥ 3.51.3 on the host; disk
-   headroom; `openclaw doctor --lint --all --json` on the running 7.1
-   instance for retired keys.
+1. **Pre-checks**: Node satisfies `>=24.16.0 <25 || >=26.1.0` and SQLite is
+   ≥ 3.51.3 on the host (new provisions use Node 26); confirm disk headroom;
+   run `openclaw doctor --lint --all --json` on the running 7.1 instance for
+   retired keys.
 2. **Backup**: provider snapshot of both VPSes plus a WAL-consistent copy of
    `state/openclaw.sqlite`, every `agents/<id>/agent/openclaw-agent.sqlite`,
    `openclaw.json`, credentials, and workspaces (use `openclaw backup create
@@ -199,7 +226,7 @@ Per instance, operator-driven, one at a time:
 | T4 | Read-only config: Control UI Settings save, Model Setup, plugin enable, Labs toggle; Clawbridge model config; watchdog Doctor | Control UI writes refused with a clear message; Clawbridge writes succeed; Doctor from Clawbridge with the var unset succeeds |
 | T5 | Token sweep: paste a Telegram token in the Control UI wizard (with read-only off, to simulate a bypass) and via the Secrets page | Value quarantined within one tick, proposal opened, banner shown, config and `.bak*` clean |
 | T6 | Managed defaults: dreaming, swarm, cliAgents, terminal, telemetry, egress proxy, `maxConcurrent` | Each observed off/limited in `openclaw config get` and Control UI |
-| T7 | Bootstrap ritual on a managed instance with no native identity | Ritual completes; `BOOTSTRAP.md` handling and TeamYou memory activation gate work |
+| T7 | Bootstrap ritual and CLI-runtime continuity on a managed instance with no native identity | Ritual completes; `BOOTSTRAP.md` handling and TeamYou memory activation gate work; Claude login/adoption preserves a three-turn conversation across an MCP/tool turn and Gateway restart without the temporary projects symlink; managed Codex still uses its agent-owned `CODEX_HOME` |
 | T8 | Control UI handoff and hosted sections: trusted-proxy sign-on, no pairing modal, sections visible for the owner, cookies and WebSocket inside frames, deep links | As in the spike, on the real topology |
 | T9 | Trusted-proxy security review: forged identity headers from a non-proxy source, loopback without proxy, `requiredHeaders` missing | All refused per upstream's rules |
 | T10 | Backup crossing: restore the pre-upgrade recovery point onto a fresh instance with 7.1, then upgrade it again | Round trip succeeds |
@@ -212,23 +239,27 @@ Per instance, operator-driven, one at a time:
   egress, a channel bound) or T2/T5/T8 are not meaningful.
 - Trusted-proxy misconfiguration; mitigated by T9 and the loopback bind plus
   host firewall.
+- AlphaClaw's HOME override can leave Claude native transcripts and credentials
+  in a different domain from the Gateway; W1 and T7 make the product fix part
+  of this release rather than assuming OpenClaw 9.4 fixes it [A4].
 - Upstream releases keep moving; re-run the checklist's catalog and
   retired-key diffs against the final target tag before G1.
 
 ## 7. Deferred follow-ups (tracked in the project, not in this release)
 
 Child-env scrubbing for the Control UI terminal; Agent Vault native feature
-plugin; final hosted-section set and naming; `openclaw backup` as the
+plugin; refinement of the hosted-section set and naming beyond the initial
+three sections; `openclaw backup` as the
 provisioning-side export primitive; operator roles once per-person logins
 exist; retiring the frozen wrapper screens; Files section decision.
 
-## 8. Execution project shape (proposal)
+## 8. Execution project
 
-A new TeamYou project "OpenClaw 2026.9.4 upgrade — execution" with one todo
-per gate (G0–G4) and one per workstream (W0–W6), human checkpoints at G1
-(branch review), G2 (test results), G3 (beta go), and G4 (each production
-install). This assessment project closes when Checkpoint 3 approves this
-plan.
+TeamYou project `TAoHXFTAly7M`, "OpenClaw 2026.9.4 upgrade — execution",
+tracks one todo per gate (G0–G4) and one per workstream (W0–W6). Human
+checkpoints are G1 (branch review), G2 (test results), G3 (production go after
+the beta soak and before G4), and an explicit go for each G4 production
+install. The assessment project closed when Checkpoint 3 approved this plan.
 
 ## 9. Checkpoint 3 — approved 2026-09-16
 
@@ -242,3 +273,23 @@ plan.
    `OPENCLAW_CONFIG_READONLY` unset from Clawbridge.
 5. Approve creating the execution project on the shape in §8 and closing
    this assessment.
+
+## 10. Approved execution defaults and change policy (2026-09-16 amendment)
+
+Bill approved these defaults after the plan review:
+
+1. Node 26 for new provisions; compliant existing Node 24 fleet hosts may
+   remain on Node 24 for this upgrade.
+2. `agents.defaults.maxConcurrent=3` on CPX-class hosts.
+3. G2 means all tests T1–T10 pass.
+4. The release ships Models & keys, Integrations, and Instance as the initial
+   hosted Clawbridge sections; Files remains deferred.
+5. The AlphaClaw service-HOME / OpenClaw-state separation and Claude
+   continuity acceptance test are same-release work.
+6. The production-go checkpoint precedes G4.
+
+This plan is a starting contract, not a prohibition on learning during
+execution. When implementation or test evidence requires a different choice,
+record the material decision in the execution project, update this document
+when it changes release scope or a safety invariant, and continue through the
+existing human gates rather than stopping for speculative pre-decisions.
