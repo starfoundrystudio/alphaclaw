@@ -1,4 +1,16 @@
+const path = require("path");
 const { createWatchdog } = require("../../lib/server/watchdog");
+const { readGatewayHopProbe } = require("../../lib/server/gateway-hop-probe");
+
+const kHopFixtureDir = path.join(__dirname, "fixtures", "gateway-hop-probe");
+const kHopFixtureNow = Date.parse("2026-09-15T21:20:41Z");
+const readHopFixture = (name, overrides = {}) =>
+  readGatewayHopProbe({
+    filePath: path.join(kHopFixtureDir, name),
+    now: kHopFixtureNow,
+    staleMs: 6 * 60 * 1000,
+    ...overrides,
+  });
 
 const kGuardedDoctorRepairCommand =
   "alphaclaw openclaw-doctor-guard -- openclaw doctor --non-interactive --fix";
@@ -42,6 +54,7 @@ const createHarness = ({
   },
   reconcileOpenclawPlugins,
   openclawConfig = { gateway: { mode: "local" } },
+  readGatewayHopProbe: readGatewayHopProbeImpl,
 } = {}) => {
   process.env.WATCHDOG_AUTO_REPAIR = autoRepair ? "true" : "false";
   process.env.WATCHDOG_NOTIFICATIONS_DISABLED = notificationsDisabled ? "true" : "false";
@@ -85,6 +98,7 @@ const createHarness = ({
     fsModule,
     reconcileLogger: { log: vi.fn() },
     eventLoopLagMonitor,
+    ...(readGatewayHopProbeImpl ? { readGatewayHopProbe: readGatewayHopProbeImpl } : {}),
   });
 
   return {
@@ -1041,6 +1055,285 @@ describe("server/watchdog", () => {
     expect(settings).toEqual({
       autoRepair: true,
       notificationsEnabled: false,
+    });
+  });
+
+  describe("security gateway hop probe", () => {
+    const hopNotifications = (notifier, needle) =>
+      notifier.notify.mock.calls.filter((call) =>
+        String(call?.[0] || "").includes(needle),
+      );
+
+    const createHopHarness = (initialSnapshot, options = {}) => {
+      // Fixture timestamps are fixed; pin the clock so ages stay meaningful.
+      vi.useFakeTimers();
+      vi.setSystemTime(kHopFixtureNow);
+      let snapshot = initialSnapshot;
+      // The host timer rewrites the file every cycle, so a fresh fixture is
+      // re-stamped as written 30s before each read; stale fixtures stay stale.
+      const readGatewayHopProbeMock = vi.fn(({ now = Date.now() } = {}) =>
+        snapshot?.available && !snapshot.stale
+          ? {
+              ...snapshot,
+              checkedAt: new Date(now - 30_000).toISOString(),
+              checkedAgeMs: 30_000,
+            }
+          : snapshot,
+      );
+      const harness = createHarness({
+        autoRepair: true,
+        readGatewayHopProbe: readGatewayHopProbeMock,
+        ...options,
+      });
+      return {
+        ...harness,
+        readGatewayHopProbeMock,
+        setSnapshot: (next) => {
+          snapshot = next;
+        },
+      };
+    };
+
+    it("exposes an unavailable hop snapshot when the host probe file is absent", () => {
+      const { watchdog } = createHarness({
+        readGatewayHopProbe: () =>
+          readHopFixture("does-not-exist.json"),
+      });
+      expect(watchdog.getStatus().gatewayHop).toEqual(
+        expect.objectContaining({
+          state: "unavailable",
+          available: false,
+          reason: "missing",
+          incidentActive: false,
+          alarmFailureThreshold: 2,
+        }),
+      );
+    });
+
+    it("raises one alarm when consecutive failures reach the threshold and never auto-repairs", async () => {
+      vi.useFakeTimers();
+      const { watchdog, notifier, shellCmd, insertWatchdogEvent, setSnapshot } =
+        createHopHarness(readHopFixture("failing-first.json"));
+      watchdog.start();
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(hopNotifications(notifier, "Security gateway unreachable")).toHaveLength(0);
+      expect(watchdog.getStatus().gatewayHop).toEqual(
+        expect.objectContaining({
+          state: "failing",
+          consecutiveFailures: 1,
+          error: "timeout",
+          incidentActive: false,
+        }),
+      );
+
+      setSnapshot(readHopFixture("failing.json"));
+      await vi.advanceTimersByTimeAsync(120_000);
+
+      const alarms = hopNotifications(notifier, "🔴 Security gateway unreachable");
+      expect(alarms).toHaveLength(1);
+      expect(alarms[0][0]).toContain("Host: `10.162.2.3`");
+      expect(alarms[0][0]).toContain("Error: `ssh_failed`");
+      expect(alarms[0][0]).toContain("Connection refused");
+      expect(alarms[0][0]).toContain("Consecutive failed probes: 3");
+      expect(alarms[0][0]).toContain("Last reachable: 2026-09-15T21:14:03.000Z");
+      expect(alarms[0][0]).toContain("[View logs](https://setup.example.com/#/watchdog)");
+      expect(alarms[0][1]).toEqual({ eventType: "crash" });
+
+      await vi.advanceTimersByTimeAsync(120_000 * 3);
+      expect(hopNotifications(notifier, "🔴 Security gateway unreachable")).toHaveLength(1);
+
+      expect(shellCmd).not.toHaveBeenCalled();
+      expect(watchdog.getStatus()).toEqual(
+        expect.objectContaining({
+          health: "healthy",
+          lifecycle: "running",
+          repairAttempts: 0,
+          gatewayHop: expect.objectContaining({
+            state: "failing",
+            consecutiveFailures: 3,
+            incidentActive: true,
+            incidentOpenedAt: expect.any(String),
+          }),
+        }),
+      );
+      expect(
+        insertWatchdogEvent.mock.calls.filter(
+          (call) => call[0]?.eventType === "gateway_hop" && call[0]?.status === "failed",
+        ),
+      ).toHaveLength(2);
+    });
+
+    it("alarms immediately when the watchdog starts into an existing outage", async () => {
+      vi.useFakeTimers();
+      const { watchdog, notifier } = createHopHarness(readHopFixture("failing.json"));
+      watchdog.start();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(hopNotifications(notifier, "🔴 Security gateway unreachable")).toHaveLength(1);
+    });
+
+    it("sends a single recovery notice when the hop becomes healthy again", async () => {
+      vi.useFakeTimers();
+      const { watchdog, notifier, setSnapshot } = createHopHarness(
+        readHopFixture("failing.json"),
+      );
+      watchdog.start();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(hopNotifications(notifier, "🔴 Security gateway unreachable")).toHaveLength(1);
+
+      setSnapshot(readHopFixture("healthy.json"));
+      await vi.advanceTimersByTimeAsync(120_000);
+      const recoveries = hopNotifications(notifier, "🟢 Security gateway reachable again");
+      expect(recoveries).toHaveLength(1);
+      expect(recoveries[0][0]).toContain("Host: `10.162.2.3`");
+      expect(recoveries[0][1]).toEqual({ eventType: "recovery" });
+      expect(watchdog.getStatus().gatewayHop).toEqual(
+        expect.objectContaining({ state: "healthy", incidentActive: false, incidentOpenedAt: null }),
+      );
+
+      await vi.advanceTimersByTimeAsync(120_000 * 2);
+      expect(hopNotifications(notifier, "🟢 Security gateway reachable again")).toHaveLength(1);
+
+      setSnapshot(readHopFixture("failing.json"));
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(hopNotifications(notifier, "🔴 Security gateway unreachable")).toHaveLength(2);
+    });
+
+    it("does not recover from a healthy probe that has gone stale", async () => {
+      vi.useFakeTimers();
+      const { watchdog, notifier, setSnapshot } = createHopHarness(
+        readHopFixture("failing.json"),
+      );
+      watchdog.start();
+      await vi.advanceTimersByTimeAsync(0);
+
+      setSnapshot(readHopFixture("stale.json"));
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(hopNotifications(notifier, "🟢 Security gateway reachable again")).toHaveLength(0);
+      expect(watchdog.getStatus().gatewayHop).toEqual(
+        expect.objectContaining({ state: "stale", stale: true, incidentActive: true }),
+      );
+
+      setSnapshot(readHopFixture("does-not-exist.json"));
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(watchdog.getStatus().gatewayHop.incidentActive).toBe(true);
+      expect(hopNotifications(notifier, "Security gateway")).toHaveLength(1);
+    });
+
+    it("never alarms on stale, unconfigured or malformed probe data", async () => {
+      vi.useFakeTimers();
+      const { watchdog, notifier, insertWatchdogEvent, setSnapshot } = createHopHarness(
+        readHopFixture("stale.json"),
+      );
+      watchdog.start();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(watchdog.getStatus().gatewayHop.state).toBe("stale");
+
+      setSnapshot(readHopFixture("unconfigured.json"));
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(watchdog.getStatus().gatewayHop).toEqual(
+        expect.objectContaining({ state: "not_applicable", consecutiveFailures: 7 }),
+      );
+
+      setSnapshot(readHopFixture("malformed-shape.json"));
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(watchdog.getStatus().gatewayHop).toEqual(
+        expect.objectContaining({ state: "invalid", reason: "invalid_shape" }),
+      );
+
+      setSnapshot(readHopFixture("malformed-truncated.json"));
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(watchdog.getStatus().gatewayHop.reason).toBe("not_json");
+
+      expect(hopNotifications(notifier, "Security gateway")).toHaveLength(0);
+      expect(watchdog.getStatus().gatewayHop.incidentActive).toBe(false);
+      expect(
+        insertWatchdogEvent.mock.calls.filter((call) => call[0]?.eventType === "gateway_hop"),
+      ).toEqual([
+        expect.arrayContaining([expect.objectContaining({ status: "warn" })]),
+        expect.arrayContaining([expect.objectContaining({ status: "warn" })]),
+        expect.arrayContaining([expect.objectContaining({ status: "warn" })]),
+      ]);
+    });
+
+    it("closes an open incident silently when the broker becomes unconfigured", async () => {
+      vi.useFakeTimers();
+      const { watchdog, notifier, setSnapshot } = createHopHarness(
+        readHopFixture("failing.json"),
+      );
+      watchdog.start();
+      await vi.advanceTimersByTimeAsync(0);
+      setSnapshot(readHopFixture("unconfigured.json"));
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(watchdog.getStatus().gatewayHop.incidentActive).toBe(false);
+      expect(hopNotifications(notifier, "🟢 Security gateway reachable again")).toHaveLength(0);
+    });
+
+    it("respects disabled notifications without losing incident tracking", async () => {
+      vi.useFakeTimers();
+      const { watchdog, notifier } = createHopHarness(readHopFixture("failing.json"), {
+        notificationsDisabled: true,
+      });
+      watchdog.start();
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(notifier.notify).not.toHaveBeenCalled();
+      expect(watchdog.getStatus().gatewayHop.incidentActive).toBe(true);
+    });
+
+    it("keeps evaluating the hop while a repair operation is in progress", async () => {
+      vi.useFakeTimers();
+      let releaseRepair;
+      const { watchdog, notifier, setSnapshot } = createHopHarness(
+        readHopFixture("healthy.json"),
+        {
+          shellCmdImpl: () =>
+            new Promise((resolve) => {
+              releaseRepair = () => resolve("fixed");
+            }),
+        },
+      );
+      watchdog.start();
+      await vi.advanceTimersByTimeAsync(0);
+      const repairPromise = watchdog.triggerRepair();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(watchdog.getStatus().operationInProgress).toBe(true);
+
+      setSnapshot(readHopFixture("failing.json"));
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(hopNotifications(notifier, "🔴 Security gateway unreachable")).toHaveLength(1);
+
+      releaseRepair();
+      await repairPromise;
+    });
+
+    it("re-reads the probe for status at most every few seconds and refreshes age from the clock", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(kHopFixtureNow);
+      const readGatewayHopProbeMock = vi.fn(({ now = Date.now() } = {}) =>
+        readHopFixture("healthy.json", { now }),
+      );
+      const { watchdog } = createHarness({
+        readGatewayHopProbe: readGatewayHopProbeMock,
+      });
+
+      const first = watchdog.getStatus().gatewayHop;
+      watchdog.getStatus();
+      expect(readGatewayHopProbeMock).toHaveBeenCalledTimes(1);
+      expect(first).toEqual(
+        expect.objectContaining({ state: "healthy", checkedAgeMs: 30_000 }),
+      );
+
+      await vi.advanceTimersByTimeAsync(3_000);
+      const cached = watchdog.getStatus().gatewayHop;
+      expect(readGatewayHopProbeMock).toHaveBeenCalledTimes(1);
+      expect(cached.checkedAgeMs).toBe(33_000);
+      expect(cached.state).toBe("healthy");
+
+      await vi.advanceTimersByTimeAsync(10 * 60 * 1000);
+      const later = watchdog.getStatus().gatewayHop;
+      expect(readGatewayHopProbeMock).toHaveBeenCalledTimes(2);
+      expect(later.state).toBe("stale");
+      expect(later.checkedAgeMs).toBe(10 * 60 * 1000 + 33_000);
     });
   });
 });

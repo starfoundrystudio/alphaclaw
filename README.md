@@ -139,6 +139,7 @@ The built-in watchdog monitors gateway health and recovers from failures automat
 | **Crash-loop detection** | Threshold-based (default: 3 crashes in 300s)                           |
 | **Auto-repair**          | Runs guarded `openclaw doctor --non-interactive --fix`, relaunches gateway |
 | **Notifications**        | Telegram, Discord, and Slack alerts for crashes, repairs, and recovery |
+| **Security gateway hop** | Reads the host probe file (`/run/alphaclaw/gateway-hop-probe.json`, written every 2 minutes by clawctl's `alphaclaw-gateway-hop-probe.timer`), shows reachability in the UI and status APIs, and notifies once per outage after 2 consecutive failures plus once on recovery. No auto-repair: the fix is on the gateway host. |
 | **Event log**            | SQLite-backed incident history with API and UI access                  |
 
 ## Environment Variables
@@ -158,6 +159,9 @@ The built-in watchdog monitors gateway health and recovers from failures automat
 | `SLACK_BOT_TOKEN`                 | Optional | Slack bot token (Socket Mode)                      |
 | `WATCHDOG_AUTO_REPAIR`            | Optional | Enable auto-repair on crash (`true`/`false`)       |
 | `WATCHDOG_NOTIFICATIONS_DISABLED` | Optional | Disable watchdog notifications (`true`/`false`)    |
+| `ALPHACLAW_GATEWAY_HOP_PROBE_PATH` | Optional | Security gateway hop probe file (default `/run/alphaclaw/gateway-hop-probe.json`) |
+| `WATCHDOG_GATEWAY_HOP_STALE_SECONDS` | Optional | Age after which the hop probe counts as stale/unknown (default `360`) |
+| `WATCHDOG_GATEWAY_HOP_ALARM_FAILURES` | Optional | Consecutive failed hop probes before a notification (default `2`) |
 | `PORT`                            | Optional | Server port (default `3000`)                       |
 | `ALPHACLAW_ROOT_DIR`              | Optional | Data directory (default `/data`)                   |
 | `TRUST_PROXY_HOPS`                | Optional | Trust proxy hop count for correct client IP        |

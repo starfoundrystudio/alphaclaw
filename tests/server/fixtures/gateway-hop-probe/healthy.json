@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "probe": "oauth_broker_status",
+  "ok": true,
+  "configured": true,
+  "gateway_host": "10.162.2.3",
+  "checked_at": "2026-09-15T21:20:11Z",
+  "last_ok_at": "2026-09-15T21:20:11Z",
+  "consecutive_failures": 0,
+  "error": null,
+  "detail": null
+}
