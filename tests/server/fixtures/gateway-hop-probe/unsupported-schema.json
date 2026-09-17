@@ -1,0 +1,7 @@
+{
+  "schema_version": 2,
+  "probe": "oauth_broker_status",
+  "ok": true,
+  "configured": true,
+  "checked_at": "2026-09-15T21:20:11Z"
+}

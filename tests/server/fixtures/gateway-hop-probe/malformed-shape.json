@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "probe": "oauth_broker_status",
+  "ok": "no",
+  "configured": true,
+  "gateway_host": "10.162.2.3",
+  "checked_at": "2026-09-15T21:20:11Z",
+  "consecutive_failures": "3",
+  "error": "ssh_failed"
+}

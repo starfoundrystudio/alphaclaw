@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "probe": "oauth_broker_status",
+  "ok": false,
+  "configured": false,
+  "gateway_host": null,
+  "checked_at": "2026-09-15T21:20:11Z",
+  "last_ok_at": null,
+  "consecutive_failures": 7,
+  "error": "not_configured",
+  "detail": "broker identity not staged"
+}

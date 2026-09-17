@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "probe": "oauth_broker_status",
+  "ok": false,
+  "configured": true,
+  "gateway_host": "10.162.2.3; rm -rf /\n",
+  "checked_at": "2026-09-15T21:20:11Z",
+  "last_ok_at": "not a date",
+  "consecutive_failures": 2,
+  "error": "SSH Failed!! <script>alert(1)</script> and a very long code that keeps going and going beyond sixty four characters",
+  "detail": "line one\nline two\u0007 with bell and a very long tail padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding"
+}
