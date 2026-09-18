@@ -294,7 +294,7 @@ describe("AlphaClaw migrations", () => {
 
     expect(result.ok).toBe(false);
     expect(result.summary.failed).toBe(5);
-    expect(result.summary.ok).toBe(2);
+    expect(result.summary.ok).toBe(3);
     const activeMemoryResult = findMigrationResult(
       result,
       "2026-06-remove-active-memory-model-fallback-policy",
@@ -730,6 +730,108 @@ describe("AlphaClaw migrations", () => {
         "2026-09-enforce-managed-gateway-ownership-defaults",
       ),
     ).toMatchObject({ status: "ok" });
+  });
+
+  it("applies managed runtime defaults to existing instances without replacing adjacent settings", () => {
+    const { rootDir, openclawDir } = createRoot();
+    fs.writeFileSync(
+      path.join(rootDir, "onboarded.json"),
+      JSON.stringify({ onboarded: true }),
+      "utf8",
+    );
+    writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
+      gateway: {
+        mode: "local",
+        cliAgents: { enabled: true },
+        terminal: { enabled: true, shell: "/bin/bash" },
+      },
+      commands: { restart: false, ownerAllowFrom: ["123"] },
+      update: { checkOnStart: false, channel: "beta" },
+      agents: {
+        defaults: {
+          maxConcurrent: 12,
+          model: { primary: "openai/gpt-5.6-sol" },
+          subagents: { maxConcurrent: 7 },
+        },
+      },
+      plugins: {
+        entries: {
+          "memory-core": {
+            config: { dreaming: { enabled: true, frequency: "weekly" } },
+          },
+        },
+      },
+      skills: {
+        workshop: {
+          approvalPolicy: "auto",
+          autonomous: { mode: "auto" },
+        },
+      },
+      tools: {
+        deny: ["browser"],
+        swarm: { enabled: true, maxConcurrent: 5 },
+      },
+      telemetry: {
+        enabled: true,
+        consentedAt: "2026-09-01T00:00:00.000Z",
+      },
+      secrets: {
+        egressProxy: { enabled: true, allowedHosts: ["api.openai.com"] },
+      },
+      channels: { telegram: { enabled: true } },
+    });
+
+    const dryRun = runAlphaclawMigrations({ rootDir, openclawDir });
+    expect(
+      findMigrationResult(dryRun, "2026-09-apply-managed-runtime-defaults"),
+    ).toMatchObject({ status: "pending" });
+
+    const fixed = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
+    const config = readOpenclawConfig(openclawDir);
+    expect(fixed.ok).toBe(true);
+    expect(config.agents.defaults).toEqual({
+      maxConcurrent: 3,
+      model: { primary: "openai/gpt-5.6-sol" },
+      subagents: { maxConcurrent: 7 },
+    });
+    expect(config.plugins.entries["memory-core"].config.dreaming).toEqual({
+      enabled: false,
+      frequency: "weekly",
+    });
+    expect(config.skills.workshop).toEqual({
+      approvalPolicy: "auto",
+      autonomous: { mode: "propose" },
+    });
+    expect(config.tools).toEqual({
+      deny: ["browser", "secrets"],
+      swarm: { enabled: false, maxConcurrent: 5 },
+    });
+    expect(config.gateway).toEqual({
+      mode: "local",
+      cliAgents: { enabled: false },
+      terminal: { enabled: false, shell: "/bin/bash" },
+    });
+    expect(config.telemetry).toEqual({
+      enabled: false,
+      consentedAt: "2026-09-01T00:00:00.000Z",
+    });
+    expect(config.secrets.egressProxy).toEqual({
+      enabled: false,
+      allowedHosts: ["api.openai.com"],
+    });
+    expect(config.channels).toEqual({ telegram: { enabled: true } });
+    expect(config.commands).toEqual({ restart: false, ownerAllowFrom: ["123"] });
+    expect(config.update).toEqual({ checkOnStart: false, channel: "beta" });
+
+    config.telemetry.enabled = true;
+    writeOpenclawConfig(openclawDir, config);
+
+    const idempotent = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
+    expect(
+      findMigrationResult(idempotent, "2026-09-apply-managed-runtime-defaults"),
+    ).toMatchObject({ status: "ok" });
+    expect(readOpenclawConfig(openclawDir).telemetry.enabled).toBe(true);
   });
 
   it("blocks a migration after repeated failures until force retry is requested", () => {

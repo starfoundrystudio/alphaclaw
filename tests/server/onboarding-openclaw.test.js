@@ -170,6 +170,18 @@ describe("server/onboarding/openclaw", () => {
     expect(next.skills.entries.teamyou).toEqual({ enabled: false });
     expect(next.agents.defaults.heartbeat).toBeUndefined();
     expect(next.agents.defaults.memorySearch).toBeUndefined();
+    expect(next.agents.defaults.maxConcurrent).toBe(3);
+    expect(next.agents.defaults.subagents).toBeUndefined();
+    expect(next.plugins.entries["memory-core"].config.dreaming).toEqual({
+      enabled: false,
+    });
+    expect(next.skills.workshop.autonomous.mode).toBe("propose");
+    expect(next.tools.swarm).toBe(false);
+    expect(next.tools.deny).toEqual(["secrets"]);
+    expect(next.gateway.cliAgents).toEqual({ enabled: false });
+    expect(next.gateway.terminal).toEqual({ enabled: false });
+    expect(next.telemetry).toEqual({ enabled: false });
+    expect(next.secrets.egressProxy).toEqual({ enabled: false });
     expect(next.approvals.plugin).toEqual({
       enabled: true,
       mode: "session",

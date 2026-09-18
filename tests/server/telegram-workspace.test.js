@@ -174,4 +174,42 @@ describe("server/telegram-workspace", () => {
     expect(telegramConfig.groupPolicy).toBe("open");
     expect(telegramConfig.groups["-1001234567890"].requireMention).toBe(true);
   });
+
+  it("caps CPX agent concurrency without changing subagent or unrelated defaults", () => {
+    writeOpenclawConfig({
+      dir: openclawDir,
+      config: {
+        agents: {
+          defaults: {
+            maxConcurrent: 24,
+            model: { primary: "openai/gpt-5.6-sol" },
+            subagents: { maxConcurrent: 7, maxSpawnDepth: 2 },
+          },
+        },
+      },
+    });
+    const topicRegistry = {
+      getGroup: () => ({ topics: {} }),
+      getTotalTopicCount: () => 50,
+    };
+
+    const result = syncConfigForTelegram({
+      fs,
+      openclawDir,
+      topicRegistry,
+      groupId: "-1001234567890",
+    });
+    const defaults = readOpenclawConfig({ dir: openclawDir }).agents.defaults;
+
+    expect(result).toEqual({
+      totalTopics: 50,
+      maxConcurrent: 3,
+      subagentMaxConcurrent: 7,
+    });
+    expect(defaults).toEqual({
+      maxConcurrent: 3,
+      model: { primary: "openai/gpt-5.6-sol" },
+      subagents: { maxConcurrent: 7, maxSpawnDepth: 2 },
+    });
+  });
 });
