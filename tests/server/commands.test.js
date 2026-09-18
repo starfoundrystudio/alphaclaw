@@ -99,4 +99,25 @@ describe("server/commands", () => {
       timedOut: true,
     });
   });
+
+  it("uses the maintenance environment only for explicit config mutations", async () => {
+    const execMock = vi.fn((cmd, opts, callback) => callback(null, "", ""));
+    const { createCommands } = loadCommandsModule({ execMock });
+    const { clawCmd } = createCommands({
+      gatewayEnv: () => ({ OPENCLAW_CONFIG_READONLY: "1", MODE: "runtime" }),
+      gatewayMaintenanceEnv: () => ({ MODE: "maintenance" }),
+    });
+
+    await clawCmd("models list --json", { quiet: true });
+    await clawCmd("models set openai/gpt-5", {
+      allowConfigMutation: true,
+      quiet: true,
+    });
+
+    expect(execMock.mock.calls[0][1].env).toEqual({
+      OPENCLAW_CONFIG_READONLY: "1",
+      MODE: "runtime",
+    });
+    expect(execMock.mock.calls[1][1].env).toEqual({ MODE: "maintenance" });
+  });
 });

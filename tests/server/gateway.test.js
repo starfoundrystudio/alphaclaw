@@ -16,6 +16,7 @@ const kAlphaclawConfigPath = path.join(OPENCLAW_DIR, "alphaclaw.json");
 
 const modulePath = require.resolve("../../lib/server/gateway");
 const originalSpawn = childProcess.spawn;
+const originalExecFileSync = childProcess.execFileSync;
 const originalExecSync = childProcess.execSync;
 const originalExistsSync = fs.existsSync;
 const originalMkdirSync = fs.mkdirSync;
@@ -63,6 +64,7 @@ describe("server/gateway restart behavior", () => {
   afterEach(() => {
     vi.useRealTimers();
     childProcess.spawn = originalSpawn;
+    childProcess.execFileSync = originalExecFileSync;
     childProcess.execSync = originalExecSync;
     fs.existsSync = originalExistsSync;
     fs.mkdirSync = originalMkdirSync;
@@ -144,6 +146,11 @@ describe("server/gateway restart behavior", () => {
           XDG_CONFIG_HOME: OPENCLAW_DIR,
           NODE_COMPILE_CACHE: kDefaultOpenclawCompileCacheDir,
           OPENCLAW_NO_RESPAWN: "1",
+          OPENCLAW_SUPERVISOR_MODE: "external",
+          OPENCLAW_SERVICE_REPAIR_POLICY: "external",
+          OPENCLAW_CONFIG_READONLY: "1",
+          OPENCLAW_DISABLE_UPDATE_CHECK: "1",
+          OPENCLAW_NO_AUTO_UPDATE: "1",
         }),
       );
       expect(gateway.gatewayEnv().HOME).toBe("/home/alphaclaw");
@@ -321,7 +328,55 @@ describe("server/gateway restart behavior", () => {
     expect(spawnMock).toHaveBeenCalledTimes(2);
   });
 
-  it("shuts down an owned gateway child without invoking the OpenClaw CLI", () => {
+  it("consumes an accepted restart handoff and relaunches without Doctor", async () => {
+    vi.useFakeTimers();
+    const first = createChild(4242);
+    const replacement = createChild(4243);
+    childProcess.spawn = vi.fn()
+      .mockReturnValueOnce(first)
+      .mockReturnValueOnce(replacement);
+    childProcess.execSync = vi.fn(() => "");
+    childProcess.execFileSync = vi.fn(() => JSON.stringify({
+      ok: true,
+      protocol: "openclaw.gateway.restart-handoff",
+      protocolVersion: 1,
+      status: "accepted",
+      handoff: { pid: 4242, restartKind: "full-process" },
+    }));
+    fs.existsSync = vi.fn(() => false);
+    net.createConnection = vi.fn(() => createSocket(false));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const exitHandler = vi.fn();
+    gateway.setGatewayExitHandler(exitHandler);
+
+    gateway.launchGatewayProcess();
+    first.on.mock.calls.find(([event]) => event === "exit")[1](0, null);
+    await vi.advanceTimersByTimeAsync(1);
+
+    expect(childProcess.execFileSync).toHaveBeenCalledWith(
+      "openclaw",
+      [
+        "gateway",
+        "restart-handoff",
+        "consume",
+        "--expected-pid",
+        "4242",
+        "--json",
+      ],
+      expect.objectContaining({ env: expect.objectContaining({
+        OPENCLAW_SUPERVISOR_MODE: "external",
+        OPENCLAW_CONFIG_READONLY: "1",
+      }) }),
+    );
+    expect(exitHandler).toHaveBeenCalledWith(expect.objectContaining({
+      expectedExit: true,
+      expectedExitReason: "restart_handoff",
+    }));
+    expect(childProcess.spawn).toHaveBeenCalledTimes(2);
+  });
+
+  it("shuts down an owned gateway child without invoking the OpenClaw CLI", async () => {
     const child = createChild();
     const spawnMock = vi.fn(() => child);
     const execSyncMock = vi.fn(() => "");
@@ -334,8 +389,8 @@ describe("server/gateway restart behavior", () => {
 
     gateway.launchGatewayProcess();
     const handleSignal = gateway.createGatewaySignalHandler({ exitProcess });
-    handleSignal();
-    handleSignal();
+    await handleSignal();
+    await handleSignal();
 
     expect(child.kill).toHaveBeenCalledTimes(1);
     expect(child.kill).toHaveBeenCalledWith("SIGTERM");
@@ -344,7 +399,7 @@ describe("server/gateway restart behavior", () => {
     expect(exitProcess).toHaveBeenCalledWith(0);
   });
 
-  it("shuts down cleanly without an owned gateway child or OpenClaw CLI call", () => {
+  it("shuts down cleanly without an owned gateway child or OpenClaw CLI call", async () => {
     const execSyncMock = vi.fn(() => "");
     childProcess.execSync = execSyncMock;
     fs.existsSync = vi.fn(() => false);
@@ -352,9 +407,32 @@ describe("server/gateway restart behavior", () => {
     const gateway = require(modulePath);
     const exitProcess = vi.fn();
 
-    gateway.createGatewaySignalHandler({ exitProcess })();
+    await gateway.createGatewaySignalHandler({ exitProcess })();
 
     expect(execSyncMock).not.toHaveBeenCalled();
+    expect(exitProcess).toHaveBeenCalledWith(0);
+  });
+
+  it("forces a managed child to stop after the drain window", async () => {
+    vi.useFakeTimers();
+    const child = {
+      ...createChild(1777),
+      once: vi.fn(),
+    };
+    childProcess.spawn = vi.fn(() => child);
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const exitProcess = vi.fn();
+
+    gateway.launchGatewayProcess();
+    const shuttingDown = gateway.createGatewaySignalHandler({ exitProcess })();
+    expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+    await vi.advanceTimersByTimeAsync(30_000);
+    await shuttingDown;
+
+    expect(child.kill).toHaveBeenCalledWith("SIGKILL");
     expect(exitProcess).toHaveBeenCalledWith(0);
   });
 
@@ -552,6 +630,48 @@ describe("server/gateway restart behavior", () => {
     await restart;
     expect(completed).toBe(true);
     expect(gateway.isGatewayLifecycleBusy()).toBe(false);
+  });
+
+  it("accepts startupz then readyz probe evidence without a ready log", async () => {
+    net.createConnection = vi.fn(() => createSocket(true));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const probeReadiness = vi.fn(async () => ({
+      ready: true,
+      probeSupported: true,
+    }));
+
+    await expect(gateway.waitForGatewayReady({
+      timeoutMs: 100,
+      isAlive: () => true,
+      hasReadyEvidence: () => false,
+      probeReadiness,
+    })).resolves.toBe(true);
+    expect(probeReadiness).toHaveBeenCalledTimes(1);
+  });
+
+  it("checks startupz before readyz", async () => {
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const probeEndpoint = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        statusCode: 200,
+        body: { ok: true, status: "started" },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        statusCode: 200,
+        body: { ready: true },
+      });
+
+    await expect(gateway.probeGatewayStartupAndReadiness({
+      probeEndpoint,
+    })).resolves.toEqual({ ready: true, probeSupported: true });
+    expect(probeEndpoint.mock.calls).toEqual([
+      ["/startupz"],
+      ["/readyz"],
+    ]);
   });
 
   it("recognizes the pinned OpenClaw startup log even across chunks", () => {

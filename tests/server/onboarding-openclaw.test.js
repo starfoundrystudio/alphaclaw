@@ -489,6 +489,7 @@ describe("server/onboarding/openclaw", () => {
     });
 
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(next.commands.restart).toBe(false);
     expect(next.update).toEqual({
       channel: "beta",
       auto: { enabled: true },

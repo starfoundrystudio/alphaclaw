@@ -89,6 +89,12 @@ const buildProbeEnv = ({ tempRoot }) => ({
   OPENCLAW_STATE_DIR: path.join(tempRoot, ".openclaw"),
   OPENCLAW_CONFIG_PATH: path.join(tempRoot, ".openclaw", "openclaw.json"),
   XDG_CONFIG_HOME: path.join(tempRoot, ".config"),
+  OPENCLAW_NO_RESPAWN: "1",
+  OPENCLAW_SUPERVISOR_MODE: "external",
+  OPENCLAW_SERVICE_REPAIR_POLICY: "external",
+  OPENCLAW_CONFIG_READONLY: "1",
+  OPENCLAW_DISABLE_UPDATE_CHECK: "1",
+  OPENCLAW_NO_AUTO_UPDATE: "1",
   NO_COLOR: "1",
 });
 
@@ -362,6 +368,8 @@ const validateSupportSpec = ({ supportSpec, manifest }) => {
 };
 
 const installProbePlugins = ({ supportSpec, manifest, env, openclawCliPath }) => {
+  const maintenanceEnv = { ...env };
+  delete maintenanceEnv.OPENCLAW_CONFIG_READONLY;
   const managedPlugins = manifest.managedPlugins || {};
   const pluginIds = uniqueStrings(
     uniqueStrings(supportSpec.providerProbes || []).flatMap(
@@ -385,7 +393,7 @@ const installProbePlugins = ({ supportSpec, manifest, env, openclawCliPath }) =>
         "--pin",
         "--accept-capabilities",
       ],
-      env,
+      env: maintenanceEnv,
       openclawCliPath,
     });
   }

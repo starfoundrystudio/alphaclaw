@@ -3,6 +3,8 @@ const { kRootDir } = require("../../lib/server/constants");
 const {
   ensureOpenclawStartupEnv,
   resolveManagedCodexHome,
+  withManagedOpenclawEnv,
+  withOpenclawMaintenanceEnv,
   withOpenclawStartupEnv,
 } = require("../../lib/server/openclaw-runtime-env");
 
@@ -31,6 +33,31 @@ describe("server/openclaw-runtime-env", () => {
 
     expect(env.NODE_COMPILE_CACHE).toBe("/custom/cache");
     expect(env.OPENCLAW_NO_RESPAWN).toBe("0");
+  });
+
+  it("enforces managed supervision, config ownership, and update refusal", () => {
+    const env = withManagedOpenclawEnv({
+      OPENCLAW_SUPERVISOR_MODE: "systemd",
+      OPENCLAW_CONFIG_READONLY: "0",
+      OPENCLAW_NO_AUTO_UPDATE: "0",
+    });
+
+    expect(env).toEqual(expect.objectContaining({
+      OPENCLAW_SUPERVISOR_MODE: "external",
+      OPENCLAW_SERVICE_REPAIR_POLICY: "external",
+      OPENCLAW_CONFIG_READONLY: "1",
+      OPENCLAW_DISABLE_UPDATE_CHECK: "1",
+      OPENCLAW_NO_AUTO_UPDATE: "1",
+    }));
+  });
+
+  it("keeps lifecycle ownership while allowing Clawbridge maintenance writes", () => {
+    const env = withOpenclawMaintenanceEnv({ OPENCLAW_CONFIG_READONLY: "1" });
+
+    expect(env.OPENCLAW_CONFIG_READONLY).toBeUndefined();
+    expect(env.OPENCLAW_SUPERVISOR_MODE).toBe("external");
+    expect(env.OPENCLAW_SERVICE_REPAIR_POLICY).toBe("external");
+    expect(env.OPENCLAW_NO_AUTO_UPDATE).toBe("1");
   });
 
   it("preserves the legacy managed Codex home for upgraded instances", () => {

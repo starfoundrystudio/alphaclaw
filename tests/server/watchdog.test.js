@@ -690,7 +690,7 @@ describe("server/watchdog", () => {
     );
   });
 
-  it.each(["managed_restart", "migration_retry"])(
+  it.each(["managed_restart", "migration_retry", "restart_handoff"])(
     "leaves scheduled %s recovery to the controller until its deadline", async (expectedExitReason) => {
       vi.useFakeTimers();
       const { watchdog, shellCmd, launchGatewayProcess } = createHarness({
@@ -738,6 +738,31 @@ describe("server/watchdog", () => {
         }),
       }),
     );
+  });
+
+  it("treats exit 78 as a terminal startup refusal instead of a crash loop", () => {
+    const { watchdog, insertWatchdogEvent, launchGatewayProcess, shellCmd } =
+      createHarness({ autoRepair: true });
+
+    watchdog.onGatewayExit({
+      code: 78,
+      signal: null,
+      startupConfigRefusal: true,
+      stderrTail: ["OpenClaw configuration is invalid"],
+    });
+
+    expect(watchdog.getStatus()).toEqual(expect.objectContaining({
+      lifecycle: "stopped",
+      health: "unhealthy",
+      crashCountInWindow: 0,
+    }));
+    expect(launchGatewayProcess).not.toHaveBeenCalled();
+    expect(shellCmd).not.toHaveBeenCalled();
+    expect(insertWatchdogEvent).toHaveBeenCalledWith(expect.objectContaining({
+      eventType: "startup_refusal",
+      source: "exit_event",
+      status: "failed",
+    }));
   });
 
   it("ignores duplicate-launch port-in-use exits", () => {

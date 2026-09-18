@@ -184,7 +184,11 @@ describe("server/routes/nodes", () => {
           timeoutMs: 16000,
         });
         for (const call of clawCmd.mock.calls.slice(2)) {
-          expect(call[1]).toEqual({ quiet: true, timeoutMs: 18000 });
+          expect(call[1]).toEqual({
+            quiet: true,
+            timeoutMs: 18000,
+            allowConfigMutation: true,
+          });
         }
       },
     );
@@ -231,7 +235,11 @@ describe("server/routes/nodes", () => {
           timeoutMs: 12000,
         });
         for (const call of clawCmd.mock.calls.slice(2)) {
-          expect(call[1]).toEqual({ quiet: true, timeoutMs: 12000 });
+          expect(call[1]).toEqual({
+            quiet: true,
+            timeoutMs: 12000,
+            allowConfigMutation: true,
+          });
         }
       },
     );

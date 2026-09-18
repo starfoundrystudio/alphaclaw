@@ -988,12 +988,12 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(clawCmd).toHaveBeenNthCalledWith(
       2,
       "agents bind --agent 'main' --bind 'telegram:default'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
       rootDir: "/tmp",
@@ -1076,17 +1076,17 @@ describe("server/agents/service", () => {
       expect(clawCmd).toHaveBeenNthCalledWith(
         1,
         "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-        { quiet: true, timeoutMs: 30000 },
+        { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
       );
       expect(clawCmd).toHaveBeenNthCalledWith(
         2,
         "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-        { quiet: true, timeoutMs: 30000 },
+        { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
       );
       expect(clawCmd).toHaveBeenNthCalledWith(
         3,
         "agents bind --agent 'main' --bind 'telegram:default'",
-        { quiet: true, timeoutMs: 30000 },
+        { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
       );
       expect(fsMock.readConfig().channels.telegram.accounts.default).toEqual(
         expect.objectContaining({
@@ -1148,12 +1148,12 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'telegram' --account 'alerts' --name 'Alerts' --token '456:def'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(clawCmd).toHaveBeenNthCalledWith(
       2,
       "agents bind --agent 'ops' --bind 'telegram:alerts'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
@@ -1357,7 +1357,7 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(restartGateway).toHaveBeenCalledTimes(1);
   });
@@ -1418,12 +1418,12 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'discord' --name 'Discord' --token 'discord-token'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(clawCmd).toHaveBeenNthCalledWith(
       2,
       "agents bind --agent 'main' --bind 'discord:default'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
@@ -1525,7 +1525,7 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'slack' --name 'Slack' --bot-token 'xoxb-bot-token' --app-token 'xapp-app-token'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
       rootDir: "/tmp",
@@ -1540,7 +1540,7 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       2,
       "agents bind --agent 'main' --bind 'slack:default'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(clawCmd.mock.invocationCallOrder[1]).toBeLessThan(
       restartGateway.mock.invocationCallOrder[0],
@@ -1805,12 +1805,12 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'slack' --account 'alerts' --name 'Slack Alerts' --bot-token 'xoxb-bot-token-2' --app-token 'xapp-app-token-2'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(clawCmd).toHaveBeenNthCalledWith(
       2,
       "agents bind --agent 'main' --bind 'slack:alerts'",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
@@ -2581,7 +2581,7 @@ describe("server/agents/service", () => {
     expect(result).toEqual({ ok: true });
     expect(clawCmd).toHaveBeenCalledWith(
       "channels remove --channel 'telegram' --account 'alerts' --delete",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(writeEnvFile).toHaveBeenCalledWith([
       { key: "TELEGRAM_BOT_TOKEN", value: "123:abc" },
@@ -2647,7 +2647,7 @@ describe("server/agents/service", () => {
     expect(result).toEqual({ ok: true });
     expect(clawCmd).toHaveBeenCalledWith(
       "channels remove --channel 'telegram' --account 'default' --delete",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(writeEnvFile).toHaveBeenCalledWith([]);
     expect(reloadEnv).toHaveBeenCalled();
@@ -2793,7 +2793,7 @@ describe("server/agents/service", () => {
     expect(result).toEqual({ ok: true });
     expect(clawCmd).toHaveBeenCalledWith(
       "channels remove --channel 'whatsapp' --account 'default' --delete",
-      { quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
     );
     expect(writeEnvFile).toHaveBeenCalledWith([]);
     expect(reloadEnv).toHaveBeenCalled();

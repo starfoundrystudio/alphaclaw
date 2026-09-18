@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-17T23:59:21.234Z",
+  "generatedAt": "2026-09-18T06:02:22.472Z",
   "openclawVersion": "2026.9.4 (3a9d69d)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1067,6 +1067,24 @@
               "key": "novita/mindai/macaron-v1-venti",
               "provider": "novita",
               "label": "Macaron V1 Venti",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/ming-image-0.1-design",
+              "provider": "novita",
+              "label": "ming image 0.1 design",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/ming-image-0.1-design-layer",
+              "provider": "novita",
+              "label": "ming image 0.1 design layer",
               "accessModes": [
                 "provider-api"
               ],
@@ -2726,15 +2744,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "venice/mistral-small-2603",
-              "provider": "venice",
-              "label": "Mistral Small 4",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "venice/nvidia-nemotron-3-nano-30b-a3b",
               "provider": "venice",
               "label": "NVIDIA Nemotron 3 Nano 30B",
@@ -2972,66 +2981,6 @@
               "key": "venice/venice-uncensored-1-2",
               "provider": "venice",
               "label": "Venice Uncensored 1.2",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            }
-          ]
-        },
-        {
-          "id": "volcengine-plan",
-          "label": "Volcano Engine Plan",
-          "accessMode": "provider-api",
-          "authRoute": "api-key",
-          "envKeys": [
-            "VOLCANO_ENGINE_API_KEY"
-          ],
-          "requiredPlugins": [
-            "volcengine"
-          ],
-          "recommendedModelKeys": [],
-          "models": [
-            {
-              "key": "volcengine-plan/ark-code-latest",
-              "provider": "volcengine-plan",
-              "label": "Ark Coding Plan",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "volcengine-plan/deepseek-v4-flash",
-              "provider": "volcengine-plan",
-              "label": "DeepSeek V4 Flash",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "volcengine-plan/deepseek-v4-pro",
-              "provider": "volcengine-plan",
-              "label": "DeepSeek V4 Pro",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "volcengine-plan/doubao-seed-2.1-turbo",
-              "provider": "volcengine-plan",
-              "label": "Doubao Seed 2.1 Turbo",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "volcengine-plan/glm-5.2",
-              "provider": "volcengine-plan",
-              "label": "GLM 5.2",
               "accessModes": [
                 "provider-api"
               ],
@@ -3734,6 +3683,15 @@
               "key": "kilocode/deepseek/deepseek-v4-flash-0731",
               "provider": "kilocode",
               "label": "DeepSeek: DeepSeek V4 Flash 0731",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/deepseek/deepseek-v4-flash-0731:free",
+              "provider": "kilocode",
+              "label": "DeepSeek: DeepSeek V4 Flash 0731 (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -4464,15 +4422,6 @@
               "key": "kilocode/mistralai/ministral-8b-2512",
               "provider": "kilocode",
               "label": "Mistral: Ministral 3 8B 2512",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/mistralai/mistral-large-2512",
-              "provider": "kilocode",
-              "label": "Mistral: Mistral Large 3 2512",
               "accessModes": [
                 "gateway"
               ],
@@ -7214,6 +7163,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/deepseek/deepseek-v4-flash-0731:free",
+              "provider": "openrouter",
+              "label": "DeepSeek: DeepSeek V4 Flash 0731 (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/~deepseek/deepseek-v4-flash-latest",
               "provider": "openrouter",
               "label": "DeepSeek: DeepSeek V4 Flash Latest",
@@ -8190,15 +8148,6 @@
               "key": "openrouter/mistralai/ministral-8b-2512:batch",
               "provider": "openrouter",
               "label": "Mistral: Ministral 3 8B 2512 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/mistralai/mistral-large-2512",
-              "provider": "openrouter",
-              "label": "Mistral: Mistral Large 3 2512",
               "accessModes": [
                 "gateway"
               ],
@@ -11244,6 +11193,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/zai/glm-5.3-flashx",
+              "provider": "vercel-ai-gateway",
+              "label": "GLM 5.3 FlashX",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/zai/glm-5v-turbo",
               "provider": "vercel-ai-gateway",
               "label": "GLM 5V Turbo",
@@ -13631,6 +13589,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/deepseek/deepseek-v4-flash-0731:free",
+      "provider": "kilocode",
+      "label": "DeepSeek: DeepSeek V4 Flash 0731 (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/~deepseek/deepseek-v4-flash-latest",
       "provider": "kilocode",
       "label": "DeepSeek: DeepSeek V4 Flash Latest",
@@ -14355,15 +14322,6 @@
       "key": "kilocode/mistralai/ministral-8b-2512",
       "provider": "kilocode",
       "label": "Mistral: Ministral 3 8B 2512",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/mistralai/mistral-large-2512",
-      "provider": "kilocode",
-      "label": "Mistral: Mistral Large 3 2512",
       "accessModes": [
         "gateway"
       ],
@@ -17124,6 +17082,24 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "novita/ming-image-0.1-design",
+      "provider": "novita",
+      "label": "ming image 0.1 design",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "novita/ming-image-0.1-design-layer",
+      "provider": "novita",
+      "label": "ming image 0.1 design layer",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "novita/minimaxai/minimax-m1-80k",
       "provider": "novita",
       "label": "MiniMax M1",
@@ -18465,6 +18441,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/deepseek/deepseek-v4-flash-0731:free",
+      "provider": "openrouter",
+      "label": "DeepSeek: DeepSeek V4 Flash 0731 (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/~deepseek/deepseek-v4-flash-latest",
       "provider": "openrouter",
       "label": "DeepSeek: DeepSeek V4 Flash Latest",
@@ -19441,15 +19426,6 @@
       "key": "openrouter/mistralai/ministral-8b-2512:batch",
       "provider": "openrouter",
       "label": "Mistral: Ministral 3 8B 2512 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/mistralai/mistral-large-2512",
-      "provider": "openrouter",
-      "label": "Mistral: Mistral Large 3 2512",
       "accessModes": [
         "gateway"
       ],
@@ -22763,15 +22739,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "venice/mistral-small-2603",
-      "provider": "venice",
-      "label": "Mistral Small 4",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "venice/nvidia-nemotron-3-nano-30b-a3b",
       "provider": "venice",
       "label": "NVIDIA Nemotron 3 Nano 30B",
@@ -23595,6 +23562,15 @@
       "key": "vercel-ai-gateway/zai/glm-5.3-flash",
       "provider": "vercel-ai-gateway",
       "label": "GLM 5.3 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/zai/glm-5.3-flashx",
+      "provider": "vercel-ai-gateway",
+      "label": "GLM 5.3 FlashX",
       "accessModes": [
         "gateway"
       ],
@@ -25269,51 +25245,6 @@
         "gateway"
       ],
       "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "volcengine-plan/ark-code-latest",
-      "provider": "volcengine-plan",
-      "label": "Ark Coding Plan",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "volcengine-plan/deepseek-v4-flash",
-      "provider": "volcengine-plan",
-      "label": "DeepSeek V4 Flash",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "volcengine-plan/deepseek-v4-pro",
-      "provider": "volcengine-plan",
-      "label": "DeepSeek V4 Pro",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "volcengine-plan/doubao-seed-2.1-turbo",
-      "provider": "volcengine-plan",
-      "label": "Doubao Seed 2.1 Turbo",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "volcengine-plan/glm-5.2",
-      "provider": "volcengine-plan",
-      "label": "GLM 5.2",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
     },
     {
       "key": "zai/glm-4.5",

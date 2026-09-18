@@ -25,12 +25,15 @@ describe("server/openclaw-doctor-repair", () => {
         OPENCLAW_HOME: "/tmp/alphaclaw",
         OPENCLAW_CONFIG_PATH: "/tmp/alphaclaw/.openclaw/openclaw.json",
         OPENCLAW_SERVICE_REPAIR_POLICY: "external",
+        OPENCLAW_SUPERVISOR_MODE: "external",
+        OPENCLAW_NO_AUTO_UPDATE: "1",
       }),
       timeout: 1234,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     });
     expect(execSyncImpl.mock.calls[0][0]).not.toContain("--yes");
+    expect(execSyncImpl.mock.calls[0][1].env.OPENCLAW_CONFIG_READONLY).toBeUndefined();
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining("guarded doctor --non-interactive --fix"),
     );

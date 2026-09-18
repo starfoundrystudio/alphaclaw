@@ -294,7 +294,7 @@ describe("AlphaClaw migrations", () => {
 
     expect(result.ok).toBe(false);
     expect(result.summary.failed).toBe(5);
-    expect(result.summary.ok).toBe(1);
+    expect(result.summary.ok).toBe(2);
     const activeMemoryResult = findMigrationResult(
       result,
       "2026-06-remove-active-memory-model-fallback-policy",
@@ -688,6 +688,48 @@ describe("AlphaClaw migrations", () => {
         changed: true,
       }),
     );
+  });
+
+  it("migrates existing managed instances to supervisor-owned restart and update defaults", () => {
+    const { rootDir, openclawDir } = createRoot();
+    fs.writeFileSync(
+      path.join(rootDir, "onboarded.json"),
+      JSON.stringify({ onboarded: true }),
+      "utf8",
+    );
+    writeOpenclawConfig(openclawDir, {
+      ...kSatisfiedPluginApprovals,
+      gateway: { mode: "local" },
+      commands: { restart: true, ownerAllowFrom: ["123"] },
+      update: { checkOnStart: true, channel: "beta" },
+    });
+
+    const dryRun = runAlphaclawMigrations({ rootDir, openclawDir });
+    expect(
+      findMigrationResult(
+        dryRun,
+        "2026-09-enforce-managed-gateway-ownership-defaults",
+      ),
+    ).toMatchObject({
+      status: "pending",
+      details: {
+        paths: ["commands.restart", "update.checkOnStart"],
+      },
+    });
+
+    const fixed = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
+    const config = readOpenclawConfig(openclawDir);
+    expect(fixed.ok).toBe(true);
+    expect(config.commands).toEqual({ restart: false, ownerAllowFrom: ["123"] });
+    expect(config.update).toEqual({ checkOnStart: false, channel: "beta" });
+
+    const idempotent = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
+    expect(
+      findMigrationResult(
+        idempotent,
+        "2026-09-enforce-managed-gateway-ownership-defaults",
+      ),
+    ).toMatchObject({ status: "ok" });
   });
 
   it("blocks a migration after repeated failures until force retry is requested", () => {

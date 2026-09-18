@@ -196,6 +196,11 @@ const buildCliOpenclawRuntimeEnv = () =>
   buildOpenclawRuntimeEnv({
     env: buildCliOpenclawBaseEnv(),
   });
+const buildCliOpenclawMaintenanceEnv = () =>
+  buildOpenclawRuntimeEnv({
+    env: buildCliOpenclawBaseEnv(),
+    allowConfigMutation: true,
+  });
 const onboardingMarkerPath = path.join(rootDir, "onboarded.json");
 const shouldInitializeManagedRuntime = shouldInitializeManagedOpenclawRuntime({
   fs,
@@ -359,7 +364,7 @@ const runOpenclawDoctorGuard = () => {
       rootDir,
       openclawDir,
       commandArgs: guardedCommandArgs,
-      env: buildCliOpenclawRuntimeEnv(),
+      env: buildCliOpenclawMaintenanceEnv(),
       cwd: process.cwd(),
       stdio: "inherit",
       logger: console,
@@ -415,7 +420,7 @@ const runReconcileOpenclawPlugins = () => {
       fsModule: fs,
       execSyncImpl: execSync,
       logger: console,
-      env: buildCliOpenclawRuntimeEnv(),
+      env: buildCliOpenclawMaintenanceEnv(),
     });
     return 0;
   } catch (e) {
