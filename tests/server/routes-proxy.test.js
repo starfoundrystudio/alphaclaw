@@ -25,6 +25,7 @@ const createApp = ({
   globalJsonLimit = "5mb",
   openAiCompatApiEnabled = true,
   openAiCompatApiThrottle = null,
+  requireAdvancedControlAccess = (_req, _res, next) => next(),
 }) => {
   const app = express();
   const openAiParser = express.json({ limit: openAiJsonLimit });
@@ -46,6 +47,7 @@ const createApp = ({
     openAiCompatApiThrottle,
     SETUP_API_PREFIXES: [],
     requireAuth: (_req, _res, next) => next(),
+    requireAdvancedControlAccess,
     oauthCallbackMiddleware: (_req, res) => res.status(204).end(),
     webhookMiddleware: (_req, res) => res.status(204).end(),
   });
@@ -387,5 +389,55 @@ describe("server/routes/proxy OpenAI compatibility", () => {
 
     expect(res.status).toBe(200);
     expect(seenUrls).toEqual(["/v1/models/openclaw%2Fdefault"]);
+  });
+
+  it("keeps the native /openclaw base path and injects the persistent TeamYou label", async () => {
+    const seenUrls = [];
+    upstream = http.createServer((req, res) => {
+      seenUrls.push(req.url);
+      const body = "<!doctype html><html><head></head><body>UI</body></html>";
+      res.writeHead(200, {
+        "content-type": "text/html; charset=utf-8",
+        "content-length": String(Buffer.byteLength(body)),
+        etag: '"upstream"',
+      });
+      res.end(body);
+    });
+    const port = await listen(upstream);
+    const app = createApp({ gatewayUrl: `http://127.0.0.1:${port}` });
+
+    const res = await request(app)
+      .get("/openclaw/settings/general?tab=models")
+      .set("Accept", "text/html");
+
+    expect(res.status).toBe(200);
+    expect(seenUrls).toEqual(["/openclaw/settings/general?tab=models"]);
+    expect(res.text).toContain('id="teamyou-managed-control-warning"');
+    expect(res.text).toContain("Advanced — unmanaged changes");
+    expect(res.text).toContain("/openclaw/_teamyou/advanced-control.css");
+    expect(res.headers.etag).toBeUndefined();
+    expect(res.headers["cache-control"]).toBe("no-store");
+  });
+
+  it("does not proxy Control UI HTTP or unknown Gateway APIs without acknowledgement", async () => {
+    let upstreamCalls = 0;
+    upstream = http.createServer((_req, res) => {
+      upstreamCalls += 1;
+      res.end("unexpected");
+    });
+    const port = await listen(upstream);
+    const requireAdvancedControlAccess = (_req, res) =>
+      res.status(403).json({ error: "acknowledgement required" });
+    const app = createApp({
+      gatewayUrl: `http://127.0.0.1:${port}`,
+      requireAdvancedControlAccess,
+    });
+
+    const ui = await request(app).get("/openclaw");
+    const gatewayApi = await request(app).get("/api/not-clawbridge");
+
+    expect(ui.status).toBe(403);
+    expect(gatewayApi.status).toBe(403);
+    expect(upstreamCalls).toBe(0);
   });
 });

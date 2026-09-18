@@ -71,4 +71,35 @@ describe("server/auth-db", () => {
 
     expect(lockResult.locked).toBe(true);
   });
+
+  it("stores the durable advanced Control UI acknowledgement audit trail", () => {
+    const {
+      insertAdvancedControlAcknowledgement,
+      listAdvancedControlAcknowledgements,
+    } = createAuthDbContext("auth-db-advanced-control-");
+
+    const id = insertAdvancedControlAcknowledgement({
+      userIdentity: "person@example.com",
+      sessionId: "session-123",
+      instanceId: "oc_inst_123",
+      warningVersion: "teamyou.advanced-control-warning/v1",
+      managedConfigRevision: "2026-09-18.1",
+      clientIp: "100.64.0.5",
+      acknowledgedAt: "2026-09-18T16:30:00.000Z",
+    });
+
+    expect(id).toBeGreaterThan(0);
+    expect(listAdvancedControlAcknowledgements()).toEqual([
+      {
+        id,
+        userIdentity: "person@example.com",
+        sessionId: "session-123",
+        instanceId: "oc_inst_123",
+        warningVersion: "teamyou.advanced-control-warning/v1",
+        managedConfigRevision: "2026-09-18.1",
+        clientIp: "100.64.0.5",
+        acknowledgedAt: "2026-09-18T16:30:00.000Z",
+      },
+    ]);
+  });
 });

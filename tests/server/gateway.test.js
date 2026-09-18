@@ -845,6 +845,8 @@ describe("server/gateway restart behavior", () => {
       `${OPENCLAW_DIR}/openclaw.json`,
     );
     expect(currentConfig.gateway.trustedProxies).toEqual(["127.0.0.1"]);
+    expect(currentConfig.gateway.bind).toBe("loopback");
+    expect(currentConfig.gateway.controlUi.basePath).toBe("/openclaw");
     expect(currentConfig.gateway.controlUi.allowedOrigins).toEqual([
       "https://setup.example.com",
     ]);
@@ -855,8 +857,10 @@ describe("server/gateway restart behavior", () => {
     let currentConfig = {
       gateway: {
         mode: "local",
+        bind: "loopback",
         trustedProxies: ["127.0.0.1"],
         controlUi: {
+          basePath: "/openclaw",
           allowedOrigins: ["https://existing.example.com"],
         },
       },

@@ -12,9 +12,13 @@
       "id": "openclaw-control-ui",
       "role": "optional-advanced-access",
       "mode": "managed-config-read-only",
+      "basePath": "/openclaw",
       "customerRequired": false,
       "hostedClawbridgeSections": false,
-      "label": "Advanced — unmanaged changes"
+      "label": "Advanced — unmanaged changes",
+      "warningVersion": "teamyou.advanced-control-warning/v1",
+      "requiresSignedSessionAcknowledgement": true,
+      "directGatewayExposure": "loopback-only"
     }
   },
   "agentPolicy": {

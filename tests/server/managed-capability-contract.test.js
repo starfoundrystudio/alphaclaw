@@ -35,6 +35,10 @@ describe("server/managed-capability-contract", () => {
         customerRequired: false,
         hostedClawbridgeSections: false,
         label: "Advanced — unmanaged changes",
+        basePath: "/openclaw",
+        warningVersion: "teamyou.advanced-control-warning/v1",
+        requiresSignedSessionAcknowledgement: true,
+        directGatewayExposure: "loopback-only",
       },
     });
     expect(kManagedCapabilityContract.agentPolicy).toEqual({

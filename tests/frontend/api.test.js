@@ -39,6 +39,48 @@ describe("frontend/api", () => {
     expect(window.location.href).toBe("http://localhost/");
   });
 
+  it("reads and acknowledges advanced Control UI access", async () => {
+    const api = await loadApiModule();
+    global.fetch
+      .mockResolvedValueOnce(
+        mockJsonResponse(200, {
+          ok: true,
+          acknowledged: false,
+          warningVersion: "teamyou.advanced-control-warning/v1",
+        }),
+      )
+      .mockResolvedValueOnce(
+        mockJsonResponse(200, {
+          ok: true,
+          acknowledged: true,
+          url: "/openclaw/#/dashboard",
+        }),
+      );
+
+    await expect(api.fetchAdvancedControlAccessStatus()).resolves.toMatchObject({
+      acknowledged: false,
+    });
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      1,
+      "/api/advanced-control/status",
+      expect.objectContaining({ headers: expect.any(Headers) }),
+    );
+
+    await expect(
+      api.acknowledgeAdvancedControlAccess("/openclaw/#/dashboard"),
+    ).resolves.toMatchObject({ acknowledged: true });
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      2,
+      "/api/advanced-control/acknowledge",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ returnTo: "/openclaw/#/dashboard" }),
+        headers: expect.any(Headers),
+      }),
+    );
+    expectLastFetchHeaders("application/json");
+  });
+
   it("refreshModels requests hosted metadata and provider discovery together", async () => {
     const payload = { ok: true, scope: "all", restartRequired: true };
     global.fetch.mockResolvedValue(mockJsonResponse(200, payload));
