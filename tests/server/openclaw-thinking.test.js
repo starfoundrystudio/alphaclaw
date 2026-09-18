@@ -16,17 +16,19 @@ describe("OpenClaw thinking compatibility", () => {
 
   it("loads thinking options from the pinned OpenClaw public behavior", async () => {
     const result = await resolveThinkingOptionsForModel({
-      modelKey: "openai/gpt-5.5",
+      modelKey: "openai/gpt-5.6-sol",
+      agentRuntime: "openclaw",
       catalog: [
         {
           provider: "openai",
-          id: "gpt-5.5",
+          id: "gpt-5.6-sol",
           reasoning: true,
         },
       ],
     });
 
     expect(result.levels.map((entry) => entry.id)).toContain("high");
+    expect(result.levels.map((entry) => entry.id)).toContain("ultra");
     expect(result.modelDefault).toBeTruthy();
   });
 });

@@ -574,7 +574,7 @@ describe("server/agents/service", () => {
     ]);
   });
 
-  it("includes paired status for named telegram accounts from credential files", () => {
+  it("includes paired status for named telegram accounts from canonical config", () => {
     const fsMock = buildFsMock({
       initialConfig: {
         channels: {
@@ -582,7 +582,10 @@ describe("server/agents/service", () => {
             enabled: true,
             accounts: {
               default: { botToken: "${TELEGRAM_BOT_TOKEN}" },
-              tester: { botToken: "${TELEGRAM_BOT_TOKEN_TESTER}" },
+              tester: {
+                botToken: "${TELEGRAM_BOT_TOKEN_TESTER}",
+                allowFrom: ["1050628644"],
+              },
             },
           },
         },
@@ -632,7 +635,7 @@ describe("server/agents/service", () => {
     ]);
   });
 
-  it("treats whatsapp owner-number self chat as paired when saved creds exist", () => {
+  it("does not infer whatsapp pairing by reading private credential files", () => {
     const fsMock = buildFsMock({
       initialConfig: {
         channels: {
@@ -667,8 +670,8 @@ describe("server/agents/service", () => {
             envKey: "WHATSAPP_OWNER_NUMBER",
             token: "********",
             boundAgentId: "",
-            paired: 1,
-            status: "paired",
+            paired: 0,
+            status: "configured",
           },
         ],
       },
@@ -779,7 +782,7 @@ describe("server/agents/service", () => {
     }
   });
 
-  it("treats whatsapp allowFrom owner placeholder as paired when saved creds exist", () => {
+  it("does not infer whatsapp pairing from private files or owner placeholders", () => {
     const fsMock = buildFsMock({
       initialConfig: {
         channels: {
@@ -818,8 +821,8 @@ describe("server/agents/service", () => {
             envKey: "WHATSAPP_OWNER_NUMBER",
             token: "********",
             boundAgentId: "",
-            paired: 1,
-            status: "paired",
+            paired: 0,
+            status: "configured",
           },
         ],
       },
@@ -1998,45 +2001,60 @@ describe("server/agents/service", () => {
     expect(restartGateway).not.toHaveBeenCalled();
   });
 
-  it("reports whatsapp login linked status when saved creds exist", () => {
-    const fsMock = buildFsMock({
-      initialConfig: {},
-      fileContents: {
-        "/test/.openclaw/credentials/whatsapp/default/creds.json": "{}",
-      },
-    });
+  it("reports whatsapp login linked status from the supported CLI", async () => {
+    const fsMock = buildFsMock({ initialConfig: {} });
+    const clawCmd = vi.fn(async () => ({
+      ok: true,
+      stdout: JSON.stringify({
+        accounts: {
+          whatsapp: [{ accountId: "default", status: "linked" }],
+        },
+      }),
+      stderr: "",
+    }));
     const service = createAgentsService({
       fs: fsMock,
       OPENCLAW_DIR: "/test/.openclaw",
+      clawCmd,
     });
 
-    expect(
+    await expect(
       service.getChannelAccountLoginStatus({
         provider: "whatsapp",
         accountId: "default",
       }),
-    ).toEqual({
+    ).resolves.toEqual({
       provider: "whatsapp",
       accountId: "default",
       linked: true,
     });
+    expect(clawCmd).toHaveBeenCalledWith(
+      "channels status --channel 'whatsapp' --json",
+      { quiet: true, timeoutMs: 15000 },
+    );
   });
 
-  it("reports whatsapp login unlinked status when saved creds do not exist", () => {
+  it("reports whatsapp login unlinked status from the supported CLI", async () => {
     const fsMock = buildFsMock({
       initialConfig: {},
     });
+    const clawCmd = vi.fn(async () => ({
+      ok: true,
+      stdout: JSON.stringify({ accounts: { whatsapp: [] } }),
+      stderr: "",
+    }));
     const service = createAgentsService({
       fs: fsMock,
       OPENCLAW_DIR: "/test/.openclaw",
+      clawCmd,
     });
 
-    expect(
+    await expect(
       service.getChannelAccountLoginStatus({
         provider: "whatsapp",
         accountId: "default",
       }),
-    ).toEqual({
+    ).resolves.toEqual({
       provider: "whatsapp",
       accountId: "default",
       linked: false,
@@ -2780,26 +2798,7 @@ describe("server/agents/service", () => {
     expect(writeEnvFile).toHaveBeenCalledWith([]);
     expect(reloadEnv).toHaveBeenCalled();
     expect(restartGateway).toHaveBeenCalledTimes(1);
-    expect(fsMock.rmSync).toHaveBeenCalledWith(
-      "/tmp/openclaw/credentials/whatsapp/default",
-      { recursive: true, force: true },
-    );
-    expect(fsMock.rmSync).toHaveBeenCalledWith(
-      "/tmp/openclaw/credentials/whatsapp",
-      { recursive: true, force: true },
-    );
-    expect(fsMock.rmSync).toHaveBeenCalledWith(
-      "/tmp/openclaw/credentials/creds.json",
-      { force: true },
-    );
-    expect(fsMock.rmSync).toHaveBeenCalledWith(
-      "/tmp/openclaw/credentials/creds.json.bak",
-      { force: true },
-    );
-    expect(fsMock.rmSync).toHaveBeenCalledWith(
-      "/tmp/openclaw/credentials/session-foo.json",
-      { force: true },
-    );
+    expect(fsMock.rmSync).not.toHaveBeenCalled();
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
         channels: {},

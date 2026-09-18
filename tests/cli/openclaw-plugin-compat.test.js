@@ -650,8 +650,10 @@ describe("openclaw plugin compatibility manifest", () => {
       config: {
         agents: {
           defaults: {
-            memorySearch: {
-              provider: "local",
+            memory: {
+              search: {
+                provider: "local",
+              },
             },
           },
         },

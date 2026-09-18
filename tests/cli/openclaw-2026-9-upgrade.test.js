@@ -182,6 +182,35 @@ describe("OpenClaw 2026.9 existing-instance upgrade", () => {
       expect(
         fs.readdirSync(path.join(openclawDir, "locks", "oauth-refresh")),
       ).toEqual([]);
+
+      const lintResult = spawnSync(
+        process.execPath,
+        [
+          kOpenclawBin,
+          "doctor",
+          "--lint",
+          "--all",
+          "--severity-min",
+          "error",
+          "--json",
+        ],
+        {
+          cwd: kRepoRoot,
+          encoding: "utf8",
+          timeout: 30_000,
+          env: {
+            ...process.env,
+            HOME: rootDir,
+            OPENCLAW_HOME: rootDir,
+            OPENCLAW_STATE_DIR: openclawDir,
+            OPENCLAW_CONFIG_PATH: configPath,
+            NO_COLOR: "1",
+          },
+        },
+      );
+      expect(lintResult.status, lintResult.stderr || lintResult.stdout).toBe(0);
+      const lintPayload = JSON.parse(lintResult.stdout);
+      expect(lintPayload.findings || []).toEqual([]);
     },
     35_000,
   );

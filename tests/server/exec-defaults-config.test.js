@@ -10,7 +10,7 @@ const createTempOpenclawDir = () =>
   fs.mkdtempSync(path.join(os.tmpdir(), "alphaclaw-exec-defaults-test-"));
 
 describe("server/exec-defaults-config", () => {
-  it("fills missing managed exec defaults for openclaw.json and exec-approvals.json", () => {
+  it("fills managed exec defaults without recreating the retired approvals JSON store", () => {
     const openclawDir = createTempOpenclawDir();
     fs.writeFileSync(
       path.join(openclawDir, "openclaw.json"),
@@ -34,7 +34,7 @@ describe("server/exec-defaults-config", () => {
     expect(result).toEqual({
       changed: true,
       openclawChanged: true,
-      approvalsChanged: true,
+      approvalsChanged: false,
     });
 
     const openclawConfig = JSON.parse(
@@ -53,18 +53,7 @@ describe("server/exec-defaults-config", () => {
     });
     expect(openclawConfig.channels.telegram).toEqual({ enabled: true });
 
-    const approvals = JSON.parse(
-      fs.readFileSync(path.join(openclawDir, "exec-approvals.json"), "utf8"),
-    );
-    expect(approvals).toEqual({
-      version: 1,
-      defaults: {
-        security: "full",
-        ask: "off",
-        askFallback: "full",
-      },
-      agents: {},
-    });
+    expect(fs.existsSync(path.join(openclawDir, "exec-approvals.json"))).toBe(false);
   });
 
   it("preserves existing exec settings when they are already configured", () => {
@@ -151,7 +140,7 @@ describe("server/exec-defaults-config", () => {
     expect(result).toEqual({
       changed: true,
       openclawChanged: true,
-      approvalsChanged: true,
+      approvalsChanged: false,
     });
 
     const openclawConfig = JSON.parse(

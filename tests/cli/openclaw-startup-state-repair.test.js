@@ -4,11 +4,8 @@ const path = require("path");
 const { DatabaseSync } = require("node:sqlite");
 
 const {
-  finalizeResidualCodexSidecars,
-  inspectForeignHarnessCodexSidecars,
   inspectOpenclawStartupState,
   inspectPluginIndexConflict,
-  walkCodexBindingSidecars,
 } = require("../../lib/cli/openclaw-startup-state-repair");
 const {
   runAlphaclawMigrations,
@@ -148,131 +145,6 @@ describe("OpenClaw startup state repair", () => {
     expect(fs.existsSync(backupPath)).toBe(true);
     expect(fs.statSync(backupPath).mode & 0o777).toBe(0o600);
     expect(inspectPluginIndexConflict({ openclawDir }).pending).toBe(false);
-  });
-
-  it("archives a Codex sidecar only when its unique session owner is foreign", () => {
-    const sessionsDir = path.join(openclawDir, "agents", "main", "sessions");
-    const transcriptName = "session-topic-123.jsonl";
-    const transcriptPath = path.join(sessionsDir, transcriptName);
-    const sidecarPath = `${transcriptPath}.codex-app-server.json`;
-    writeJson(path.join(sessionsDir, "sessions.json"), {
-      "agent:main:topic": {
-        sessionId: "session",
-        sessionFile: transcriptName,
-        agentHarnessId: "pi",
-      },
-    });
-    fs.writeFileSync(transcriptPath, "", "utf8");
-    writeJson(sidecarPath, { threadId: "thread-123" });
-
-    const inspection = inspectForeignHarnessCodexSidecars({ openclawDir });
-    expect(inspection.candidates).toHaveLength(1);
-    expect(inspection.candidates[0].owner.agentHarnessId).toBe("pi");
-
-    const result = runAlphaclawMigrations({
-      rootDir,
-      openclawDir,
-      fix: true,
-    });
-
-    expect(result.ok).toBe(true);
-    expect(fs.existsSync(sidecarPath)).toBe(false);
-    expect(fs.existsSync(`${sidecarPath}.migrated`)).toBe(true);
-  });
-
-  it("archives residual sidecars after doctor while preserving reversible copies", () => {
-    const sessionsDir = path.join(openclawDir, "agents", "main", "sessions");
-    const transcriptName = "shared.jsonl";
-    const sidecarPath = path.join(
-      sessionsDir,
-      `${transcriptName}.codex-app-server.json`,
-    );
-    writeJson(path.join(sessionsDir, "sessions.json"), {
-      "agent:main:first": {
-        sessionId: "first",
-        sessionFile: transcriptName,
-        agentHarnessId: "codex",
-      },
-      "agent:main:second": {
-        sessionId: "second",
-        sessionFile: transcriptName,
-        agentHarnessId: "pi",
-      },
-    });
-    fs.writeFileSync(path.join(sessionsDir, transcriptName), "", "utf8");
-    writeJson(sidecarPath, { threadId: "thread-shared" });
-
-    const result = runAlphaclawMigrations({ rootDir, openclawDir, fix: true });
-    expect(result.ok).toBe(true);
-    expect(fs.existsSync(sidecarPath)).toBe(true);
-
-    const unownedSidecarPath = path.join(
-      sessionsDir,
-      "orphan.jsonl.codex-app-server.json",
-    );
-    writeJson(unownedSidecarPath, { threadId: "thread-orphan" });
-    writeJson(`${unownedSidecarPath}.migrated`, { threadId: "older-archive" });
-
-    const finalization = finalizeResidualCodexSidecars({
-      rootDir,
-      openclawDir,
-      now: new Date("2026-07-17T20:00:00.000Z"),
-    });
-
-    expect(finalization).toMatchObject({
-      changed: true,
-      archivedCount: 2,
-      manifestPath: path.join(
-        rootDir,
-        "migrations",
-        "openclaw-residual-codex-sidecars-20260717T200000000Z.json",
-      ),
-    });
-    expect(fs.existsSync(sidecarPath)).toBe(false);
-    expect(fs.existsSync(`${sidecarPath}.migrated`)).toBe(true);
-    expect(fs.existsSync(unownedSidecarPath)).toBe(false);
-    expect(fs.existsSync(`${unownedSidecarPath}.migrated.2`)).toBe(true);
-    const manifest = JSON.parse(
-      fs.readFileSync(finalization.manifestPath, "utf8"),
-    );
-    expect(manifest.archives).toHaveLength(2);
-    expect(fs.statSync(finalization.manifestPath).mode & 0o777).toBe(0o600);
-    expect(inspectOpenclawStartupState({ openclawDir })).toEqual({
-      ok: true,
-      blockers: [],
-    });
-  });
-
-  it("finalizes a large historical Codex sidecar set in one summarized operation", () => {
-    const sessionsDir = path.join(openclawDir, "agents", "main", "sessions");
-    const sidecarPaths = Array.from({ length: 250 }, (_, index) =>
-      path.join(
-        sessionsDir,
-        `session-${String(index).padStart(3, "0")}-topic-1781784723.jsonl.codex-app-server.json`,
-      ),
-    );
-    for (const [index, sidecarPath] of sidecarPaths.entries()) {
-      writeJson(sidecarPath, {
-        schemaVersion: 1,
-        threadId: `thread-${index}`,
-      });
-    }
-
-    const result = finalizeResidualCodexSidecars({
-      rootDir,
-      openclawDir,
-      now: new Date("2026-07-17T20:30:00.000Z"),
-    });
-
-    expect(result.archivedCount).toBe(250);
-    expect(result.changes).toHaveLength(2);
-    expect(walkCodexBindingSidecars({ openclawDir })).toEqual([]);
-    expect(fs.existsSync(`${sidecarPaths[0]}.migrated`)).toBe(true);
-    expect(JSON.parse(fs.readFileSync(`${sidecarPaths[249]}.migrated`, "utf8"))).toMatchObject({
-      threadId: "thread-249",
-    });
-    const manifest = JSON.parse(fs.readFileSync(result.manifestPath, "utf8"));
-    expect(manifest.archives).toHaveLength(250);
   });
 
   it("reports a lingering legacy plugin index as a startup blocker", () => {

@@ -1278,7 +1278,10 @@ describe("server/gateway restart behavior", () => {
             telegram: {
               enabled: true,
               accounts: {
-                default: { botToken: "${TELEGRAM_BOT_TOKEN}" },
+                default: {
+                  botToken: "${TELEGRAM_BOT_TOKEN}",
+                  allowFrom: ["1001"],
+                },
                 alerts: { botToken: "${TELEGRAM_BOT_TOKEN_ALERTS}" },
               },
             },
@@ -1324,6 +1327,7 @@ describe("server/gateway restart behavior", () => {
               enabled: true,
               botToken: "${TELEGRAM_BOT_TOKEN}",
               dmPolicy: "pairing",
+              allowFrom: ["1001", "1002"],
             },
           },
         });
@@ -1347,7 +1351,7 @@ describe("server/gateway restart behavior", () => {
     });
   });
 
-  it("treats whatsapp owner-number self chat as paired when saved creds exist", () => {
+  it("does not infer whatsapp pairing by reading private credential files", () => {
     const previousOwnerNumber = process.env.WHATSAPP_OWNER_NUMBER;
     process.env.WHATSAPP_OWNER_NUMBER = "+15551234567";
     try {
@@ -1379,10 +1383,10 @@ describe("server/gateway restart behavior", () => {
 
     expect(gateway.getChannelStatus()).toEqual({
       whatsapp: {
-        status: "paired",
-        paired: 1,
+        status: "configured",
+        paired: 0,
         accounts: {
-          default: { status: "paired", paired: 1 },
+          default: { status: "configured", paired: 0 },
         },
       },
     });
@@ -1489,7 +1493,7 @@ describe("server/gateway restart behavior", () => {
     }
   });
 
-  it("treats whatsapp allowFrom owner placeholder as paired when saved creds exist", () => {
+  it("does not infer whatsapp pairing from private files or owner placeholders", () => {
     const previousOwnerNumber = process.env.WHATSAPP_OWNER_NUMBER;
     process.env.WHATSAPP_OWNER_NUMBER = "+15551234567";
     try {
@@ -1525,10 +1529,10 @@ describe("server/gateway restart behavior", () => {
 
       expect(gateway.getChannelStatus()).toEqual({
         whatsapp: {
-          status: "paired",
-          paired: 1,
+          status: "configured",
+          paired: 0,
           accounts: {
-            default: { status: "paired", paired: 1 },
+            default: { status: "configured", paired: 0 },
           },
         },
       });

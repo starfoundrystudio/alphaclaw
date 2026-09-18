@@ -1,32 +1,27 @@
-const path = require("path");
-
 const { createWatchdogNotifier } = require("../../lib/server/watchdog-notify");
 
-const buildCredentialsFsMock = (entries = {}) => {
-  const credentialsDir = "/tmp/openclaw/credentials";
-  const files = new Map(
-    Object.entries(entries).map(([fileName, allowFrom]) => [
-      path.join(credentialsDir, fileName),
-      JSON.stringify({ allowFrom }),
-    ]),
-  );
-
+const buildConfigFsMock = (accounts = {}) => {
+  const configPath = "/tmp/openclaw/openclaw.json";
   return {
-    existsSync: vi.fn((targetPath) => {
-      const normalizedTargetPath = String(targetPath || "");
-      return normalizedTargetPath === credentialsDir || files.has(normalizedTargetPath);
-    }),
-    readdirSync: vi.fn((targetPath) => {
-      if (String(targetPath || "") !== credentialsDir) return [];
-      return Array.from(files.keys()).map((filePath) => path.basename(filePath));
-    }),
+    existsSync: vi.fn((targetPath) => String(targetPath || "") === configPath),
     readFileSync: vi.fn((targetPath) => {
       const normalizedTargetPath = String(targetPath || "");
-      const value = files.get(normalizedTargetPath);
-      if (value === undefined) {
+      if (normalizedTargetPath !== configPath) {
         throw new Error(`Unexpected read: ${normalizedTargetPath}`);
       }
-      return value;
+      return JSON.stringify({
+        channels: {
+          slack: {
+            enabled: true,
+            accounts: Object.fromEntries(
+              Object.entries(accounts).map(([accountId, allowFrom]) => [
+                accountId,
+                { allowFrom },
+              ]),
+            ),
+          },
+        },
+      });
     }),
   };
 };
@@ -72,9 +67,9 @@ describe("server/watchdog-notify", () => {
   });
 
   it("sends Slack watchdog notifications across default and named accounts with isolated threads", async () => {
-    const fsMock = buildCredentialsFsMock({
-      "slack-default-allowFrom.json": ["U_SHARED_THREAD"],
-      "slack-alerts-allowFrom.json": ["U_SHARED_THREAD"],
+    const fsMock = buildConfigFsMock({
+      default: ["U_SHARED_THREAD"],
+      alerts: ["U_SHARED_THREAD"],
     });
     const { createSlackApi, clientsByToken } = buildSlackApiFactory();
     const notifier = createWatchdogNotifier({
@@ -128,9 +123,9 @@ describe("server/watchdog-notify", () => {
   });
 
   it("reports partial Slack delivery failure when one account is missing a bot token", async () => {
-    const fsMock = buildCredentialsFsMock({
-      "slack-default-allowFrom.json": ["U_DEFAULT_OK"],
-      "slack-alerts-allowFrom.json": ["U_ALERTS_MISSING"],
+    const fsMock = buildConfigFsMock({
+      default: ["U_DEFAULT_OK"],
+      alerts: ["U_ALERTS_MISSING"],
     });
     const { createSlackApi, clientsByToken } = buildSlackApiFactory();
     const notifier = createWatchdogNotifier({

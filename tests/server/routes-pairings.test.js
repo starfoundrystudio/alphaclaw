@@ -8,7 +8,6 @@ const createApp = ({
   isOnboarded,
   fsModule,
   approveDevicePairingDirect,
-  ensureManagedGatewayDevice,
   gatewayToken = "",
   getGatewayPort = null,
 }) => {
@@ -21,7 +20,6 @@ const createApp = ({
     fsModule,
     openclawDir: "/tmp/openclaw",
     approveDevicePairingDirect,
-    ensureManagedGatewayDevice,
     gatewayToken,
     getGatewayPort,
   });
@@ -91,7 +89,7 @@ describe("server/routes/pairings", () => {
     ]);
   });
 
-  it("falls back to the local pairing store when CLI output is empty", async () => {
+  it("does not read OpenClaw's private pairing store when CLI output is empty", async () => {
     const createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const clawCmd = vi.fn(async (cmd) => {
       if (cmd === "pairing list --channel telegram --json") {
@@ -141,16 +139,7 @@ describe("server/routes/pairings", () => {
     const res = await request(app).get("/api/pairings");
 
     expect(res.status).toBe(200);
-    expect(res.body.pending).toEqual([
-      {
-        id: "ABCD1234",
-        code: "ABCD1234",
-        channel: "telegram",
-        accountId: "tester",
-        requesterId: "1050628644",
-        createdAt,
-      },
-    ]);
+    expect(res.body.pending).toEqual([]);
   });
 
   it("parses pending pairings from noisy stderr even when the command exits non-zero", async () => {
@@ -216,7 +205,7 @@ describe("server/routes/pairings", () => {
     ]);
   });
 
-  it("includes pending store requests even when the channel is not enabled in config", async () => {
+  it("does not inspect pairing stores for channels disabled in config", async () => {
     const createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const clawCmd = vi.fn(async () => ({ ok: true, stdout: "{}", stderr: "" }));
     const fsModule = {
@@ -253,16 +242,8 @@ describe("server/routes/pairings", () => {
     const res = await request(app).get("/api/pairings");
 
     expect(res.status).toBe(200);
-    expect(res.body.pending).toEqual([
-      {
-        id: "PCQPPPVM",
-        code: "PCQPPPVM",
-        channel: "telegram",
-        accountId: "default",
-        requesterId: "1050628644",
-        createdAt,
-      },
-    ]);
+    expect(res.body.pending).toEqual([]);
+    expect(clawCmd).not.toHaveBeenCalled();
   });
 
   it("parses noisy json stdout without duplicating requester ids as codes", async () => {
@@ -402,7 +383,7 @@ describe("server/routes/pairings", () => {
     expect(openclawConfig.channels.slack.accounts).toBeUndefined();
   });
 
-  it("mirrors approved Slack requester ids into account allowFrom from the pairing store", async () => {
+  it("mirrors approved Slack requester ids supplied by the CLI listing", async () => {
     const createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     let openclawConfig = {
       channels: {
@@ -465,6 +446,7 @@ describe("server/routes/pairings", () => {
     const res = await request(app).post("/api/pairings/SLACK123/approve").send({
       channel: "slack",
       accountId: "alerts",
+      requesterId: "u456owner",
     });
 
     expect(res.status).toBe(200);
@@ -582,7 +564,7 @@ describe("server/routes/pairings", () => {
     expect(openclawConfig.commands).toBeUndefined();
   });
 
-  it("mirrors approved WhatsApp requester ids into account allowFrom from the pairing store", async () => {
+  it("mirrors approved WhatsApp requester ids supplied by the CLI listing", async () => {
     const createdAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     let openclawConfig = {
       channels: {
@@ -637,6 +619,7 @@ describe("server/routes/pairings", () => {
     const res = await request(app).post("/api/pairings/WA123456/approve").send({
       channel: "whatsapp",
       accountId: "default",
+      requesterId: "15551230000@s.whatsapp.net",
     });
 
     expect(res.status).toBe(200);
@@ -681,7 +664,7 @@ describe("server/routes/pairings", () => {
     expect(clawCmd).not.toHaveBeenCalled();
   });
 
-  it("rejects pairing and removes matching request from store", async () => {
+  it("reports channel rejection as unsupported without mutating private stores", async () => {
     const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
     const fsModule = {
       existsSync: vi.fn(() => false),
@@ -711,22 +694,16 @@ describe("server/routes/pairings", () => {
       accountId: "tester",
     });
 
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({ ok: true, removed: true });
-    expect(fsModule.writeFileSync).toHaveBeenCalledWith(
-      "/tmp/openclaw/credentials/telegram-pairing.json",
-      JSON.stringify(
-        {
-          version: 1,
-          requests: [{ code: "OTHER111", meta: { accountId: "default" } }],
-        },
-        null,
-        2,
-      ),
-    );
+    expect(res.status).toBe(501);
+    expect(res.body).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("does not expose a supported"),
+    });
+    expect(fsModule.writeFileSync).not.toHaveBeenCalled();
+    expect(fsModule.readFileSync).not.toHaveBeenCalled();
   });
 
-  it("returns not found when reject target does not exist", async () => {
+  it("does not inspect private stores for unknown reject targets", async () => {
     const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
     const fsModule = {
       existsSync: vi.fn(() => false),
@@ -753,13 +730,10 @@ describe("server/routes/pairings", () => {
       accountId: "tester",
     });
 
-    expect(res.status).toBe(404);
-    expect(res.body).toEqual({
-      ok: false,
-      removed: false,
-      error: "Pairing request not found",
-    });
+    expect(res.status).toBe(501);
+    expect(res.body.ok).toBe(false);
     expect(fsModule.writeFileSync).not.toHaveBeenCalled();
+    expect(fsModule.readFileSync).not.toHaveBeenCalled();
   });
 
   it("auto-approves the first pending CLI device request when marker is absent", async () => {
@@ -910,12 +884,6 @@ describe("server/routes/pairings", () => {
       requestId: "req-agent-approvals",
       device: { deviceId: "agent-device-1" },
     }));
-    const ensureManagedGatewayDevice = vi.fn(async () => ({
-      ok: true,
-      reason: "repaired",
-      deviceId: "agent-device-1",
-      scopes: ["operator.approvals"],
-    }));
     const fsModule = {
       existsSync: vi.fn(() => true),
       mkdirSync: vi.fn(),
@@ -926,7 +894,6 @@ describe("server/routes/pairings", () => {
       isOnboarded: () => true,
       fsModule,
       approveDevicePairingDirect,
-      ensureManagedGatewayDevice,
     });
 
     const res = await request(app).get("/api/devices");
@@ -943,7 +910,6 @@ describe("server/routes/pairings", () => {
       },
       "/tmp/openclaw",
     );
-    expect(ensureManagedGatewayDevice).toHaveBeenCalledTimes(1);
     expect(fsModule.writeFileSync).not.toHaveBeenCalled();
   });
 
@@ -974,9 +940,6 @@ describe("server/routes/pairings", () => {
       requestId: "req-agent-admin",
       device: { deviceId: "agent-device-1" },
     }));
-    const ensureManagedGatewayDevice = vi.fn(async () => ({
-      ok: true,
-    }));
     const fsModule = {
       existsSync: vi.fn(() => true),
       mkdirSync: vi.fn(),
@@ -987,7 +950,6 @@ describe("server/routes/pairings", () => {
       isOnboarded: () => true,
       fsModule,
       approveDevicePairingDirect,
-      ensureManagedGatewayDevice,
     });
 
     const res = await request(app).get("/api/devices");
@@ -1002,7 +964,6 @@ describe("server/routes/pairings", () => {
       }),
     ]);
     expect(approveDevicePairingDirect).not.toHaveBeenCalled();
-    expect(ensureManagedGatewayDevice).not.toHaveBeenCalled();
   });
 
   it("uses the local loopback gateway for device list when token is available", async () => {

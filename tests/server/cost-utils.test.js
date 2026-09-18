@@ -29,4 +29,20 @@ describe("server/cost-utils", () => {
     expect(breakdown.pricingFound).toBe(true);
     expect(breakdown.totalCost).toBeCloseTo(5, 8);
   });
+
+  it("loads current bundled provider pricing from OpenClaw plugin manifests", () => {
+    const breakdown = deriveCostBreakdown({
+      provider: "openai",
+      model: "openai/gpt-5.4",
+      inputTokens: 1_000_000,
+      outputTokens: 1_000_000,
+      cacheReadTokens: 1_000_000,
+    });
+
+    expect(breakdown.pricingFound).toBe(true);
+    expect(breakdown.inputCost).toBeCloseTo(2.5, 8);
+    expect(breakdown.outputCost).toBeCloseTo(15, 8);
+    expect(breakdown.cacheReadCost).toBeCloseTo(0.25, 8);
+    expect(breakdown.totalCost).toBeCloseTo(17.75, 8);
+  });
 });

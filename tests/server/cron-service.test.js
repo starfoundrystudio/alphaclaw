@@ -73,6 +73,7 @@ describe("server/cron-service", () => {
       });
       const cronService = createCronService({
         requestGateway,
+        readConfig: () => ({ cron: { skipMissedJobs: true } }),
         getSessionUsageByKeyPattern: vi.fn(() => ({
           totals: { runCount: 1, totalTokens: 15, totalCost: 0 },
         })),
@@ -87,7 +88,11 @@ describe("server/cron-service", () => {
         sessionTarget: "isolated",
         delivery: { mode: "webhook" },
       });
-      expect(await cronService.getStatus()).toMatchObject({ enabled: true, jobs: 1 });
+      expect(await cronService.getStatus()).toMatchObject({
+        enabled: true,
+        jobs: 1,
+        skipMissedJobs: true,
+      });
       const runs = await cronService.getJobRuns({ jobId: "job-a" });
       expect(runs.entries).toHaveLength(1);
       expect(runs.nextOffset).toBeNull();

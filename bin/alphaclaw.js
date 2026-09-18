@@ -28,7 +28,6 @@ const {
   runOpenclawRuntimeCommand,
 } = require("../lib/cli/openclaw-runtime-command");
 const {
-  finalizeResidualCodexSidecars,
   inspectOpenclawStartupState,
 } = require("../lib/cli/openclaw-startup-state-repair");
 const {
@@ -117,7 +116,6 @@ Usage: alphaclaw <command> [options]
 Commands:
   start     Start the AlphaClaw server (Setup UI + gateway manager)
   migrate   Inspect or apply AlphaClaw-owned upgrade migrations
-  finalize-openclaw-startup-state  Archive residual legacy state after doctor
   verify-openclaw-startup-state  Fail if doctor left known startup blockers
   openclaw-runtime  Run a command with the managed OpenClaw runtime environment
   openclaw-doctor-guard  Run an OpenClaw command with OAuth-refresh shielding
@@ -155,7 +153,6 @@ telegram topic add options:
 Examples:
   alphaclaw migrate
   alphaclaw migrate --fix
-  alphaclaw finalize-openclaw-startup-state
   alphaclaw verify-openclaw-startup-state
   alphaclaw openclaw-runtime -- openclaw plugins list
   alphaclaw openclaw-doctor-guard -- openclaw doctor --non-interactive --fix
@@ -326,49 +323,6 @@ const runMigrate = () => {
 
 if (command === "migrate") {
   process.exit(runMigrate());
-}
-
-const runFinalizeOpenclawStartupState = () => {
-  try {
-    const finalization = finalizeResidualCodexSidecars({
-      fsModule: fs,
-      rootDir,
-      openclawDir,
-    });
-    const verification = inspectOpenclawStartupState({
-      fsModule: fs,
-      openclawDir,
-    });
-    const result = {
-      ok: verification.ok,
-      finalization,
-      blockers: verification.blockers,
-    };
-    if (hasFlag(commandArgs, "--json")) {
-      console.log(JSON.stringify(result, null, 2));
-    } else {
-      for (const change of finalization.changes) {
-        console.log(`[alphaclaw] ${change}`);
-      }
-      if (!result.ok) {
-        console.error("[alphaclaw] OpenClaw startup finalization failed:");
-        for (const blocker of result.blockers) {
-          console.error(`- ${blocker.message} ${blocker.path}`);
-        }
-      }
-    }
-    return result.ok ? 0 : 1;
-  } catch (e) {
-    const details = String(e.stderr || e.stdout || e.message || "").trim();
-    console.error(
-      `[alphaclaw] OpenClaw startup finalization failed: ${details.slice(0, 800)}`,
-    );
-    return 1;
-  }
-};
-
-if (command === "finalize-openclaw-startup-state") {
-  process.exit(runFinalizeOpenclawStartupState());
 }
 
 const runVerifyOpenclawStartupState = () => {

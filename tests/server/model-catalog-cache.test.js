@@ -5,6 +5,8 @@ const path = require("path");
 const {
   createModelCatalogCache,
   kModelCatalogBootstrapSource,
+  kModelCatalogCacheVersion,
+  kModelCatalogMaxAgeMs,
   kModelCatalogRefreshBackoffMs,
 } = require("../../lib/server/model-catalog-cache");
 const { kFallbackOnboardingModels } = require("../../lib/server/constants");
@@ -33,7 +35,15 @@ const writeCacheFile = ({
   fs.writeFileSync(
     cachePath,
     `${JSON.stringify(
-      { version: 1, fetchedAt, openclawVersion, models },
+      {
+        version: 2,
+        fetchedAt,
+        openclawVersion,
+        models,
+        agentId: null,
+        providerOutcomes: [],
+        warning: null,
+      },
       null,
       2,
     )}\n`,
@@ -177,14 +187,14 @@ describe("server/model-catalog-cache", () => {
     });
   });
 
-  it("preserves segmented bootstrap choices when dynamic catalog is narrower", async () => {
+  it("annotates matching live rows without seeding bootstrap-only models", async () => {
     const tempRoot = fs.mkdtempSync(
       path.join(os.tmpdir(), "alphaclaw-model-catalog-merged-"),
     );
     const cachePath = path.join(tempRoot, "cache", "model-catalog.json");
     const shellCmd = vi.fn().mockResolvedValue("{}");
     const parseJsonFromNoisyOutput = vi.fn(() => ({
-      models: [{ key: "anthropic/claude-opus-4-8", name: "Claude Opus 4.8" }],
+      models: [{ key: "openai/gpt-5.6-sol", name: "GPT-5.6 Sol" }],
     }));
     const cache = createModelCatalogCache({
       cachePath,
@@ -201,13 +211,7 @@ describe("server/model-catalog-cache", () => {
     const fresh = await cache.getCatalogResponse();
     const modelKeys = fresh.models.map((model) => model.key);
     expect(fresh.source).toBe("openclaw");
-    expect(modelKeys).toEqual(
-      expect.arrayContaining([
-        "openai/gpt-5.6-sol",
-        "claude-cli/claude-opus-4-8",
-        "vercel-ai-gateway/openai/gpt-5.6-sol",
-      ]),
-    );
+    expect(modelKeys).toEqual(["openai/gpt-5.6-sol"]);
     expect(
       fresh.models.find((model) => model.key === "openai/gpt-5.6-sol"),
     ).toMatchObject({
@@ -549,6 +553,123 @@ describe("server/model-catalog-cache", () => {
       models: normalizeModels([
         { key: "anthropic/claude-opus-4-7", name: "Claude Opus 4.7" },
       ]),
+    });
+  });
+
+  it("invalidates the prior cache schema and replaces a successful catalog with an empty inventory", async () => {
+    const tempRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), "alphaclaw-model-catalog-schema-"),
+    );
+    const cachePath = path.join(tempRoot, "cache", "model-catalog.json");
+    fs.mkdirSync(path.dirname(cachePath), { recursive: true });
+    fs.writeFileSync(
+      cachePath,
+      JSON.stringify({
+        version: 1,
+        fetchedAt: 1000,
+        models: [{ key: "openai/removed-model", name: "Removed" }],
+      }),
+    );
+    const shellCmd = vi.fn().mockResolvedValue("{}");
+    const cache = createModelCatalogCache({
+      cachePath,
+      shellCmd,
+      parseJsonFromNoisyOutput: vi.fn(() => ({
+        models: [],
+        agentId: "main",
+        providerOutcomes: [{ provider: "openai", status: "ready" }],
+      })),
+      normalizeOnboardingModels: normalizeModels,
+      readOpenclawVersion: vi.fn(() => "2026.9.4"),
+    });
+
+    const initial = await cache.getCatalogResponse();
+    expect(initial.source).toBe(kModelCatalogBootstrapSource);
+    expect(initial.models.some((model) => model.key === "openai/removed-model")).toBe(false);
+
+    await flushPromises();
+    const fresh = await cache.getCatalogResponse();
+    expect(fresh).toMatchObject({
+      source: "openclaw",
+      stale: false,
+      models: [],
+      agentId: "main",
+      providerOutcomes: [{ provider: "openai", status: "ready" }],
+    });
+    const written = JSON.parse(fs.readFileSync(cachePath, "utf8"));
+    expect(written.version).toBe(kModelCatalogCacheVersion);
+    expect(written.models).toEqual([]);
+  });
+
+  it("refreshes an expired live catalog in the background", async () => {
+    const tempRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), "alphaclaw-model-catalog-ttl-"),
+    );
+    const cachePath = path.join(tempRoot, "cache", "model-catalog.json");
+    let nowMs = 1000;
+    const shellCmd = vi.fn().mockResolvedValue("{}");
+    const cache = createModelCatalogCache({
+      cachePath,
+      shellCmd,
+      parseJsonFromNoisyOutput: vi.fn(() => ({
+        models: [{ key: "openai/gpt-fresh", name: "Fresh" }],
+      })),
+      normalizeOnboardingModels: normalizeModels,
+      readOpenclawVersion: vi.fn(() => "2026.9.4"),
+      now: () => nowMs,
+    });
+
+    await cache.getCatalogResponse();
+    await flushPromises();
+    const current = await cache.getCatalogResponse();
+    expect(current.source).toBe("openclaw");
+    expect(shellCmd).toHaveBeenCalledTimes(1);
+
+    nowMs += kModelCatalogMaxAgeMs;
+    const expired = await cache.getCatalogResponse();
+    expect(expired).toMatchObject({ source: "cache", stale: true, refreshing: true });
+    await flushPromises();
+    expect(shellCmd).toHaveBeenLastCalledWith(
+      "openclaw models list --all --json",
+      expect.any(Object),
+    );
+  });
+
+  it("uses provider discovery only for an explicit refresh and retains outcomes", async () => {
+    const tempRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), "alphaclaw-model-catalog-discovery-"),
+    );
+    const cachePath = path.join(tempRoot, "cache", "model-catalog.json");
+    const shellCmd = vi.fn().mockResolvedValue("{}");
+    const cache = createModelCatalogCache({
+      cachePath,
+      shellCmd,
+      gatewayEnv: () => ({ OPENCLAW_GATEWAY_TOKEN: "token" }),
+      parseJsonFromNoisyOutput: vi.fn(() => ({
+        models: [{ key: "openai/gpt-new", name: "New" }],
+        providerOutcomes: [
+          { provider: "anthropic", status: "unavailable" },
+        ],
+      })),
+      normalizeOnboardingModels: normalizeModels,
+      readOpenclawVersion: vi.fn(() => "2026.9.4"),
+    });
+
+    const result = await cache.refreshProviderInventory();
+
+    expect(shellCmd).toHaveBeenCalledWith(
+      "openclaw models list --all --refresh --json",
+      expect.objectContaining({
+        env: { OPENCLAW_GATEWAY_TOKEN: "token" },
+      }),
+    );
+    expect(result).toMatchObject({
+      source: "openclaw",
+      models: [{ key: "openai/gpt-new", provider: "openai", label: "New" }],
+      providerOutcomes: [
+        { provider: "anthropic", status: "unavailable" },
+      ],
+      warning: "1 provider catalog refresh did not complete successfully.",
     });
   });
 });

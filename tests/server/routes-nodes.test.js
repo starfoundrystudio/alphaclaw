@@ -52,6 +52,54 @@ const createApp = ({ clawCmd, fsModule } = {}) => {
 };
 
 describe("server/routes/nodes", () => {
+  it("reads and mutates execution approvals through the OpenClaw CLI", async () => {
+    const entry = {
+      id: "approval-1",
+      pattern: "/usr/bin/uptime",
+      lastUsedAt: 1,
+    };
+    const snapshot = (allowlist) => JSON.stringify({
+      path: "/data/.openclaw/state/openclaw.sqlite#exec_approvals_config",
+      file: { version: 1, agents: { "*": { allowlist } } },
+    });
+    const clawCmd = vi.fn(async (cmd) => {
+      if (cmd === "approvals get --json") {
+        return { ok: true, stdout: snapshot([entry]), stderr: "" };
+      }
+      if (cmd.startsWith("approvals allowlist add")) {
+        return { ok: true, stdout: snapshot([entry]), stderr: "" };
+      }
+      if (cmd.startsWith("approvals allowlist remove")) {
+        return { ok: true, stdout: snapshot([]), stderr: "" };
+      }
+      return { ok: false, stdout: "", stderr: "unexpected command" };
+    });
+    const app = createApp({ clawCmd });
+
+    const getRes = await request(app).get("/api/nodes/exec-approvals");
+    const duplicateRes = await request(app)
+      .post("/api/nodes/exec-approvals/allowlist")
+      .send({ pattern: entry.pattern });
+    const addRes = await request(app)
+      .post("/api/nodes/exec-approvals/allowlist")
+      .send({ pattern: "/usr/bin/uname" });
+    const removeRes = await request(app)
+      .delete(`/api/nodes/exec-approvals/allowlist/${entry.id}`);
+
+    expect(getRes.status).toBe(200);
+    expect(getRes.body.allowlist).toEqual([entry]);
+    expect(duplicateRes.body).toMatchObject({ ok: true, unchanged: true, entry });
+    expect(addRes.status).toBe(200);
+    expect(removeRes.status).toBe(200);
+    expect(clawCmd).toHaveBeenCalledWith("approvals get --json", { quiet: true });
+    expect(clawCmd).toHaveBeenCalledWith(
+      "approvals allowlist add --agent '*' --json '/usr/bin/uname'",
+    );
+    expect(clawCmd).toHaveBeenCalledWith(
+      "approvals allowlist remove --agent '*' --json '/usr/bin/uptime'",
+    );
+  });
+
   it("uses default CLI timeouts for status and pending reads", async () => {
     const clawCmd = vi.fn(async (cmd) => {
       if (cmd === "nodes status --json") {

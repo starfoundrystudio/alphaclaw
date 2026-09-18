@@ -894,6 +894,123 @@ describe("server/agent-vault", () => {
     expect(second.restartRequired).toBe(false);
   });
 
+  it("quarantines literal channel credentials and store refs before vault approval", async () => {
+    const { writeAgentVaultRuntime } = require(
+      "../../lib/server/agent-vault/runtime-store"
+    );
+    writeAgentVaultRuntime({
+      token: "av_runtime_token_123456789",
+      vault: "default",
+      mode: "brokered",
+      operatorUrl: "https://agent-vault-test.tail123.ts.net",
+    });
+    const openclawDir = path.join(rootDir, ".openclaw");
+    fs.mkdirSync(openclawDir, { recursive: true });
+    const rawBotToken = "xoxb-raw-slack-token";
+    const rawSigningSecret = "raw-slack-signing-secret";
+    fs.writeFileSync(
+      path.join(openclawDir, "openclaw.json"),
+      JSON.stringify({
+        gateway: { mode: "local" },
+        channels: {
+          slack: {
+            enabled: true,
+            accounts: {
+              work: {
+                appToken: { source: "store", provider: "local", id: "slack-app" },
+                botToken: rawBotToken,
+                signingSecret: rawSigningSecret,
+              },
+            },
+          },
+        },
+      }),
+    );
+    fs.writeFileSync(
+      path.join(openclawDir, "openclaw.json.bak.2"),
+      JSON.stringify({ botToken: rawBotToken }),
+    );
+    let proposalCount = 0;
+    const fetchImpl = vi.fn(async (url, options = {}) => {
+      if (String(url).endsWith("/discover")) {
+        return Response.json({
+          vault: "default",
+          available_credentials: [],
+          services: [],
+        });
+      }
+      if (String(url).endsWith("/v1/proposals")) {
+        proposalCount += 1;
+        const body = JSON.parse(options.body);
+        expect(body.credentials.map(({ key }) => key)).toEqual([
+          "SLACK_APP_TOKEN_WORK",
+          "SLACK_BOT_TOKEN_WORK",
+        ]);
+        return Response.json(
+          {
+            id: 31,
+            status: "pending",
+            vault: "default",
+            approval_url:
+              "https://agent-vault-test.tail123.ts.net/approve/31?token=once",
+          },
+          { status: 201 },
+        );
+      }
+      throw new Error(`Unexpected URL: ${url}`);
+    });
+    const { createAgentVaultService } = require(
+      "../../lib/server/agent-vault/service"
+    );
+    const service = createAgentVaultService({
+      readEnvFile: () => [
+        {
+          key: "TEAMYOU_AGENT_VAULT_ENTRY_URL",
+          value: "https://www.teamyou.com/openclaw/agent-vault/inst_test123",
+        },
+      ],
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      openclawDir,
+      fetchImpl,
+    });
+
+    const result = await service.reconcileLegacyCredentials();
+
+    expect(result).toMatchObject({
+      restartRequired: true,
+      quarantinedConfigPaths: [
+        "channels.slack.accounts.work.appToken",
+        "channels.slack.accounts.work.botToken",
+        "channels.slack.accounts.work.signingSecret",
+      ],
+      migrationProposals: [
+        expect.objectContaining({
+          provider: "slack",
+          accountId: "work",
+          status: "proposal_created",
+        }),
+      ],
+    });
+    const config = JSON.parse(
+      fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"),
+    );
+    expect(config.channels.slack.accounts.work).toEqual({
+      appToken: "${SLACK_APP_TOKEN_WORK}",
+      botToken: "${SLACK_BOT_TOKEN_WORK}",
+    });
+    expect(fs.existsSync(path.join(openclawDir, "openclaw.json.bak.2"))).toBe(
+      false,
+    );
+    expect(proposalCount).toBe(1);
+
+    // The second pass is non-destructive and does not file a duplicate.
+    await expect(service.reconcileLegacyCredentials()).resolves.toMatchObject({
+      restartRequired: false,
+    });
+    expect(proposalCount).toBe(1);
+  });
+
   it("plans only the missing pieces of an atomic service access request", () => {
     const {
       normalizeAgentVaultAccessRequest,

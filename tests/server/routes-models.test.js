@@ -146,7 +146,7 @@ describe("server/routes/models", () => {
     );
   });
 
-  it("serves the bundled catalog while a dynamic refresh resolves empty", async () => {
+  it("serves bootstrap while loading, then treats a successful empty catalog as authoritative", async () => {
     const deps = createModelDeps();
     deps.shellCmd.mockResolvedValue("{}");
     deps.parseJsonFromNoisyOutput.mockReturnValue({ models: [] });
@@ -164,6 +164,74 @@ describe("server/routes/models", () => {
       refreshing: true,
       models: kFallbackOnboardingModels,
       accessModes: expectModelAccessModes(),
+    });
+
+    await flushPromises();
+    const refreshed = await request(app).get("/api/models");
+    expect(refreshed.body).toEqual({
+      ok: true,
+      source: "openclaw",
+      fetchedAt: expect.any(Number),
+      stale: false,
+      refreshing: false,
+      models: [],
+      accessModes: expectModelAccessModes(),
+    });
+  });
+
+  it("refreshes hosted metadata and provider inventory through separate OpenClaw commands", async () => {
+    const deps = createModelDeps();
+    deps.shellCmd
+      .mockResolvedValueOnce('{"status":"updated","generatedAt":123}')
+      .mockResolvedValueOnce('{"models":[]}');
+    deps.parseJsonFromNoisyOutput.mockImplementation((raw) => JSON.parse(raw));
+    deps.normalizeOnboardingModels.mockImplementation((models) => models);
+    const app = createApp(deps);
+
+    const res = await request(app)
+      .post("/api/models/refresh")
+      .send({ scope: "all" });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      ok: true,
+      source: "openclaw",
+      scope: "all",
+      models: [],
+      restartRequired: true,
+      hostedCatalog: {
+        ok: true,
+        status: "updated",
+        generatedAt: 123,
+        restartRequired: true,
+      },
+    });
+    expect(deps.shellCmd).toHaveBeenNthCalledWith(
+      1,
+      "openclaw models refresh --json",
+      { env: { OPENCLAW_GATEWAY_TOKEN: "token" }, timeout: 30000 },
+    );
+    expect(deps.shellCmd).toHaveBeenNthCalledWith(
+      2,
+      "openclaw models list --all --refresh --json",
+      {
+        env: { OPENCLAW_GATEWAY_TOKEN: "token" },
+        timeout: kModelCatalogLoadTimeoutMs,
+      },
+    );
+  });
+
+  it("rejects unsupported model refresh scopes", async () => {
+    const app = createApp(createModelDeps());
+
+    const res = await request(app)
+      .post("/api/models/refresh")
+      .send({ scope: "everything" });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({
+      ok: false,
+      error: "scope must be all, providers, or hosted",
     });
   });
 

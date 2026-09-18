@@ -249,7 +249,7 @@ describe("server/onboarding/workspace", () => {
       };
     };
 
-    it("rewrites the optional Connect section into the required Clawbridge version", () => {
+    it("replaces a legacy optional Connect section with the managed Clawbridge step", () => {
       const { files, mockFs } = createBootstrapFs(seededBootstrap);
 
       expect(
@@ -257,7 +257,7 @@ describe("server/onboarding/workspace", () => {
       ).toBe(true);
 
       const patched = files.get(path.join("/ws", "BOOTSTRAP.md"));
-      expect(patched).toContain("## Connect (Required)");
+      expect(patched).toContain("## Managed Channel Setup");
       expect(patched).not.toContain("## Connect (Optional)");
       expect(patched).toContain("Slack, Telegram, or Discord");
       expect(patched).toContain("Channels card on the General screen");
@@ -265,6 +265,34 @@ describe("server/onboarding/workspace", () => {
       // Surrounding sections survive untouched.
       expect(patched).toContain("## After You Know Who You Are");
       expect(patched).toContain("## When You Are Done");
+    });
+
+    it("injects the managed step into the OpenClaw 2026.9 Birth Sequence", () => {
+      const seededBirthSequence = [
+        "# BOOTSTRAP.md - Birth Sequence",
+        "",
+        "## 3. Finish With Recommendations",
+        "",
+        "Offer pending recommendations.",
+        "",
+        "## 4. One Safety Note",
+        "",
+        "Give one safety note.",
+        "",
+        "When the four beats are complete, delete this file.",
+      ].join("\n");
+      const { files, mockFs } = createBootstrapFs(seededBirthSequence);
+
+      expect(
+        patchSeededBootstrapConnectStep({ fs: mockFs, workspaceDir: "/ws" }),
+      ).toBe(true);
+
+      const patched = files.get(path.join("/ws", "BOOTSTRAP.md"));
+      expect(patched).toContain("## Managed Channel Setup");
+      expect(patched.indexOf("## Managed Channel Setup")).toBeLessThan(
+        patched.indexOf("When the four beats are complete"),
+      );
+      expect(patched).toContain("## 4. One Safety Note");
     });
 
     it("is idempotent and a no-op when BOOTSTRAP.md is missing or already patched", () => {

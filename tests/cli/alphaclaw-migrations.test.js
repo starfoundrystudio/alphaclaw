@@ -294,7 +294,7 @@ describe("AlphaClaw migrations", () => {
 
     expect(result.ok).toBe(false);
     expect(result.summary.failed).toBe(5);
-    expect(result.summary.ok).toBe(2);
+    expect(result.summary.ok).toBe(1);
     const activeMemoryResult = findMigrationResult(
       result,
       "2026-06-remove-active-memory-model-fallback-policy",
