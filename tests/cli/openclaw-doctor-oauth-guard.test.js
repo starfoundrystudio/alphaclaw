@@ -82,6 +82,50 @@ const readSqliteAuthStore = (agentDir) => {
   }
 };
 
+const writeSharedStateAuthStore = (openclawDir, store) => {
+  const sqlite = loadSqlite();
+  if (!sqlite) return false;
+  const databasePath = path.join(openclawDir, "state", "openclaw.sqlite");
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+  const db = new sqlite.DatabaseSync(databasePath);
+  try {
+    db.exec(`
+      CREATE TABLE config_machine_state (
+        state_key TEXT NOT NULL PRIMARY KEY,
+        value_json TEXT NOT NULL,
+        updated_at_ms INTEGER NOT NULL
+      );
+    `);
+    const insert = db.prepare(
+      "INSERT INTO config_machine_state (state_key, value_json, updated_at_ms) VALUES (?, ?, ?)",
+    );
+    insert.run("auth.sharedStore", JSON.stringify({ location: "state-db" }), 1);
+    insert.run("authProfiles.store", JSON.stringify(store), 1);
+    return true;
+  } finally {
+    db.close();
+  }
+};
+
+const readSharedStateAuthStore = (openclawDir) => {
+  const sqlite = loadSqlite();
+  if (!sqlite) return null;
+  const db = new sqlite.DatabaseSync(
+    path.join(openclawDir, "state", "openclaw.sqlite"),
+    { readOnly: true },
+  );
+  try {
+    const row = db
+      .prepare(
+        "SELECT value_json FROM config_machine_state WHERE state_key = 'authProfiles.store'",
+      )
+      .get();
+    return JSON.parse(row.value_json);
+  } finally {
+    db.close();
+  }
+};
+
 const makeOauthStore = () => ({
   version: 1,
   profiles: {
@@ -281,6 +325,134 @@ describe("OpenClaw doctor OAuth guard", () => {
       refresh: "old-refresh",
       expires: kOldExpires,
     });
+  });
+
+  it("shields and restores the state-owned shared auth store", () => {
+    const { rootDir, openclawDir } = createRoot();
+    if (!writeSharedStateAuthStore(openclawDir, makeOauthStore())) return;
+
+    const status = runOpenclawDoctorWithOauthGuard({
+      rootDir,
+      openclawDir,
+      commandArgs: [process.execPath, "-e", "process.exit(0)"],
+      stdio: "pipe",
+      logger: { log() {}, error() {} },
+    });
+
+    expect(status).toBe(0);
+    expect(
+      readSharedStateAuthStore(openclawDir).profiles["openai:codex-cli"],
+    ).toMatchObject({
+      access: "old-access",
+      refresh: "old-refresh",
+      expires: kOldExpires,
+    });
+    expect(
+      fs.existsSync(
+        path.join(openclawDir, "agents", "main", "agent", "openclaw-agent.sqlite"),
+      ),
+    ).toBe(false);
+  });
+
+  it("fails closed when an OpenClaw OAuth refresh lock is held", () => {
+    const { rootDir, openclawDir, agentDir } = createRoot();
+    writeAuthStore(agentDir, makeOauthStore());
+    const first = collectAuthStoreSnapshots({ openclawDir });
+
+    expect(() =>
+      runOpenclawDoctorWithOauthGuard({
+        rootDir,
+        openclawDir,
+        commandArgs: [process.execPath, "-e", "process.exit(0)"],
+        stdio: "pipe",
+        logger: { log() {}, error() {} },
+      }),
+    ).toThrow("currently being refreshed");
+
+    for (const lockPath of first.locks) fs.rmSync(lockPath, { force: true });
+  });
+
+  it("reclaims a refresh lock owned by a process that is definitely gone", () => {
+    const { rootDir, openclawDir, agentDir } = createRoot();
+    writeAuthStore(agentDir, makeOauthStore());
+    const first = collectAuthStoreSnapshots({ openclawDir });
+    const [lockPath] = first.locks;
+    restoreAuthStoreSnapshots({ openclawDir, snapshots: first.snapshots });
+    fs.rmSync(lockPath, { force: true });
+    fs.writeFileSync(
+      lockPath,
+      JSON.stringify({ pid: 2147483647, createdAt: new Date(0).toISOString() }),
+      { mode: 0o600 },
+    );
+
+    const status = runOpenclawDoctorWithOauthGuard({
+      rootDir,
+      openclawDir,
+      commandArgs: [process.execPath, "-e", "process.exit(0)"],
+      stdio: "pipe",
+      logger: { log() {}, error() {} },
+    });
+
+    expect(status).toBe(0);
+    expect(fs.existsSync(lockPath)).toBe(false);
+  });
+
+  it("re-reads OAuth material after acquiring refresh locks", () => {
+    const { openclawDir, agentDir } = createRoot();
+    const authPath = path.join(agentDir, "auth-profiles.json");
+    writeAuthStore(agentDir, makeOauthStore());
+    let authReads = 0;
+    const fsModule = new Proxy(fs, {
+      get(target, property) {
+        if (property !== "readFileSync") return Reflect.get(target, property);
+        return (targetPath, ...args) => {
+          if (targetPath === authPath) {
+            authReads += 1;
+            if (authReads === 2) {
+              const rotated = makeOauthStore();
+              rotated.profiles["openai:codex-cli"].access = "rotated-access";
+              rotated.profiles["openai:codex-cli"].refresh = "rotated-refresh";
+              target.writeFileSync(
+                authPath,
+                `${JSON.stringify(rotated, null, 2)}\n`,
+                "utf8",
+              );
+            }
+          }
+          return target.readFileSync(targetPath, ...args);
+        };
+      },
+    });
+
+    const shield = collectAuthStoreSnapshots({ fsModule, openclawDir });
+    restoreAuthStoreSnapshots({
+      fsModule,
+      openclawDir,
+      snapshots: shield.snapshots,
+    });
+    for (const lockPath of shield.locks) fs.rmSync(lockPath, { force: true });
+
+    expect(readAuthStore(agentDir).profiles["openai:codex-cli"]).toMatchObject({
+      access: "rotated-access",
+      refresh: "rotated-refresh",
+    });
+  });
+
+  it("fails restoration if a captured shared auth store disappears", () => {
+    const { openclawDir } = createRoot();
+    if (!writeSharedStateAuthStore(openclawDir, makeOauthStore())) return;
+    const shield = collectAuthStoreSnapshots({ openclawDir });
+    fs.rmSync(path.join(openclawDir, "state", "openclaw.sqlite"), {
+      force: true,
+    });
+
+    expect(() =>
+      restoreAuthStoreSnapshots({
+        openclawDir,
+        snapshots: shield.snapshots,
+      }),
+    ).toThrow("Failed to reopen the shared OAuth store");
+    for (const lockPath of shield.locks) fs.rmSync(lockPath, { force: true });
   });
 
   it("does not shield OAuth profiles without refresh material", () => {

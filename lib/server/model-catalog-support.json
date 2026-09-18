@@ -57,13 +57,15 @@
       "label": "BytePlus",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
-      "envKeys": ["BYTEPLUS_API_KEY"]
+      "envKeys": ["BYTEPLUS_API_KEY"],
+      "requiredPlugins": ["byteplus"]
     },
     "byteplus-plan": {
       "label": "BytePlus Plan",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
-      "envKeys": ["BYTEPLUS_API_KEY"]
+      "envKeys": ["BYTEPLUS_API_KEY"],
+      "requiredPlugins": ["byteplus"]
     },
     "claude-cli": {
       "label": "Claude CLI",
@@ -119,7 +121,8 @@
       "label": "Mistral",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
-      "envKeys": ["MISTRAL_API_KEY"]
+      "envKeys": ["MISTRAL_API_KEY"],
+      "requiredPlugins": ["mistral"]
     },
     "moonshot": {
       "label": "Moonshot",
@@ -133,7 +136,8 @@
       "label": "Novita",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
-      "envKeys": ["NOVITA_API_KEY"]
+      "envKeys": ["NOVITA_API_KEY"],
+      "requiredPlugins": ["novita"]
     },
     "nvidia": {
       "label": "NVIDIA",
@@ -236,19 +240,22 @@
       "label": "Volcano Engine",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
-      "envKeys": ["VOLCANO_ENGINE_API_KEY"]
+      "envKeys": ["VOLCANO_ENGINE_API_KEY"],
+      "requiredPlugins": ["volcengine"]
     },
     "volcengine-plan": {
       "label": "Volcano Engine Plan",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
-      "envKeys": ["VOLCANO_ENGINE_API_KEY"]
+      "envKeys": ["VOLCANO_ENGINE_API_KEY"],
+      "requiredPlugins": ["volcengine"]
     },
     "xiaomi": {
       "label": "Xiaomi",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
-      "envKeys": ["XIAOMI_API_KEY"]
+      "envKeys": ["XIAOMI_API_KEY"],
+      "requiredPlugins": ["xiaomi"]
     },
     "zai": {
       "label": "Z.AI",

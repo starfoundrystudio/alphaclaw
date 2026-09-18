@@ -107,6 +107,39 @@ describe("server/agents/service", () => {
     expect(agents.find((entry) => entry.id === "main")?.default).toBe(false);
   });
 
+  it("reads canonical keyed entries and writes only keyed entries", async () => {
+    const fsMock = buildFsMock({
+      initialConfig: {
+        agents: {
+          entries: {
+            main: { default: true, name: "Main" },
+            ops: { default: false, name: "Ops" },
+          },
+          list: [{ id: "ignored", default: false }],
+        },
+      },
+    });
+    const service = createAgentsService({
+      fs: fsMock,
+      OPENCLAW_DIR: "/tmp/openclaw",
+    });
+
+    expect(service.listAgents().map((entry) => entry.id)).toEqual([
+      "main",
+      "ops",
+    ]);
+    await service.updateAgent("ops", { thinkingDefault: "high" });
+
+    const config = fsMock.readConfig();
+    expect(config.agents).not.toHaveProperty("list");
+    expect(config.agents.entries.ops).toMatchObject({
+      default: false,
+      name: "Ops",
+      thinkingDefault: "high",
+    });
+    expect(config.agents.entries.ops).not.toHaveProperty("id");
+  });
+
   it("creates agent with custom workspace folder", () => {
     const fsMock = buildFsMock({
       initialConfig: {
@@ -154,7 +187,7 @@ describe("server/agents/service", () => {
     const config = fsMock.readConfig();
 
     expect(updated).not.toHaveProperty("model");
-    expect(config.agents.list[0]).not.toHaveProperty("model");
+    expect(config.agents.entries.main).not.toHaveProperty("model");
   });
 
   it("persists tools config updates for agents", async () => {
@@ -197,7 +230,7 @@ describe("server/agents/service", () => {
       alsoAllow: ["read"],
       deny: ["session_status"],
     });
-    expect(fsMock.readConfig().agents.list[0].tools).toEqual({
+    expect(fsMock.readConfig().agents.entries.main.tools).toEqual({
       profile: "minimal",
       alsoAllow: ["read"],
       deny: ["session_status"],
@@ -222,11 +255,13 @@ describe("server/agents/service", () => {
       thinkingDefault: "high",
     });
     expect(updated.thinkingDefault).toBe("high");
-    expect(fsMock.readConfig().agents.list[0].thinkingDefault).toBe("high");
+    expect(fsMock.readConfig().agents.entries.main.thinkingDefault).toBe(
+      "high",
+    );
 
     const cleared = await service.updateAgent("main", { thinkingDefault: null });
     expect(cleared).not.toHaveProperty("thinkingDefault");
-    expect(fsMock.readConfig().agents.list[0]).not.toHaveProperty(
+    expect(fsMock.readConfig().agents.entries.main).not.toHaveProperty(
       "thinkingDefault",
     );
   });
@@ -319,7 +354,7 @@ describe("server/agents/service", () => {
 
     service.deleteAgent("ops", { keepWorkspace: true });
     const config = fsMock.readConfig();
-    expect(config.agents.list.map((entry) => entry.id)).toEqual(["main"]);
+    expect(Object.keys(config.agents.entries)).toEqual(["main"]);
     expect(config.bindings).toEqual([
       { agentId: "main", match: { channel: "telegram" } },
     ]);
@@ -1654,7 +1689,7 @@ describe("server/agents/service", () => {
     expect(reloadEnv).toHaveBeenCalledTimes(2);
     expect(fsMock.readConfig()).toEqual({
       agents: {
-        list: [{ id: "main", default: true }],
+        entries: { main: { default: true } },
       },
     });
   });

@@ -38,6 +38,9 @@ const {
   shouldInitializeManagedOpenclawRuntime,
 } = require("../lib/server/openclaw-runtime-state");
 const {
+  resolveManagedCodexHome,
+} = require("../lib/server/openclaw-runtime-env");
+const {
   runOpenclawDoctorRepairSync,
 } = require("../lib/server/openclaw-doctor-repair");
 
@@ -595,11 +598,11 @@ if (!kSetupPassword) {
 }
 
 // ---------------------------------------------------------------------------
-// 7. Set OPENCLAW_HOME globally so all child processes inherit it
+// 7. Set OpenClaw state paths without replacing the service user's HOME.
 // ---------------------------------------------------------------------------
 
 process.env.OPENCLAW_HOME = rootDir;
-process.env.HOME = rootDir;
+process.env.CODEX_HOME = resolveManagedCodexHome({ rootDir, env: process.env });
 process.env.OPENCLAW_CONFIG_PATH = path.join(openclawDir, "openclaw.json");
 process.env.OPENCLAW_STATE_DIR = openclawDir;
 process.env.GOG_KEYRING_PASSWORD =

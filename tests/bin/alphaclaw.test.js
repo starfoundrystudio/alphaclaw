@@ -3,6 +3,8 @@ const path = require("path");
 const fs = require("fs");
 const os = require("os");
 
+const kOpenclawVersion = require("../../package.json").dependencies.openclaw;
+
 describe("bin/alphaclaw port check", () => {
   let tmpDir;
   let tmpHome;
@@ -200,7 +202,7 @@ Module._load = function patchedLoad(request, parent, isMain) {
 
     const reportedEnv = JSON.parse(fs.readFileSync(capturePath, "utf8"));
     expect(reportedEnv).toEqual({
-      HOME: tmpDir,
+      HOME: process.env.HOME,
       OPENCLAW_HOME: tmpDir,
       OPENCLAW_CONFIG_PATH: path.join(tmpDir, ".openclaw", "openclaw.json"),
       OPENCLAW_STATE_DIR: path.join(tmpDir, ".openclaw"),
@@ -222,6 +224,7 @@ const childProcess = require("child_process");
 const commandLogPath = ${JSON.stringify(commandLogPath)};
 const commands = [];
 const pluginVersions = { discord: "2026.5.6", acpx: "2026.5.6" };
+const targetVersion = ${JSON.stringify(kOpenclawVersion)};
 const testHome = process.env.ALPHACLAW_TEST_HOME;
 if (testHome) {
   os.homedir = () => testHome;
@@ -243,8 +246,8 @@ childProcess.execSync = (command, options = {}) => {
     });
   }
   if (cmd.includes("'plugins' 'update'")) {
-    if (cmd.includes("@openclaw/discord@2026.7.1")) pluginVersions.discord = "2026.7.1";
-    if (cmd.includes("@openclaw/acpx@2026.7.1")) pluginVersions.acpx = "2026.7.1";
+    if (cmd.includes("@openclaw/discord@" + targetVersion)) pluginVersions.discord = targetVersion;
+    if (cmd.includes("@openclaw/acpx@" + targetVersion)) pluginVersions.acpx = targetVersion;
   }
   return "";
 };

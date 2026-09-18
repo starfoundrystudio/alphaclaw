@@ -745,7 +745,8 @@ describe("server/routes/onboarding", () => {
           'openclaw onboard "--non-interactive" "--accept-risk"',
         ) &&
         cmd.includes('"--auth-choice" "openrouter-api-key"') &&
-        cmd.includes('"--openrouter-api-key" "sk-or-test-123456789"'),
+        cmd.includes('"--secret-input-mode" "ref"') &&
+        !cmd.includes("sk-or-test-123456789"),
       ),
     ).toBe(true);
   });
@@ -765,7 +766,8 @@ describe("server/routes/onboarding", () => {
     expect(
       deps.shellCmd.mock.calls.some(([cmd]) =>
         cmd.includes('"--auth-choice" "ai-gateway-api-key"') &&
-        cmd.includes('"--ai-gateway-api-key" "vck_test_123456789"'),
+        cmd.includes('"--secret-input-mode" "ref"') &&
+        !cmd.includes("vck_test_123456789"),
       ),
     ).toBe(true);
   });
@@ -909,6 +911,22 @@ describe("server/routes/onboarding", () => {
         cmd.includes('"--auth-choice" "skip"'),
       ),
     ).toBe(true);
+    const codexInstallCall = deps.shellCmd.mock.calls.find(
+      ([cmd]) => cmd === "openclaw plugins install codex --accept-capabilities",
+    );
+    const onboardCall = deps.shellCmd.mock.calls.find(([cmd]) =>
+      cmd.startsWith("openclaw onboard "),
+    );
+    expect(codexInstallCall).toBeDefined();
+    expect(
+      deps.shellCmd.mock.invocationCallOrder[
+        deps.shellCmd.mock.calls.indexOf(codexInstallCall)
+      ],
+    ).toBeLessThan(
+      deps.shellCmd.mock.invocationCallOrder[
+        deps.shellCmd.mock.calls.indexOf(onboardCall)
+      ],
+    );
     const openclawWriteCall = deps.fs.writeFileSync.mock.calls.find(
       ([targetPath]) => targetPath === "/tmp/openclaw/openclaw.json",
     );
@@ -929,6 +947,38 @@ describe("server/routes/onboarding", () => {
     expect(
       deps.reconcileOpenclawPlugins.mock.invocationCallOrder[0],
     ).toBeLessThan(deps.runOnboardedBootSequence.mock.invocationCallOrder[0]);
+  });
+
+  it("does not reinstall the Codex plugin when it is already present", async () => {
+    const deps = createBaseDeps({ hasCodexOauth: true });
+    deps.fs.readFileSync.mockImplementation((p) => {
+      if (p === "/tmp/openclaw/openclaw.json") return "{}";
+      return "{}";
+    });
+    deps.shellCmd.mockImplementation(async (cmd) => {
+      if (cmd === "openclaw plugins list --json") {
+        return JSON.stringify({ plugins: [{ id: "codex" }] });
+      }
+      return "";
+    });
+    const app = createApp(deps);
+
+    const res = await request(app).post("/api/onboard").send({
+      tailscaleApiToken: "tskey-api-test_123456789",
+      modelKey: "openai/gpt-5.5",
+      agentRuntimeId: "codex",
+      vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
+    });
+
+    expect(res.status).toBe(200);
+    expect(deps.shellCmd).toHaveBeenCalledWith(
+      "openclaw plugins list --json",
+      expect.objectContaining({ timeout: 30000 }),
+    );
+    expect(deps.shellCmd).not.toHaveBeenCalledWith(
+      "openclaw plugins install codex --accept-capabilities",
+      expect.anything(),
+    );
   });
 
   it("canonicalizes openai-codex model keys when configuring the Codex runtime", async () => {
@@ -1210,7 +1260,8 @@ describe("server/routes/onboarding", () => {
       cmd.startsWith("openclaw onboard "),
     );
     expect(onboardCall).toBeTruthy();
-    expect(onboardCall[0]).toContain("--anthropic-api-key");
+    expect(onboardCall[0]).toContain('"--secret-input-mode" "ref"');
+    expect(onboardCall[0]).not.toContain("sk-ant-api-fresh-123456789");
     expect(onboardCall[0]).not.toContain("--token-provider");
     expect(onboardCall[0]).not.toContain("sk-ant-oat01-stale-token");
     expect(onboardCall[1]).toMatchObject({

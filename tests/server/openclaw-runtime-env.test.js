@@ -2,6 +2,7 @@ const path = require("path");
 const { kRootDir } = require("../../lib/server/constants");
 const {
   ensureOpenclawStartupEnv,
+  resolveManagedCodexHome,
   withOpenclawStartupEnv,
 } = require("../../lib/server/openclaw-runtime-env");
 
@@ -30,6 +31,29 @@ describe("server/openclaw-runtime-env", () => {
 
     expect(env.NODE_COMPILE_CACHE).toBe("/custom/cache");
     expect(env.OPENCLAW_NO_RESPAWN).toBe("0");
+  });
+
+  it("preserves the legacy managed Codex home for upgraded instances", () => {
+    const fsModule = { existsSync: vi.fn(() => true) };
+
+    expect(
+      resolveManagedCodexHome({
+        rootDir: "/managed",
+        env: { HOME: "/service" },
+        fsModule,
+      }),
+    ).toBe("/managed/.codex");
+    expect(fsModule.existsSync).toHaveBeenCalledWith("/managed/.codex");
+  });
+
+  it("uses the service Codex home for fresh instances", () => {
+    expect(
+      resolveManagedCodexHome({
+        rootDir: "/managed",
+        env: { HOME: "/service" },
+        fsModule: { existsSync: () => false },
+      }),
+    ).toBe("/service/.codex");
   });
 
   it("creates the compile cache directory and backfills missing process env values", () => {

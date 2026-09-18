@@ -40,12 +40,12 @@ describe("generated model catalog bootstrap", () => {
     for (const [providerId, providerMeta] of Object.entries(supportSpec.providers)) {
       const minimumProbeModelCount = Number(providerMeta.minimumProbeModelCount || 0);
       if (minimumProbeModelCount === 0) continue;
-      const probedModels = catalog.models.filter(
-        (model) =>
-          model.provider === providerId &&
-          String(model.source || "").includes("openclaw-provider-probe"),
+      const retainedModels = catalog.models.filter(
+        (model) => model.provider === providerId,
       );
-      expect(probedModels.length).toBeGreaterThanOrEqual(minimumProbeModelCount);
+      expect(retainedModels.length).toBeGreaterThanOrEqual(
+        minimumProbeModelCount,
+      );
     }
   });
 

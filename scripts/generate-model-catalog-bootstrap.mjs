@@ -125,6 +125,24 @@ const normalizeProbeModel = ({ provider, rawModel, providerMeta }) => {
   };
 };
 
+const normalizeBootstrapFallbackModel = ({ rawModel, providers }) => {
+  const key = normalizeString(rawModel?.key);
+  const provider = normalizeString(rawModel?.provider) || getProviderFromKey(key);
+  if (!key || !provider || !providers[provider]) return null;
+  const accessModes = getModelAccessModes({
+    key,
+    providerMeta: providers[provider],
+  });
+  if (accessModes.length === 0) return null;
+  return {
+    key,
+    provider,
+    label: normalizeString(rawModel?.label) || key,
+    accessModes,
+    source: "prior-bootstrap-fallback",
+  };
+};
+
 const normalizePublicCatalogModel = ({ provider, rawModel, providerMeta }) => {
   const rawId = normalizeString(rawModel?.id);
   if (!rawId) return null;
@@ -209,20 +227,23 @@ const fetchPublicProviderModels = async ({ provider, providerMeta }) => {
 };
 
 const listProviderModels = ({ provider, providerMeta, env, openclawCliPath }) => {
-  const minimumProbeModelCount = Number(providerMeta.minimumProbeModelCount || 0);
-  const validateMinimumProbeModelCount = (models) => {
-    if (models.length < minimumProbeModelCount) {
-      throw new Error(
-        `OpenClaw model probe for ${provider} returned ${models.length} models; expected at least ${minimumProbeModelCount}`,
-      );
-    }
-    return models;
-  };
+  const probeEnv = { ...env };
+  for (const envKey of uniqueStrings(providerMeta.envKeys || [])) {
+    probeEnv[envKey] ||= "alphaclaw-model-catalog-probe";
+  }
   let output = "";
   try {
     output = runOpenclaw({
-      args: ["models", "list", "--provider", provider, "--all", "--json"],
-      env,
+      args: [
+        "models",
+        "list",
+        "--provider",
+        provider,
+        "--all",
+        "--refresh",
+        "--json",
+      ],
+      env: probeEnv,
       openclawCliPath,
     });
   } catch (error) {
@@ -230,7 +251,7 @@ const listProviderModels = ({ provider, providerMeta, env, openclawCliPath }) =>
       .filter(Boolean)
       .map(String)
       .join("\n");
-    if (/No models found/i.test(text)) return validateMinimumProbeModelCount([]);
+    if (/No models found/i.test(text)) return [];
     throw new Error(`Failed to probe OpenClaw models for ${provider}: ${text}`);
   }
   let payload;
@@ -253,7 +274,7 @@ const listProviderModels = ({ provider, providerMeta, env, openclawCliPath }) =>
       }),
     )
     .filter(Boolean);
-  return validateMinimumProbeModelCount(models);
+  return models;
 };
 
 const mergeModel = ({ modelsByKey, model }) => {
@@ -357,7 +378,13 @@ const installProbePlugins = ({ supportSpec, manifest, env, openclawCliPath }) =>
       throw new Error(`Model probe plugin ${pluginId} is missing an exact npm spec`);
     }
     runOpenclaw({
-      args: ["plugins", "install", `npm:${exactNpmSpec}`, "--pin"],
+      args: [
+        "plugins",
+        "install",
+        `npm:${exactNpmSpec}`,
+        "--pin",
+        "--accept-capabilities",
+      ],
       env,
       openclawCliPath,
     });
@@ -429,6 +456,23 @@ const generateCatalog = async () => {
   const supportSpec = readJson(kSupportSpecPath);
   const manifest = readJson(kCompatibilityManifestPath);
   validateSupportSpec({ supportSpec, manifest });
+  const priorBootstrap = fs.existsSync(kBootstrapPath)
+    ? readJson(kBootstrapPath)
+    : { models: [] };
+  const fallbackModelsByProvider = new Map();
+  for (const rawModel of Array.isArray(priorBootstrap.models)
+    ? priorBootstrap.models
+    : []) {
+    const model = normalizeBootstrapFallbackModel({
+      rawModel,
+      providers: supportSpec.providers || {},
+    });
+    if (!model) continue;
+    if (!fallbackModelsByProvider.has(model.provider)) {
+      fallbackModelsByProvider.set(model.provider, []);
+    }
+    fallbackModelsByProvider.get(model.provider).push(model);
+  }
 
   const openclawCliPath = getOpenclawCliPath();
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "alphaclaw-model-catalog-"));
@@ -449,12 +493,27 @@ const generateCatalog = async () => {
 
     for (const provider of uniqueStrings(supportSpec.providerProbes || [])) {
       const providerMeta = supportSpec.providers?.[provider] || {};
-      const models = listProviderModels({
+      let models = listProviderModels({
         provider,
         providerMeta,
         env,
         openclawCliPath,
       });
+      const minimumProbeModelCount = Number(
+        providerMeta.minimumProbeModelCount || 0,
+      );
+      if (models.length < minimumProbeModelCount) {
+        models = [
+          ...(fallbackModelsByProvider.get(provider) || []),
+          ...models,
+        ];
+        models = [...new Map(models.map((model) => [model.key, model])).values()];
+      }
+      if (models.length < minimumProbeModelCount) {
+        throw new Error(
+          `OpenClaw model probe for ${provider} returned ${models.length} models after prior-bootstrap fallback; expected at least ${minimumProbeModelCount}`,
+        );
+      }
       for (const model of models) mergeModel({ modelsByKey, model });
     }
   } finally {

@@ -24,8 +24,12 @@ describe("server/onboarding/openclaw", () => {
       workspaceDir: "/tmp/workspace",
     });
 
-    expect(args).toContain("--anthropic-api-key");
-    expect(args).toContain("sk-ant-api-fresh-key");
+    expect(args).toContain("--secret-input-mode");
+    expect(args).toContain("ref");
+    expect(args).not.toContain("--anthropic-api-key");
+    expect(args).not.toContain("sk-ant-api-fresh-key");
+    expect(args).toContain("--gateway-token-ref-env");
+    expect(args).toContain("--json");
     expect(args).not.toContain("--token");
     expect(args).not.toContain("sk-ant-oat01-stale-token");
 
@@ -45,8 +49,8 @@ describe("server/onboarding/openclaw", () => {
 
     expect(args).toContain("--auth-choice");
     expect(args).toContain("openrouter-api-key");
-    expect(args).toContain("--openrouter-api-key");
-    expect(args).toContain("sk-or-fresh-key");
+    expect(args).not.toContain("--openrouter-api-key");
+    expect(args).not.toContain("sk-or-fresh-key");
   });
 
   it("builds Vercel AI Gateway onboarding args for gateway-backed models", () => {
@@ -62,8 +66,8 @@ describe("server/onboarding/openclaw", () => {
 
     expect(args).toContain("--auth-choice");
     expect(args).toContain("ai-gateway-api-key");
-    expect(args).toContain("--ai-gateway-api-key");
-    expect(args).toContain("vck_live_test");
+    expect(args).not.toContain("--ai-gateway-api-key");
+    expect(args).not.toContain("vck_live_test");
   });
 
   it("prefers existing Codex OAuth over OpenAI API keys for openai-codex onboarding", () => {

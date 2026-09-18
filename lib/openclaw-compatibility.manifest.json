@@ -1,80 +1,263 @@
 {
   "schemaVersion": 1,
   "alphaclawVersion": "0.9.18-starfoundry.22",
-  "openclawVersion": "2026.7.1",
+  "openclawVersion": "2026.9.4",
   "source": {
     "openclawPackage": "openclaw",
-    "openclawGitRef": "v2026.7.1",
+    "openclawGitRef": "v2026.9.4",
     "upstreamCatalogs": [
       {
         "kind": "channel",
         "path": "scripts/lib/official-external-channel-catalog.json",
-        "url": "https://github.com/openclaw/openclaw/blob/v2026.7.1/scripts/lib/official-external-channel-catalog.json"
+        "url": "https://github.com/openclaw/openclaw/blob/v2026.9.4/scripts/lib/official-external-channel-catalog.json"
       },
       {
         "kind": "plugin",
         "path": "scripts/lib/official-external-plugin-catalog.json",
-        "url": "https://github.com/openclaw/openclaw/blob/v2026.7.1/scripts/lib/official-external-plugin-catalog.json"
+        "url": "https://github.com/openclaw/openclaw/blob/v2026.9.4/scripts/lib/official-external-plugin-catalog.json"
       },
       {
         "kind": "provider",
         "path": "scripts/lib/official-external-provider-catalog.json",
-        "url": "https://github.com/openclaw/openclaw/blob/v2026.7.1/scripts/lib/official-external-provider-catalog.json"
+        "url": "https://github.com/openclaw/openclaw/blob/v2026.9.4/scripts/lib/official-external-provider-catalog.json"
       }
     ]
   },
   "managedPlugins": {
-    "wecom-openclaw-plugin": {
+    "buzz": {
       "kind": "channel",
-      "package": "@wecom/wecom-openclaw-plugin",
-      "version": "2026.5.7",
-      "pluginId": "wecom-openclaw-plugin",
-      "channelId": "wecom",
-      "contracts": {
-        "tools": [
-          "wecom_mcp"
-        ]
-      },
-      "description": "OpenClaw WeCom channel plugin by the Tencent WeCom team.",
-      "source": "external",
+      "package": "@openclaw/buzz",
+      "version": "2026.9.4",
+      "pluginId": "buzz",
+      "channelId": "buzz",
+      "description": "Connect OpenClaw agents to Buzz rooms",
+      "source": "official",
       "install": {
-        "npmSpec": "@wecom/wecom-openclaw-plugin",
-        "exactNpmSpec": "@wecom/wecom-openclaw-plugin@2026.5.7",
-        "defaultChoice": "npm"
+        "npmSpec": "@openclaw/buzz",
+        "exactNpmSpec": "@openclaw/buzz@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
       }
     },
-    "openclaw-plugin-yuanbao": {
+    "clickclack": {
       "kind": "channel",
-      "package": "openclaw-plugin-yuanbao",
-      "version": "2.15.0",
-      "pluginId": "openclaw-plugin-yuanbao",
-      "channelId": "yuanbao",
+      "package": "@openclaw/clickclack",
+      "version": "2026.9.4",
+      "pluginId": "clickclack",
+      "channelId": "clickclack",
       "contracts": {
         "tools": [
-          "query_group_info",
-          "query_session_members",
-          "yuanbao_remind"
+          "discussion"
         ]
       },
-      "description": "OpenClaw Yuanbao channel plugin by the Tencent Yuanbao team.",
-      "source": "external",
+      "description": "OpenClaw ClickClack channel plugin",
+      "source": "official",
       "install": {
-        "npmSpec": "openclaw-plugin-yuanbao",
-        "exactNpmSpec": "openclaw-plugin-yuanbao@2.15.0",
-        "defaultChoice": "npm"
+        "npmSpec": "@openclaw/clickclack",
+        "exactNpmSpec": "@openclaw/clickclack@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.6.9"
+      }
+    },
+    "discord": {
+      "kind": "channel",
+      "package": "@openclaw/discord",
+      "version": "2026.9.4",
+      "pluginId": "discord",
+      "channelId": "discord",
+      "contracts": {
+        "transcriptSourceProviders": [
+          "discord-voice"
+        ]
+      },
+      "description": "OpenClaw Discord channel plugin for channels, DMs, commands, and app events.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/discord",
+        "exactNpmSpec": "@openclaw/discord@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.5.26"
+      }
+    },
+    "feishu": {
+      "kind": "channel",
+      "package": "@openclaw/feishu",
+      "version": "2026.9.4",
+      "pluginId": "feishu",
+      "channelId": "feishu",
+      "contracts": {
+        "tools": [
+          "feishu_app_scopes",
+          "feishu_bitable_create_app",
+          "feishu_bitable_create_field",
+          "feishu_bitable_create_record",
+          "feishu_bitable_get_meta",
+          "feishu_bitable_get_record",
+          "feishu_bitable_list_fields",
+          "feishu_bitable_list_records",
+          "feishu_bitable_update_record",
+          "feishu_chat",
+          "feishu_doc",
+          "feishu_drive",
+          "feishu_perm",
+          "feishu_wiki"
+        ]
+      },
+      "description": "OpenClaw Feishu/Lark channel plugin for chats and workplace tools (community maintained by @m1heng).",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/feishu",
+        "exactNpmSpec": "@openclaw/feishu@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.5.29"
+      }
+    },
+    "googlechat": {
+      "kind": "channel",
+      "package": "@openclaw/googlechat",
+      "version": "2026.9.4",
+      "pluginId": "googlechat",
+      "channelId": "googlechat",
+      "description": "OpenClaw Google Chat channel plugin for spaces and direct messages.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/googlechat",
+        "exactNpmSpec": "@openclaw/googlechat@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.4.10"
+      }
+    },
+    "imessage": {
+      "kind": "channel",
+      "package": "@openclaw/imessage",
+      "version": "2026.9.4",
+      "pluginId": "imessage",
+      "channelId": "imessage",
+      "description": "OpenClaw iMessage channel plugin using imsg on a signed-in Mac",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/imessage",
+        "exactNpmSpec": "@openclaw/imessage@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
+      }
+    },
+    "irc": {
+      "kind": "channel",
+      "package": "@openclaw/irc",
+      "version": "2026.9.4",
+      "pluginId": "irc",
+      "channelId": "irc",
+      "description": "OpenClaw IRC channel plugin",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/irc",
+        "exactNpmSpec": "@openclaw/irc@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.6.9"
+      }
+    },
+    "line": {
+      "kind": "channel",
+      "package": "@openclaw/line",
+      "version": "2026.9.4",
+      "pluginId": "line",
+      "channelId": "line",
+      "description": "OpenClaw LINE channel plugin for LINE Bot API chats.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/line",
+        "exactNpmSpec": "@openclaw/line@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.4.10"
+      }
+    },
+    "matrix": {
+      "kind": "channel",
+      "package": "@openclaw/matrix",
+      "version": "2026.9.4",
+      "pluginId": "matrix",
+      "channelId": "matrix",
+      "description": "OpenClaw Matrix channel plugin for rooms and direct messages.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/matrix",
+        "exactNpmSpec": "@openclaw/matrix@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.4.10"
+      }
+    },
+    "mattermost": {
+      "kind": "channel",
+      "package": "@openclaw/mattermost",
+      "version": "2026.9.4",
+      "pluginId": "mattermost",
+      "channelId": "mattermost",
+      "description": "OpenClaw Mattermost channel plugin",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/mattermost",
+        "exactNpmSpec": "@openclaw/mattermost@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.6.9"
+      }
+    },
+    "msteams": {
+      "kind": "channel",
+      "package": "@openclaw/msteams",
+      "version": "2026.9.4",
+      "pluginId": "msteams",
+      "channelId": "msteams",
+      "description": "OpenClaw Microsoft Teams channel plugin for bot conversations.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/msteams",
+        "exactNpmSpec": "@openclaw/msteams@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.4.10"
+      }
+    },
+    "nextcloud-talk": {
+      "kind": "channel",
+      "package": "@openclaw/nextcloud-talk",
+      "version": "2026.9.4",
+      "pluginId": "nextcloud-talk",
+      "channelId": "nextcloud-talk",
+      "description": "OpenClaw Nextcloud Talk channel plugin for conversations.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/nextcloud-talk",
+        "exactNpmSpec": "@openclaw/nextcloud-talk@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.4.10"
+      }
+    },
+    "nostr": {
+      "kind": "channel",
+      "package": "@openclaw/nostr",
+      "version": "2026.9.4",
+      "pluginId": "nostr",
+      "channelId": "nostr",
+      "description": "OpenClaw Nostr channel plugin for NIP-04 encrypted direct messages.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/nostr",
+        "exactNpmSpec": "@openclaw/nostr@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.4.10"
       }
     },
     "openclaw-weixin": {
       "kind": "channel",
       "package": "@tencent-weixin/openclaw-weixin",
-      "version": "2.4.6",
+      "version": "2.4.8",
       "pluginId": "openclaw-weixin",
       "channelId": "openclaw-weixin",
       "description": "OpenClaw Weixin channel plugin by the Tencent Weixin team.",
       "source": "external",
       "install": {
         "npmSpec": "@tencent-weixin/openclaw-weixin",
-        "exactNpmSpec": "@tencent-weixin/openclaw-weixin@2.4.6",
+        "exactNpmSpec": "@tencent-weixin/openclaw-weixin@2.4.8",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.5.12"
       }
@@ -94,197 +277,52 @@
         "minHostVersion": ">=2026.4.10"
       }
     },
-    "clickclack": {
+    "openclaw-qqbot": {
       "kind": "channel",
-      "package": "@openclaw/clickclack",
-      "version": "2026.7.1",
-      "pluginId": "clickclack",
-      "channelId": "clickclack",
-      "description": "OpenClaw ClickClack channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/clickclack",
-        "exactNpmSpec": "@openclaw/clickclack@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.6.9"
-      }
-    },
-    "discord": {
-      "kind": "channel",
-      "package": "@openclaw/discord",
-      "version": "2026.7.1",
-      "pluginId": "discord",
-      "channelId": "discord",
-      "description": "OpenClaw Discord channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/discord",
-        "exactNpmSpec": "@openclaw/discord@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.4.10"
-      }
-    },
-    "feishu": {
-      "kind": "channel",
-      "package": "@openclaw/feishu",
-      "version": "2026.7.1",
-      "pluginId": "feishu",
-      "channelId": "feishu",
-      "description": "OpenClaw Feishu/Lark channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/feishu",
-        "exactNpmSpec": "@openclaw/feishu@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.5.29"
-      }
-    },
-    "googlechat": {
-      "kind": "channel",
-      "package": "@openclaw/googlechat",
-      "version": "2026.7.1",
-      "pluginId": "googlechat",
-      "channelId": "googlechat",
-      "description": "OpenClaw Google Chat channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/googlechat",
-        "exactNpmSpec": "@openclaw/googlechat@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.4.10"
-      }
-    },
-    "irc": {
-      "kind": "channel",
-      "package": "@openclaw/irc",
-      "version": "2026.7.1",
-      "pluginId": "irc",
-      "channelId": "irc",
-      "description": "OpenClaw IRC channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/irc",
-        "exactNpmSpec": "@openclaw/irc@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.6.9"
-      }
-    },
-    "line": {
-      "kind": "channel",
-      "package": "@openclaw/line",
-      "version": "2026.7.1",
-      "pluginId": "line",
-      "channelId": "line",
-      "description": "OpenClaw LINE channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/line",
-        "exactNpmSpec": "@openclaw/line@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.4.10"
-      }
-    },
-    "mattermost": {
-      "kind": "channel",
-      "package": "@openclaw/mattermost",
-      "version": "2026.7.1",
-      "pluginId": "mattermost",
-      "channelId": "mattermost",
-      "description": "OpenClaw Mattermost channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/mattermost",
-        "exactNpmSpec": "@openclaw/mattermost@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.6.9"
-      }
-    },
-    "matrix": {
-      "kind": "channel",
-      "package": "@openclaw/matrix",
-      "version": "2026.7.1",
-      "pluginId": "matrix",
-      "channelId": "matrix",
-      "description": "OpenClaw Matrix channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/matrix",
-        "exactNpmSpec": "@openclaw/matrix@2026.7.1",
-        "defaultChoice": "clawhub",
-        "minHostVersion": ">=2026.4.10"
-      }
-    },
-    "msteams": {
-      "kind": "channel",
-      "package": "@openclaw/msteams",
-      "version": "2026.7.1",
-      "pluginId": "msteams",
-      "channelId": "msteams",
-      "description": "OpenClaw Microsoft Teams channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/msteams",
-        "exactNpmSpec": "@openclaw/msteams@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.4.10"
-      }
-    },
-    "nextcloud-talk": {
-      "kind": "channel",
-      "package": "@openclaw/nextcloud-talk",
-      "version": "2026.7.1",
-      "pluginId": "nextcloud-talk",
-      "channelId": "nextcloud-talk",
-      "description": "OpenClaw Nextcloud Talk channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/nextcloud-talk",
-        "exactNpmSpec": "@openclaw/nextcloud-talk@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.4.10"
-      }
-    },
-    "nostr": {
-      "kind": "channel",
-      "package": "@openclaw/nostr",
-      "version": "2026.7.1",
-      "pluginId": "nostr",
-      "channelId": "nostr",
-      "description": "OpenClaw Nostr channel plugin for NIP-04 encrypted DMs",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/nostr",
-        "exactNpmSpec": "@openclaw/nostr@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.4.10"
-      }
-    },
-    "qqbot": {
-      "kind": "channel",
-      "package": "@openclaw/qqbot",
-      "version": "2026.7.1",
-      "pluginId": "qqbot",
+      "package": "@tencent-connect/openclaw-qqbot",
+      "version": "2.0.3",
+      "pluginId": "openclaw-qqbot",
       "channelId": "qqbot",
-      "description": "OpenClaw QQ Bot channel plugin",
+      "contracts": {
+        "tools": [
+          "qqbot_platform_api",
+          "qqbot_remind"
+        ]
+      },
+      "description": "OpenClaw QQ Bot channel plugin by the Tencent Connect team.",
+      "source": "external",
+      "install": {
+        "npmSpec": "@tencent-connect/openclaw-qqbot",
+        "exactNpmSpec": "@tencent-connect/openclaw-qqbot@2.0.3",
+        "defaultChoice": "npm"
+      }
+    },
+    "raft": {
+      "kind": "channel",
+      "package": "@openclaw/raft",
+      "version": "2026.9.4",
+      "pluginId": "raft",
+      "channelId": "raft",
+      "description": "OpenClaw Raft channel plugin for Raft CLI wake bridges.",
       "source": "official",
       "install": {
-        "npmSpec": "@openclaw/qqbot",
-        "exactNpmSpec": "@openclaw/qqbot@2026.7.1",
+        "npmSpec": "@openclaw/raft",
+        "exactNpmSpec": "@openclaw/raft@2026.9.4",
         "defaultChoice": "npm",
-        "minHostVersion": ">=2026.4.10"
+        "minHostVersion": ">=2026.6.8"
       }
     },
     "signal": {
       "kind": "channel",
       "package": "@openclaw/signal",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "signal",
       "channelId": "signal",
       "description": "OpenClaw Signal channel plugin",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/signal",
-        "exactNpmSpec": "@openclaw/signal@2026.7.1",
+        "exactNpmSpec": "@openclaw/signal@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
       }
@@ -292,29 +330,29 @@
     "slack": {
       "kind": "channel",
       "package": "@openclaw/slack",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "slack",
       "channelId": "slack",
-      "description": "OpenClaw Slack channel plugin",
+      "description": "OpenClaw Slack channel plugin for channels, DMs, commands, and app events.",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/slack",
-        "exactNpmSpec": "@openclaw/slack@2026.7.1",
+        "exactNpmSpec": "@openclaw/slack@2026.9.4",
         "defaultChoice": "npm",
-        "minHostVersion": ">=2026.5.12-beta.1"
+        "minHostVersion": ">=2026.5.28"
       }
     },
     "sms": {
       "kind": "channel",
       "package": "@openclaw/sms",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "sms",
       "channelId": "sms",
-      "description": "OpenClaw SMS channel plugin for Twilio text messages.",
+      "description": "OpenClaw SMS/MMS channel plugin for Twilio messages.",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/sms",
-        "exactNpmSpec": "@openclaw/sms@2026.7.1",
+        "exactNpmSpec": "@openclaw/sms@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
       }
@@ -322,44 +360,29 @@
     "synology-chat": {
       "kind": "channel",
       "package": "@openclaw/synology-chat",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "synology-chat",
       "channelId": "synology-chat",
-      "description": "Synology Chat channel plugin for OpenClaw",
+      "description": "Synology Chat channel plugin for OpenClaw channels and direct messages.",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/synology-chat",
-        "exactNpmSpec": "@openclaw/synology-chat@2026.7.1",
+        "exactNpmSpec": "@openclaw/synology-chat@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.10"
-      }
-    },
-    "raft": {
-      "kind": "channel",
-      "package": "@openclaw/raft",
-      "version": "2026.7.1",
-      "pluginId": "raft",
-      "channelId": "raft",
-      "description": "OpenClaw Raft channel plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/raft",
-        "exactNpmSpec": "@openclaw/raft@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.6.8"
       }
     },
     "tlon": {
       "kind": "channel",
       "package": "@openclaw/tlon",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "tlon",
       "channelId": "tlon",
-      "description": "OpenClaw Tlon/Urbit channel plugin",
+      "description": "OpenClaw Tlon/Urbit channel plugin for chat workflows.",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/tlon",
-        "exactNpmSpec": "@openclaw/tlon@2026.7.1",
+        "exactNpmSpec": "@openclaw/tlon@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.10"
       }
@@ -367,44 +390,90 @@
     "twitch": {
       "kind": "channel",
       "package": "@openclaw/twitch",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "twitch",
       "channelId": "twitch",
-      "description": "OpenClaw Twitch channel plugin",
+      "description": "OpenClaw Twitch channel plugin for chat and moderation workflows.",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/twitch",
-        "exactNpmSpec": "@openclaw/twitch@2026.7.1",
+        "exactNpmSpec": "@openclaw/twitch@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.10"
+      }
+    },
+    "wecom-openclaw-plugin": {
+      "kind": "channel",
+      "package": "@wecom/wecom-openclaw-plugin",
+      "version": "2026.7.2",
+      "pluginId": "wecom-openclaw-plugin",
+      "channelId": "wecom",
+      "contracts": {
+        "tools": [
+          "wecom_mcp"
+        ]
+      },
+      "description": "OpenClaw WeCom channel plugin by the Tencent WeCom team.",
+      "source": "external",
+      "install": {
+        "npmSpec": "@wecom/wecom-openclaw-plugin",
+        "exactNpmSpec": "@wecom/wecom-openclaw-plugin@2026.7.2",
+        "defaultChoice": "npm"
       }
     },
     "whatsapp": {
       "kind": "channel",
       "package": "@openclaw/whatsapp",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "whatsapp",
       "channelId": "whatsapp",
-      "description": "OpenClaw WhatsApp channel plugin",
+      "contracts": {
+        "tools": [
+          "whatsapp_call",
+          "whatsapp_login"
+        ]
+      },
+      "description": "OpenClaw WhatsApp channel plugin for WhatsApp Web chats.",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/whatsapp",
-        "exactNpmSpec": "@openclaw/whatsapp@2026.7.1",
-        "defaultChoice": "clawhub",
+        "exactNpmSpec": "@openclaw/whatsapp@2026.9.4",
+        "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.25"
+      }
+    },
+    "openclaw-plugin-yuanbao": {
+      "kind": "channel",
+      "package": "openclaw-plugin-yuanbao",
+      "version": "2.18.2",
+      "pluginId": "openclaw-plugin-yuanbao",
+      "channelId": "yuanbao",
+      "contracts": {
+        "tools": [
+          "query_group_info",
+          "query_session_members",
+          "yuanbao_remind"
+        ]
+      },
+      "description": "OpenClaw Yuanbao channel plugin by the Tencent Yuanbao team.",
+      "source": "external",
+      "install": {
+        "npmSpec": "openclaw-plugin-yuanbao",
+        "exactNpmSpec": "openclaw-plugin-yuanbao@2.18.2",
+        "defaultChoice": "npm"
       }
     },
     "zalo": {
       "kind": "channel",
       "package": "@openclaw/zalo",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "zalo",
       "channelId": "zalo",
-      "description": "OpenClaw Zalo channel plugin",
+      "description": "OpenClaw Zalo channel plugin for bot and webhook chats.",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/zalo",
-        "exactNpmSpec": "@openclaw/zalo@2026.7.1",
+        "exactNpmSpec": "@openclaw/zalo@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.10"
       }
@@ -412,14 +481,19 @@
     "zalouser": {
       "kind": "channel",
       "package": "@openclaw/zalouser",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "zalouser",
       "channelId": "zalouser",
-      "description": "OpenClaw Zalo Personal Account plugin via native zca-js integration",
+      "contracts": {
+        "tools": [
+          "zalouser"
+        ]
+      },
+      "description": "OpenClaw Zalo Personal Account plugin via native zca-js integration.",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/zalouser",
-        "exactNpmSpec": "@openclaw/zalouser@2026.7.1",
+        "exactNpmSpec": "@openclaw/zalouser@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.10"
       }
@@ -427,13 +501,13 @@
     "acpx": {
       "kind": "plugin",
       "package": "@openclaw/acpx",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "acpx",
       "description": "OpenClaw ACP runtime backend",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/acpx",
-        "exactNpmSpec": "@openclaw/acpx@2026.7.1",
+        "exactNpmSpec": "@openclaw/acpx@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.25"
       }
@@ -441,7 +515,7 @@
     "brave": {
       "kind": "plugin",
       "package": "@openclaw/brave-plugin",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "brave",
       "webSearchProviderIds": [
         "brave"
@@ -453,21 +527,40 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/brave-plugin",
-        "exactNpmSpec": "@openclaw/brave-plugin@2026.7.1",
+        "exactNpmSpec": "@openclaw/brave-plugin@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.10"
+      }
+    },
+    "codex": {
+      "kind": "plugin",
+      "package": "@openclaw/codex",
+      "version": "2026.9.4",
+      "pluginId": "codex",
+      "contracts": {
+        "migrationProviders": [
+          "codex"
+        ]
+      },
+      "description": "OpenClaw Codex app-server harness and native session catalog",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/codex",
+        "exactNpmSpec": "@openclaw/codex@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.5.1-beta.1"
       }
     },
     "copilot": {
       "kind": "plugin",
       "package": "@openclaw/copilot",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "copilot",
       "description": "OpenClaw GitHub Copilot agent runtime plugin",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/copilot",
-        "exactNpmSpec": "@openclaw/copilot@2026.7.1",
+        "exactNpmSpec": "@openclaw/copilot@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.5.28"
       }
@@ -475,13 +568,13 @@
     "diagnostics-otel": {
       "kind": "plugin",
       "package": "@openclaw/diagnostics-otel",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "diagnostics-otel",
       "description": "OpenClaw diagnostics OpenTelemetry exporter",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/diagnostics-otel",
-        "exactNpmSpec": "@openclaw/diagnostics-otel@2026.7.1",
+        "exactNpmSpec": "@openclaw/diagnostics-otel@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.25"
       }
@@ -489,13 +582,13 @@
     "diagnostics-prometheus": {
       "kind": "plugin",
       "package": "@openclaw/diagnostics-prometheus",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "diagnostics-prometheus",
       "description": "OpenClaw diagnostics Prometheus exporter",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/diagnostics-prometheus",
-        "exactNpmSpec": "@openclaw/diagnostics-prometheus@2026.7.1",
+        "exactNpmSpec": "@openclaw/diagnostics-prometheus@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.25"
       }
@@ -503,13 +596,13 @@
     "diffs": {
       "kind": "plugin",
       "package": "@openclaw/diffs",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "diffs",
       "description": "OpenClaw diff viewer plugin",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/diffs",
-        "exactNpmSpec": "@openclaw/diffs@2026.7.1",
+        "exactNpmSpec": "@openclaw/diffs@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.30"
       }
@@ -517,21 +610,43 @@
     "diffs-language-pack": {
       "kind": "plugin",
       "package": "@openclaw/diffs-language-pack",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "diffs-language-pack",
       "description": "OpenClaw diffs viewer syntax highlighting language pack",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/diffs-language-pack",
-        "exactNpmSpec": "@openclaw/diffs-language-pack@2026.7.1",
+        "exactNpmSpec": "@openclaw/diffs-language-pack@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.5.27"
+      }
+    },
+    "duckduckgo": {
+      "kind": "plugin",
+      "package": "@openclaw/duckduckgo-plugin",
+      "version": "2026.9.4",
+      "pluginId": "duckduckgo",
+      "webSearchProviderIds": [
+        "duckduckgo"
+      ],
+      "contracts": {
+        "webSearchProviders": [
+          "duckduckgo"
+        ]
+      },
+      "description": "OpenClaw DuckDuckGo plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/duckduckgo-plugin",
+        "exactNpmSpec": "@openclaw/duckduckgo-plugin@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
       }
     },
     "exa": {
       "kind": "plugin",
       "package": "@openclaw/exa-plugin",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "exa",
       "webSearchProviderIds": [
         "exa"
@@ -548,7 +663,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/exa-plugin",
-        "exactNpmSpec": "@openclaw/exa-plugin@2026.7.1",
+        "exactNpmSpec": "@openclaw/exa-plugin@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -556,10 +671,11 @@
     "firecrawl": {
       "kind": "plugin",
       "package": "@openclaw/firecrawl-plugin",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "firecrawl",
       "webSearchProviderIds": [
-        "firecrawl"
+        "firecrawl",
+        "firecrawl-free"
       ],
       "webSearchProviderEnvVars": [
         "FIRECRAWL_API_KEY"
@@ -569,7 +685,8 @@
           "firecrawl"
         ],
         "webSearchProviders": [
-          "firecrawl"
+          "firecrawl",
+          "firecrawl-free"
         ],
         "tools": [
           "firecrawl_search",
@@ -580,21 +697,35 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/firecrawl-plugin",
-        "exactNpmSpec": "@openclaw/firecrawl-plugin@2026.7.1",
+        "exactNpmSpec": "@openclaw/firecrawl-plugin@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
+      }
+    },
+    "fish-audio-speech": {
+      "kind": "plugin",
+      "package": "@openclaw/fish-audio-speech",
+      "version": "2026.9.4",
+      "pluginId": "fish-audio-speech",
+      "description": "OpenClaw Fish Audio speech plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/fish-audio-speech",
+        "exactNpmSpec": "@openclaw/fish-audio-speech@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
       }
     },
     "google-meet": {
       "kind": "plugin",
       "package": "@openclaw/google-meet",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "google-meet",
       "description": "OpenClaw Google Meet participant plugin",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/google-meet",
-        "exactNpmSpec": "@openclaw/google-meet@2026.7.1",
+        "exactNpmSpec": "@openclaw/google-meet@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.20"
       }
@@ -602,7 +733,7 @@
     "gradium": {
       "kind": "plugin",
       "package": "@openclaw/gradium-speech",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "gradium",
       "contracts": {
         "speechProviders": [
@@ -613,7 +744,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/gradium-speech",
-        "exactNpmSpec": "@openclaw/gradium-speech@2026.7.1",
+        "exactNpmSpec": "@openclaw/gradium-speech@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -621,7 +752,7 @@
     "inworld": {
       "kind": "plugin",
       "package": "@openclaw/inworld-speech",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "inworld",
       "contracts": {
         "speechProviders": [
@@ -632,7 +763,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/inworld-speech",
-        "exactNpmSpec": "@openclaw/inworld-speech@2026.7.1",
+        "exactNpmSpec": "@openclaw/inworld-speech@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -640,13 +771,13 @@
     "lobster": {
       "kind": "plugin",
       "package": "@openclaw/lobster",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "lobster",
       "description": "Lobster workflow tool plugin (typed pipelines + resumable approvals)",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/lobster",
-        "exactNpmSpec": "@openclaw/lobster@2026.7.1",
+        "exactNpmSpec": "@openclaw/lobster@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.25"
       }
@@ -654,13 +785,13 @@
     "memory-lancedb": {
       "kind": "plugin",
       "package": "@openclaw/memory-lancedb",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "memory-lancedb",
       "description": "OpenClaw LanceDB-backed long-term memory plugin with auto-recall/capture",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/memory-lancedb",
-        "exactNpmSpec": "@openclaw/memory-lancedb@2026.7.1",
+        "exactNpmSpec": "@openclaw/memory-lancedb@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.5.31"
       }
@@ -668,32 +799,46 @@
     "llama-cpp": {
       "kind": "plugin",
       "package": "@openclaw/llama-cpp-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "llama-cpp",
       "contracts": {
         "embeddingProviders": [
           "local"
         ]
       },
-      "description": "OpenClaw llama.cpp embedding provider plugin",
+      "description": "OpenClaw managed llama.cpp server provider plugin",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/llama-cpp-provider",
-        "exactNpmSpec": "@openclaw/llama-cpp-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/llama-cpp-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.2"
+      }
+    },
+    "mxc": {
+      "kind": "plugin",
+      "package": "@openclaw/mxc-sandbox",
+      "version": "2026.9.4",
+      "pluginId": "mxc",
+      "description": "OpenClaw MXC sandbox execution plugin for MXC-capable hosts",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/mxc-sandbox",
+        "exactNpmSpec": "@openclaw/mxc-sandbox@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.6.11"
       }
     },
     "openshell": {
       "kind": "plugin",
       "package": "@openclaw/openshell-sandbox",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "openshell",
       "description": "OpenClaw OpenShell sandbox backend",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/openshell-sandbox",
-        "exactNpmSpec": "@openclaw/openshell-sandbox@2026.7.1",
+        "exactNpmSpec": "@openclaw/openshell-sandbox@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.5.12-beta.1"
       }
@@ -701,7 +846,7 @@
     "parallel": {
       "kind": "plugin",
       "package": "@openclaw/parallel-plugin",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "parallel",
       "webSearchProviderIds": [
         "parallel",
@@ -720,7 +865,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/parallel-plugin",
-        "exactNpmSpec": "@openclaw/parallel-plugin@2026.7.1",
+        "exactNpmSpec": "@openclaw/parallel-plugin@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -728,7 +873,7 @@
     "perplexity": {
       "kind": "plugin",
       "package": "@openclaw/perplexity-plugin",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "perplexity",
       "webSearchProviderIds": [
         "perplexity"
@@ -746,32 +891,15 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/perplexity-plugin",
-        "exactNpmSpec": "@openclaw/perplexity-plugin@2026.7.1",
+        "exactNpmSpec": "@openclaw/perplexity-plugin@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
-      }
-    },
-    "pixverse": {
-      "kind": "provider",
-      "package": "@openclaw/pixverse-provider",
-      "version": "2026.7.1",
-      "pluginId": "pixverse",
-      "providerIds": [
-        "pixverse"
-      ],
-      "description": "OpenClaw PixVerse video provider plugin",
-      "source": "official",
-      "install": {
-        "npmSpec": "@openclaw/pixverse-provider",
-        "exactNpmSpec": "@openclaw/pixverse-provider@2026.7.1",
-        "defaultChoice": "npm",
-        "minHostVersion": ">=2026.5.26"
       }
     },
     "searxng": {
       "kind": "plugin",
       "package": "@openclaw/searxng-plugin",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "searxng",
       "webSearchProviderIds": [
         "searxng"
@@ -788,7 +916,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/searxng-plugin",
-        "exactNpmSpec": "@openclaw/searxng-plugin@2026.7.1",
+        "exactNpmSpec": "@openclaw/searxng-plugin@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
       }
@@ -796,7 +924,7 @@
     "tavily": {
       "kind": "plugin",
       "package": "@openclaw/tavily-plugin",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "tavily",
       "webSearchProviderIds": [
         "tavily"
@@ -817,21 +945,57 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/tavily-plugin",
-        "exactNpmSpec": "@openclaw/tavily-plugin@2026.7.1",
+        "exactNpmSpec": "@openclaw/tavily-plugin@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
+      }
+    },
+    "team-reports": {
+      "kind": "plugin",
+      "package": "@openclaw/team-reports",
+      "version": "2026.9.4",
+      "pluginId": "team-reports",
+      "description": "OpenClaw team activity reports plugin (GitHub org + Discord activity with model summaries)",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/team-reports",
+        "exactNpmSpec": "@openclaw/team-reports@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.9.2"
+      }
+    },
+    "teams-meetings": {
+      "kind": "plugin",
+      "package": "@openclaw/teams-meetings",
+      "version": "2026.9.4",
+      "pluginId": "teams-meetings",
+      "contracts": {
+        "tools": [
+          "teams_meetings"
+        ],
+        "transcriptSourceProviders": [
+          "teams"
+        ]
+      },
+      "description": "OpenClaw Microsoft Teams browser meeting participant plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/teams-meetings",
+        "exactNpmSpec": "@openclaw/teams-meetings@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
       }
     },
     "tokenjuice": {
       "kind": "plugin",
       "package": "@openclaw/tokenjuice",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "tokenjuice",
       "description": "OpenClaw tokenjuice exec output compaction plugin",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/tokenjuice",
-        "exactNpmSpec": "@openclaw/tokenjuice@2026.7.1",
+        "exactNpmSpec": "@openclaw/tokenjuice@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.5.28"
       }
@@ -839,21 +1003,43 @@
     "voice-call": {
       "kind": "plugin",
       "package": "@openclaw/voice-call",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "voice-call",
       "description": "OpenClaw voice-call plugin",
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/voice-call",
-        "exactNpmSpec": "@openclaw/voice-call@2026.7.1",
+        "exactNpmSpec": "@openclaw/voice-call@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.4.10"
+      }
+    },
+    "zoom-meetings": {
+      "kind": "plugin",
+      "package": "@openclaw/zoom-meetings",
+      "version": "2026.9.4",
+      "pluginId": "zoom-meetings",
+      "contracts": {
+        "tools": [
+          "zoom_meetings"
+        ],
+        "transcriptSourceProviders": [
+          "zoom"
+        ]
+      },
+      "description": "OpenClaw Zoom browser meeting participant plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/zoom-meetings",
+        "exactNpmSpec": "@openclaw/zoom-meetings@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
       }
     },
     "amazon-bedrock": {
       "kind": "provider",
       "package": "@openclaw/amazon-bedrock-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "amazon-bedrock",
       "providerIds": [
         "amazon-bedrock"
@@ -862,7 +1048,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/amazon-bedrock-provider",
-        "exactNpmSpec": "@openclaw/amazon-bedrock-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/amazon-bedrock-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.5.12-beta.1"
       }
@@ -870,7 +1056,7 @@
     "amazon-bedrock-mantle": {
       "kind": "provider",
       "package": "@openclaw/amazon-bedrock-mantle-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "amazon-bedrock-mantle",
       "providerIds": [
         "amazon-bedrock-mantle"
@@ -879,7 +1065,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/amazon-bedrock-mantle-provider",
-        "exactNpmSpec": "@openclaw/amazon-bedrock-mantle-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/amazon-bedrock-mantle-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.5.12-beta.1"
       }
@@ -887,7 +1073,7 @@
     "anthropic-vertex": {
       "kind": "provider",
       "package": "@openclaw/anthropic-vertex-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "anthropic-vertex",
       "providerIds": [
         "anthropic-vertex"
@@ -896,7 +1082,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/anthropic-vertex-provider",
-        "exactNpmSpec": "@openclaw/anthropic-vertex-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/anthropic-vertex-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.5.12-beta.1"
       }
@@ -904,7 +1090,7 @@
     "arcee": {
       "kind": "provider",
       "package": "@openclaw/arcee-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "arcee",
       "providerIds": [
         "arcee"
@@ -913,15 +1099,57 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/arcee-provider",
-        "exactNpmSpec": "@openclaw/arcee-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/arcee-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
+      }
+    },
+    "baseten": {
+      "kind": "provider",
+      "package": "@openclaw/baseten-provider",
+      "version": "2026.9.4",
+      "pluginId": "baseten",
+      "providerIds": [
+        "baseten"
+      ],
+      "description": "OpenClaw Baseten provider plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/baseten-provider",
+        "exactNpmSpec": "@openclaw/baseten-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
+      }
+    },
+    "byteplus": {
+      "kind": "provider",
+      "package": "@openclaw/byteplus-provider",
+      "version": "2026.9.4",
+      "pluginId": "byteplus",
+      "providerIds": [
+        "byteplus"
+      ],
+      "providerAliases": [
+        "byteplus-plan"
+      ],
+      "contracts": {
+        "videoGenerationProviders": [
+          "byteplus"
+        ]
+      },
+      "description": "OpenClaw BytePlus provider plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/byteplus-provider",
+        "exactNpmSpec": "@openclaw/byteplus-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
       }
     },
     "cerebras": {
       "kind": "provider",
       "package": "@openclaw/cerebras-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "cerebras",
       "providerIds": [
         "cerebras"
@@ -930,7 +1158,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/cerebras-provider",
-        "exactNpmSpec": "@openclaw/cerebras-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/cerebras-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -938,7 +1166,7 @@
     "chutes": {
       "kind": "provider",
       "package": "@openclaw/chutes-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "chutes",
       "providerIds": [
         "chutes"
@@ -947,7 +1175,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/chutes-provider",
-        "exactNpmSpec": "@openclaw/chutes-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/chutes-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -955,7 +1183,7 @@
     "cohere": {
       "kind": "provider",
       "package": "@openclaw/cohere-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "cohere",
       "providerIds": [
         "cohere"
@@ -964,7 +1192,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/cohere-provider",
-        "exactNpmSpec": "@openclaw/cohere-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/cohere-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -972,7 +1200,7 @@
     "cloudflare-ai-gateway": {
       "kind": "provider",
       "package": "@openclaw/cloudflare-ai-gateway-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "cloudflare-ai-gateway",
       "providerIds": [
         "cloudflare-ai-gateway"
@@ -981,37 +1209,43 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/cloudflare-ai-gateway-provider",
-        "exactNpmSpec": "@openclaw/cloudflare-ai-gateway-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/cloudflare-ai-gateway-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
     },
-    "codex": {
+    "comfy": {
       "kind": "provider",
-      "package": "@openclaw/codex",
-      "version": "2026.7.1",
-      "pluginId": "codex",
+      "package": "@openclaw/comfy-provider",
+      "version": "2026.9.4",
+      "pluginId": "comfy",
       "providerIds": [
-        "codex"
+        "comfy"
       ],
       "contracts": {
-        "migrationProviders": [
-          "codex"
+        "imageGenerationProviders": [
+          "comfy"
+        ],
+        "musicGenerationProviders": [
+          "comfy"
+        ],
+        "videoGenerationProviders": [
+          "comfy"
         ]
       },
-      "description": "OpenClaw Codex harness and model provider plugin",
+      "description": "OpenClaw ComfyUI provider plugin.",
       "source": "official",
       "install": {
-        "npmSpec": "@openclaw/codex",
-        "exactNpmSpec": "@openclaw/codex@2026.7.1",
+        "npmSpec": "@openclaw/comfy-provider",
+        "exactNpmSpec": "@openclaw/comfy-provider@2026.9.4",
         "defaultChoice": "npm",
-        "minHostVersion": ">=2026.5.1-beta.1"
+        "minHostVersion": ">=2026.7.2"
       }
     },
     "deepinfra": {
       "kind": "provider",
       "package": "@openclaw/deepinfra-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "deepinfra",
       "providerIds": [
         "deepinfra"
@@ -1020,7 +1254,7 @@
         "mediaUnderstandingProviders": [
           "deepinfra"
         ],
-        "memoryEmbeddingProviders": [
+        "embeddingProviders": [
           "deepinfra"
         ],
         "imageGenerationProviders": [
@@ -1037,7 +1271,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/deepinfra-provider",
-        "exactNpmSpec": "@openclaw/deepinfra-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/deepinfra-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -1045,7 +1279,7 @@
     "deepseek": {
       "kind": "provider",
       "package": "@openclaw/deepseek-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "deepseek",
       "providerIds": [
         "deepseek"
@@ -1054,7 +1288,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/deepseek-provider",
-        "exactNpmSpec": "@openclaw/deepseek-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/deepseek-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -1062,7 +1296,7 @@
     "featherless": {
       "kind": "provider",
       "package": "@openclaw/featherless-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "featherless",
       "providerIds": [
         "featherless"
@@ -1071,7 +1305,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/featherless-provider",
-        "exactNpmSpec": "@openclaw/featherless-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/featherless-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.11"
       }
@@ -1079,7 +1313,7 @@
     "gmi": {
       "kind": "provider",
       "package": "@openclaw/gmi-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "gmi",
       "providerIds": [
         "gmi"
@@ -1092,7 +1326,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/gmi-provider",
-        "exactNpmSpec": "@openclaw/gmi-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/gmi-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -1100,7 +1334,7 @@
     "longcat": {
       "kind": "provider",
       "package": "@openclaw/longcat-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "longcat",
       "providerIds": [
         "longcat"
@@ -1112,7 +1346,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/longcat-provider",
-        "exactNpmSpec": "@openclaw/longcat-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/longcat-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -1120,7 +1354,7 @@
     "meta": {
       "kind": "provider",
       "package": "@openclaw/meta-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "meta",
       "providerIds": [
         "meta"
@@ -1129,15 +1363,86 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/meta-provider",
-        "exactNpmSpec": "@openclaw/meta-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/meta-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.11"
+      }
+    },
+    "mistral": {
+      "kind": "provider",
+      "package": "@openclaw/mistral-provider",
+      "version": "2026.9.4",
+      "pluginId": "mistral",
+      "providerIds": [
+        "mistral"
+      ],
+      "contracts": {
+        "embeddingProviders": [
+          "mistral"
+        ],
+        "mediaUnderstandingProviders": [
+          "mistral"
+        ],
+        "realtimeTranscriptionProviders": [
+          "mistral"
+        ]
+      },
+      "description": "OpenClaw Mistral provider plugin",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/mistral-provider",
+        "exactNpmSpec": "@openclaw/mistral-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
+      }
+    },
+    "novita": {
+      "kind": "provider",
+      "package": "@openclaw/novita-provider",
+      "version": "2026.9.4",
+      "pluginId": "novita",
+      "providerIds": [
+        "novita"
+      ],
+      "providerAliases": [
+        "novita-ai",
+        "novitaai"
+      ],
+      "description": "OpenClaw NovitaAI provider plugin",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/novita-provider",
+        "exactNpmSpec": "@openclaw/novita-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
+      }
+    },
+    "opencode": {
+      "kind": "provider",
+      "package": "@openclaw/opencode-provider",
+      "version": "2026.9.4",
+      "pluginId": "opencode",
+      "providerIds": [
+        "opencode"
+      ],
+      "contracts": {
+        "mediaUnderstandingProviders": [
+          "opencode"
+        ]
+      },
+      "description": "OpenClaw OpenCode Zen provider plugin",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/opencode-provider",
+        "exactNpmSpec": "@openclaw/opencode-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
       }
     },
     "groq": {
       "kind": "provider",
       "package": "@openclaw/groq-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "groq",
       "providerIds": [
         "groq"
@@ -1151,7 +1456,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/groq-provider",
-        "exactNpmSpec": "@openclaw/groq-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/groq-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -1159,7 +1464,7 @@
     "kilocode": {
       "kind": "provider",
       "package": "@openclaw/kilocode-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "kilocode",
       "providerIds": [
         "kilocode"
@@ -1168,7 +1473,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/kilocode-provider",
-        "exactNpmSpec": "@openclaw/kilocode-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/kilocode-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -1176,7 +1481,7 @@
     "kimi": {
       "kind": "provider",
       "package": "@openclaw/kimi-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "kimi",
       "providerIds": [
         "kimi"
@@ -1188,15 +1493,54 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/kimi-provider",
-        "exactNpmSpec": "@openclaw/kimi-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/kimi-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
+      }
+    },
+    "opencode-go": {
+      "kind": "provider",
+      "package": "@openclaw/opencode-go-provider",
+      "version": "2026.9.4",
+      "pluginId": "opencode-go",
+      "providerIds": [
+        "opencode-go"
+      ],
+      "contracts": {
+        "mediaUnderstandingProviders": [
+          "opencode-go"
+        ]
+      },
+      "description": "OpenClaw OpenCode Go provider plugin",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/opencode-go-provider",
+        "exactNpmSpec": "@openclaw/opencode-go-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
+      }
+    },
+    "pixverse": {
+      "kind": "provider",
+      "package": "@openclaw/pixverse-provider",
+      "version": "2026.9.4",
+      "pluginId": "pixverse",
+      "providerIds": [
+        "pixverse"
+      ],
+      "description": "OpenClaw PixVerse video provider plugin",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/pixverse-provider",
+        "exactNpmSpec": "@openclaw/pixverse-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.5.26"
       }
     },
     "qianfan": {
       "kind": "provider",
       "package": "@openclaw/qianfan-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "qianfan",
       "providerIds": [
         "qianfan"
@@ -1205,7 +1549,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/qianfan-provider",
-        "exactNpmSpec": "@openclaw/qianfan-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/qianfan-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -1213,18 +1557,17 @@
     "qwen": {
       "kind": "provider",
       "package": "@openclaw/qwen-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "qwen",
       "providerIds": [
         "qwen",
-        "qwen-oauth"
+        "qwen-token-plan",
+        "bailian-token-plan"
       ],
       "providerAliases": [
         "qwencloud",
         "modelstudio",
-        "dashscope",
-        "qwen-portal",
-        "qwen-cli"
+        "dashscope"
       ],
       "contracts": {
         "mediaUnderstandingProviders": [
@@ -1238,7 +1581,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/qwen-provider",
-        "exactNpmSpec": "@openclaw/qwen-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/qwen-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.8"
       }
@@ -1246,7 +1589,7 @@
     "fireworks": {
       "kind": "provider",
       "package": "@openclaw/fireworks-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "fireworks",
       "providerIds": [
         "fireworks"
@@ -1258,7 +1601,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/fireworks-provider",
-        "exactNpmSpec": "@openclaw/fireworks-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/fireworks-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
       }
@@ -1266,7 +1609,7 @@
     "moonshot": {
       "kind": "provider",
       "package": "@openclaw/moonshot-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "moonshot",
       "providerIds": [
         "moonshot"
@@ -1294,7 +1637,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/moonshot-provider",
-        "exactNpmSpec": "@openclaw/moonshot-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/moonshot-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
       }
@@ -1302,7 +1645,7 @@
     "tencent": {
       "kind": "provider",
       "package": "@openclaw/tencent-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "tencent",
       "providerIds": [
         "tencent-tokenhub",
@@ -1312,7 +1655,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/tencent-provider",
-        "exactNpmSpec": "@openclaw/tencent-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/tencent-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
       }
@@ -1320,7 +1663,7 @@
     "venice": {
       "kind": "provider",
       "package": "@openclaw/venice-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "venice",
       "providerIds": [
         "venice"
@@ -1329,7 +1672,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/venice-provider",
-        "exactNpmSpec": "@openclaw/venice-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/venice-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
       }
@@ -1337,7 +1680,7 @@
     "vercel-ai-gateway": {
       "kind": "provider",
       "package": "@openclaw/vercel-ai-gateway-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "vercel-ai-gateway",
       "providerIds": [
         "vercel-ai-gateway"
@@ -1346,15 +1689,70 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/vercel-ai-gateway-provider",
-        "exactNpmSpec": "@openclaw/vercel-ai-gateway-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/vercel-ai-gateway-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
+      }
+    },
+    "vydra": {
+      "kind": "provider",
+      "package": "@openclaw/vydra-provider",
+      "version": "2026.9.4",
+      "pluginId": "vydra",
+      "providerIds": [
+        "vydra"
+      ],
+      "contracts": {
+        "speechProviders": [
+          "vydra"
+        ],
+        "imageGenerationProviders": [
+          "vydra"
+        ],
+        "videoGenerationProviders": [
+          "vydra"
+        ]
+      },
+      "description": "OpenClaw Vydra media provider plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/vydra-provider",
+        "exactNpmSpec": "@openclaw/vydra-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
+      }
+    },
+    "xiaomi": {
+      "kind": "provider",
+      "package": "@openclaw/xiaomi-provider",
+      "version": "2026.9.4",
+      "pluginId": "xiaomi",
+      "providerIds": [
+        "xiaomi",
+        "xiaomi-token-plan"
+      ],
+      "contracts": {
+        "speechProviders": [
+          "xiaomi"
+        ],
+        "usageProviders": [
+          "xiaomi",
+          "xiaomi-token-plan"
+        ]
+      },
+      "description": "OpenClaw Xiaomi provider plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/xiaomi-provider",
+        "exactNpmSpec": "@openclaw/xiaomi-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
       }
     },
     "zai": {
       "kind": "provider",
       "package": "@openclaw/zai-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "zai",
       "providerIds": [
         "zai"
@@ -1372,15 +1770,80 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/zai-provider",
-        "exactNpmSpec": "@openclaw/zai-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/zai-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
+      }
+    },
+    "synthetic": {
+      "kind": "provider",
+      "package": "@openclaw/synthetic-provider",
+      "version": "2026.9.4",
+      "pluginId": "synthetic",
+      "providerIds": [
+        "synthetic"
+      ],
+      "description": "OpenClaw Synthetic provider plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/synthetic-provider",
+        "exactNpmSpec": "@openclaw/synthetic-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
+      }
+    },
+    "voyage": {
+      "kind": "provider",
+      "package": "@openclaw/voyage-provider",
+      "version": "2026.9.4",
+      "pluginId": "voyage",
+      "providerIds": [
+        "voyage"
+      ],
+      "contracts": {
+        "embeddingProviders": [
+          "voyage"
+        ]
+      },
+      "description": "OpenClaw Voyage embedding provider plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/voyage-provider",
+        "exactNpmSpec": "@openclaw/voyage-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
+      }
+    },
+    "volcengine": {
+      "kind": "provider",
+      "package": "@openclaw/volcengine-provider",
+      "version": "2026.9.4",
+      "pluginId": "volcengine",
+      "providerIds": [
+        "volcengine",
+        "volcengine-plan"
+      ],
+      "providerAliases": [
+        "volcengine-plan"
+      ],
+      "contracts": {
+        "speechProviders": [
+          "volcengine"
+        ]
+      },
+      "description": "OpenClaw Volcengine provider plugin.",
+      "source": "official",
+      "install": {
+        "npmSpec": "@openclaw/volcengine-provider",
+        "exactNpmSpec": "@openclaw/volcengine-provider@2026.9.4",
+        "defaultChoice": "npm",
+        "minHostVersion": ">=2026.7.2"
       }
     },
     "stepfun": {
       "kind": "provider",
       "package": "@openclaw/stepfun-provider",
-      "version": "2026.7.1",
+      "version": "2026.9.4",
       "pluginId": "stepfun",
       "providerIds": [
         "stepfun",
@@ -1390,7 +1853,7 @@
       "source": "official",
       "install": {
         "npmSpec": "@openclaw/stepfun-provider",
-        "exactNpmSpec": "@openclaw/stepfun-provider@2026.7.1",
+        "exactNpmSpec": "@openclaw/stepfun-provider@2026.9.4",
         "defaultChoice": "npm",
         "minHostVersion": ">=2026.6.9"
       }

@@ -213,7 +213,7 @@ describe("openclaw plugin compatibility manifest", () => {
       "plugin",
       "provider",
     ]);
-    expect(Object.keys(manifest.managedPlugins).length).toBe(76);
+    expect(Object.keys(manifest.managedPlugins).length).toBe(96);
     expect(manifest.managedPlugins.discord).toMatchObject({
       kind: "channel",
       package: "@openclaw/discord",
@@ -231,10 +231,10 @@ describe("openclaw plugin compatibility manifest", () => {
       version: packageJson.dependencies.openclaw,
     });
     expect(manifest.managedPlugins.codex).toMatchObject({
-      kind: "provider",
+      kind: "plugin",
       package: "@openclaw/codex",
       version: packageJson.dependencies.openclaw,
-      providerIds: ["codex"],
+      contracts: { migrationProviders: ["codex"] },
     });
     expect(manifest.managedPlugins.slack).toMatchObject({
       kind: "channel",
@@ -248,7 +248,7 @@ describe("openclaw plugin compatibility manifest", () => {
       version: packageJson.dependencies.openclaw,
       channelId: "matrix",
       install: expect.objectContaining({
-        defaultChoice: "clawhub",
+        defaultChoice: "npm",
       }),
     });
     expect(manifest.managedPlugins["amazon-bedrock"]).toMatchObject({
@@ -274,10 +274,10 @@ describe("openclaw plugin compatibility manifest", () => {
       kind: "plugin",
       package: "@openclaw/firecrawl-plugin",
       version: packageJson.dependencies.openclaw,
-      webSearchProviderIds: ["firecrawl"],
+      webSearchProviderIds: ["firecrawl", "firecrawl-free"],
       contracts: {
         webFetchProviders: ["firecrawl"],
-        webSearchProviders: ["firecrawl"],
+        webSearchProviders: ["firecrawl", "firecrawl-free"],
         tools: ["firecrawl_search", "firecrawl_scrape"],
       },
     });

@@ -90,9 +90,12 @@ describe("managed openclaw CLI env under Agent Vault", () => {
         "http://av_test_token_1234567890:default@127.0.0.1:14322/",
       );
       expect(env.NODE_EXTRA_CA_CERTS).toBe(path.join(vaultDir, "mitm-ca.pem"));
-      // The explicit OpenClaw home overrides must still win over spread envs.
-      expect(env.HOME).toBe(rootDir);
+      // OpenClaw state is explicit without replacing the service user's home.
+      expect(env.HOME).toBe(process.env.HOME);
       expect(env.OPENCLAW_HOME).toBe(rootDir);
+      expect(env.CODEX_HOME).toBe(
+        process.env.CODEX_HOME || path.join(process.env.HOME, ".codex"),
+      );
     }
   });
 });

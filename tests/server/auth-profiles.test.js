@@ -10,6 +10,25 @@ const readJson = (relPath) =>
 
 const readAuthStore = () => ap.loadAuthStore();
 
+const createOpenclawManagedAgentAuthDatabase = (databasePath) => {
+  const { DatabaseSync } = require("node:sqlite");
+  fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+  const db = new DatabaseSync(databasePath);
+  db.exec(`
+    CREATE TABLE auth_profile_store (
+      store_key TEXT NOT NULL PRIMARY KEY,
+      store_json TEXT NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE TABLE auth_profile_state (
+      state_key TEXT NOT NULL PRIMARY KEY,
+      state_json TEXT NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+  `);
+  db.close();
+};
+
 beforeAll(() => {
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ac-auth-test-"));
   process.env.ALPHACLAW_ROOT_DIR = tmpDir;
@@ -55,6 +74,10 @@ beforeEach(() => {
     recursive: true,
     force: true,
   });
+  fs.rmSync(path.join(openclawDir, "state"), {
+    recursive: true,
+    force: true,
+  });
   fs.writeFileSync(
     path.join(openclawDir, "openclaw.json"),
     JSON.stringify(
@@ -88,6 +111,7 @@ beforeEach(() => {
   );
   if (fs.existsSync(storeDatabasePath))
     fs.rmSync(storeDatabasePath, { force: true });
+  createOpenclawManagedAgentAuthDatabase(storeDatabasePath);
   const pendingStorePath = path.join(
     tmpDir,
     "pending-auth-profiles",
@@ -103,6 +127,116 @@ afterAll(() => {
 });
 
 describe("server/auth-profiles", () => {
+  it("follows OpenClaw's shared-store ownership marker without creating schema", () => {
+    const { DatabaseSync } = require("node:sqlite");
+    const stateDatabasePath = path.join(
+      tmpDir,
+      ".openclaw",
+      "state",
+      "openclaw.sqlite",
+    );
+    fs.mkdirSync(path.dirname(stateDatabasePath), { recursive: true });
+    const db = new DatabaseSync(stateDatabasePath);
+    db.exec(`
+      CREATE TABLE config_machine_state (
+        state_key TEXT NOT NULL PRIMARY KEY,
+        value_json TEXT NOT NULL,
+        updated_at_ms INTEGER NOT NULL
+      );
+    `);
+    const insert = db.prepare(
+      "INSERT INTO config_machine_state (state_key, value_json, updated_at_ms) VALUES (?, ?, ?)",
+    );
+    insert.run("auth.sharedStore", JSON.stringify({ location: "state-db" }), 1);
+    insert.run(
+      "authProfiles.store",
+      JSON.stringify({ version: 1, profiles: {} }),
+      1,
+    );
+    db.close();
+
+    ap.upsertProfile("anthropic:default", {
+      type: "api_key",
+      provider: "anthropic",
+      key: "sk-ant-test-key",
+    });
+
+    const verify = new DatabaseSync(stateDatabasePath, { readOnly: true });
+    const row = verify
+      .prepare(
+        "SELECT value_json FROM config_machine_state WHERE state_key = 'authProfiles.store'",
+      )
+      .get();
+    const tableNames = verify
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
+      .all()
+      .map((entry) => entry.name);
+    verify.close();
+    expect(JSON.parse(row.value_json).profiles["anthropic:default"]).toEqual({
+      type: "api_key",
+      provider: "anthropic",
+      key: "sk-ant-test-key",
+    });
+    expect(tableNames).toEqual(["config_machine_state"]);
+  });
+
+  it("physically scrubs replaced OAuth material from the shared state database", () => {
+    const { DatabaseSync } = require("node:sqlite");
+    const stateDatabasePath = path.join(
+      tmpDir,
+      ".openclaw",
+      "state",
+      "openclaw.sqlite",
+    );
+    fs.mkdirSync(path.dirname(stateDatabasePath), { recursive: true });
+    const db = new DatabaseSync(stateDatabasePath);
+    db.exec(`
+      CREATE TABLE config_machine_state (
+        state_key TEXT NOT NULL PRIMARY KEY,
+        value_json TEXT NOT NULL,
+        updated_at_ms INTEGER NOT NULL
+      );
+    `);
+    const insert = db.prepare(
+      "INSERT INTO config_machine_state (state_key, value_json, updated_at_ms) VALUES (?, ?, ?)",
+    );
+    insert.run("auth.sharedStore", JSON.stringify({ location: "state-db" }), 1);
+    insert.run(
+      "authProfiles.store",
+      JSON.stringify({
+        version: 1,
+        profiles: {
+          "openai:codex-cli": {
+            type: "oauth",
+            provider: "openai",
+            access: "legacy-shared-access",
+            refresh: "legacy-shared-refresh",
+            expires: 1,
+          },
+        },
+      }),
+      1,
+    );
+    db.close();
+
+    ap.upsertCodexProfile({
+      access: "broker-access",
+      refresh: "alphaclaw-oauth-broker:v1:openclaw-codex:openai",
+      expires: 9999999999999,
+    });
+
+    const stateFiles = fs
+      .readdirSync(path.dirname(stateDatabasePath))
+      .filter((name) => name.startsWith(path.basename(stateDatabasePath)))
+      .map((name) => fs.readFileSync(path.join(path.dirname(stateDatabasePath), name)))
+      .join("\n");
+    expect(stateFiles).not.toContain("legacy-shared-access");
+    expect(stateFiles).not.toContain("legacy-shared-refresh");
+    expect(
+      fs.existsSync(`${stateDatabasePath}.alphaclaw-oauth-sanitize-pending`),
+    ).toBe(false);
+  });
+
   it("upserts an api_key profile and syncs openclaw.json", () => {
     ap.upsertProfile("anthropic:default", {
       type: "api_key",
@@ -872,18 +1006,7 @@ describe("server/auth-profiles", () => {
     } finally {
       execSpy.mockRestore();
     }
-    expect(
-      fs.existsSync(
-        path.join(
-          tmpDir,
-          ".openclaw",
-          "agents",
-          "main",
-          "agent",
-          "openclaw-agent.sqlite",
-        ),
-      ),
-    ).toBe(false);
+    expect(readAuthStore().profiles).toEqual({});
   });
 
   it("retries physical sanitization after a busy WAL checkpoint", () => {
@@ -1111,6 +1234,7 @@ describe("server/auth-profiles", () => {
     );
 
     fs.unlinkSync(configPath);
+    fs.rmSync(finalStorePath, { force: true });
 
     ap.upsertCodexProfile({
       access: "jwt",
@@ -1137,6 +1261,7 @@ describe("server/auth-profiles", () => {
         2,
       ),
     );
+    createOpenclawManagedAgentAuthDatabase(finalStorePath);
 
     ap.syncConfigAuthReferencesForAgent();
 
