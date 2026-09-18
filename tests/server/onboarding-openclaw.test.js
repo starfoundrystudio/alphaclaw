@@ -370,7 +370,7 @@ describe("server/onboarding/openclaw", () => {
     expect(next.tools.web.search).toEqual({
       enabled: true,
     });
-    expect(next.plugins.bundledDiscovery).toBe("compat");
+    expect(next.plugins.bundledDiscovery).toBeUndefined();
     expect(next.plugins.allow).not.toContain("searxng");
     expect(next.plugins.entries.searxng).toBeUndefined();
   });

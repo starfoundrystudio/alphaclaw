@@ -10,6 +10,30 @@ const {
 } = require("../../lib/server/managed-defaults-config");
 
 describe("server/managed-defaults-config", () => {
+  it("strips config keys retired by OpenClaw 2026.9 on every reconcile", () => {
+    // G2 finding #1: Doctor migrates these keys away, but a stale writer put
+    // them back and every later OpenClaw CLI call refused the config.
+    const config = {
+      agents: {
+        defaults: {
+          memorySearch: { provider: "local", local: { contextSize: 2048 } },
+          model: { primary: "openai/gpt-5.6-sol" },
+        },
+      },
+      plugins: { bundledDiscovery: "compat", allow: ["memory-core"] },
+    };
+
+    const result = ensureManagedOpenclawDefaults(config);
+
+    expect(result.changed).toBe(true);
+    expect(result.config.agents.defaults.memorySearch).toBeUndefined();
+    expect(result.config.agents.defaults.model).toEqual({
+      primary: "openai/gpt-5.6-sol",
+    });
+    expect(result.config.plugins.bundledDiscovery).toBeUndefined();
+    expect(result.config.plugins.allow).toEqual(["memory-core"]);
+  });
+
   it("applies every managed default while preserving adjacent settings", () => {
     const config = {
       agents: {
