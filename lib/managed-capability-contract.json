@@ -1,0 +1,76 @@
+{
+  "contractId": "teamyou.managed-capabilities",
+  "schemaVersion": 1,
+  "revision": "2026-09-18.1",
+  "targetOpenClawVersion": "2026.9.4",
+  "surfaces": {
+    "managed": {
+      "id": "clawbridge",
+      "role": "supported-managed-interface"
+    },
+    "controlUi": {
+      "id": "openclaw-control-ui",
+      "role": "optional-advanced-access",
+      "mode": "managed-config-read-only",
+      "customerRequired": false,
+      "hostedClawbridgeSections": false,
+      "label": "Advanced — unmanaged changes"
+    }
+  },
+  "agentPolicy": {
+    "preferredExecution": "tools-and-cli",
+    "manualManagedSurface": "clawbridge",
+    "mayRequireControlUi": false,
+    "mayRecommendControlUi": false,
+    "unsupportedWorkflowBehavior": "explain-and-ask"
+  },
+  "managedConfig": {
+    "initialDefaults": {
+      "agents": {
+        "defaults": {
+          "maxConcurrent": 3
+        }
+      },
+      "plugins": {
+        "entries": {
+          "memory-core": {
+            "config": {
+              "dreaming": {
+                "enabled": false
+              }
+            }
+          }
+        }
+      },
+      "skills": {
+        "workshop": {
+          "autonomous": {
+            "mode": "propose"
+          }
+        }
+      },
+      "tools": {
+        "swarm": false,
+        "deny": [
+          "secrets"
+        ]
+      },
+      "gateway": {
+        "cliAgents": {
+          "enabled": false
+        },
+        "terminal": {
+          "enabled": false
+        }
+      },
+      "telemetry": {
+        "enabled": false
+      },
+      "secrets": {
+        "egressProxy": {
+          "enabled": false
+        }
+      }
+    }
+  }
+}

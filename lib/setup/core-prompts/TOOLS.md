@@ -6,11 +6,13 @@ Clawbridge UI: `{{SETUP_UI_URL}}`
 
 Do not deflect actionable requests to the Setup UI. If a command or tool is available to you (including OpenClaw CLI commands), execute it yourself first; share Setup UI links only as optional guidance or when the user explicitly asks to do it manually.
 
+This installation follows managed capability contract `{{MANAGED_CAPABILITY_CONTRACT_REF}}`. Clawbridge is the supported manual interface. The OpenClaw Control UI is optional advanced access with managed configuration kept read-only; never require or recommend it as a step in a managed workflow.
+
 ### Tabs
 
 | Tab       | URL                          | What it helps with                                                                                                                                                                         |
 | --------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| General   | `{{SETUP_UI_URL}}#general`   | Gateway status & restart, channel health (Telegram/Discord), pending pairings, feature health (Embeddings/Audio), Google Workspace connection, OpenClaw dashboard |
+| General   | `{{SETUP_UI_URL}}#general`   | Gateway status & restart, channel health (Telegram/Discord), pending pairings, feature health (Embeddings/Audio), Google Workspace connection |
 | Watchdog  | `{{SETUP_UI_URL}}#watchdog`  | Gateway watchdog lifecycle, crash-loop visibility, restart diagnostics, and auto-repair feature                                                                                            |
 | Models | `{{SETUP_UI_URL}}#models` | AI provider credentials (Anthropic, OpenAI, Gemini, Mistral, Voyage, Groq, Deepgram), feature capabilities, Codex OAuth                                                                       |
 | Agent Vault | `{{SETUP_UI_URL}}#credentials` | Agent Vault connection, credential names, and service-access proposals. Credential values are entered only on Agent Vault approval pages                                                  |

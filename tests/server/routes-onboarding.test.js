@@ -1146,6 +1146,9 @@ describe("server/routes/onboarding", () => {
     deps.fs.readFileSync.mockImplementation((p) => {
       if (p === "/tmp/openclaw/openclaw.json") return "{}";
       if (p === path.join(kSetupDir, "core-prompts", "TOOLS.md")) return "Setup: {{SETUP_UI_URL}}";
+      if (p === path.join(kSetupDir, "core-prompts", "AGENTS.md")) {
+        return "Contract: {{MANAGED_CAPABILITY_CONTRACT_REF}}";
+      }
       return "{}";
     });
     const app = createApp(deps);
@@ -1160,9 +1163,9 @@ describe("server/routes/onboarding", () => {
       "sk-test-123456789",
     );
     expect(deps.authProfiles.syncConfigAuthReferencesForAgent).toHaveBeenCalledTimes(1);
-    expect(deps.fs.copyFileSync).toHaveBeenCalledWith(
-      path.join(kSetupDir, "core-prompts", "AGENTS.md"),
+    expect(deps.fs.writeFileSync).toHaveBeenCalledWith(
       "/tmp/openclaw/workspace/hooks/bootstrap/AGENTS.md",
+      "Contract: teamyou.managed-capabilities/v1@2026-09-18.1",
     );
     const toolsWriteCall = deps.fs.writeFileSync.mock.calls
       .filter(

@@ -36,6 +36,11 @@ const getWrittenToolsContent = (written) => {
   return entry ? entry[1] : "";
 };
 
+const getWrittenAgentsContent = (written) => {
+  const entry = [...written.entries()].find(([p]) => p.endsWith("AGENTS.md"));
+  return entry ? entry[1] : "";
+};
+
 describe("server/onboarding/workspace", () => {
   it("leads the injected AGENTS.md with the mandatory BOOTSTRAP.md first-run gate", () => {
     // The CLI-backend agent runtimes (claude-cli/codex) never receive
@@ -64,6 +69,7 @@ describe("server/onboarding/workspace", () => {
     expect(agentsPrompt).toContain(
       "If the tool returns `setup_required`, show its exact `setup_url`",
     );
+    expect(agentsPrompt).toContain("{{MANAGED_CAPABILITY_CONTRACT_REF}}");
   });
 
   it("describes the managed native host and its actual security boundaries", () => {
@@ -148,6 +154,23 @@ describe("server/onboarding/workspace", () => {
       expect(tools).not.toContain("#providers");
       expect(tools).not.toContain("| Providers |");
       expect(tools).toContain("outside managed OpenClaw state");
+      expect(tools).toContain(
+        "teamyou.managed-capabilities/v1@2026-09-18.1",
+      );
+      expect(tools).toContain("Clawbridge is the supported manual interface");
+      expect(tools).not.toContain("OpenClaw dashboard |");
+
+      const agents = getWrittenAgentsContent(written);
+      expect(agents).toContain(
+        "teamyou.managed-capabilities/v1@2026-09-18.1",
+      );
+      expect(agents).toContain(
+        "The OpenClaw Control UI is optional advanced access with managed configuration kept read-only",
+      );
+      expect(agents).toContain(
+        "Never tell the user to open the OpenClaw Control UI",
+      );
+      expect(agents).not.toContain("{{MANAGED_CAPABILITY_CONTRACT_REF}}");
     });
 
     it("renders Composio guidance and suppresses gog content when provider is composio", () => {

@@ -30,6 +30,18 @@ The security gateway is a separate trust boundary. Durable Agent Vault credentia
 
 Workload egress is enforced off-host by the provider firewall and routed through the security gateway. Do not disable or work around the managed routes, proxy, tunnel, or firewall controls. Changes to those controls are risky system changes and require the user's explicit approval; if they block a task, report the failure.
 
+### Managed capability contract
+
+This installation follows `{{MANAGED_CAPABILITY_CONTRACT_REF}}`.
+
+Clawbridge is the supported managed interface. The OpenClaw Control UI is optional advanced access with managed configuration kept read-only, and it is never a required step in a managed workflow.
+
+- Use the tools and CLI available to you before asking the user to perform a manual configuration step.
+- When user action is genuinely required, direct the user to the matching Clawbridge screen described in `TOOLS.md`.
+- Never tell the user to open the OpenClaw Control UI, `/openclaw`, or an upstream-only dashboard to finish a task. Do not make a plan depend on a Control-UI-only feature.
+- Do not describe disabled terminal, CLI-agent, swarm, secrets, secret-egress-proxy, or memory-dreaming capabilities as available. Skill Workshop self-learning is proposal-only, not autonomous. Explain that these capabilities are managed by TeamYou when relevant.
+- If neither your tools nor Clawbridge support a requested operation, say that the managed workflow is not currently available and ask how the user wants to proceed. Do not route around the boundary through raw config edits or the Control UI.
+
 ### Service access: Agent Vault is mandatory
 
 Credential values do not belong in chat, workspace files, or shell history.
