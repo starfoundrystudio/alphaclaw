@@ -1017,7 +1017,9 @@ describe("server/agents/service", () => {
                 botToken: "${TELEGRAM_BOT_TOKEN}",
                 dmPolicy: "pairing",
                 groupPolicy: "open",
-                groups: { "*": { requireMention: true } },
+                groups: {
+                  "*": { requireMention: true },
+                },
               },
             },
           },
@@ -1172,7 +1174,9 @@ describe("server/agents/service", () => {
                 botToken: "${TELEGRAM_BOT_TOKEN_ALERTS}",
                 dmPolicy: "pairing",
                 groupPolicy: "open",
-                groups: { "*": { requireMention: true } },
+                groups: {
+                  "*": { requireMention: true },
+                },
               },
             },
           },
@@ -3221,5 +3225,156 @@ describe("server/agents/service vault-brokered channels", () => {
         token: "123456789:new-raw-token-value-abc",
       }),
     ).toThrow("Rotate the credential from the Agent Vault console");
+  });
+
+  it("persists model fallbacks, speed, and an explicit agent skill allowlist", async () => {
+    const fsMock = buildFsMock({
+      initialConfig: {
+        agents: {
+          entries: { main: { default: true, model: "openai/gpt-5" } },
+        },
+      },
+    });
+    const service = createAgentsService({
+      fs: fsMock,
+      OPENCLAW_DIR: "/tmp/openclaw",
+    });
+
+    await service.updateAgent("main", {
+      model: {
+        primary: "openai/gpt-5.2",
+        fallbacks: ["anthropic/claude-sonnet-4-6", "openai/gpt-5.2"],
+      },
+      fastModeDefault: "auto",
+      skills: ["github", "github", " slack "],
+    });
+
+    expect(fsMock.readConfig().agents.entries.main).toMatchObject({
+      model: {
+        primary: "openai/gpt-5.2",
+        fallbacks: ["anthropic/claude-sonnet-4-6"],
+      },
+      fastModeDefault: "auto",
+      skills: ["github", "slack"],
+    });
+  });
+
+  it("loads the live OpenClaw skill catalog for an agent", async () => {
+    const clawCmd = vi.fn(async () => ({
+      ok: true,
+      stdout: JSON.stringify({
+        workspaceDir: "/tmp/openclaw/workspace",
+        skills: [{ name: "github", eligible: true }],
+      }),
+      stderr: "",
+    }));
+    const service = createAgentsService({
+      fs: buildFsMock({
+        initialConfig: { agents: { entries: { main: { default: true } } } },
+      }),
+      OPENCLAW_DIR: "/tmp/openclaw",
+      clawCmd,
+    });
+
+    await expect(service.getAgentSkills("main")).resolves.toMatchObject({
+      skills: [{ name: "github", eligible: true }],
+    });
+    expect(clawCmd).toHaveBeenCalledWith(
+      "skills list --agent 'main' --json",
+      { quiet: true, timeoutMs: 30000 },
+    );
+  });
+
+  it("updates channel policy and scoped room routing without a restart", () => {
+    const fsMock = buildFsMock({
+      initialConfig: {
+        agents: {
+          entries: {
+            main: { default: true },
+            ops: { default: false },
+          },
+        },
+        channels: {
+          telegram: {
+            accounts: {
+              default: {
+                name: "Telegram",
+                botToken: "${TELEGRAM_BOT_TOKEN}",
+                dmPolicy: "pairing",
+                groupPolicy: "open",
+                groups: {
+                  "*": { requireMention: true },
+                  "-10001": { systemPrompt: "Keep this provider field" },
+                },
+              },
+            },
+          },
+        },
+        bindings: [
+          {
+            agentId: "main",
+            match: { channel: "telegram", accountId: "default" },
+          },
+        ],
+      },
+    });
+    const service = createAgentsService({
+      fs: fsMock,
+      OPENCLAW_DIR: "/tmp/openclaw",
+    });
+
+    service.updateChannelAccountPolicy({
+      provider: "telegram",
+      accountId: "default",
+      policy: {
+        dmPolicy: "allowlist",
+        allowFrom: ["123"],
+        groupPolicy: "allowlist",
+        groupAllowFrom: ["456"],
+        requireMention: true,
+        rooms: [
+          {
+            id: "-10001",
+            enabled: true,
+            requireMention: false,
+            users: ["456"],
+            skills: ["github"],
+            routeAgentId: "ops",
+          },
+        ],
+      },
+    });
+
+    const config = fsMock.readConfig();
+    expect(config.channels.telegram.accounts.default).toMatchObject({
+      dmPolicy: "allowlist",
+      allowFrom: ["123"],
+      groupPolicy: "allowlist",
+      groupAllowFrom: ["456"],
+      groups: {
+        "*": { requireMention: true },
+        "-10001": {
+          systemPrompt: "Keep this provider field",
+          enabled: true,
+          requireMention: false,
+          allowFrom: ["456"],
+          skills: ["github"],
+        },
+      },
+    });
+    expect(config.bindings).toContainEqual({
+      agentId: "ops",
+      match: {
+        channel: "telegram",
+        accountId: "default",
+        peer: { kind: "group", id: "-10001" },
+      },
+    });
+    expect(
+      service.listConfiguredChannelAccounts({ includePolicy: true })[0]
+        .accounts[0].policy.rooms,
+    ).toContainEqual(
+      expect.objectContaining({ id: "-10001", routeAgentId: "ops" }),
+    );
   });
 });

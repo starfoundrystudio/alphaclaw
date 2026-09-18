@@ -43,6 +43,11 @@ const createAgentsServiceMock = () => ({
     },
     tokenUpdated: !!String(input?.token || "").trim(),
   })),
+  updateChannelAccountPolicy: vi.fn((input) => ({
+    channel: input.provider,
+    accountId: input.accountId || "default",
+    policy: input.policy,
+  })),
   getChannelAccountToken: vi.fn((input) => ({
     provider: input.provider,
     accountId: input.accountId || "default",
@@ -95,6 +100,10 @@ const createAgentsServiceMock = () => ({
     workspacePath: "/tmp/openclaw/workspace",
     exists: true,
     sizeBytes: 3072,
+  })),
+  getAgentSkills: vi.fn(async () => ({
+    workspaceDir: "/tmp/openclaw/workspace",
+    skills: [{ name: "github", eligible: true }],
   })),
   getBindingsForAgent: vi.fn(() => [
     { agentId: "main", match: { channel: "telegram", accountId: "default" } },
@@ -326,6 +335,31 @@ describe("server/routes/agents", () => {
     expect(response.body.restartRequired).toBe(false);
   });
 
+  it("updates channel access policy without requiring a restart", async () => {
+    const agentsService = createAgentsServiceMock();
+    const restartRequiredState = { markRequired: vi.fn() };
+    const app = createApp(agentsService, restartRequiredState);
+    const payload = {
+      provider: "telegram",
+      accountId: "default",
+      policy: {
+        dmPolicy: "allowlist",
+        allowFrom: ["123"],
+        groupPolicy: "allowlist",
+        rooms: [],
+      },
+    };
+
+    const response = await request(app)
+      .put("/api/channels/accounts/policy")
+      .send(payload);
+
+    expect(response.status).toBe(200);
+    expect(response.body.restartRequired).toBe(false);
+    expect(agentsService.updateChannelAccountPolicy).toHaveBeenCalledWith(payload);
+    expect(restartRequiredState.markRequired).not.toHaveBeenCalled();
+  });
+
   it("marks restart required when a channel token is updated", async () => {
     const agentsService = createAgentsServiceMock();
     const restartRequiredState = { markRequired: vi.fn() };
@@ -543,6 +577,17 @@ describe("server/routes/agents", () => {
     expect(response.body.ok).toBe(true);
     expect(response.body.sizeBytes).toBe(3072);
     expect(agentsService.getAgentWorkspaceSize).toHaveBeenCalledWith("main");
+  });
+
+  it("returns the live skill catalog for an agent", async () => {
+    const agentsService = createAgentsServiceMock();
+    const app = createApp(agentsService);
+
+    const response = await request(app).get("/api/agents/main/skills");
+
+    expect(response.status).toBe(200);
+    expect(response.body.skills).toEqual([{ name: "github", eligible: true }]);
+    expect(agentsService.getAgentSkills).toHaveBeenCalledWith("main");
   });
 
   it("updates an agent on PUT /api/agents/:id", async () => {
