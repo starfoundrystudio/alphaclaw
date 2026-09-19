@@ -24,12 +24,6 @@ const kBootstrapPath = path.join(
   "model-catalog-bootstrap.json",
 );
 const kPublicModelCatalogTimeoutMs = 20_000;
-// models.dev is the community catalog OpenClaw's own provider registry is
-// built from, so its model ids are the ids OpenClaw routes on
-// (`<provider>/<id>`). One fetch covers every provider that cannot enumerate
-// its models without a real API key.
-const kModelsDevCatalogEndpoint = "https://models.dev/api.json";
-const kModelsDevSource = "models.dev";
 
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8"));
 
@@ -225,45 +219,6 @@ const fetchPublicCatalogJson = async ({ provider, endpoint }) => {
   }
 };
 
-let modelsDevCatalogPromise = null;
-const fetchModelsDevCatalog = () => {
-  modelsDevCatalogPromise ||= fetchPublicCatalogJson({
-    provider: kModelsDevSource,
-    endpoint: kModelsDevCatalogEndpoint,
-  });
-  return modelsDevCatalogPromise;
-};
-
-// Text-in/text-out rows only: models.dev also lists speech, image and video
-// models (Whisper, Veo, Imagen …) that an agent cannot chat through.
-const isModelsDevLanguageModel = (rawModel) => {
-  const input = Array.isArray(rawModel?.modalities?.input) ? rawModel.modalities.input : [];
-  const output = Array.isArray(rawModel?.modalities?.output) ? rawModel.modalities.output : [];
-  return input.includes("text") && output.includes("text");
-};
-
-const listModelsDevProviderModels = async ({ provider, providerMeta }) => {
-  const publicCatalog = providerMeta.publicModelCatalog;
-  const providerId = normalizeString(publicCatalog.providerId) || provider;
-  const catalog = await fetchModelsDevCatalog();
-  const entry = catalog?.[providerId];
-  if (!entry || typeof entry !== "object") {
-    throw new Error(
-      `Public model catalog for ${provider}: models.dev has no provider "${providerId}"`,
-    );
-  }
-  return Object.entries(entry.models || {})
-    .filter(([, rawModel]) => isModelsDevLanguageModel(rawModel))
-    .map(([id, rawModel]) =>
-      normalizePublicCatalogModel({
-        provider,
-        rawModel: { id, name: rawModel?.name },
-        providerMeta,
-      }),
-    )
-    .filter(Boolean);
-};
-
 const listEndpointProviderModels = async ({ provider, providerMeta }) => {
   const publicCatalog = providerMeta.publicModelCatalog;
   const endpoint = normalizeString(publicCatalog.endpoint);
@@ -282,10 +237,7 @@ const fetchPublicProviderModels = async ({ provider, providerMeta }) => {
   const publicCatalog = providerMeta?.publicModelCatalog;
   if (!publicCatalog) return [];
   const minimumModelCount = Number(publicCatalog.minimumModelCount || 0);
-  const models =
-    normalizeString(publicCatalog.source) === kModelsDevSource
-      ? await listModelsDevProviderModels({ provider, providerMeta })
-      : await listEndpointProviderModels({ provider, providerMeta });
+  const models = await listEndpointProviderModels({ provider, providerMeta });
   if (models.length < minimumModelCount) {
     throw new Error(
       `Public model catalog for ${provider} returned ${models.length} models; expected at least ${minimumModelCount}`,
@@ -294,7 +246,16 @@ const fetchPublicProviderModels = async ({ provider, providerMeta }) => {
   return models;
 };
 
-const listProviderModels = ({ provider, providerMeta, env, openclawCliPath }) => {
+// One probe per flag: without --refresh the CLI lists the catalog bundled in
+// the pinned OpenClaw core extension or provider plugin for some providers
+// (moonshot, xai …), with --refresh it does so for others (google, openai)
+// and, for providers that enumerate key-free (kilocode, novita, venice), it
+// returns the live public list. The placeholder key never reaches a paid
+// endpoint successfully, so the union is the per-release, key-free
+// inventory this bootstrap should carry.
+const kProviderProbeVariants = [[], ["--refresh"]];
+
+const runProviderProbe = ({ provider, providerMeta, env, openclawCliPath, flags }) => {
   const probeEnv = { ...env };
   for (const envKey of uniqueStrings(providerMeta.envKeys || [])) {
     probeEnv[envKey] ||= "alphaclaw-model-catalog-probe";
@@ -302,15 +263,7 @@ const listProviderModels = ({ provider, providerMeta, env, openclawCliPath }) =>
   let output = "";
   try {
     output = runOpenclaw({
-      args: [
-        "models",
-        "list",
-        "--provider",
-        provider,
-        "--all",
-        "--refresh",
-        "--json",
-      ],
+      args: ["models", "list", "--provider", provider, "--all", ...flags, "--json"],
       env: probeEnv,
       openclawCliPath,
     });
@@ -325,24 +278,35 @@ const listProviderModels = ({ provider, providerMeta, env, openclawCliPath }) =>
   let payload;
   try {
     if (/^\s*No models found\.?\s*$/i.test(output)) {
-      return validateMinimumProbeModelCount([]);
+      payload = { models: [] };
+    } else {
+      const jsonStart = output.indexOf("{");
+      payload = JSON.parse(jsonStart >= 0 ? output.slice(jsonStart) : output);
     }
-    payload = JSON.parse(output);
   } catch (error) {
     throw new Error(
-      `Failed to parse OpenClaw model probe JSON for ${provider}: ${error.message}`,
+      `Failed to parse OpenClaw models for ${provider}: ${error.message}\n${output}`,
     );
   }
-  const models = (Array.isArray(payload.models) ? payload.models : [])
-    .map((rawModel) =>
-      normalizeProbeModel({
-        provider,
-        rawModel,
-        providerMeta,
-      }),
-    )
+  return (Array.isArray(payload?.models) ? payload.models : [])
+    .map((rawModel) => normalizeProbeModel({ provider, rawModel, providerMeta }))
     .filter(Boolean);
-  return models;
+};
+
+const listProviderModels = ({ provider, providerMeta, env, openclawCliPath }) => {
+  const byKey = new Map();
+  for (const flags of kProviderProbeVariants) {
+    for (const model of runProviderProbe({
+      provider,
+      providerMeta,
+      env,
+      openclawCliPath,
+      flags,
+    })) {
+      if (!byKey.has(model.key)) byKey.set(model.key, model);
+    }
+  }
+  return [...byKey.values()];
 };
 
 const mergeModel = ({ modelsByKey, model }) => {
@@ -402,19 +366,8 @@ const validateSupportSpec = ({ supportSpec, manifest }) => {
   const managedPlugins = manifest.managedPlugins || {};
   for (const [providerId, providerMeta] of Object.entries(supportSpec.providers || {})) {
     if (providerMeta.publicModelCatalog) {
-      const source = normalizeString(providerMeta.publicModelCatalog.source);
       const endpoint = normalizeString(providerMeta.publicModelCatalog.endpoint);
-      if (source === kModelsDevSource) {
-        if (endpoint) {
-          throw new Error(
-            `Provider ${providerId} declares both a models.dev source and an endpoint`,
-          );
-        }
-      } else if (source) {
-        throw new Error(
-          `Provider ${providerId} has an unknown public model catalog source: ${source}`,
-        );
-      } else if (!endpoint.startsWith("https://")) {
+      if (!endpoint.startsWith("https://")) {
         throw new Error(`Provider ${providerId} has an invalid public model catalog endpoint`);
       }
       const minimumModelCount = Number(

@@ -70,9 +70,9 @@ describe("generated model catalog bootstrap", () => {
     // Gateway lost its only row to the GPT-5.5 denylist. Providers that
     // genuinely cannot be enumerated key-free are excluded with a reason.
     const excluded = {
-      byteplus: "no public catalog; the BytePlus probe needs a real key",
-      "byteplus-plan": "no public catalog; the BytePlus probe needs a real key",
-      "volcengine-plan": "coding-plan alias of volcengine; the probe needs a real key",
+      // (none today; add "provider-id": "reason" when a provider ships no
+      // bundled catalog in the pinned OpenClaw release and nothing is pinned
+      // for it in explicitModels)
     };
     const missing = [];
     for (const [providerId, providerMeta] of Object.entries(supportSpec.providers)) {
@@ -89,25 +89,40 @@ describe("generated model catalog bootstrap", () => {
     expect(missing).toEqual([]);
   });
 
-  it("lists the major provider-api providers with current public catalogs", () => {
+  it("lists the major provider-api providers from the pinned OpenClaw catalogs", () => {
     const providerApi = catalog.accessModes["provider-api"].providers;
     const byId = new Map(providerApi.map((provider) => [provider.id, provider]));
-    for (const providerId of ["xai", "google", "groq", "minimax", "moonshot", "mistral"]) {
+    // These come from the catalog bundled in the pinned OpenClaw core
+    // extension or provider plugin (probe without a real key), never from a
+    // prior bootstrap or an external site.
+    for (const providerId of ["xai", "google", "groq", "minimax", "moonshot", "mistral", "deepseek"]) {
       const entry = byId.get(providerId);
       expect(entry, providerId).toBeDefined();
       expect(entry.models.length, providerId).toBeGreaterThan(0);
       expect(
-        entry.models.some((model) =>
-          String(model.source || "").includes("public-provider-catalog"),
+        entry.models.every(
+          (model) =>
+            model.key.startsWith(`${providerId}/`) &&
+            String(model.source || "").includes("openclaw-provider-probe"),
         ),
-        `${providerId} should carry public-provider-catalog rows`,
-      ).toBe(true);
-      expect(
-        entry.models.every((model) => model.key.startsWith(`${providerId}/`)),
-        providerId,
+        `${providerId} rows should all come from the OpenClaw probe`,
       ).toBe(true);
     }
+    expect(byId.get("minimax").models[0]).toMatchObject({
+      key: "minimax/MiniMax-M3",
+      recommendation: "recommended",
+    });
     expect(byId.get("groq").requiredPlugins).toEqual(["groq"]);
+  });
+
+  it("never carries rows forward from a prior bootstrap", () => {
+    // Every row must trace to the pinned OpenClaw catalogs, a declared public
+    // endpoint, or an explicit spec pin; a "prior-bootstrap-fallback" source
+    // means a probe silently went stale.
+    const carried = catalog.models
+      .filter((model) => String(model.source || "").includes("prior-bootstrap-fallback"))
+      .map((model) => model.key);
+    expect(carried).toEqual([]);
   });
 
   it("never lists a provider with an empty model list", () => {
