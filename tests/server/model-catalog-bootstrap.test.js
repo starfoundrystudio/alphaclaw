@@ -64,6 +64,60 @@ describe("generated model catalog bootstrap", () => {
     }
   });
 
+  it("offers at least one model for every provider on every access mode it declares", () => {
+    // A declared provider with no models is invisible in Add Model, which is
+    // how xAI, Google, Groq and MiniMax went missing and how Cloudflare AI
+    // Gateway lost its only row to the GPT-5.5 denylist. Providers that
+    // genuinely cannot be enumerated key-free are excluded with a reason.
+    const excluded = {
+      byteplus: "no public catalog; the BytePlus probe needs a real key",
+      "byteplus-plan": "no public catalog; the BytePlus probe needs a real key",
+      "volcengine-plan": "coding-plan alias of volcengine; the probe needs a real key",
+    };
+    const missing = [];
+    for (const [providerId, providerMeta] of Object.entries(supportSpec.providers)) {
+      if (excluded[providerId]) continue;
+      for (const accessMode of providerMeta.accessModes || []) {
+        const entry = (catalog.accessModes?.[accessMode]?.providers || []).find(
+          (provider) => provider.id === providerId,
+        );
+        if (!entry || !Array.isArray(entry.models) || entry.models.length === 0) {
+          missing.push(`${providerId}:${accessMode}`);
+        }
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("lists the major provider-api providers with current public catalogs", () => {
+    const providerApi = catalog.accessModes["provider-api"].providers;
+    const byId = new Map(providerApi.map((provider) => [provider.id, provider]));
+    for (const providerId of ["xai", "google", "groq", "minimax", "moonshot", "mistral"]) {
+      const entry = byId.get(providerId);
+      expect(entry, providerId).toBeDefined();
+      expect(entry.models.length, providerId).toBeGreaterThan(0);
+      expect(
+        entry.models.some((model) =>
+          String(model.source || "").includes("public-provider-catalog"),
+        ),
+        `${providerId} should carry public-provider-catalog rows`,
+      ).toBe(true);
+      expect(
+        entry.models.every((model) => model.key.startsWith(`${providerId}/`)),
+        providerId,
+      ).toBe(true);
+    }
+    expect(byId.get("groq").requiredPlugins).toEqual(["groq"]);
+  });
+
+  it("never lists a provider with an empty model list", () => {
+    for (const [accessMode, group] of Object.entries(catalog.accessModes)) {
+      for (const provider of group.providers) {
+        expect(provider.models.length, `${accessMode}/${provider.id}`).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it("lists GPT-5.6 variants on the OpenAI routes that support them", () => {
     const modelsByKey = new Map(catalog.models.map((model) => [model.key, model]));
 

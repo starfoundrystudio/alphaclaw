@@ -24,6 +24,12 @@ const kBootstrapPath = path.join(
   "model-catalog-bootstrap.json",
 );
 const kPublicModelCatalogTimeoutMs = 20_000;
+// models.dev is the community catalog OpenClaw's own provider registry is
+// built from, so its model ids are the ids OpenClaw routes on
+// (`<provider>/<id>`). One fetch covers every provider that cannot enumerate
+// its models without a real API key.
+const kModelsDevCatalogEndpoint = "https://models.dev/api.json";
+const kModelsDevSource = "models.dev";
 
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8"));
 
@@ -97,6 +103,10 @@ const buildProbeEnv = ({ tempRoot }) => ({
   OPENCLAW_NO_AUTO_UPDATE: "1",
   NO_COLOR: "1",
 });
+
+const { filterDeniedModels, stripDeniedModelsFromCatalog } = requireFromRepo(
+  "./lib/server/model-denylist.js",
+);
 
 const kProviderProbeAttempts = 2;
 
@@ -188,12 +198,7 @@ const normalizeExplicitModel = ({ rawModel, providers }) => {
   };
 };
 
-const fetchPublicProviderModels = async ({ provider, providerMeta }) => {
-  const publicCatalog = providerMeta?.publicModelCatalog;
-  if (!publicCatalog) return [];
-  const endpoint = normalizeString(publicCatalog.endpoint);
-  const minimumModelCount = Number(publicCatalog.minimumModelCount || 0);
-  const modelTypes = new Set(uniqueStrings(publicCatalog.modelTypes || []));
+const fetchPublicCatalogJson = async ({ provider, endpoint }) => {
   let response;
   try {
     response = await fetch(endpoint, {
@@ -211,21 +216,76 @@ const fetchPublicProviderModels = async ({ provider, providerMeta }) => {
       `Failed to fetch public model catalog for ${provider}: HTTP ${response.status}`,
     );
   }
-  let payload;
   try {
-    payload = await response.json();
+    return await response.json();
   } catch (error) {
     throw new Error(
       `Failed to parse public model catalog for ${provider}: ${error.message}`,
     );
   }
-  const models = (Array.isArray(payload?.data) ? payload.data : [])
+};
+
+let modelsDevCatalogPromise = null;
+const fetchModelsDevCatalog = () => {
+  modelsDevCatalogPromise ||= fetchPublicCatalogJson({
+    provider: kModelsDevSource,
+    endpoint: kModelsDevCatalogEndpoint,
+  });
+  return modelsDevCatalogPromise;
+};
+
+// Text-in/text-out rows only: models.dev also lists speech, image and video
+// models (Whisper, Veo, Imagen …) that an agent cannot chat through.
+const isModelsDevLanguageModel = (rawModel) => {
+  const input = Array.isArray(rawModel?.modalities?.input) ? rawModel.modalities.input : [];
+  const output = Array.isArray(rawModel?.modalities?.output) ? rawModel.modalities.output : [];
+  return input.includes("text") && output.includes("text");
+};
+
+const listModelsDevProviderModels = async ({ provider, providerMeta }) => {
+  const publicCatalog = providerMeta.publicModelCatalog;
+  const providerId = normalizeString(publicCatalog.providerId) || provider;
+  const catalog = await fetchModelsDevCatalog();
+  const entry = catalog?.[providerId];
+  if (!entry || typeof entry !== "object") {
+    throw new Error(
+      `Public model catalog for ${provider}: models.dev has no provider "${providerId}"`,
+    );
+  }
+  return Object.entries(entry.models || {})
+    .filter(([, rawModel]) => isModelsDevLanguageModel(rawModel))
+    .map(([id, rawModel]) =>
+      normalizePublicCatalogModel({
+        provider,
+        rawModel: { id, name: rawModel?.name },
+        providerMeta,
+      }),
+    )
+    .filter(Boolean);
+};
+
+const listEndpointProviderModels = async ({ provider, providerMeta }) => {
+  const publicCatalog = providerMeta.publicModelCatalog;
+  const endpoint = normalizeString(publicCatalog.endpoint);
+  const modelTypes = new Set(uniqueStrings(publicCatalog.modelTypes || []));
+  const payload = await fetchPublicCatalogJson({ provider, endpoint });
+  return (Array.isArray(payload?.data) ? payload.data : [])
     .filter(
       (rawModel) =>
         modelTypes.size === 0 || modelTypes.has(normalizeString(rawModel?.type)),
     )
     .map((rawModel) => normalizePublicCatalogModel({ provider, rawModel, providerMeta }))
     .filter(Boolean);
+};
+
+const fetchPublicProviderModels = async ({ provider, providerMeta }) => {
+  const publicCatalog = providerMeta?.publicModelCatalog;
+  if (!publicCatalog) return [];
+  const minimumModelCount = Number(publicCatalog.minimumModelCount || 0);
+  const models =
+    normalizeString(publicCatalog.source) === kModelsDevSource
+      ? await listModelsDevProviderModels({ provider, providerMeta })
+      : await listEndpointProviderModels({ provider, providerMeta });
   if (models.length < minimumModelCount) {
     throw new Error(
       `Public model catalog for ${provider} returned ${models.length} models; expected at least ${minimumModelCount}`,
@@ -342,8 +402,19 @@ const validateSupportSpec = ({ supportSpec, manifest }) => {
   const managedPlugins = manifest.managedPlugins || {};
   for (const [providerId, providerMeta] of Object.entries(supportSpec.providers || {})) {
     if (providerMeta.publicModelCatalog) {
+      const source = normalizeString(providerMeta.publicModelCatalog.source);
       const endpoint = normalizeString(providerMeta.publicModelCatalog.endpoint);
-      if (!endpoint.startsWith("https://")) {
+      if (source === kModelsDevSource) {
+        if (endpoint) {
+          throw new Error(
+            `Provider ${providerId} declares both a models.dev source and an endpoint`,
+          );
+        }
+      } else if (source) {
+        throw new Error(
+          `Provider ${providerId} has an unknown public model catalog source: ${source}`,
+        );
+      } else if (!endpoint.startsWith("https://")) {
         throw new Error(`Provider ${providerId} has an invalid public model catalog endpoint`);
       }
       const minimumModelCount = Number(
@@ -527,26 +598,36 @@ const generateCatalog = async () => {
           );
         }
       }
+      // A provider with a public catalog gets its key-free inventory from
+      // that catalog, so a thin or failed probe never carries stale rows
+      // forward from the prior bootstrap; the public catalog's own minimum
+      // guards coverage instead.
+      const hasPublicCatalog = !!providerMeta.publicModelCatalog;
       if (probeError) {
         // Provider endpoints hang or refuse intermittently; the prior
         // bootstrap is the same carry-forward used for an empty probe, and
         // the minimum-count guard below still fails the build when nothing
         // usable is left.
-        const fallback = fallbackModelsByProvider.get(provider) || [];
-        if (fallback.length === 0 && minimumProbeModelCount > 0) throw probeError;
+        const fallback = hasPublicCatalog
+          ? []
+          : fallbackModelsByProvider.get(provider) || [];
+        if (fallback.length === 0 && minimumProbeModelCount > 0 && !hasPublicCatalog) {
+          throw probeError;
+        }
         console.warn(
           `[model-catalog] using ${fallback.length} prior-bootstrap models for ${provider}`,
         );
         models = [];
       }
-      if (models.length < minimumProbeModelCount) {
-        models = [
-          ...(fallbackModelsByProvider.get(provider) || []),
-          ...models,
-        ];
+      if (models.length < minimumProbeModelCount && !hasPublicCatalog) {
+        const fallback = fallbackModelsByProvider.get(provider) || [];
+        console.warn(
+          `[model-catalog] probe for ${provider} returned ${models.length} models (minimum ${minimumProbeModelCount}); carrying ${fallback.length} prior-bootstrap models forward`,
+        );
+        models = [...fallback, ...models];
         models = [...new Map(models.map((model) => [model.key, model])).values()];
       }
-      if (models.length < minimumProbeModelCount) {
+      if (models.length < minimumProbeModelCount && !hasPublicCatalog) {
         throw new Error(
           `OpenClaw model probe for ${provider} returned ${models.length} models after prior-bootstrap fallback; expected at least ${minimumProbeModelCount}`,
         );
@@ -576,11 +657,22 @@ const generateCatalog = async () => {
     providers: supportSpec.providers || {},
   });
 
-  const models = [...modelsByKey.values()].sort((left, right) => {
+  // Apply the product denylist before segmentation so a provider whose only
+  // rows were denied is not listed with an empty model list.
+  const models = filterDeniedModels([...modelsByKey.values()]).sort((left, right) => {
     const providerCompare = left.provider.localeCompare(right.provider);
     if (providerCompare !== 0) return providerCompare;
     return left.label.localeCompare(right.label);
   });
+
+  const providersWithModels = new Set(models.map((model) => model.provider));
+  for (const [providerId, providerMeta] of Object.entries(supportSpec.providers || {})) {
+    if ((providerMeta.accessModes || []).length === 0) continue;
+    if (providersWithModels.has(providerId)) continue;
+    console.warn(
+      `[model-catalog] ${providerId} has no models in the bootstrap; it will not be offered until a probe or public catalog lists one`,
+    );
+  }
 
   return {
     schemaVersion: 2,
@@ -603,9 +695,6 @@ const generateCatalog = async () => {
 
 // Product-wide model denylist (e.g. GPT-5.5): strip denied keys from the
 // bundled bootstrap too, so pack-time and runtime agree.
-const { stripDeniedModelsFromCatalog } = requireFromRepo(
-  "./lib/server/model-denylist.js",
-);
 const catalog = stripDeniedModelsFromCatalog(await generateCatalog());
 fs.writeFileSync(kBootstrapPath, `${JSON.stringify(catalog, null, 2)}\n`, "utf8");
 console.log(

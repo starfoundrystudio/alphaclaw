@@ -28,7 +28,10 @@
     "deepseek",
     "fireworks",
     "github-copilot",
+    "google",
+    "groq",
     "kilocode",
+    "minimax",
     "mistral",
     "moonshot",
     "novita",
@@ -42,6 +45,7 @@
     "vercel-ai-gateway",
     "volcengine",
     "volcengine-plan",
+    "xai",
     "xiaomi",
     "zai"
   ],
@@ -79,6 +83,11 @@
       "accessModes": ["gateway"],
       "authRoute": "api-key",
       "envKeys": ["CLOUDFLARE_AI_GATEWAY_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "cloudflare-ai-gateway",
+        "minimumModelCount": 1
+      },
       "requiredPlugins": ["cloudflare-ai-gateway"]
     },
     "cohere": {
@@ -86,6 +95,11 @@
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
       "envKeys": ["COHERE_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "cohere",
+        "minimumModelCount": 1
+      },
       "requiredPlugins": ["cohere"]
     },
     "deepseek": {
@@ -93,6 +107,11 @@
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
       "envKeys": ["DEEPSEEK_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "deepseek",
+        "minimumModelCount": 1
+      },
       "requiredPlugins": ["deepseek"],
       "minimumProbeModelCount": 1
     },
@@ -101,6 +120,11 @@
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
       "envKeys": ["FIREWORKS_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "fireworks-ai",
+        "minimumModelCount": 1
+      },
       "requiredPlugins": ["fireworks"],
       "minimumProbeModelCount": 1
     },
@@ -110,6 +134,29 @@
       "authRoute": "account-login",
       "hiddenFromOnboarding": true
     },
+    "google": {
+      "label": "Google Gemini",
+      "accessModes": ["provider-api"],
+      "authRoute": "api-key",
+      "envKeys": ["GEMINI_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "google",
+        "minimumModelCount": 1
+      }
+    },
+    "groq": {
+      "label": "Groq",
+      "accessModes": ["provider-api"],
+      "authRoute": "api-key",
+      "envKeys": ["GROQ_API_KEY"],
+      "requiredPlugins": ["groq"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "groq",
+        "minimumModelCount": 1
+      }
+    },
     "kilocode": {
       "label": "Kilo Gateway",
       "accessModes": ["gateway"],
@@ -117,11 +164,27 @@
       "envKeys": ["KILOCODE_API_KEY"],
       "requiredPlugins": ["kilocode"]
     },
+    "minimax": {
+      "label": "MiniMax",
+      "accessModes": ["provider-api"],
+      "authRoute": "api-key",
+      "envKeys": ["MINIMAX_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "minimax",
+        "minimumModelCount": 1
+      }
+    },
     "mistral": {
       "label": "Mistral",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
       "envKeys": ["MISTRAL_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "mistral",
+        "minimumModelCount": 1
+      },
       "requiredPlugins": ["mistral"]
     },
     "moonshot": {
@@ -129,6 +192,11 @@
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
       "envKeys": ["MOONSHOT_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "moonshotai",
+        "minimumModelCount": 1
+      },
       "requiredPlugins": ["moonshot"],
       "minimumProbeModelCount": 1
     },
@@ -143,7 +211,12 @@
       "label": "NVIDIA",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
-      "envKeys": ["NVIDIA_API_KEY"]
+      "envKeys": ["NVIDIA_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "nvidia",
+        "minimumModelCount": 1
+      }
     },
     "ollama-cloud": {
       "label": "Ollama Cloud",
@@ -207,7 +280,12 @@
       "label": "Together",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
-      "envKeys": ["TOGETHER_API_KEY"]
+      "envKeys": ["TOGETHER_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "togetherai",
+        "minimumModelCount": 1
+      }
     },
     "venice": {
       "label": "Venice",
@@ -239,6 +317,11 @@
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
       "envKeys": ["VOLCANO_ENGINE_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "volcengine",
+        "minimumModelCount": 1
+      },
       "requiredPlugins": ["volcengine"]
     },
     "volcengine-plan": {
@@ -248,11 +331,27 @@
       "envKeys": ["VOLCANO_ENGINE_API_KEY"],
       "requiredPlugins": ["volcengine"]
     },
+    "xai": {
+      "label": "xAI",
+      "accessModes": ["provider-api"],
+      "authRoute": "api-key",
+      "envKeys": ["XAI_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "xai",
+        "minimumModelCount": 1
+      }
+    },
     "xiaomi": {
       "label": "Xiaomi",
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
       "envKeys": ["XIAOMI_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "xiaomi",
+        "minimumModelCount": 1
+      },
       "requiredPlugins": ["xiaomi"]
     },
     "zai": {
@@ -260,6 +359,11 @@
       "accessModes": ["provider-api"],
       "authRoute": "api-key",
       "envKeys": ["ZAI_API_KEY"],
+      "publicModelCatalog": {
+        "source": "models.dev",
+        "providerId": "zai",
+        "minimumModelCount": 1
+      },
       "requiredPlugins": ["zai"],
       "minimumProbeModelCount": 1
     }
