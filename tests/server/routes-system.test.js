@@ -135,7 +135,90 @@ describe("server/routes/system", () => {
         url: "/openclaw/#token=managed-gateway-token",
         source: "config",
       });
-      expect(deps.clawCmd).not.toHaveBeenCalled();
+      // Only the 2026.9 bootstrap probe runs before the managed token wins.
+      expect(deps.clawCmd).toHaveBeenCalledTimes(1);
+      expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open --json", {
+        quiet: true,
+      });
+    } finally {
+      if (previousGatewayToken === undefined) {
+        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+      } else {
+        process.env.OPENCLAW_GATEWAY_TOKEN = previousGatewayToken;
+      }
+    }
+  });
+
+  it("prefers the 2026.9 bootstrap browser URL and rewrites it onto the proxied origin", async () => {
+    const deps = createSystemDeps();
+    const previousGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+    process.env.OPENCLAW_GATEWAY_TOKEN = "managed-gateway-token";
+    deps.clawCmd.mockResolvedValue({
+      ok: true,
+      stdout: [
+        "[alphaclaw] Loaded .env",
+        JSON.stringify({
+          ok: true,
+          url: "http://127.0.0.1:18789/openclaw/#token=gw-token",
+          browserUrl:
+            "http://127.0.0.1:18789/openclaw/#bootstrapToken=boot%2Btoken&bootstrapProfile=owner&gatewayUrl=ws%3A%2F%2F127.0.0.1%3A18789%2Fopenclaw",
+          browserBootstrapExpiresAtMs: 1789776583564,
+        }),
+      ].join("\n"),
+    });
+    const app = createApp(deps);
+
+    try {
+      const res = await request(app)
+        .get("/api/gateway/dashboard")
+        .set("X-Forwarded-Proto", "https")
+        .set("X-Forwarded-Host", "test-g2.tail2cd802.ts.net");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        ok: true,
+        url: "/openclaw/#bootstrapToken=boot%2Btoken&bootstrapProfile=owner&gatewayUrl=wss%3A%2F%2Ftest-g2.tail2cd802.ts.net%2Fopenclaw",
+        source: "bootstrap",
+        expiresAtMs: 1789776583564,
+      });
+      expect(deps.clawCmd).toHaveBeenCalledTimes(1);
+      expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open --json", {
+        quiet: true,
+      });
+      // The shared Gateway token never reaches the browser on this path.
+      expect(res.body.url).not.toContain("gw-token");
+      expect(res.body.url).not.toContain("managed-gateway-token");
+    } finally {
+      if (previousGatewayToken === undefined) {
+        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+      } else {
+        process.env.OPENCLAW_GATEWAY_TOKEN = previousGatewayToken;
+      }
+    }
+  });
+
+  it("falls back to the token hand-off when the dashboard JSON has no bootstrap URL", async () => {
+    const deps = createSystemDeps();
+    const previousGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+    process.env.OPENCLAW_GATEWAY_TOKEN = "managed-gateway-token";
+    deps.clawCmd.mockResolvedValue({
+      ok: true,
+      stdout: JSON.stringify({
+        ok: true,
+        url: "http://127.0.0.1:18789/openclaw/#token=gw-token",
+      }),
+    });
+    const app = createApp(deps);
+
+    try {
+      const res = await request(app).get("/api/gateway/dashboard");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        ok: true,
+        url: "/openclaw/#token=managed-gateway-token",
+        source: "config",
+      });
     } finally {
       if (previousGatewayToken === undefined) {
         delete process.env.OPENCLAW_GATEWAY_TOKEN;
@@ -164,7 +247,10 @@ describe("server/routes/system", () => {
         url: "/openclaw/#token=managed-gateway-token",
         source: "config",
       });
-      expect(deps.clawCmd).not.toHaveBeenCalled();
+      expect(deps.clawCmd).toHaveBeenCalledTimes(1);
+      expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open --json", {
+        quiet: true,
+      });
     } finally {
       if (previousGatewayToken === undefined) {
         delete process.env.OPENCLAW_GATEWAY_TOKEN;
@@ -517,16 +603,23 @@ describe("server/routes/system", () => {
     delete process.env.OPENCLAW_GATEWAY_TOKEN;
     try {
       const deps = createSystemDeps();
-      deps.clawCmd.mockResolvedValueOnce({
-        ok: true,
-        stdout: "Dashboard URL: http://127.0.0.1:18789/#token=abc123",
-      });
+      // 2026.7-era CLI: the --json probe prints no JSON, then the token line.
+      deps.clawCmd
+        .mockResolvedValueOnce({
+          ok: true,
+          stdout: "Dashboard URL: http://127.0.0.1:18789/#token=abc123",
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          stdout: "Dashboard URL: http://127.0.0.1:18789/#token=abc123",
+        });
       const app = createApp(deps);
 
       const res = await request(app).get("/api/gateway/dashboard");
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ ok: true, url: "/openclaw/#token=abc123" });
+      expect(deps.clawCmd).toHaveBeenCalledTimes(2);
     } finally {
       if (previousEnvToken === undefined) delete process.env.OPENCLAW_GATEWAY_TOKEN;
       else process.env.OPENCLAW_GATEWAY_TOKEN = previousEnvToken;
@@ -555,7 +648,10 @@ describe("server/routes/system", () => {
       url: "/openclaw/#token=cfg-token%2Bvalue",
       source: "config",
     });
-    expect(deps.clawCmd).not.toHaveBeenCalled();
+    expect(deps.clawCmd).toHaveBeenCalledTimes(1);
+    expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open --json", {
+      quiet: true,
+    });
   });
 
   it("falls back to OPENCLAW_GATEWAY_TOKEN from env file for dashboard URL", async () => {
@@ -686,7 +782,10 @@ describe("server/routes/system", () => {
         url: "/openclaw/#token=object-ref-token%2Bvalue",
         source: "config",
       });
-      expect(deps.clawCmd).not.toHaveBeenCalled();
+      expect(deps.clawCmd).toHaveBeenCalledTimes(1);
+    expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open --json", {
+      quiet: true,
+    });
     } finally {
       if (previousEnvToken === undefined) delete process.env.OPENCLAW_GATEWAY_TOKEN;
       else process.env.OPENCLAW_GATEWAY_TOKEN = previousEnvToken;
