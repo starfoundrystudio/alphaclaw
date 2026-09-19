@@ -16,6 +16,10 @@ describe("server/model-denylist", () => {
       "kilocode/openai/gpt-5.5",
       "cloudflare-ai-gateway/openai/gpt-5.5",
       "OPENAI/GPT-5.5",
+      "venice/openai-gpt-55",
+      "venice/openai-gpt-55-pro",
+      "openai/gpt-55",
+      "openai-gpt-5.5",
     ]) {
       expect(isDeniedModelKey(key)).toBe(true);
     }
@@ -29,6 +33,8 @@ describe("server/model-denylist", () => {
       "openai/gpt-5.5.1",
       "openai/gpt-5.1-codex",
       "openai-codex/gpt-5.6",
+      "venice/openai-gpt-54-pro",
+      "venice/openai-gpt-56",
       "anthropic/claude-opus-4-8",
       "vercel-ai-gateway/anthropic/claude-opus-4.8",
       "",
@@ -38,16 +44,23 @@ describe("server/model-denylist", () => {
     }
   });
 
-  it("filters model entries by key or id", () => {
+  it("filters model entries by key, id, or a GPT-5.5 label", () => {
     expect(
       filterDeniedModels([
         { key: "openai/gpt-5.5" },
         { id: "kilocode/openai/gpt-5.5" },
         { key: "openai/gpt-5.6" },
+        { key: "someprovider/alias-1", label: "GPT-5.5" },
+        { key: "someprovider/alias-2", name: "GPT-5.5 Pro" },
+        { key: "someprovider/alias-3", label: "GPT-5.6 (GPT-5.5 successor)" },
         "openrouter/openai/gpt-5.5",
         "anthropic/claude-sonnet-4-6",
       ]),
-    ).toEqual([{ key: "openai/gpt-5.6" }, "anthropic/claude-sonnet-4-6"]);
+    ).toEqual([
+      { key: "openai/gpt-5.6" },
+      { key: "someprovider/alias-3", label: "GPT-5.6 (GPT-5.5 successor)" },
+      "anthropic/claude-sonnet-4-6",
+    ]);
   });
 
   it("strips denied models from a catalog payload without mutating it", () => {
