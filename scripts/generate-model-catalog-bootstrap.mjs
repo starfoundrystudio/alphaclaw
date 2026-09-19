@@ -98,6 +98,8 @@ const buildProbeEnv = ({ tempRoot }) => ({
   NO_COLOR: "1",
 });
 
+const kProviderProbeAttempts = 2;
+
 const runOpenclaw = ({ args, env, openclawCliPath }) =>
   execFileSync(process.execPath, [openclawCliPath, ...args], {
     cwd: kRepoRoot,
@@ -501,15 +503,42 @@ const generateCatalog = async () => {
 
     for (const provider of uniqueStrings(supportSpec.providerProbes || [])) {
       const providerMeta = supportSpec.providers?.[provider] || {};
-      let models = listProviderModels({
-        provider,
-        providerMeta,
-        env,
-        openclawCliPath,
-      });
       const minimumProbeModelCount = Number(
         providerMeta.minimumProbeModelCount || 0,
       );
+      let models = [];
+      let probeError = null;
+      for (let attempt = 1; attempt <= kProviderProbeAttempts; attempt += 1) {
+        try {
+          models = listProviderModels({
+            provider,
+            providerMeta,
+            env,
+            openclawCliPath,
+          });
+          probeError = null;
+          break;
+        } catch (error) {
+          probeError = error;
+          console.warn(
+            `[model-catalog] probe attempt ${attempt}/${kProviderProbeAttempts} for ${provider} failed: ${
+              String(error?.message || error).split("\n")[0]
+            }`,
+          );
+        }
+      }
+      if (probeError) {
+        // Provider endpoints hang or refuse intermittently; the prior
+        // bootstrap is the same carry-forward used for an empty probe, and
+        // the minimum-count guard below still fails the build when nothing
+        // usable is left.
+        const fallback = fallbackModelsByProvider.get(provider) || [];
+        if (fallback.length === 0 && minimumProbeModelCount > 0) throw probeError;
+        console.warn(
+          `[model-catalog] using ${fallback.length} prior-bootstrap models for ${provider}`,
+        );
+        models = [];
+      }
       if (models.length < minimumProbeModelCount) {
         models = [
           ...(fallbackModelsByProvider.get(provider) || []),
