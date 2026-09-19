@@ -219,6 +219,71 @@ const fetchPublicCatalogJson = async ({ provider, endpoint }) => {
   }
 };
 
+// The catalog bundled in the pinned OpenClaw release: every core extension
+// and every managed provider plugin ships `modelCatalog.providers[<id>].models`
+// in its openclaw.plugin.json (snapshotted from models.dev when OpenClaw
+// publishes). 2026.9.5's `models list` no longer surfaces it for plugin
+// providers without a live key, so read the manifests directly: this is the
+// same per-release, key-free inventory, with no external fetch.
+const kBundledCatalogSource = "openclaw-bundled-catalog";
+
+const listBundledManifestPaths = ({ openclawCliPath, tempRoot }) => {
+  const paths = [];
+  const extensionsDir = path.join(path.dirname(openclawCliPath), "dist", "extensions");
+  if (fs.existsSync(extensionsDir)) {
+    for (const entry of fs.readdirSync(extensionsDir)) {
+      const manifestPath = path.join(extensionsDir, entry, "openclaw.plugin.json");
+      if (fs.existsSync(manifestPath)) paths.push(manifestPath);
+    }
+  }
+  const projectsDir = path.join(tempRoot, ".openclaw", "npm", "projects");
+  if (fs.existsSync(projectsDir)) {
+    for (const project of fs.readdirSync(projectsDir)) {
+      const scopeDir = path.join(projectsDir, project, "node_modules", "@openclaw");
+      if (!fs.existsSync(scopeDir)) continue;
+      for (const pkg of fs.readdirSync(scopeDir)) {
+        const manifestPath = path.join(scopeDir, pkg, "openclaw.plugin.json");
+        if (fs.existsSync(manifestPath)) paths.push(manifestPath);
+      }
+    }
+  }
+  return paths;
+};
+
+const listBundledCatalogModels = ({ supportSpec, openclawCliPath, tempRoot }) => {
+  const providers = supportSpec.providers || {};
+  const models = [];
+  for (const manifestPath of listBundledManifestPaths({ openclawCliPath, tempRoot })) {
+    let manifest;
+    try {
+      manifest = readJson(manifestPath);
+    } catch {
+      continue;
+    }
+    const catalogProviders = manifest?.modelCatalog?.providers;
+    if (!catalogProviders || typeof catalogProviders !== "object") continue;
+    for (const [providerId, entry] of Object.entries(catalogProviders)) {
+      const providerMeta = providers[providerId];
+      if (!providerMeta) continue;
+      for (const rawModel of Array.isArray(entry?.models) ? entry.models : []) {
+        const rawId = normalizeString(rawModel?.id);
+        if (!rawId) continue;
+        const key = rawId.startsWith(`${providerId}/`) ? rawId : `${providerId}/${rawId}`;
+        const accessModes = getModelAccessModes({ key, providerMeta });
+        if (accessModes.length === 0) continue;
+        models.push({
+          key,
+          provider: providerId,
+          label: normalizeString(rawModel?.name) || rawId,
+          accessModes,
+          source: kBundledCatalogSource,
+        });
+      }
+    }
+  }
+  return models;
+};
+
 const listEndpointProviderModels = async ({ provider, providerMeta }) => {
   const publicCatalog = providerMeta.publicModelCatalog;
   const endpoint = normalizeString(publicCatalog.endpoint);
@@ -525,6 +590,17 @@ const generateCatalog = async () => {
       openclawCliPath,
     });
 
+    const bundledModels = listBundledCatalogModels({
+      supportSpec,
+      openclawCliPath,
+      tempRoot,
+    });
+    const bundledProviders = new Set(bundledModels.map((model) => model.provider));
+    for (const model of bundledModels) mergeModel({ modelsByKey, model });
+    console.log(
+      `[model-catalog] bundled catalogs: ${bundledModels.length} models across ${bundledProviders.size} providers`,
+    );
+
     for (const provider of uniqueStrings(supportSpec.providerProbes || [])) {
       const providerMeta = supportSpec.providers?.[provider] || {};
       const minimumProbeModelCount = Number(
@@ -555,7 +631,8 @@ const generateCatalog = async () => {
       // that catalog, so a thin or failed probe never carries stale rows
       // forward from the prior bootstrap; the public catalog's own minimum
       // guards coverage instead.
-      const hasPublicCatalog = !!providerMeta.publicModelCatalog;
+      const hasPublicCatalog =
+        !!providerMeta.publicModelCatalog || bundledProviders.has(provider);
       if (probeError) {
         // Provider endpoints hang or refuse intermittently; the prior
         // bootstrap is the same carry-forward used for an empty probe, and

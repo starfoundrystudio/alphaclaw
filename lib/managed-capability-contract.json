@@ -2,7 +2,7 @@
   "contractId": "teamyou.managed-capabilities",
   "schemaVersion": 1,
   "revision": "2026-09-18.1",
-  "targetOpenClawVersion": "2026.9.4",
+  "targetOpenClawVersion": "2026.9.5",
   "surfaces": {
     "managed": {
       "id": "clawbridge",

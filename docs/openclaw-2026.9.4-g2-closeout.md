@@ -67,6 +67,15 @@ Full evidence, timestamps, commands and hazards are in
 - The upstream OpenClaw PR for the bootstrap gate and finding #3 remain
   follow-ups outside G2.
 
+## Retarget note (2026-09-19)
+
+OpenClaw 2026.9.5 was published during G2. The project now targets
+`openclaw@2026.9.5`; see `docs/openclaw-2026.9.5-retarget-assessment.md`
+for what changed and what G3 must re-verify on the new pin. G2's results
+above were obtained on 2026.9.4 and stand as the crossing evidence; the
+9.4 → 9.5 step itself (agent database schema 21) has not been exercised on
+an instance.
+
 ## Carry into G3
 
 1. Merge teamyou PR #1038; promote clawctl bundle `fed9a46b` to the stable

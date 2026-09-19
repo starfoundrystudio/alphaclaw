@@ -92,9 +92,9 @@ describe("generated model catalog bootstrap", () => {
   it("lists the major provider-api providers from the pinned OpenClaw catalogs", () => {
     const providerApi = catalog.accessModes["provider-api"].providers;
     const byId = new Map(providerApi.map((provider) => [provider.id, provider]));
-    // These come from the catalog bundled in the pinned OpenClaw core
-    // extension or provider plugin (probe without a real key), never from a
-    // prior bootstrap or an external site.
+    // These come from the pinned OpenClaw release itself: the catalog bundled
+    // in its core extension or provider plugin manifest, or the CLI probe
+    // without a real key; never from a prior bootstrap or an external site.
     for (const providerId of ["xai", "google", "groq", "minimax", "moonshot", "mistral", "deepseek"]) {
       const entry = byId.get(providerId);
       expect(entry, providerId).toBeDefined();
@@ -103,9 +103,17 @@ describe("generated model catalog bootstrap", () => {
         entry.models.every(
           (model) =>
             model.key.startsWith(`${providerId}/`) &&
-            String(model.source || "").includes("openclaw-provider-probe"),
+            /openclaw-(provider-probe|bundled-catalog)/.test(String(model.source || "")),
         ),
-        `${providerId} rows should all come from the OpenClaw probe`,
+        `${providerId} rows should all come from the pinned OpenClaw release`,
+      ).toBe(true);
+    }
+    for (const providerId of ["moonshot", "deepseek", "groq"]) {
+      expect(
+        byId.get(providerId).models.some((model) =>
+          String(model.source || "").includes("openclaw-bundled-catalog"),
+        ),
+        `${providerId} should carry rows from the plugin's bundled catalog`,
       ).toBe(true);
     }
     expect(byId.get("minimax").models[0]).toMatchObject({

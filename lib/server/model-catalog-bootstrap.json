@@ -2,15 +2,15 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-19T05:22:45.470Z",
-  "openclawVersion": "2026.9.4 (3a9d69d)",
+  "generatedAt": "2026-09-19T18:14:35.984Z",
+  "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
     "schemaVersion": 1
   },
   "compatibilityManifest": {
     "path": "lib/openclaw-compatibility.manifest.json",
-    "openclawVersion": "2026.9.4"
+    "openclawVersion": "2026.9.5"
   },
   "accessModes": {
     "subscription": {
@@ -39,7 +39,7 @@
               "accessModes": [
                 "subscription"
               ],
-              "source": "openclaw-provider-probe",
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe",
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "subscription"
@@ -52,7 +52,7 @@
               "accessModes": [
                 "subscription"
               ],
-              "source": "openclaw-provider-probe",
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe",
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "subscription"
@@ -65,7 +65,7 @@
               "accessModes": [
                 "subscription"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "claude-cli/claude-fable-5-1",
@@ -74,7 +74,7 @@
               "accessModes": [
                 "subscription"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "claude-cli/claude-opus-4-6",
@@ -83,7 +83,7 @@
               "accessModes": [
                 "subscription"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "claude-cli/claude-opus-4-7",
@@ -92,7 +92,7 @@
               "accessModes": [
                 "subscription"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "claude-cli/claude-opus-5",
@@ -101,7 +101,7 @@
               "accessModes": [
                 "subscription"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "claude-cli/claude-sonnet-5",
@@ -110,7 +110,7 @@
               "accessModes": [
                 "subscription"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             }
           ]
         },
@@ -138,7 +138,7 @@
                 "subscription",
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe",
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe",
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "subscription"
@@ -152,7 +152,7 @@
                 "subscription",
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "openai/gpt-5.6-terra",
@@ -162,7 +162,7 @@
                 "subscription",
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             }
           ]
         }
@@ -195,7 +195,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe",
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe",
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "provider-api"
@@ -208,7 +208,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "anthropic/claude-fable-5-1",
@@ -217,7 +217,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "anthropic/claude-haiku-4-5",
@@ -226,7 +226,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "anthropic/claude-mythos-5",
@@ -235,7 +235,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "anthropic/claude-opus-5",
@@ -244,7 +244,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "anthropic/claude-sonnet-5",
@@ -253,7 +253,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             }
           ]
         },
@@ -277,7 +277,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "byteplus/deepseek-v4-pro-260425",
@@ -286,7 +286,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "byteplus/dola-seed-2-1-turbo-260628",
@@ -295,7 +295,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "byteplus/glm-4-7-251222",
@@ -304,7 +304,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "byteplus/glm-5-2-260617",
@@ -313,7 +313,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "byteplus/seed-2-0-code-preview-260328",
@@ -322,7 +322,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -346,7 +346,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "byteplus-plan/kimi-k2.5",
@@ -355,7 +355,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -379,7 +379,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "cohere/command-a-reasoning-08-2025",
@@ -388,7 +388,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "cohere/command-a-vision-07-2025",
@@ -397,7 +397,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "cohere/command-a-plus-05-2026",
@@ -406,7 +406,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "cohere/north-mini-code-1-0",
@@ -415,7 +415,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -439,7 +439,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "deepseek/deepseek-v4-flash-vision-exp",
@@ -448,7 +448,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "deepseek/deepseek-v4-pro",
@@ -457,7 +457,16 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
+            },
+            {
+              "key": "deepseek/deepseek-flash",
+              "provider": "deepseek",
+              "label": "DeepSeek V4.1 Flash",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -481,7 +490,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "fireworks/accounts/fireworks/models/kimi-k2p6",
@@ -490,7 +499,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "fireworks/accounts/fireworks/routers/kimi-k2p6-turbo",
@@ -499,7 +508,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -521,7 +530,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "google/gemini-2.5-flash-lite",
@@ -530,7 +539,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "google/gemini-2.5-pro",
@@ -539,7 +548,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "google/gemini-3-flash-preview",
@@ -548,7 +557,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "google/gemini-3.1-flash-lite",
@@ -557,7 +566,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "google/gemini-3.1-pro-preview",
@@ -566,7 +575,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "google/gemini-3.5-flash",
@@ -575,7 +584,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "google/gemini-3.5-flash-lite",
@@ -584,7 +593,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "google/gemini-3.6-flash",
@@ -593,7 +602,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "google/gemini-3.7-flash",
@@ -602,7 +611,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             }
           ]
         },
@@ -626,7 +635,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "groq/compound-mini",
@@ -635,7 +644,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "groq/openai/gpt-oss-120b",
@@ -644,7 +653,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "groq/openai/gpt-oss-20b",
@@ -653,7 +662,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "groq/llama-3.1-8b-instant",
@@ -662,7 +671,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "groq/llama-3.3-70b-versatile",
@@ -671,7 +680,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "groq/qwen/qwen3.6-27b",
@@ -680,7 +689,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "groq/openai/gpt-oss-safeguard-20b",
@@ -689,7 +698,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -759,7 +768,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "mistral/devstral-medium-latest",
@@ -768,7 +777,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "mistral/mistral-large-latest",
@@ -777,7 +786,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "mistral/mistral-medium-2508",
@@ -786,7 +795,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "mistral/mistral-medium-3-5",
@@ -795,7 +804,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "mistral/mistral-small-2603",
@@ -804,7 +813,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "mistral/mistral-small-latest",
@@ -813,7 +822,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -837,7 +846,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "moonshot/kimi-k2.7-code-highspeed",
@@ -846,7 +855,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "moonshot/kimi-k3",
@@ -855,7 +864,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -1032,7 +1041,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "novita/deepseek/deepseek-v4-flash-0731",
@@ -1059,7 +1068,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "novita/deepseek/deepseek-v4-pro-0813",
@@ -1275,7 +1284,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "novita/zai-org/glm-5v-turbo",
@@ -1365,7 +1374,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "novita/moonshotai/kimi-k3",
@@ -1374,7 +1383,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "novita/inclusionai/ling-3.0-flash",
@@ -1581,7 +1590,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "novita/minimax/minimax-m2.7-highspeed",
@@ -1599,7 +1608,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "novita/mistralai/mistral-nemo",
@@ -1869,7 +1878,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "novita/qwen/qwen3.8-2.4t-a95b",
@@ -1972,7 +1981,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "nvidia/z-ai/glm-5.1",
@@ -1981,7 +1990,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "nvidia/z-ai/glm-5.2",
@@ -1990,7 +1999,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "nvidia/z-ai/glm5",
@@ -1999,7 +2008,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "nvidia/moonshotai/kimi-k2.5",
@@ -2008,7 +2017,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "nvidia/moonshotai/kimi-k2.6",
@@ -2017,7 +2026,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "nvidia/minimaxai/minimax-m2.7",
@@ -2026,7 +2035,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "nvidia/minimaxai/minimax-m3",
@@ -2035,7 +2044,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "nvidia/nemotron-3-super-120b-a12b",
@@ -2044,7 +2053,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "nvidia/nemotron-3-ultra-550b-a55b",
@@ -2053,7 +2062,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "nvidia/nemotron-3.5-lightning-30b-a3b",
@@ -2062,7 +2071,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "nvidia/qwen/qwen3.5-397b-a17b",
@@ -2071,7 +2080,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -2093,7 +2102,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "ollama-cloud/deepseek-v4-flash:0731",
@@ -2102,7 +2111,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/deepseek-v4-flash:preview",
@@ -2111,7 +2120,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "ollama-cloud/deepseek-v4-pro",
@@ -2120,7 +2129,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "ollama-cloud/deepseek-v4-pro:0813",
@@ -2129,7 +2138,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/deepseek-v4-pro:preview",
@@ -2138,7 +2147,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "ollama-cloud/deepseek-v4.1-flash",
@@ -2156,7 +2165,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "ollama-cloud/gemma4:31b",
@@ -2165,7 +2174,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/glm-5.1",
@@ -2174,7 +2183,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/glm-5.2",
@@ -2183,7 +2192,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/glm-5.3",
@@ -2210,7 +2219,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/gpt-oss:20b",
@@ -2219,7 +2228,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/kimi-k2.5",
@@ -2228,7 +2237,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "ollama-cloud/kimi-k2.6",
@@ -2237,7 +2246,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/kimi-k2.7-code",
@@ -2246,7 +2255,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/kimi-k3",
@@ -2255,7 +2264,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/minimax-m2.7",
@@ -2264,7 +2273,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/minimax-m3",
@@ -2273,7 +2282,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/mistral-large-3:675b",
@@ -2282,7 +2291,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/nemotron-3-nano:30b",
@@ -2291,7 +2300,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/nemotron-3-super",
@@ -2300,7 +2309,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/nemotron-3-ultra",
@@ -2309,7 +2318,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "ollama-cloud/qwen3.5",
@@ -2318,7 +2327,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "ollama-cloud/qwen3.5:397b",
@@ -2327,7 +2336,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             }
           ]
         },
@@ -2365,7 +2374,7 @@
                 "subscription",
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe",
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe",
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "subscription"
@@ -2379,7 +2388,7 @@
                 "subscription",
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "openai/gpt-5.6-terra",
@@ -2389,7 +2398,7 @@
                 "subscription",
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             }
           ]
         },
@@ -2413,7 +2422,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "tencent-tokenhub/hy3-preview",
@@ -2422,7 +2431,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "tencent-tokenhub/hy4-preview",
@@ -2431,7 +2440,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -2453,7 +2462,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "together/zai-org/GLM-5.2",
@@ -2462,7 +2471,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "together/moonshotai/Kimi-K2.6",
@@ -2471,7 +2480,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "together/meta-llama/Llama-3.3-70B-Instruct-Turbo",
@@ -2480,7 +2489,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             }
           ]
         },
@@ -2522,7 +2531,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/claude-fable-5-1",
@@ -2585,7 +2594,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/claude-opus-5-fast",
@@ -2612,7 +2621,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/claude-sonnet-5",
@@ -2630,7 +2639,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/e2ee-deepseek-v4-flash",
@@ -2783,7 +2792,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/zai-org-glm-4.7",
@@ -2792,7 +2801,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/zai-org-glm-4.7-flash",
@@ -2846,7 +2855,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/e2ee-glm-5-2-p",
@@ -2909,7 +2918,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/google-gemma-4-26b-a4b-it",
@@ -2927,7 +2936,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/e2ee-gpt-oss-120b-p",
@@ -3026,7 +3035,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/openai-gpt-56-sol-pro",
@@ -3107,7 +3116,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/grok-4-6",
@@ -3152,7 +3161,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/kimi-k2-6",
@@ -3161,7 +3170,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/e2ee-kimi-k2-6",
@@ -3413,7 +3422,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/qwen-3-7-plus",
@@ -3422,7 +3431,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/qwen-3-8-2-4t-a95b",
@@ -3476,7 +3485,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/qwen3-coder-480b-a35b-instruct-turbo",
@@ -3485,7 +3494,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/qwen3-vl-235b-a22b",
@@ -3494,7 +3503,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "venice/e2ee-qwen3-vl-30b-a3b-p",
@@ -3530,7 +3539,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             }
           ]
         },
@@ -3554,7 +3563,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine/deepseek-v4-flash-260425",
@@ -3563,7 +3572,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine/deepseek-v4-pro-260425",
@@ -3572,7 +3581,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine/doubao-seed-2-1-pro-260628",
@@ -3581,7 +3590,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine/doubao-seed-2-1-turbo-260628",
@@ -3590,7 +3599,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine/doubao-seed-evolving",
@@ -3599,7 +3608,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine/glm-4-7-251222",
@@ -3608,7 +3617,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine/glm-5-2-260617",
@@ -3617,7 +3626,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine/kimi-k2-5-260127",
@@ -3626,7 +3635,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -3650,7 +3659,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine-plan/deepseek-v4-flash",
@@ -3659,7 +3668,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine-plan/deepseek-v4-pro",
@@ -3668,7 +3677,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine-plan/doubao-seed-2.1-turbo",
@@ -3677,7 +3686,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "volcengine-plan/glm-5.2",
@@ -3686,7 +3695,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -3708,7 +3717,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "xai/grok-4.20-0309-reasoning",
@@ -3717,7 +3726,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "xai/grok-4.3",
@@ -3726,7 +3735,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "xai/grok-4.5",
@@ -3735,7 +3744,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "xai/grok-4.6",
@@ -3744,7 +3753,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "xai/grok-build-0.1",
@@ -3753,7 +3762,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             }
           ]
         },
@@ -3777,7 +3786,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "xiaomi/mimo-v2.5-pro",
@@ -3786,7 +3795,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         },
@@ -3810,7 +3819,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "zai/glm-5.1",
@@ -3819,7 +3828,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "zai/glm-5.2",
@@ -3828,7 +3837,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "zai/glm-5.3",
@@ -3837,7 +3846,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "zai/glm-5.3-flash",
@@ -3846,7 +3855,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "zai/glm-5v-turbo",
@@ -3855,7 +3864,7 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             }
           ]
         }
@@ -4177,7 +4186,7 @@
               "accessModes": [
                 "gateway"
               ],
-              "source": "openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
               "key": "kilocode/kilo-auto/efficient",
@@ -5866,15 +5875,6 @@
               "key": "kilocode/openai/gpt-5.6-sol",
               "provider": "kilocode",
               "label": "OpenAI: GPT-5.6 Sol",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/openai/gpt-5.6-sol-discounted",
-              "provider": "kilocode",
-              "label": "OpenAI: GPT-5.6 Sol (50% off)",
               "accessModes": [
                 "gateway"
               ],
@@ -11349,6 +11349,24 @@
               ]
             },
             {
+              "key": "vercel-ai-gateway/quiverai/arrow-2",
+              "provider": "vercel-ai-gateway",
+              "label": "Arrow 2",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/quiverai/arrow-2-telos",
+              "provider": "vercel-ai-gateway",
+              "label": "Arrow 2 Telos",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/bytedance/seed-1.8",
               "provider": "vercel-ai-gateway",
               "label": "Bytedance Seed 1.8",
@@ -13536,6 +13554,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/mixedbread/toast-1",
+              "provider": "vercel-ai-gateway",
+              "label": "Toast 1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/arcee-ai/trinity-large-thinking",
               "provider": "vercel-ai-gateway",
               "label": "Trinity Large Thinking",
@@ -13557,7 +13584,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-fable-5-1",
@@ -13566,7 +13593,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-haiku-4-5",
@@ -13575,7 +13602,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-mythos-5",
@@ -13584,7 +13611,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-opus-4-8",
@@ -13593,7 +13620,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe",
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "provider-api"
@@ -13606,7 +13633,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-sonnet-5",
@@ -13615,7 +13642,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "byteplus/deepseek-v4-flash-260425",
@@ -13624,7 +13651,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "byteplus/deepseek-v4-pro-260425",
@@ -13633,7 +13660,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "byteplus/dola-seed-2-1-turbo-260628",
@@ -13642,7 +13669,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "byteplus/glm-4-7-251222",
@@ -13651,7 +13678,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "byteplus/glm-5-2-260617",
@@ -13660,7 +13687,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "byteplus/seed-2-0-code-preview-260328",
@@ -13669,7 +13696,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "byteplus-plan/ark-code-latest",
@@ -13678,7 +13705,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "byteplus-plan/kimi-k2.5",
@@ -13687,7 +13714,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "claude-cli/claude-fable-5",
@@ -13696,7 +13723,7 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "claude-cli/claude-fable-5-1",
@@ -13705,7 +13732,7 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "claude-cli/claude-opus-4-6",
@@ -13714,7 +13741,7 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "claude-cli/claude-opus-4-7",
@@ -13723,7 +13750,7 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "claude-cli/claude-opus-4-8",
@@ -13732,7 +13759,7 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-provider-probe",
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "subscription"
@@ -13745,7 +13772,7 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "claude-cli/claude-sonnet-4-6",
@@ -13754,7 +13781,7 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-provider-probe",
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "subscription"
@@ -13767,7 +13794,7 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "cloudflare-ai-gateway/anthropic/claude-sonnet-4.6",
@@ -13790,7 +13817,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "cohere/command-a-reasoning-08-2025",
@@ -13799,7 +13826,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "cohere/command-a-vision-07-2025",
@@ -13808,7 +13835,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "cohere/command-a-plus-05-2026",
@@ -13817,7 +13844,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "cohere/north-mini-code-1-0",
@@ -13826,7 +13853,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "deepseek/deepseek-v4-flash",
@@ -13835,7 +13862,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "deepseek/deepseek-v4-flash-vision-exp",
@@ -13844,7 +13871,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "deepseek/deepseek-v4-pro",
@@ -13853,7 +13880,16 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
+    },
+    {
+      "key": "deepseek/deepseek-flash",
+      "provider": "deepseek",
+      "label": "DeepSeek V4.1 Flash",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "fireworks/accounts/fireworks/routers/glm-5p2-fast",
@@ -13862,7 +13898,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "fireworks/accounts/fireworks/models/kimi-k2p6",
@@ -13871,7 +13907,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "fireworks/accounts/fireworks/routers/kimi-k2p6-turbo",
@@ -13880,7 +13916,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "google/gemini-2.5-flash",
@@ -13889,7 +13925,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "google/gemini-2.5-flash-lite",
@@ -13898,7 +13934,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "google/gemini-2.5-pro",
@@ -13907,7 +13943,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "google/gemini-3-flash-preview",
@@ -13916,7 +13952,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "google/gemini-3.1-flash-lite",
@@ -13925,7 +13961,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "google/gemini-3.1-pro-preview",
@@ -13934,7 +13970,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "google/gemini-3.5-flash",
@@ -13943,7 +13979,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "google/gemini-3.5-flash-lite",
@@ -13952,7 +13988,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "google/gemini-3.6-flash",
@@ -13961,7 +13997,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "google/gemini-3.7-flash",
@@ -13970,7 +14006,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "groq/compound",
@@ -13979,7 +14015,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "groq/compound-mini",
@@ -13988,7 +14024,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "groq/openai/gpt-oss-120b",
@@ -13997,7 +14033,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "groq/openai/gpt-oss-20b",
@@ -14006,7 +14042,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "groq/llama-3.1-8b-instant",
@@ -14015,7 +14051,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "groq/llama-3.3-70b-versatile",
@@ -14024,7 +14060,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "groq/qwen/qwen3.6-27b",
@@ -14033,7 +14069,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "groq/openai/gpt-oss-safeguard-20b",
@@ -14042,7 +14078,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "kilocode/aion-labs/aion-2.0",
@@ -14312,7 +14348,7 @@
       "accessModes": [
         "gateway"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "kilocode/kilo-auto/efficient",
@@ -16007,15 +16043,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/openai/gpt-5.6-sol-discounted",
-      "provider": "kilocode",
-      "label": "OpenAI: GPT-5.6 Sol (50% off)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/openai/gpt-5.6-sol-pro",
       "provider": "kilocode",
       "label": "OpenAI: GPT-5.6 Sol Pro",
@@ -17394,7 +17421,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "mistral/devstral-medium-latest",
@@ -17403,7 +17430,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "mistral/mistral-large-latest",
@@ -17412,7 +17439,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "mistral/mistral-medium-2508",
@@ -17421,7 +17448,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "mistral/mistral-medium-3-5",
@@ -17430,7 +17457,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "mistral/mistral-small-2603",
@@ -17439,7 +17466,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "mistral/mistral-small-latest",
@@ -17448,7 +17475,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "moonshot/kimi-k2.7-code",
@@ -17457,7 +17484,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "moonshot/kimi-k2.7-code-highspeed",
@@ -17466,7 +17493,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "moonshot/kimi-k3",
@@ -17475,7 +17502,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "novita/zai-org/autoglm-phone-9b-multilingual",
@@ -17637,7 +17664,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "novita/deepseek/deepseek-v4-flash-0731",
@@ -17664,7 +17691,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "novita/deepseek/deepseek-v4-pro-0813",
@@ -17880,7 +17907,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "novita/zai-org/glm-5v-turbo",
@@ -17970,7 +17997,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "novita/moonshotai/kimi-k3",
@@ -17979,7 +18006,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "novita/inclusionai/ling-3.0-flash",
@@ -18186,7 +18213,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "novita/minimax/minimax-m2.7-highspeed",
@@ -18204,7 +18231,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "novita/mistralai/mistral-nemo",
@@ -18474,7 +18501,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "novita/qwen/qwen3.8-2.4t-a95b",
@@ -18564,7 +18591,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "nvidia/z-ai/glm-5.1",
@@ -18573,7 +18600,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "nvidia/z-ai/glm-5.2",
@@ -18582,7 +18609,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "nvidia/z-ai/glm5",
@@ -18591,7 +18618,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "nvidia/moonshotai/kimi-k2.5",
@@ -18600,7 +18627,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "nvidia/moonshotai/kimi-k2.6",
@@ -18609,7 +18636,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "nvidia/minimaxai/minimax-m2.7",
@@ -18618,7 +18645,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "nvidia/minimaxai/minimax-m3",
@@ -18627,7 +18654,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "nvidia/nemotron-3-super-120b-a12b",
@@ -18636,7 +18663,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "nvidia/nemotron-3-ultra-550b-a55b",
@@ -18645,7 +18672,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "nvidia/nemotron-3.5-lightning-30b-a3b",
@@ -18654,7 +18681,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "nvidia/qwen/qwen3.5-397b-a17b",
@@ -18663,7 +18690,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "ollama-cloud/deepseek-v4-flash",
@@ -18672,7 +18699,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "ollama-cloud/deepseek-v4-flash:0731",
@@ -18681,7 +18708,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/deepseek-v4-flash:preview",
@@ -18690,7 +18717,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "ollama-cloud/deepseek-v4-pro",
@@ -18699,7 +18726,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "ollama-cloud/deepseek-v4-pro:0813",
@@ -18708,7 +18735,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/deepseek-v4-pro:preview",
@@ -18717,7 +18744,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "ollama-cloud/deepseek-v4.1-flash",
@@ -18735,7 +18762,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "ollama-cloud/gemma4:31b",
@@ -18744,7 +18771,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/glm-5.1",
@@ -18753,7 +18780,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/glm-5.2",
@@ -18762,7 +18789,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/glm-5.3",
@@ -18789,7 +18816,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/gpt-oss:20b",
@@ -18798,7 +18825,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/kimi-k2.5",
@@ -18807,7 +18834,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "ollama-cloud/kimi-k2.6",
@@ -18816,7 +18843,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/kimi-k2.7-code",
@@ -18825,7 +18852,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/kimi-k3",
@@ -18834,7 +18861,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/minimax-m2.7",
@@ -18843,7 +18870,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/minimax-m3",
@@ -18852,7 +18879,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/mistral-large-3:675b",
@@ -18861,7 +18888,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/nemotron-3-nano:30b",
@@ -18870,7 +18897,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/nemotron-3-super",
@@ -18879,7 +18906,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/nemotron-3-ultra",
@@ -18888,7 +18915,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "ollama-cloud/qwen3.5",
@@ -18897,7 +18924,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "ollama-cloud/qwen3.5:397b",
@@ -18906,7 +18933,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "openai/gpt-5.6",
@@ -18929,7 +18956,7 @@
         "subscription",
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "openai/gpt-5.6-sol",
@@ -18939,7 +18966,7 @@
         "subscription",
         "provider-api"
       ],
-      "source": "openclaw-provider-probe",
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "subscription"
@@ -18953,7 +18980,7 @@
         "subscription",
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "openrouter/aion-labs/aion-2.0",
@@ -23013,7 +23040,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "tencent-tokenhub/hy3-preview",
@@ -23022,7 +23049,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "tencent-tokenhub/hy4-preview",
@@ -23031,7 +23058,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "together/deepseek-ai/DeepSeek-V4-Pro",
@@ -23040,7 +23067,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "together/zai-org/GLM-5.2",
@@ -23049,7 +23076,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "together/moonshotai/Kimi-K2.6",
@@ -23058,7 +23085,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "together/meta-llama/Llama-3.3-70B-Instruct-Turbo",
@@ -23067,7 +23094,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/aion-labs-aion-3-0",
@@ -23094,7 +23121,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/claude-fable-5-1",
@@ -23157,7 +23184,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/claude-opus-5-fast",
@@ -23184,7 +23211,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/claude-sonnet-5",
@@ -23202,7 +23229,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/e2ee-deepseek-v4-flash",
@@ -23355,7 +23382,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/zai-org-glm-4.7",
@@ -23364,7 +23391,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/zai-org-glm-4.7-flash",
@@ -23418,7 +23445,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/e2ee-glm-5-2-p",
@@ -23481,7 +23508,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/google-gemma-4-26b-a4b-it",
@@ -23499,7 +23526,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/e2ee-gpt-oss-120b-p",
@@ -23598,7 +23625,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/openai-gpt-56-sol-pro",
@@ -23679,7 +23706,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/grok-4-6",
@@ -23724,7 +23751,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/kimi-k2-6",
@@ -23733,7 +23760,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/e2ee-kimi-k2-6",
@@ -23985,7 +24012,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/qwen-3-7-plus",
@@ -23994,7 +24021,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/qwen-3-8-2-4t-a95b",
@@ -24048,7 +24075,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/qwen3-coder-480b-a35b-instruct-turbo",
@@ -24057,7 +24084,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/qwen3-vl-235b-a22b",
@@ -24066,7 +24093,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "venice/e2ee-qwen3-vl-30b-a3b-p",
@@ -24102,7 +24129,25 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+    },
+    {
+      "key": "vercel-ai-gateway/quiverai/arrow-2",
+      "provider": "vercel-ai-gateway",
+      "label": "Arrow 2",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/quiverai/arrow-2-telos",
+      "provider": "vercel-ai-gateway",
+      "label": "Arrow 2 Telos",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
       "key": "vercel-ai-gateway/bytedance/seed-1.8",
@@ -26333,6 +26378,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/mixedbread/toast-1",
+      "provider": "vercel-ai-gateway",
+      "label": "Toast 1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/arcee-ai/trinity-large-thinking",
       "provider": "vercel-ai-gateway",
       "label": "Trinity Large Thinking",
@@ -26348,7 +26402,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine/deepseek-v4-flash-260425",
@@ -26357,7 +26411,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine/deepseek-v4-pro-260425",
@@ -26366,7 +26420,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine/doubao-seed-2-1-pro-260628",
@@ -26375,7 +26429,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine/doubao-seed-2-1-turbo-260628",
@@ -26384,7 +26438,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine/doubao-seed-evolving",
@@ -26393,7 +26447,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine/glm-4-7-251222",
@@ -26402,7 +26456,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine/glm-5-2-260617",
@@ -26411,7 +26465,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine/kimi-k2-5-260127",
@@ -26420,7 +26474,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine-plan/ark-code-latest",
@@ -26429,7 +26483,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine-plan/deepseek-v4-flash",
@@ -26438,7 +26492,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine-plan/deepseek-v4-pro",
@@ -26447,7 +26501,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine-plan/doubao-seed-2.1-turbo",
@@ -26456,7 +26510,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "volcengine-plan/glm-5.2",
@@ -26465,7 +26519,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "xai/grok-4.20-0309-non-reasoning",
@@ -26474,7 +26528,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "xai/grok-4.20-0309-reasoning",
@@ -26483,7 +26537,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "xai/grok-4.3",
@@ -26492,7 +26546,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "xai/grok-4.5",
@@ -26501,7 +26555,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "xai/grok-4.6",
@@ -26510,7 +26564,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "xai/grok-build-0.1",
@@ -26519,7 +26573,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "xiaomi/mimo-v2.5",
@@ -26528,7 +26582,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "xiaomi/mimo-v2.5-pro",
@@ -26537,7 +26591,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "zai/glm-5-turbo",
@@ -26546,7 +26600,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "zai/glm-5.1",
@@ -26555,7 +26609,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "zai/glm-5.2",
@@ -26564,7 +26618,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "zai/glm-5.3",
@@ -26573,7 +26627,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "zai/glm-5.3-flash",
@@ -26582,7 +26636,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "zai/glm-5v-turbo",
@@ -26591,7 +26645,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     }
   ]
 }
