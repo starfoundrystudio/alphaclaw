@@ -751,6 +751,10 @@ if (fs.existsSync(configPath)) {
     console.error(
       "[alphaclaw] Startup OpenClaw plugin reconciliation failed; continuing so the setup UI can surface recovery options",
     );
+    // The server retries this on a backoff once it is up (a restored host's
+    // egress proxy may not be usable yet); see
+    // lib/server/startup-plugin-reconcile-retry.js.
+    process.env.ALPHACLAW_STARTUP_PLUGIN_RECONCILE_FAILED = "1";
   }
 } else {
   console.log(
