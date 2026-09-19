@@ -401,7 +401,7 @@ describe("server/routes/models", () => {
 
     const res = await request(app)
       .post("/api/models/set")
-      .send({ modelKey: "vercel-ai-gateway/openai/gpt-5.5" });
+      .send({ modelKey: "vercel-ai-gateway/openai/gpt-5.6" });
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({
@@ -409,6 +409,42 @@ describe("server/routes/models", () => {
       error: "AI_GATEWAY_API_KEY must start with vck_",
     });
     expect(deps.shellCmd).not.toHaveBeenCalled();
+  });
+
+  it("rejects denied model keys before touching credentials or openclaw", async () => {
+    const deps = createModelDeps();
+    const app = createApp(deps);
+
+    const setRes = await request(app)
+      .post("/api/models/set")
+      .send({ modelKey: "vercel-ai-gateway/openai/gpt-5.5" });
+
+    expect(setRes.status).toBe(400);
+    expect(setRes.body).toEqual({
+      ok: false,
+      error:
+        "vercel-ai-gateway/openai/gpt-5.5 is not available on this instance; choose another model",
+    });
+
+    const configRes = await request(app)
+      .put("/api/models/config")
+      .send({
+        primary: "openai/gpt-5.6",
+        configuredModels: {
+          "openai/gpt-5.6": {},
+          "kilocode/openai/gpt-5.5": {},
+        },
+      });
+
+    expect(configRes.status).toBe(400);
+    expect(configRes.body).toEqual({
+      ok: false,
+      error:
+        "kilocode/openai/gpt-5.5 is not available on this instance; choose another model",
+    });
+    expect(deps.readEnvFile).not.toHaveBeenCalled();
+    expect(deps.shellCmd).not.toHaveBeenCalled();
+    expect(deps.authProfiles.setModelConfig).not.toHaveBeenCalled();
   });
 
   it("returns JSON when model-set credential validation reads fail", async () => {
@@ -420,7 +456,7 @@ describe("server/routes/models", () => {
 
     const res = await request(app)
       .post("/api/models/set")
-      .send({ modelKey: "vercel-ai-gateway/openai/gpt-5.5" });
+      .send({ modelKey: "vercel-ai-gateway/openai/gpt-5.6" });
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({ ok: false, error: "env unreadable" });
@@ -466,9 +502,9 @@ describe("server/routes/models", () => {
     const res = await request(app)
       .put("/api/models/config")
       .send({
-        primary: "openai/gpt-5.5",
+        primary: "openai/gpt-5.6",
         configuredModels: {
-          "openai/gpt-5.5": { agentRuntime: { id: "codex" } },
+          "openai/gpt-5.6": { agentRuntime: { id: "codex" } },
         },
       });
 
@@ -494,9 +530,9 @@ describe("server/routes/models", () => {
     const res = await request(app)
       .put("/api/models/config")
       .send({
-        primary: "openai/gpt-5.5",
+        primary: "openai/gpt-5.6",
         configuredModels: {
-          "openai/gpt-5.5": { agentRuntime: { id: "codex" } },
+          "openai/gpt-5.6": { agentRuntime: { id: "codex" } },
         },
       });
 
@@ -535,8 +571,8 @@ describe("server/routes/models", () => {
   it("returns provider runtime ids on GET /api/models/config", async () => {
     const deps = createModelDeps();
     deps.authProfiles.getModelConfig.mockReturnValue({
-      primary: "openai/gpt-5.5",
-      configuredModels: { "openai/gpt-5.5": {} },
+      primary: "openai/gpt-5.6",
+      configuredModels: { "openai/gpt-5.6": {} },
       providerRuntimeIds: { openai: "codex" },
       modelRuntimeIds: {},
     });
@@ -621,9 +657,9 @@ describe("server/routes/models", () => {
     const res = await request(app)
       .put("/api/models/config")
       .send({
-        primary: "vercel-ai-gateway/openai/gpt-5.5",
+        primary: "vercel-ai-gateway/openai/gpt-5.6",
         configuredModels: {
-          "vercel-ai-gateway/openai/gpt-5.5": {},
+          "vercel-ai-gateway/openai/gpt-5.6": {},
         },
       });
 
@@ -649,9 +685,9 @@ describe("server/routes/models", () => {
     const res = await request(app)
       .put("/api/models/config")
       .send({
-        primary: "vercel-ai-gateway/openai/gpt-5.5",
+        primary: "vercel-ai-gateway/openai/gpt-5.6",
         configuredModels: {
-          "vercel-ai-gateway/openai/gpt-5.5": {},
+          "vercel-ai-gateway/openai/gpt-5.6": {},
         },
       });
 
@@ -667,9 +703,9 @@ describe("server/routes/models", () => {
       { key: "AI_GATEWAY_API_KEY", value: "not-a-vercel-key" },
     ]);
     deps.authProfiles.getModelConfig.mockReturnValue({
-      primary: "vercel-ai-gateway/openai/gpt-5.5",
+      primary: "vercel-ai-gateway/openai/gpt-5.6",
       configuredModels: {
-        "vercel-ai-gateway/openai/gpt-5.5": {},
+        "vercel-ai-gateway/openai/gpt-5.6": {},
       },
     });
     deps.authProfiles.getEnvVarForApiKeyProvider.mockImplementation(
@@ -681,20 +717,20 @@ describe("server/routes/models", () => {
     const res = await request(app)
       .put("/api/models/config")
       .send({
-        primary: "openai/gpt-5.5",
+        primary: "openai/gpt-5.6",
         configuredModels: {
-          "openai/gpt-5.5": {},
-          "vercel-ai-gateway/openai/gpt-5.5": {},
+          "openai/gpt-5.6": {},
+          "vercel-ai-gateway/openai/gpt-5.6": {},
         },
       });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true });
     expect(deps.authProfiles.setModelConfig).toHaveBeenCalledWith({
-      primary: "openai/gpt-5.5",
+      primary: "openai/gpt-5.6",
       configuredModels: {
-        "openai/gpt-5.5": {},
-        "vercel-ai-gateway/openai/gpt-5.5": {},
+        "openai/gpt-5.6": {},
+        "vercel-ai-gateway/openai/gpt-5.6": {},
       },
     });
   });

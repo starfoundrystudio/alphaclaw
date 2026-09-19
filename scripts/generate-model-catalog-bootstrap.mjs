@@ -572,7 +572,12 @@ const generateCatalog = async () => {
   };
 };
 
-const catalog = await generateCatalog();
+// Product-wide model denylist (e.g. GPT-5.5): strip denied keys from the
+// bundled bootstrap too, so pack-time and runtime agree.
+const { stripDeniedModelsFromCatalog } = requireFromRepo(
+  "./lib/server/model-denylist.js",
+);
+const catalog = stripDeniedModelsFromCatalog(await generateCatalog());
 fs.writeFileSync(kBootstrapPath, `${JSON.stringify(catalog, null, 2)}\n`, "utf8");
 console.log(
   `Generated ${path.relative(kRepoRoot, kBootstrapPath)} with ${catalog.models.length} models across ${Object.keys(catalog.accessModes).length} access modes`,

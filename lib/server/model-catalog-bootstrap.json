@@ -145,16 +145,6 @@
               ]
             },
             {
-              "key": "openai/gpt-5.5",
-              "provider": "openai",
-              "label": "GPT-5.5",
-              "accessModes": [
-                "subscription",
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe+alphaclaw-support-spec"
-            },
-            {
               "key": "openai/gpt-5.6-luna",
               "provider": "openai",
               "label": "GPT-5.6 Luna",
@@ -1798,16 +1788,6 @@
               ]
             },
             {
-              "key": "openai/gpt-5.5",
-              "provider": "openai",
-              "label": "GPT-5.5",
-              "accessModes": [
-                "subscription",
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe+alphaclaw-support-spec"
-            },
-            {
               "key": "openai/gpt-5.6-luna",
               "provider": "openai",
               "label": "GPT-5.6 Luna",
@@ -3149,18 +3129,7 @@
             "cloudflare-ai-gateway"
           ],
           "recommendedModelKeys": [],
-          "models": [
-            {
-              "key": "cloudflare-ai-gateway/openai/gpt-5.5",
-              "provider": "cloudflare-ai-gateway",
-              "label": "GPT-5.5",
-              "accessModes": [
-                "gateway"
-              ],
-              "accessLabel": "via Cloudflare AI Gateway",
-              "source": "alphaclaw-support-spec"
-            }
-          ]
+          "models": []
         },
         {
           "id": "kilocode",
@@ -3984,16 +3953,6 @@
                 "gateway"
               ],
               "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/openai/gpt-5.5",
-              "provider": "kilocode",
-              "label": "GPT-5.5",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+alphaclaw-support-spec",
-              "accessLabel": "via Kilo Gateway"
             },
             {
               "key": "kilocode/ibm-granite/granite-4.0-h-micro",
@@ -5115,15 +5074,6 @@
               "key": "kilocode/openai/gpt-5.4-pro",
               "provider": "kilocode",
               "label": "OpenAI: GPT-5.4 Pro ($$$$)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/openai/gpt-5.5-pro",
-              "provider": "kilocode",
-              "label": "OpenAI: GPT-5.5 Pro ($$$$)",
               "accessModes": [
                 "gateway"
               ],
@@ -7676,16 +7626,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/gpt-5.5",
-              "provider": "openrouter",
-              "label": "GPT-5.5",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
-              "accessLabel": "via OpenRouter"
-            },
-            {
               "key": "openrouter/ibm-granite/granite-4.0-h-micro",
               "provider": "openrouter",
               "label": "IBM: Granite 4.0 Micro",
@@ -9075,33 +9015,6 @@
               "key": "openrouter/openai/gpt-5.4-pro:batch",
               "provider": "openrouter",
               "label": "OpenAI: GPT-5.4 Pro (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/openai/gpt-5.5:batch",
-              "provider": "openrouter",
-              "label": "OpenAI: GPT-5.5 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/openai/gpt-5.5-pro",
-              "provider": "openrouter",
-              "label": "OpenAI: GPT-5.5 Pro",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/openai/gpt-5.5-pro:batch",
-              "provider": "openrouter",
-              "label": "OpenAI: GPT-5.5 Pro (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11364,24 +11277,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/openai/gpt-5.5-fast",
-              "provider": "vercel-ai-gateway",
-              "label": "GPT 5.5 (Fast)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/openai/gpt-5.5-pro",
-              "provider": "vercel-ai-gateway",
-              "label": "GPT 5.5 Pro",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/openai/gpt-5.6-luna",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.6 Luna",
@@ -11641,16 +11536,6 @@
                 "gateway"
               ],
               "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/openai/gpt-5.5",
-              "provider": "vercel-ai-gateway",
-              "label": "GPT-5.5",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
-              "accessLabel": "via Vercel AI Gateway"
             },
             {
               "key": "vercel-ai-gateway/openai/gpt-6-astra",
@@ -13012,16 +12897,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "cloudflare-ai-gateway/openai/gpt-5.5",
-      "provider": "cloudflare-ai-gateway",
-      "label": "GPT-5.5",
-      "accessModes": [
-        "gateway"
-      ],
-      "accessLabel": "via Cloudflare AI Gateway",
-      "source": "alphaclaw-support-spec"
-    },
-    {
       "key": "deepseek/deepseek-chat",
       "provider": "deepseek",
       "label": "DeepSeek Chat",
@@ -13884,16 +13759,6 @@
         "gateway"
       ],
       "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/openai/gpt-5.5",
-      "provider": "kilocode",
-      "label": "GPT-5.5",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+alphaclaw-support-spec",
-      "accessLabel": "via Kilo Gateway"
     },
     {
       "key": "kilocode/ibm-granite/granite-4.0-h-micro",
@@ -15015,15 +14880,6 @@
       "key": "kilocode/openai/gpt-5.4-pro",
       "provider": "kilocode",
       "label": "OpenAI: GPT-5.4 Pro ($$$$)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/openai/gpt-5.5-pro",
-      "provider": "kilocode",
-      "label": "OpenAI: GPT-5.5 Pro ($$$$)",
       "accessModes": [
         "gateway"
       ],
@@ -17739,16 +17595,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "openai/gpt-5.5",
-      "provider": "openai",
-      "label": "GPT-5.5",
-      "accessModes": [
-        "subscription",
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe+alphaclaw-support-spec"
-    },
-    {
       "key": "openai/gpt-5.6",
       "provider": "openai",
       "label": "GPT-5.6",
@@ -18952,16 +18798,6 @@
         "gateway"
       ],
       "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/openai/gpt-5.5",
-      "provider": "openrouter",
-      "label": "GPT-5.5",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
-      "accessLabel": "via OpenRouter"
     },
     {
       "key": "openrouter/ibm-granite/granite-4.0-h-micro",
@@ -20353,33 +20189,6 @@
       "key": "openrouter/openai/gpt-5.4-pro:batch",
       "provider": "openrouter",
       "label": "OpenAI: GPT-5.4 Pro (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/openai/gpt-5.5:batch",
-      "provider": "openrouter",
-      "label": "OpenAI: GPT-5.5 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/openai/gpt-5.5-pro",
-      "provider": "openrouter",
-      "label": "OpenAI: GPT-5.5 Pro",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/openai/gpt-5.5-pro:batch",
-      "provider": "openrouter",
-      "label": "OpenAI: GPT-5.5 Pro (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -23739,24 +23548,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/openai/gpt-5.5-fast",
-      "provider": "vercel-ai-gateway",
-      "label": "GPT 5.5 (Fast)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/openai/gpt-5.5-pro",
-      "provider": "vercel-ai-gateway",
-      "label": "GPT 5.5 Pro",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/openai/gpt-5.6-luna",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.6 Luna",
@@ -24029,16 +23820,6 @@
         "gateway"
       ],
       "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/openai/gpt-5.5",
-      "provider": "vercel-ai-gateway",
-      "label": "GPT-5.5",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
-      "accessLabel": "via Vercel AI Gateway"
     },
     {
       "key": "vercel-ai-gateway/openai/gpt-6-astra",

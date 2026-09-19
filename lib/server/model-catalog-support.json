@@ -167,13 +167,11 @@
       },
       "allowedModelKeysByAccessMode": {
         "subscription": [
-          "openai/gpt-5.5",
           "openai/gpt-5.6-sol",
           "openai/gpt-5.6-terra",
           "openai/gpt-5.6-luna"
         ],
         "provider-api": [
-          "openai/gpt-5.5",
           "openai/gpt-5.6",
           "openai/gpt-5.6-sol",
           "openai/gpt-5.6-terra",
@@ -184,7 +182,7 @@
         "subscription": ["openai/gpt-5.6-sol"],
         "provider-api": ["openai/gpt-5.6"]
       },
-      "minimumProbeModelCount": 5
+      "minimumProbeModelCount": 4
     },
     "openrouter": {
       "label": "OpenRouter",
@@ -268,19 +266,6 @@
   },
   "explicitModels": [
     {
-      "key": "openai/gpt-5.5",
-      "provider": "openai",
-      "label": "GPT-5.5",
-      "accessModes": ["subscription", "provider-api"]
-    },
-    {
-      "key": "openrouter/openai/gpt-5.5",
-      "provider": "openrouter",
-      "label": "GPT-5.5",
-      "accessModes": ["gateway"],
-      "accessLabel": "via OpenRouter"
-    },
-    {
       "key": "openrouter/anthropic/claude-sonnet-4.6",
       "provider": "openrouter",
       "label": "Claude Sonnet 4.6",
@@ -294,13 +279,6 @@
       "label": "Claude Opus 4.8",
       "accessModes": ["gateway"],
       "accessLabel": "via OpenRouter"
-    },
-    {
-      "key": "vercel-ai-gateway/openai/gpt-5.5",
-      "provider": "vercel-ai-gateway",
-      "label": "GPT-5.5",
-      "accessModes": ["gateway"],
-      "accessLabel": "via Vercel AI Gateway"
     },
     {
       "key": "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
@@ -317,20 +295,6 @@
       "accessModes": ["gateway"],
       "accessLabel": "via Vercel AI Gateway",
       "recommendation": "recommended"
-    },
-    {
-      "key": "kilocode/openai/gpt-5.5",
-      "provider": "kilocode",
-      "label": "GPT-5.5",
-      "accessModes": ["gateway"],
-      "accessLabel": "via Kilo Gateway"
-    },
-    {
-      "key": "cloudflare-ai-gateway/openai/gpt-5.5",
-      "provider": "cloudflare-ai-gateway",
-      "label": "GPT-5.5",
-      "accessModes": ["gateway"],
-      "accessLabel": "via Cloudflare AI Gateway"
     }
   ]
 }

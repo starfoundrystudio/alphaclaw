@@ -279,7 +279,7 @@ describe("frontend/model-config", () => {
         accessMode: "subscription",
       })
       .map((model) => model.key);
-    expect(subscriptionKeys).toContain("openai/gpt-5.5");
+    expect(subscriptionKeys).not.toContain("openai/gpt-5.5");
     expect(subscriptionKeys).toContain("openai/gpt-5.6-sol");
     expect(subscriptionKeys).not.toContain("openai/gpt-5.6");
     expect(subscriptionKeys).not.toContain("github-copilot/gpt-5.5");
@@ -298,7 +298,6 @@ describe("frontend/model-config", () => {
     ).toEqual([
       "openrouter/openai/gpt-5.6-sol",
       "vercel-ai-gateway/openai/gpt-5.6-sol",
-      "kilocode/openai/gpt-5.5",
     ]);
   });
 
