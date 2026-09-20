@@ -9,7 +9,7 @@ Channel credentials are env/config-based, agent-readable, and vault-invisible; A
 
 ## 2. Transport ground truth (unchanged from v1, condensed)
 
-With `proxy.enabled` (set at vault claim), the pinned `openclaw@2026.7.1` installs `@openclaw/proxyline` in managed mode: process-global routing over `node:http`/`https`, the undici/fetch dispatcher, and caller-supplied agents, re-installed in children via `OPENCLAW_PROXY_ACTIVE=1`. Consequences: most channel REST/long-poll traffic already transits the vault proxy; the audited exception is the Discord plugin's private transport stack (fixed via its own `channels.discord.proxy` hook — set to the literal `"${OPENCLAW_PROXY_URL}"` env reference so the git-synced config stays secret-free); loopback destinations intentionally bypass via the shim. Per-plugin transit is an empirical checklist item (§8), not an assumption.
+With `proxy.enabled` (set at vault claim), the pinned OpenClaw (`2026.7.1` when written; unchanged through `2026.9.5`) installs `@openclaw/proxyline` in managed mode: process-global routing over `node:http`/`https`, the undici/fetch dispatcher, and caller-supplied agents, re-installed in children via `OPENCLAW_PROXY_ACTIVE=1`. Consequences: most channel REST/long-poll traffic already transits the vault proxy; the audited exception is the Discord plugin's private transport stack (fixed via its own `channels.discord.proxy` hook — set to the literal `"${OPENCLAW_PROXY_URL}"` env reference so the git-synced config stays secret-free); loopback destinations intentionally bypass via the shim. Per-plugin transit is an empirical checklist item (§8), not an assumption.
 
 ## 3. Credential taxonomy
 

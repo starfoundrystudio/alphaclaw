@@ -93,26 +93,31 @@ Why:
 
 Area: onboarding / setup UI / generated OpenClaw config
 
-Behavior:
+Behavior (OpenClaw 2026.9.x pin; rewritten in W6 of the 2026.9 upgrade):
 
 - Codex OAuth is kept separate from the native Codex runtime choice.
-- When a user selects an `openai/*` or `openai-codex/*` model and connects
-  Codex OAuth, default to the native Codex runtime by setting
-  `models.providers.openai.agentRuntime.id: "codex"` and using the canonical
-  `openai/*` model key.
-- The user can explicitly switch to the flexible OpenClaw Pi route, which uses
-  the effective `openai-codex/*` model key.
-- Only install/enable the managed `codex` plugin, set
-  `models.providers.openai.agentRuntime.id: "codex"`, and enable
+- Model references are canonical `openai/*` everywhere AlphaClaw writes
+  config. The legacy `openai-codex/*` key is accepted only as an upgrade
+  compatibility alias on input (older configs, saved onboarding drafts) and
+  is normalised to `openai/*` before anything is written; Doctor migrates
+  existing `openai-codex/*` entries on the instance.
+- When a user selects an `openai/*` model and connects Codex OAuth, default
+  to the native Codex runtime by setting
+  `models.providers.openai.agentRuntime.id: "codex"`. The runtime lives on
+  the provider entry, not on the model key.
+- The user can explicitly switch to the flexible OpenClaw route for the same
+  `openai/*` model; that only changes the provider's `agentRuntime`.
+- Only install/enable the managed `codex` plugin (pinned, with
+  `--accept-capabilities`), set the provider `agentRuntime`, and enable
   `tools.web.search.openaiCodex` when the Codex runtime route is selected.
 
 Why:
 
-- Codex OAuth can authenticate the default Pi route without requiring an
+- Codex OAuth can authenticate the default route without requiring an
   `OPENAI_API_KEY`.
-- The native Codex runtime improves OpenAI/Codex behavior, while provider-scoped
-  runtime config lets non-OpenAI providers keep using their own runtime/auth
-  path later.
+- OpenClaw 2026.9 retired the route-specific model prefix in favour of one
+  canonical provider id plus a provider-scoped runtime; keeping AlphaClaw on
+  the same shape avoids Doctor rewriting managed config after every write.
 - OpenClaw exposes OAuth auth and the Codex runtime as separate concepts;
   AlphaClaw's setup UI makes that tradeoff explicit rather than inferring
   runtime from OAuth connection state.
