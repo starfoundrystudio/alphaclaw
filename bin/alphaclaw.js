@@ -98,6 +98,28 @@ if (
   process.exit(0);
 }
 
+// Every subcommand this binary understands. Anything else must fail fast:
+// falling through to the server start is how a retired command name in a
+// host script (G2 finding #2, `finalize-openclaw-startup-state`) launched a
+// foreground server inside the upgrade run.
+const kKnownCommands = new Set([
+  "start",
+  "help",
+  "version",
+  "migrate",
+  "verify-openclaw-startup-state",
+  "openclaw-runtime",
+  "openclaw-doctor-guard",
+  "reconcile-openclaw-plugins",
+  "telegram",
+]);
+if (command && !kKnownCommands.has(command)) {
+  console.error(
+    `[alphaclaw] Unknown command: ${command}. Run "alphaclaw --help" for the command list.`,
+  );
+  process.exit(2);
+}
+
 const isOpenclawPassthroughCommand =
   command === "openclaw-runtime" || command === "openclaw-doctor-guard";
 if (
