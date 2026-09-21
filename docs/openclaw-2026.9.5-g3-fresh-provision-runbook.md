@@ -394,3 +394,18 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   that set up Agent Vault before the key is entered; not found in
   alphaclaw, teamyou, or clawctl on any branch or worktree on this machine
   (2026-09-21). Waiting on where they live.
+  **Resolved as expected behaviour, not a regression (2026-09-21):**
+  `docs/vault-brokered-model-keys-spec.md` §5B ("bootstrap lane") keeps
+  the raw onboarding key on purpose, because the vault runtime token is
+  only claimed after onboarding (it needs the tailnet and owner
+  enrolment). Moving vault setup earlier was discussed and set aside for
+  that ordering reason. The documented closure is §5C: after onboarding
+  the Models page shows a migrate banner, which creates the proposal and
+  link; on approval, reconcile swaps in the placeholder and scrubs `.env`
+  and the auth store. End state is Phase D, provision-time key seeding,
+  still parked. G3 check to add: on a fresh 2026.9.5 host, confirm the
+  migrate banner appears and that migration scrubs the raw key from both
+  `.env` and the auth store. The spec names the per-agent store
+  `openclaw-agent.sqlite`; on 2026.9.5 the audit found the profile in
+  `state/openclaw.sqlite` (`config_machine_state`), so the scrub may miss
+  it.
