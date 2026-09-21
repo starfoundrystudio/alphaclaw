@@ -371,3 +371,17 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   `llama-cpp` there. To verify on the next fresh host: `openclaw memory
   status` reports FTS available (03 reported "FTS: unavailable" under
   `provider: "local"`).
+- **G3 finding #19 (S1, security, found 2026-09-21): the model key entered
+  during onboarding is stored raw on the instance.** `openclaw secrets
+  audit --json` on `test-g3-oc95-03` reports `PLAINTEXT_FOUND` for auth
+  profile `vercel-ai-gateway:default` in `state/openclaw.sqlite` (table
+  `config_machine_state`). Checked without printing it: the stored value is
+  a real Vercel key (60 characters, `vck` prefix), not an
+  `__agent_vault_*__` placeholder, although Vercel AI Gateway is a
+  vault-brokered provider in `model-provider-services.js`
+  (`ai-gateway.vercel.sh`). The wizard ran after Agent Vault enrolment, so
+  the key should have been brokered. Not yet diagnosed: whether onboarding
+  on 2026.9.5 writes the raw key, or writes a placeholder that something
+  later replaces. Bill's real key is on 03; rotate it when 03 is retired.
+  Second audit finding, `.env` `TEAMYOU_API_URL`, is a name-heuristic false
+  positive (a URL).
