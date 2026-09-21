@@ -285,3 +285,25 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
 - Doctor's other memory warning ("Active Memory plugin is disabled") is
   the pre-activation state by design (TeamYou memory activation gate;
   `active-memory.config.enabled` flips on activation).
+- **G3 finding #16 (S1, chat UI on 2026.9.5): a streamed reply rendered
+  twice, the second copy with its text doubled** (Bill's screenshot on
+  `test-g3-oc95-03` after naming the agent). Server transcript and
+  `chat.history` hold the reply once. Cause, from the 2026.9.5 runtime
+  (`embedded-agent.runtime`): when the streamed text no longer extends the
+  previous text — item boundaries such as thinking → text, truncation, a
+  cleared stream — OpenClaw sends the FULL visible text as `delta` with
+  `replace: true` (and elsewhere a text-only event with an empty delta).
+  Clawbridge's relay forwarded it as an append, so the bubble doubled, and
+  the history merge then kept the mismatched bubble beside the canonical
+  row (its browser timestamp was newer). Scripted single-item replies did
+  not reproduce it (every event had `delta === text`); the ritual reply
+  with thinking items did. Fixed: relay forwards `replace: true` chunks
+  (and treats empty-delta text events as replace); the client overwrites
+  on replace; the merge treats streamed assistant bubbles as provisional
+  once the snapshot's newest row is the assistant reply. Tests on relay
+  and merge. Needs a beta.5.
+- Finding #15 correction pending: Bill notes a managed llama-server and
+  model download already exist in setup; the 2026.9.5 Gateway still
+  reports "local embeddings need the managed llama.cpp server config" on
+  the fresh host — to be checked against what clawctl provisions before
+  any change.

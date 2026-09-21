@@ -40,6 +40,31 @@ describe("mergeHistoryMessages", () => {
     expect(mergeHistoryMessages(local, history)).toEqual(history);
   });
 
+  it("drops a provisional streamed assistant bubble once the snapshot carries the reply", () => {
+    // G3 finding #16: the browser assembled the streamed reply differently
+    // (doubled text) and its clock ran ahead of the server, so the bubble
+    // neither matched the canonical row nor fell below its timestamp, and
+    // the user saw two cards.
+    const streamed = {
+      ...msg("assistant", "Ava it is.Ava it is.", 500),
+      id: "msg-1",
+      debugPayload: { source: "stream", messageId: "msg-1" },
+    };
+    const local = [msg("user", "I will call you Ava", 200), streamed];
+    const history = [
+      msg("assistant", "Hi, what should I be called?", 100),
+      msg("user", "I will call you Ava", 210),
+      msg("assistant", "Ava it is.", 310),
+    ];
+
+    expect(mergeHistoryMessages(local, history)).toEqual(history);
+
+    // A streamed bubble is kept while the snapshot still ends on the user's
+    // message (the reply has not been persisted yet).
+    const lagging = history.slice(0, 2);
+    expect(mergeHistoryMessages(local, lagging)).toEqual([...lagging, streamed]);
+  });
+
   it("prefers the snapshot when it is complete and newer", () => {
     const local = [msg("user", "Hi there!", 200)];
     const history = [

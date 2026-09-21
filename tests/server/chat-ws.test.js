@@ -306,6 +306,56 @@ describe("server/chat-ws", () => {
       expect(attempts).toBe(2);
     });
 
+    it("forwards an OpenClaw replace event as a replace chunk instead of an append", async () => {
+      // OpenClaw 2026.9 re-sends the whole visible text as `delta` with
+      // `replace: true` when the stream no longer extends the previous text;
+      // appending it doubled the bubble in Clawbridge (G3 finding #16).
+      const { received, waitForMessage, sendChat } = await startBridge({
+        onChatSend: (socket, frame) => {
+          socket.send(
+            JSON.stringify({
+              type: "res",
+              id: frame.id,
+              ok: true,
+              payload: { runId: "run-replace" },
+            }),
+          );
+        },
+      });
+
+      sendChat("Name yourself.");
+      await waitForMessage((m) => m.type === "started");
+
+      gatewaySocket.send(
+        agentEvent({
+          runId: "run-replace",
+          sessionKey: kSessionKey,
+          stream: "assistant",
+          data: { text: "Ava it is.", delta: "Ava it is." },
+        }),
+      );
+      gatewaySocket.send(
+        agentEvent({
+          runId: "run-replace",
+          sessionKey: kSessionKey,
+          stream: "assistant",
+          data: {
+            text: "Ava it is.\n\nHere's my vibe.",
+            delta: "Ava it is.\n\nHere's my vibe.",
+            replace: true,
+          },
+        }),
+      );
+      gatewaySocket.send(agentEvent(lifecycleEnd("run-replace")));
+      await waitForMessage((m) => m.type === "done");
+
+      const chunks = received.filter((m) => m.type === "chunk");
+      expect(chunks.map((m) => [m.content, m.replace === true])).toEqual([
+        ["Ava it is.", false],
+        ["Ava it is.\n\nHere's my vibe.", true],
+      ]);
+    });
+
     it("ignores a concurrent side run instead of hijacking the user's stream", async () => {
       // Reproduces the active-memory recall race: a second run in the same
       // session streams its "NONE" sentinel and ends while the user's run is
