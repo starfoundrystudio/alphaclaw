@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-21T07:41:38.111Z",
+  "generatedAt": "2026-09-21T21:21:34.740Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -3152,6 +3152,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "venice/grok-4-7",
+              "provider": "venice",
+              "label": "Grok 4.7",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "venice/grok-build-0-1",
               "provider": "venice",
               "label": "Grok Build 0.1",
@@ -4107,15 +4116,6 @@
               "key": "kilocode/~anthropic/claude-haiku-latest",
               "provider": "kilocode",
               "label": "Anthropic: Claude Haiku Latest",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/anthropic/claude-opus-4",
-              "provider": "kilocode",
-              "label": "Anthropic: Claude Opus 4 ($$$$)",
               "accessModes": [
                 "gateway"
               ],
@@ -6840,6 +6840,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/x-ai/grok-4.7",
+              "provider": "kilocode",
+              "label": "SpaceXAI: Grok 4.7",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/x-ai/grok-build-0.1",
               "provider": "kilocode",
               "label": "SpaceXAI: Grok Build 0.1",
@@ -7104,6 +7113,33 @@
               "key": "kilocode/xiaomi/mimo-v2.5-pro",
               "provider": "kilocode",
               "label": "Xiaomi: MiMo-V2.5-Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/xiaomi/mimo-v2.6-flash",
+              "provider": "kilocode",
+              "label": "Xiaomi: MiMo-V2.6-Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/xiaomi/mimo-v2.6-pro",
+              "provider": "kilocode",
+              "label": "Xiaomi: MiMo-V2.6-Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/xiaomi/mimo-v2.6-pro-ultraspeed",
+              "provider": "kilocode",
+              "label": "Xiaomi: MiMo-V2.6-Pro-UltraSpeed",
               "accessModes": [
                 "gateway"
               ],
@@ -7496,15 +7532,6 @@
               "key": "openrouter/~anthropic/claude-haiku-latest",
               "provider": "openrouter",
               "label": "Anthropic: Claude Haiku Latest",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/anthropic/claude-opus-4",
-              "provider": "openrouter",
-              "label": "Anthropic: Claude Opus 4",
               "accessModes": [
                 "gateway"
               ],
@@ -8834,15 +8861,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/minimax/minimax-m3:batch",
-              "provider": "openrouter",
-              "label": "MiniMax: MiniMax M3 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/minimax/minimax-01",
               "provider": "openrouter",
               "label": "MiniMax: MiniMax-01",
@@ -9125,15 +9143,6 @@
               "key": "openrouter/moonshotai/kimi-k3",
               "provider": "openrouter",
               "label": "MoonshotAI: Kimi K3",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/moonshotai/kimi-k3:batch",
-              "provider": "openrouter",
-              "label": "MoonshotAI: Kimi K3 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -10004,15 +10013,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/openai/gpt-oss-120b:batch",
-              "provider": "openrouter",
-              "label": "OpenAI: gpt-oss-120b (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/openai/gpt-oss-20b",
               "provider": "openrouter",
               "label": "OpenAI: gpt-oss-20b",
@@ -10598,15 +10598,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/qwen/qwen3.5-9b:batch",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3.5-9B (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/qwen/qwen3.5-flash-02-23",
               "provider": "openrouter",
               "label": "Qwen: Qwen3.5-Flash",
@@ -10691,15 +10682,6 @@
               "key": "openrouter/qwen/qwen3.8-2.4t-a95b",
               "provider": "openrouter",
               "label": "Qwen: Qwen3.8 2.4T A95B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/qwen/qwen3.8-2.4t-a95b:batch",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3.8 2.4T A95B (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -10922,6 +10904,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/x-ai/grok-4.7",
+              "provider": "openrouter",
+              "label": "SpaceXAI: Grok 4.7",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/x-ai/grok-build-0.1",
               "provider": "openrouter",
               "label": "SpaceXAI: Grok Build 0.1",
@@ -11048,15 +11039,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/thinkingmachines/inkling:batch",
-              "provider": "openrouter",
-              "label": "Thinking Machines: Inkling (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/thinkingmachines/inkling:free",
               "provider": "openrouter",
               "label": "Thinking Machines: Inkling (free)",
@@ -11150,6 +11132,33 @@
               "key": "openrouter/xiaomi/mimo-v2.5-pro",
               "provider": "openrouter",
               "label": "Xiaomi: MiMo-V2.5-Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/xiaomi/mimo-v2.6-flash",
+              "provider": "openrouter",
+              "label": "Xiaomi: MiMo-V2.6-Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/xiaomi/mimo-v2.6-pro",
+              "provider": "openrouter",
+              "label": "Xiaomi: MiMo-V2.6-Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/xiaomi/mimo-v2.6-pro-ultraspeed",
+              "provider": "openrouter",
+              "label": "Xiaomi: MiMo-V2.6-Pro-UltraSpeed",
               "accessModes": [
                 "gateway"
               ],
@@ -12540,6 +12549,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/spacexai/grok-4.7",
+              "provider": "vercel-ai-gateway",
+              "label": "Grok 4.7",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/spacexai/grok-build-0.1",
               "provider": "vercel-ai-gateway",
               "label": "Grok Build 0.1",
@@ -12822,6 +12840,33 @@
               "key": "vercel-ai-gateway/xiaomi/mimo-v2.5-pro",
               "provider": "vercel-ai-gateway",
               "label": "MiMo V2.5 Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/xiaomi/mimo-v2.6-flash",
+              "provider": "vercel-ai-gateway",
+              "label": "MiMo V2.6 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/xiaomi/mimo-v2.6-pro",
+              "provider": "vercel-ai-gateway",
+              "label": "MiMo V2.6 Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/xiaomi/mimo-v2.6-pro-ultraspeed",
+              "provider": "vercel-ai-gateway",
+              "label": "MiMo V2.6 Pro UltraSpeed",
               "accessModes": [
                 "gateway"
               ],
@@ -14334,15 +14379,6 @@
       "key": "kilocode/~anthropic/claude-haiku-latest",
       "provider": "kilocode",
       "label": "Anthropic: Claude Haiku Latest",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/anthropic/claude-opus-4",
-      "provider": "kilocode",
-      "label": "Anthropic: Claude Opus 4 ($$$$)",
       "accessModes": [
         "gateway"
       ],
@@ -17067,6 +17103,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/x-ai/grok-4.7",
+      "provider": "kilocode",
+      "label": "SpaceXAI: Grok 4.7",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/x-ai/grok-build-0.1",
       "provider": "kilocode",
       "label": "SpaceXAI: Grok Build 0.1",
@@ -17331,6 +17376,33 @@
       "key": "kilocode/xiaomi/mimo-v2.5-pro",
       "provider": "kilocode",
       "label": "Xiaomi: MiMo-V2.5-Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/xiaomi/mimo-v2.6-flash",
+      "provider": "kilocode",
+      "label": "Xiaomi: MiMo-V2.6-Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/xiaomi/mimo-v2.6-pro",
+      "provider": "kilocode",
+      "label": "Xiaomi: MiMo-V2.6-Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/xiaomi/mimo-v2.6-pro-ultraspeed",
+      "provider": "kilocode",
+      "label": "Xiaomi: MiMo-V2.6-Pro-UltraSpeed",
       "accessModes": [
         "gateway"
       ],
@@ -19254,15 +19326,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/anthropic/claude-opus-4",
-      "provider": "openrouter",
-      "label": "Anthropic: Claude Opus 4",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/anthropic/claude-opus-4.1",
       "provider": "openrouter",
       "label": "Anthropic: Claude Opus 4.1",
@@ -20631,15 +20694,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/minimax/minimax-m3:batch",
-      "provider": "openrouter",
-      "label": "MiniMax: MiniMax M3 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/minimax/minimax-01",
       "provider": "openrouter",
       "label": "MiniMax: MiniMax-01",
@@ -20922,15 +20976,6 @@
       "key": "openrouter/moonshotai/kimi-k3",
       "provider": "openrouter",
       "label": "MoonshotAI: Kimi K3",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/moonshotai/kimi-k3:batch",
-      "provider": "openrouter",
-      "label": "MoonshotAI: Kimi K3 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -21815,15 +21860,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/openai/gpt-oss-120b:batch",
-      "provider": "openrouter",
-      "label": "OpenAI: gpt-oss-120b (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/openai/gpt-oss-20b",
       "provider": "openrouter",
       "label": "OpenAI: gpt-oss-20b",
@@ -22409,15 +22445,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/qwen/qwen3.5-9b:batch",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3.5-9B (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/qwen/qwen3.5-flash-02-23",
       "provider": "openrouter",
       "label": "Qwen: Qwen3.5-Flash",
@@ -22502,15 +22529,6 @@
       "key": "openrouter/qwen/qwen3.8-2.4t-a95b",
       "provider": "openrouter",
       "label": "Qwen: Qwen3.8 2.4T A95B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/qwen/qwen3.8-2.4t-a95b:batch",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3.8 2.4T A95B (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -22733,6 +22751,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/x-ai/grok-4.7",
+      "provider": "openrouter",
+      "label": "SpaceXAI: Grok 4.7",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/x-ai/grok-build-0.1",
       "provider": "openrouter",
       "label": "SpaceXAI: Grok Build 0.1",
@@ -22859,15 +22886,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/thinkingmachines/inkling:batch",
-      "provider": "openrouter",
-      "label": "Thinking Machines: Inkling (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/thinkingmachines/inkling:free",
       "provider": "openrouter",
       "label": "Thinking Machines: Inkling (free)",
@@ -22961,6 +22979,33 @@
       "key": "openrouter/xiaomi/mimo-v2.5-pro",
       "provider": "openrouter",
       "label": "Xiaomi: MiMo-V2.5-Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/xiaomi/mimo-v2.6-flash",
+      "provider": "openrouter",
+      "label": "Xiaomi: MiMo-V2.6-Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/xiaomi/mimo-v2.6-pro",
+      "provider": "openrouter",
+      "label": "Xiaomi: MiMo-V2.6-Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/xiaomi/mimo-v2.6-pro-ultraspeed",
+      "provider": "openrouter",
+      "label": "Xiaomi: MiMo-V2.6-Pro-UltraSpeed",
       "accessModes": [
         "gateway"
       ],
@@ -23834,6 +23879,15 @@
       "key": "venice/grok-4-6",
       "provider": "venice",
       "label": "Grok 4.6",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "venice/grok-4-7",
+      "provider": "venice",
+      "label": "Grok 4.7",
       "accessModes": [
         "provider-api"
       ],
@@ -25429,6 +25483,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/spacexai/grok-4.7",
+      "provider": "vercel-ai-gateway",
+      "label": "Grok 4.7",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/spacexai/grok-build-0.1",
       "provider": "vercel-ai-gateway",
       "label": "Grok Build 0.1",
@@ -25711,6 +25774,33 @@
       "key": "vercel-ai-gateway/xiaomi/mimo-v2.5-pro",
       "provider": "vercel-ai-gateway",
       "label": "MiMo V2.5 Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/xiaomi/mimo-v2.6-flash",
+      "provider": "vercel-ai-gateway",
+      "label": "MiMo V2.6 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/xiaomi/mimo-v2.6-pro",
+      "provider": "vercel-ai-gateway",
+      "label": "MiMo V2.6 Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/xiaomi/mimo-v2.6-pro-ultraspeed",
+      "provider": "vercel-ai-gateway",
+      "label": "MiMo V2.6 Pro UltraSpeed",
       "accessModes": [
         "gateway"
       ],
