@@ -434,3 +434,43 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   `openclaw-agent.sqlite`; on 2026.9.5 the audit found the profile in
   `state/openclaw.sqlite` (`config_machine_state`), so the scrub may miss
   it.
+- **2026-09-21 ~22:00 UTC: `test-g3-oc95-04` on beta.5 + bundle `37c70d18`
+  (provisioned and onboarded by Bill, birth ritual done).**
+  - Host: beta.5 / OpenClaw 2026.9.5 / Node 26.9.0; enforced egress,
+    security-gateway connectivity; new helper in place.
+  - **#17 PASS from first boot:** archive staged at
+    `/var/lib/alphaclaw-managed-plugins/`, hand-off keys in `.env`,
+    Clawbridge's startup reconcile installed `openclaw-teamyou-memory` 0.3.0
+    and wrote the marker; post-onboard reconcile succeeded on its first run
+    ("already installed"), no 5-minute failure loop. Plugin activated after
+    the ritual (entry and active-memory enabled, activation marker present).
+  - **FTS-only memory PASS:** `memory.search = {provider: "none"}`, no
+    `llama-cpp` allow/entry, no model pre-fetch. `memory status` first said
+    "FTS: unavailable" with 0/3 files indexed; `memory status --index`
+    built it (3 files, 15 chunks, "FTS: ready") and `memory search Ava`
+    returned the ritual notes. Open: whether the Gateway builds the keyword
+    index on its own; I built it by hand.
+  - **Read-only removed PASS:** no `OPENCLAW_CONFIG_READONLY` in the Gateway
+    environment. **#18 PASS:** with the Gateway running, `plugins install
+    npm:@openclaw/groq-provider@2026.9.5 --pin --accept-capabilities`
+    through the Clawbridge wrapper "Applied in Gateway generation 3"
+    (loaded, enabled); removed again with `plugins uninstall groq --force`.
+    Control UI Plugins page install not exercised yet.
+  - **#16 PASS:** Gateway chat history shows one kickoff, one greeting, one
+    reply per turn.
+  - **#19 as expected (bootstrap lane):** `secrets audit` flags the raw
+    `vercel-ai-gateway:default` key and the `TEAMYOU_API_URL` false
+    positive. Migration banner and scrub not yet exercised.
+  - **G3 finding #20 (S2, user-facing noise):** the agent's first post-ritual
+    reply surfaced "~26 `plugins.deny: plugin not found` warnings" and the
+    TeamYou plugin "disabled-but-configured" warning. Source: Clawbridge's
+    Agent Vault channel policy (D6, `ensureChannelPluginDenyList` in
+    `lib/server/agent-vault/service.js`) denies every catalog channel
+    plugin without a vault classification, 26 ids. On 2026.9.5 almost none
+    of them are installed, and OpenClaw's config validation warns once per
+    `plugins.deny` entry naming an unknown plugin, with no config switch to
+    silence it. Every config-writing CLI call prints them (`config
+    validate`: 26), so the agent saw them in its own tool output
+    (`agents set-identity`). The TeamYou warning is the pre-activation
+    state and is gone after activation. Also: the agent wrote a raw HTML
+    `<details>` block, which the chat shows as text.
