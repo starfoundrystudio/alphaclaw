@@ -1376,3 +1376,61 @@ describe("openclaw plugin compatibility manifest", () => {
     });
   });
 });
+
+describe("openclaw plugin reconcile on OpenClaw 2026.9 output", () => {
+  const {
+    isOpenclawConfigReferenceError,
+    reconcileOpenclawPlugins: reconcile,
+  } = require("../../lib/cli/openclaw-plugin-compat");
+
+  it("does not mistake OpenClaw's config warnings for a config-reference error", () => {
+    const warnings =
+      '[config] warnings: plugins.deny: plugin not found: buzz (stale config entry ignored; remove it from plugins config); agents.entries: Removed retired agents.entries.*.default markers.';
+    expect(
+      isOpenclawConfigReferenceError({
+        message: "Command failed",
+        stderr: `${warnings}\nnpm view failed: npm warn Unknown user config "always-auth".`,
+      }),
+    ).toBe(false);
+    expect(
+      isOpenclawConfigReferenceError({
+        stderr: `${warnings}\nInvalid config: missing plugin provider referenced by config`,
+      }),
+    ).toBe(true);
+  });
+
+  it("limits a runtime reconcile to the named plugins and keeps other lock entries", () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "compat-only-"));
+    try {
+      const rootDir = path.join(tmp, "root");
+      const openclawDir = path.join(rootDir, ".openclaw");
+      writeOpenclawConfig(openclawDir, {
+        plugins: { entries: { discord: { enabled: false }, acpx: { enabled: true } } },
+        channels: { discord: {} },
+      });
+      fs.mkdirSync(path.join(openclawDir, ".alphaclaw"), { recursive: true });
+      fs.writeFileSync(
+        path.join(openclawDir, ".alphaclaw", "openclaw-plugins.lock.json"),
+        JSON.stringify({ schemaVersion: 1, plugins: { codex: { version: "2026.5.6" } } }),
+      );
+      const manifestPath = writeManifest(tmp, baseManifest());
+      const { commands, execSyncImpl } = createExecRecorder({});
+      const result = reconcile({
+        rootDir,
+        openclawDir,
+        manifestPath,
+        openclawCliPath: "/tmp/openclaw.mjs",
+        execSyncImpl,
+        logger: { log: () => {} },
+        onlyPluginKeys: ["discord"],
+      });
+      const installs = commands.filter((c) => c.includes("'plugins' 'install'"));
+      expect(installs).toHaveLength(1);
+      expect(installs[0]).toContain("@openclaw/discord@2026.5.6");
+      expect(result.plugins.map((p) => p.id)).toEqual(["discord"]);
+      expect(Object.keys(result.lock.plugins).sort()).toEqual(["codex", "discord"]);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+});

@@ -35,6 +35,7 @@ describe("Agent Vault onboarding readiness", () => {
       fetchImpl: async () => Response.json({ services: [], available_credentials: [] }),
       readEnvFile: () => [], writeEnvFile: vi.fn(), reloadEnv: vi.fn(),
       onRuntimeRestartRequired: applyRuntime,
+      listKnownPluginIds: () => new Set(["signal"]),
     });
     const start = vi.fn(() => {
       const config = JSON.parse(fs.readFileSync(configPath));

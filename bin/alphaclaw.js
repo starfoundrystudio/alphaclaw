@@ -143,6 +143,7 @@ Commands:
   openclaw-runtime  Run a command with the managed OpenClaw runtime environment
   openclaw-doctor-guard  Run an OpenClaw command with OAuth-refresh shielding
   reconcile-openclaw-plugins  Install/update AlphaClaw-managed OpenClaw plugins
+                              (--only <id,...> limits the run to those plugins)
   telegram topic add  Add/update Telegram topic mapping by thread ID
   version   Print version
 
@@ -445,6 +446,16 @@ if (command === "openclaw-runtime") {
 }
 
 const runReconcileOpenclawPlugins = () => {
+  // `--only slack,discord` limits the run to those plugins. The Clawbridge
+  // server uses it (in a child process) for channel add and model save; the
+  // TeamYou memory install is a startup concern and is skipped then.
+  const onlyValue =
+    command === "reconcile-openclaw-plugins"
+      ? String(flagValue(commandArgs, "--only") || "").trim()
+      : "";
+  const onlyPluginKeys = onlyValue
+    ? onlyValue.split(",").map((id) => id.trim()).filter(Boolean)
+    : null;
   try {
     reconcileOpenclawPlugins({
       rootDir,
@@ -454,7 +465,8 @@ const runReconcileOpenclawPlugins = () => {
       logger: console,
       env: buildCliOpenclawMaintenanceEnv(),
       // Runs before the Gateway starts (startup and the CLI subcommand).
-      installTeamyouMemoryPlugin: true,
+      installTeamyouMemoryPlugin: !onlyPluginKeys,
+      onlyPluginKeys,
     });
     return 0;
   } catch (e) {

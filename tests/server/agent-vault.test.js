@@ -798,6 +798,53 @@ describe("server/agent-vault", () => {
     ).resolves.toMatchObject({ status: "available", provider: "discord" });
   });
 
+  it("denies only installed unclassified channel plugins and cleans stale entries", async () => {
+    const {
+      writeAgentVaultRuntime,
+    } = require("../../lib/server/agent-vault/runtime-store");
+    writeAgentVaultRuntime({
+      token: "av_runtime_token_123456789",
+      vault: "default",
+      mode: "brokered",
+      operatorUrl: "https://agent-vault-test.tail123.ts.net",
+    });
+    const openclawDir = path.join(rootDir, ".openclaw");
+    fs.mkdirSync(openclawDir, { recursive: true });
+    const configPath = path.join(openclawDir, "openclaw.json");
+    // A host upgraded from the old behaviour: the full catalog list, plus a
+    // user-authored deny entry Clawbridge does not manage.
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({
+        gateway: { mode: "local" },
+        plugins: { deny: ["buzz", "signal", "whatsapp", "my-own-plugin"] },
+      }),
+    );
+    const known = new Set();
+    const { createAgentVaultService } = require(
+      "../../lib/server/agent-vault/service"
+    );
+    const service = createAgentVaultService({
+      readEnvFile: () => [],
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      openclawDir,
+      fetchImpl: async () =>
+        Response.json({ services: [], available_credentials: [] }),
+      listKnownPluginIds: () => known,
+    });
+
+    await service.reconcileLegacyCredentials();
+    let config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(config.plugins.deny).toEqual(["my-own-plugin"]);
+
+    // Someone installs Signal later: the next pass denies it.
+    known.add("signal");
+    await service.reconcileLegacyCredentials();
+    config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    expect(config.plugins.deny).toEqual(["my-own-plugin", "signal"]);
+  });
+
   it("flips brokered channel tokens to placeholders and sweeps config backups", async () => {
     const {
       writeAgentVaultRuntime,
@@ -857,6 +904,8 @@ describe("server/agent-vault", () => {
       reloadEnv: vi.fn(),
       openclawDir,
       fetchImpl,
+      // Only msteams (and the classified telegram) are installed here.
+      listKnownPluginIds: () => new Set(["msteams", "telegram"]),
     });
 
     const result = await service.reconcileLegacyCredentials();
@@ -882,9 +931,10 @@ describe("server/agent-vault", () => {
     expect(fs.existsSync(path.join(openclawDir, "openclaw.json.bak.1"))).toBe(
       true,
     );
-    // D6: unclassified catalog channels are denied; classified ones are not.
-    expect(config.plugins.deny).toContain("msteams");
-    expect(config.plugins.deny).not.toContain("telegram");
+    // D6: unclassified channel plugins OpenClaw has are denied; classified
+    // ones are not; uninstalled ones get no entry (no "plugin not found"
+    // warning on OpenClaw 2026.9, finding #20).
+    expect(config.plugins.deny).toEqual(["msteams"]);
     // Discord channel config present -> managed proxy env-ref written.
     expect(config.channels.discord.proxy).toBe("${OPENCLAW_PROXY_URL}");
 

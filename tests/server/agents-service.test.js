@@ -105,6 +105,38 @@ describe("server/agents/service", () => {
     const agents = service.listAgents();
     expect(agents.find((entry) => entry.id === "ops")?.default).toBe(true);
     expect(agents.find((entry) => entry.id === "main")?.default).toBe(false);
+    // OpenClaw 2026.9: the choice is the system agent role; no entry keeps
+    // the retired marker.
+    const written = fsMock.readConfig();
+    expect(written.agents.defaults.systemAgent.agentId).toBe("ops");
+    for (const entry of Object.values(written.agents.entries)) {
+      expect(entry).not.toHaveProperty("default");
+    }
+  });
+
+  it("never writes the retired default marker when saving agents", () => {
+    const fsMock = buildFsMock({ initialConfig: { agents: { defaults: {} } } });
+    const service = createAgentsService({ fs: fsMock, OPENCLAW_DIR: "/tmp/openclaw" });
+
+    service.createAgent({ id: "ops", name: "Ops Agent" });
+    const written = fsMock.readConfig();
+    expect(Object.keys(written.agents.entries)).toEqual(["main", "ops"]);
+    for (const entry of Object.values(written.agents.entries)) {
+      expect(entry).not.toHaveProperty("default");
+    }
+    // The implicit main agent is still reported as the default.
+    expect(service.listAgents().find((a) => a.id === "main")?.default).toBe(true);
+  });
+
+  it("resolves the default agent the way OpenClaw 2026.9 does", () => {
+    const { resolveDefaultAgentIdFromConfig } = require("../../lib/server/agents/shared");
+    const cfg = (entries, defaults = {}) => ({ agents: { entries, defaults } });
+    expect(resolveDefaultAgentIdFromConfig(cfg({ a: {}, b: { default: true } }))).toBe("b");
+    expect(resolveDefaultAgentIdFromConfig(cfg({ main: {}, ops: {} }, { systemAgent: { agentId: "ops" } }))).toBe("ops");
+    expect(resolveDefaultAgentIdFromConfig(cfg({ main: {}, ops: {} }, { systemAgent: { agentId: "gone" } }))).toBe("main");
+    expect(resolveDefaultAgentIdFromConfig(cfg({ solo: {} }))).toBe("solo");
+    expect(resolveDefaultAgentIdFromConfig(cfg({ x: {}, y: {} }))).toBe("x");
+    expect(resolveDefaultAgentIdFromConfig({})).toBe("main");
   });
 
   it("reads canonical keyed entries and writes only keyed entries", async () => {
@@ -988,12 +1020,12 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(clawCmd).toHaveBeenNthCalledWith(
       2,
       "agents bind --agent 'main' --bind 'telegram:default'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
       rootDir: "/tmp",
@@ -1001,6 +1033,7 @@ describe("server/agents/service", () => {
       fsModule: fsMock,
       logger: console,
       env: process.env,
+      onlyPluginKeys: ["telegram"],
     });
     expect(
       reconcileOpenclawPlugins.mock.invocationCallOrder[0],
@@ -1078,17 +1111,17 @@ describe("server/agents/service", () => {
       expect(clawCmd).toHaveBeenNthCalledWith(
         1,
         "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-        { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+        { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
       );
       expect(clawCmd).toHaveBeenNthCalledWith(
         2,
         "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-        { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+        { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
       );
       expect(clawCmd).toHaveBeenNthCalledWith(
         3,
         "agents bind --agent 'main' --bind 'telegram:default'",
-        { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+        { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
       );
       expect(fsMock.readConfig().channels.telegram.accounts.default).toEqual(
         expect.objectContaining({
@@ -1150,12 +1183,12 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'telegram' --account 'alerts' --name 'Alerts' --token '456:def'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(clawCmd).toHaveBeenNthCalledWith(
       2,
       "agents bind --agent 'ops' --bind 'telegram:alerts'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
@@ -1361,7 +1394,7 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(restartGateway).toHaveBeenCalledTimes(1);
   });
@@ -1422,12 +1455,12 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'discord' --name 'Discord' --token 'discord-token'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(clawCmd).toHaveBeenNthCalledWith(
       2,
       "agents bind --agent 'main' --bind 'discord:default'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
@@ -1529,7 +1562,7 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'slack' --name 'Slack' --bot-token 'xoxb-bot-token' --app-token 'xapp-app-token'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
       rootDir: "/tmp",
@@ -1537,6 +1570,7 @@ describe("server/agents/service", () => {
       fsModule: fsMock,
       logger: console,
       env: process.env,
+      onlyPluginKeys: ["slack"],
     });
     expect(
       reconcileOpenclawPlugins.mock.invocationCallOrder[0],
@@ -1544,7 +1578,7 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       2,
       "agents bind --agent 'main' --bind 'slack:default'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(clawCmd.mock.invocationCallOrder[1]).toBeLessThan(
       restartGateway.mock.invocationCallOrder[0],
@@ -1809,12 +1843,12 @@ describe("server/agents/service", () => {
     expect(clawCmd).toHaveBeenNthCalledWith(
       1,
       "channels add --channel 'slack' --account 'alerts' --name 'Slack Alerts' --bot-token 'xoxb-bot-token-2' --app-token 'xapp-app-token-2'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(clawCmd).toHaveBeenNthCalledWith(
       2,
       "agents bind --agent 'main' --bind 'slack:alerts'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
@@ -2585,7 +2619,7 @@ describe("server/agents/service", () => {
     expect(result).toEqual({ ok: true });
     expect(clawCmd).toHaveBeenCalledWith(
       "channels remove --channel 'telegram' --account 'alerts' --delete",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(writeEnvFile).toHaveBeenCalledWith([
       { key: "TELEGRAM_BOT_TOKEN", value: "123:abc" },
@@ -2651,7 +2685,7 @@ describe("server/agents/service", () => {
     expect(result).toEqual({ ok: true });
     expect(clawCmd).toHaveBeenCalledWith(
       "channels remove --channel 'telegram' --account 'default' --delete",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(writeEnvFile).toHaveBeenCalledWith([]);
     expect(reloadEnv).toHaveBeenCalled();
@@ -2797,7 +2831,7 @@ describe("server/agents/service", () => {
     expect(result).toEqual({ ok: true });
     expect(clawCmd).toHaveBeenCalledWith(
       "channels remove --channel 'whatsapp' --account 'default' --delete",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 30000 },
+      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
     );
     expect(writeEnvFile).toHaveBeenCalledWith([]);
     expect(reloadEnv).toHaveBeenCalled();

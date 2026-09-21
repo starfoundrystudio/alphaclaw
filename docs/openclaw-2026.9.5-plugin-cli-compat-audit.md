@@ -141,3 +141,48 @@ Verification: unit tests per item; the lab (host 04's config, Gateway
 running) for every flow; then beta.6 on a fresh host: Slack add, a model
 provider needing a plugin, a Control UI plugin install, and no warning text
 in the agent's first turns.
+
+## Revisions after review with Bill (2026-09-21)
+
+- **Timeouts:** Bill questioned why commands would be slower. Measured with
+  identical minimal configs and no Gateway, 2026.9.5 is not slower than
+  2026.7.1 (0.7–0.9 s vs 0.9–1.2 s per command). The time comes from the
+  real plugin set and from waiting for the Gateway to apply a change live;
+  overlapping reloads (B3, B4) are what pushed `channels add` past 30 s.
+  So no blanket increase: only channel add/remove/bind go to 90 s, the one
+  measured case (lab 17–29 s on a fast machine, about 2× on a host).
+- **Deny list (item 5):** D6 ("default-closed") denies every channel plugin
+  not yet verified for Agent Vault: 3 verified and offered (Telegram,
+  Discord, Slack), WhatsApp verified broken and shelved, 22 unverified.
+  Bill chose option 2: keep the policy, deny only channel plugins OpenClaw
+  has (bundled or installed). None of the 22 ship with 2026.9.5, so the
+  list is empty until one is installed, and the next Agent Vault reconcile
+  (before each Gateway start and on status checks) denies it then.
+- **Disabled entries:** dropped from the plan. A `{enabled: false}` entry
+  can mean "installed but gated" (TeamYou memory before activation), so it
+  must still count; runtime flows use `onlyPluginKeys` instead.
+
+## Implemented (branch `codex/openclaw-2026.9.4-upgrade`, not released)
+
+| Item | Change | Tests |
+| --- | --- | --- |
+| 1 | `lib/server/plugin-reconcile-runner.js`: runtime reconciles (channel add, model save, watchdog) run `alphaclaw reconcile-openclaw-plugins` in a child process; one retry; readable failure ("Downloading the OpenClaw plugin from npm failed or timed out…") | runner tests |
+| 2 | `onlyPluginKeys` / `--only`: channel add installs only its channel's plugin, model save only the plugins it enabled; lock entries of untouched plugins kept | compat tests |
+| 3 | Channel add/remove/bind timeout 30 s → 90 s | channel tests |
+| 4 | `lib/server/openclaw-cli-output.js`: strips OpenClaw config warnings, `Config (…)` notices and npm warnings; used by `isOpenclawConfigReferenceError` and channel-flow errors (no command lines echoed) | output + compat tests |
+| 5 | `lib/server/openclaw-known-plugins.js`; deny list limited to known channel plugins, stale entries removed, user entries kept | agent-vault tests |
+| 6 | No `agents.entries.*.default` writes; `resolveDefaultAgentIdFromConfig` (legacy marker → `agents.defaults.systemAgent` → sole agent → `main` → first); "set default agent" writes `agents.defaults.systemAgent.agentId` | agents tests |
+| 7 | Covered by 5 and 6: Clawbridge saves no longer change config content by themselves | — |
+
+Lab check (2026.9.5, host 04's config, Gateway running): targeted
+`reconcile-openclaw-plugins --only slack` installed Slack through the live
+Gateway in 24 s touching nothing else; with the fixed config state,
+`channels add` printed 158 B of stderr instead of 5.9 KB (the remainder is a
+lab-only Codex notice) and `config set` printed nothing (2.9 s vs 4.2 s).
+Full suite: 170 files, 1,523 tests.
+
+Not done in this batch: items 8 (raw stderr in other routes) and 9
+(`prepareOpenclawChannelPlugins` execSync before runtime restarts), and
+`syncChannelConfig` (execSync `channels add` in `PUT /api/env`; on managed
+instances channel tokens are placeholders filtered out of that route, so it
+rarely runs).

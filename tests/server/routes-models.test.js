@@ -516,6 +516,7 @@ describe("server/routes/models", () => {
       fsModule: fs,
       logger: console,
       env: process.env,
+      onlyPluginKeys: ["codex"],
     });
   });
 
