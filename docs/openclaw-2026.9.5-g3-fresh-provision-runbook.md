@@ -146,6 +146,19 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   always `--force` for the archive. Fresh provision on channel `beta` now
   gets beta.5 plus this bundle.
 
+- **beta.6 (2026-09-21):** `0.9.18-starfoundry.23-beta.6` published to the
+  `beta` tag (release commit `6985632`; `latest` stays `…22`): the
+  OpenClaw 2026.9.5 compatibility batch (`8f9046d`, see
+  `docs/openclaw-2026.9.5-plugin-cli-compat-audit.md`). Full vitest 170 files
+  / 1,523 tests before publish; model catalog unchanged from beta.5.
+  Installed on `test-g3-oc95-04` with `npm install
+  @starfoundrystudio/alphaclaw@0.9.18-starfoundry.23-beta.6 --omit=dev` as the
+  app user and `systemctl restart alphaclaw`: startup reconcile all
+  "already installed", Gateway listening in 21.6 s, `plugins.deny` now `[]`
+  (was 26 ids), `openclaw config validate` stderr 0 B. The legacy
+  `agents.entries.main.default` marker stays until OpenClaw's next config
+  write strips it; Clawbridge no longer re-adds it.
+
 ## Provision log
 
 - 2026-09-21 05:14 UTC (Bill's submit): instance `test-g3-oc95-01`
