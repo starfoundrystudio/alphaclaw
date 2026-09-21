@@ -519,3 +519,13 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     warnings did not exist. Fixes: classifier ignores OpenClaw's
     `warnings:` lines; #20 removes the warnings; #21 makes installs
     non-blocking with one retry and shows the real error.
+  - **#21 second attempt (22:39 UTC) failed "while installing groq".**
+    Cause: my #18 test on this host (install then `plugins uninstall groq`)
+    left `plugins.entries.groq = {enabled: false}`, and
+    `getPluginRelevanceReasons` treats any `plugins.entries.<id>` as a
+    reason to install, even a disabled one. The retry skipped Slack
+    (installed on the first attempt), tried Groq, and that failure was
+    again misread as a config-reference error. Removed the leftover entry
+    with `openclaw config unset plugins.entries.groq`. Add to the fix set:
+    a disabled entry must not make a plugin relevant, and one unrelated
+    plugin's install failure should not abort a channel add.
