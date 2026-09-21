@@ -301,6 +301,55 @@ describe("server/bootstrap-kickoff", () => {
     });
   });
 
+  it("does not re-send a greeting sent moments ago, before the agent could answer", async () => {
+    // G3, 2026-09-21: the boot that sent the greeting re-checked history one
+    // second later, saw no reply yet, and sent it again.
+    const deps = createDeps({ kickoffMarker: true });
+    deps.fs.readFileSync = vi.fn((targetPath) => {
+      if (targetPath === kConstants.kBootstrapKickoffMarkerPath) {
+        return JSON.stringify({
+          kickedOff: true,
+          reason: "kickoff_sent",
+          sessionKey: "agent:main:main",
+          agentId: "main",
+          runId: "run-0",
+          markedAt: "2026-09-21T06:34:13.000Z",
+          replyRetries: 0,
+        });
+      }
+      if (targetPath === kConstants.kOnboardingMarkerPath) {
+        return JSON.stringify({ onboarded: true });
+      }
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+    deps.requestGateway = vi.fn(async (method) => {
+      if (method === "chat.history") {
+        return { messages: [{ role: "user", content: "[Clawbridge] hello" }] };
+      }
+      if (method === "chat.send") return { runId: "run-2" };
+      throw new Error(`unexpected method: ${method}`);
+    });
+    const service = createBootstrapKickoffService({
+      ...deps,
+      now: () => Date.parse("2026-09-21T06:34:14.000Z"),
+    });
+
+    const result = await service.retryUnansweredKickoff();
+
+    expect(result).toEqual({ ok: false, reason: "kickoff_too_recent" });
+    expect(deps.requestGateway).not.toHaveBeenCalledWith("chat.send", expect.anything());
+
+    // Past the grace window the same marker is retried as before.
+    const later = createBootstrapKickoffService({
+      ...deps,
+      now: () => Date.parse("2026-09-21T06:40:00.000Z"),
+    });
+    await expect(later.retryUnansweredKickoff()).resolves.toMatchObject({
+      ok: true,
+      reason: "kickoff_resent",
+    });
+  });
+
   it("does not re-send a greeting that was answered, or past the retry budget", async () => {
     const marker = (replyRetries) =>
       JSON.stringify({
