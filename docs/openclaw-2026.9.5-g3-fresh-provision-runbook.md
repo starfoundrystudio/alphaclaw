@@ -243,3 +243,45 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   `wrun_01M31F0CNBHRQGSVCQXPP3PEBS`, channel `beta` → AlphaClaw beta.4,
   host bundle `f7f510f1`. Purpose: prove findings #11–#14 fixed from first
   boot with no hand-patching.
+- **2026-09-21 08:0x UTC: `test-g3-oc95-03` on beta.4 — fresh 2026.9.5
+  provision correct from first boot, no hand-patching.** Onboarded by
+  Bill (Vercel AI Gateway, Opus 5 preselected); tailnet up ~08:05.
+  1. Host: PASS (beta.4 / 2026.9.5 / Node 26.9.0, stop hardening, bundle
+     `f7f510f1` scripts). 2. Pre-onboarding server: PASS. 3. Wizard: PASS.
+  4. Config as written by onboarding: PASS — `tools.web.search =
+     {enabled, provider: "searxng"}`, `plugins.entries.searxng.enabled`,
+     `searxng` in `plugins.allow` (**#12 fixed from first boot**);
+     `memory.search = {provider: "local"}` (**#13 fixed from first boot**);
+     `OPENCLAW_GATEWAY_TOKEN` minted and referenced (**#11**); no retired
+     keys; H4 Birth Sequence ran with **one** kickoff ("Bootstrap kickoff
+     sent", no re-send; transcript: one greeting, Bill named the agent
+     "Ava", one reply — **#14 fixed**).
+  5. Plugins: PASS — llama-cpp, searxng, vercel-ai-gateway, active-memory,
+     memory-core enabled; reconciliation complete (llama-cpp install
+     retried once with `--force` after a partial managed install).
+  6. Gateway: PASS — external supervision env, handoff restart via
+     Clawbridge 34 s to running.
+  7. Clawbridge API: PASS — login, bootstrap catalog 1,447 → refresh
+     `source: openclaw` 250 models, zero GPT-5.5.
+  8. Channel round trip: pending Bill.
+  9. Backups: PASS — state run from `test-g3-oc95-03-gateway` → snapshot
+     `2dd8bcea…`, 2 sqlite snapshots; four backup timers active.
+  10. Deprecation warnings: none. SearXNG JSON 200. Doctor: 65 checks,
+     only the two memory-search warnings below plus the known
+     skills/permissions noise.
+- **G3 finding #15 (S2, decision): local memory embeddings need the
+  managed llama-server on 2026.9.** Gateway log: "semantic memory recall
+  is degraded (provider=local). Local embeddings need the managed llama.cpp
+  server config (llama-server). The in-process node-llama-cpp runtime was
+  removed; semantic memory recall is degraded until setup." 2026.7.1
+  embedded node-llama-cpp in-process; 2026.9 wants a configured
+  llama-server via the llama-cpp plugin. Until configured, memory search
+  degrades to keyword (FTS) search, which is the documented fallback and
+  what Doctor's "local embeddings are not confirmed ready" means. Options:
+  (a) accept keyword-only local memory for the beta and configure
+  llama-server post-release; (b) add the llama-cpp server config to the
+  managed defaults now (model download + CPU cost on the s-4vcpu-8gb
+  class to be measured). Not blocking for G3.
+- Doctor's other memory warning ("Active Memory plugin is disabled") is
+  the pre-activation state by design (TeamYou memory activation gate;
+  `active-memory.config.enabled` flips on activation).
