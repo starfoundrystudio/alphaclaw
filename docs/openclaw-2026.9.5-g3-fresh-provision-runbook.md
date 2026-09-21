@@ -116,6 +116,10 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   clawctl bundle `f7f510f1` (memory.search local default) already pinned
   on Preview beta. Third provision `test-g3-oc95-03` prepared to prove
   findings #12/#13 fixed from first boot.
+- 2026-09-21: `0.9.18-starfoundry.23-beta.4` published on the `beta` tag
+  from `8efa0a1` (double-greeting fix `6f68fd2`), same gated chain, full
+  vitest 167 files / 1,496 tests. This is the build the third provision
+  installs.
 
 ## Provision log
 
