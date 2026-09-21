@@ -222,3 +222,15 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   channel + round trip (check 8). Pending decision: `beta.3` with
   `4412ae0` and one more fresh provision on bundle `f7f510f1` to prove
   findings #12/#13 fixed from first boot.
+- **G3 finding #14 (S2, fresh first chat): the Birth Sequence greeting was
+  sent twice** on `test-g3-oc95-02` (Bill's screenshot: "the setup ping
+  came through twice"). Journal: "Bootstrap kickoff sent … 06:34:13" then
+  "re-sent … (unanswered; retry 1/3)" at 06:34:14 — `startup.js` chained
+  `retryUnansweredKickoff` straight after `maybeRunBootstrapKickoff`, so
+  the reply check ran one second after the send. Fixed in alphaclaw
+  `6f68fd2`: the boot chain skips the retry when the kickoff it just ran
+  reports `kickoff_sent`, and the retry treats a marker younger than a
+  five-minute reply grace as not yet unanswered; earlier-boot and
+  Claude-login retries unchanged. Needs a beta.4 before the next
+  provision; H4 itself (Birth Sequence ran, agent asked for a name) is
+  confirmed by the screenshot.
