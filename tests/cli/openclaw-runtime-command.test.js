@@ -1,5 +1,6 @@
 const {
   buildOpenclawRuntimeEnv,
+  isConfigMutatingOpenclawCommand,
   runOpenclawRuntimeCommand,
 } = require("../../lib/cli/openclaw-runtime-command");
 
@@ -69,5 +70,36 @@ describe("cli/openclaw-runtime-command", () => {
     expect(env.OPENCLAW_SUPERVISOR_MODE).toBe("external");
     expect(env.OPENCLAW_SERVICE_REPAIR_POLICY).toBe("external");
     expect(env.OPENCLAW_NO_AUTO_UPDATE).toBe("1");
+  });
+
+  it("recognises OpenClaw subcommands that must write openclaw.json", () => {
+    expect(isConfigMutatingOpenclawCommand(["openclaw", "plugins", "install", "/tmp/plugin.tgz", "--pin", "--force"])).toBe(true);
+    expect(isConfigMutatingOpenclawCommand(["openclaw", "plugins", "uninstall", "searxng"])).toBe(true);
+    expect(isConfigMutatingOpenclawCommand(["openclaw", "plugins", "enable", "llama-cpp"])).toBe(true);
+    expect(isConfigMutatingOpenclawCommand(["openclaw", "config", "set", "memory.search.provider", "local"])).toBe(true);
+    expect(isConfigMutatingOpenclawCommand(["/home/alphaclaw/app/node_modules/.bin/openclaw", "plugins", "install", "x"])).toBe(true);
+    expect(isConfigMutatingOpenclawCommand(["openclaw", "plugins", "install", "--help"])).toBe(true);
+    expect(isConfigMutatingOpenclawCommand(["openclaw", "plugins", "list"])).toBe(false);
+    expect(isConfigMutatingOpenclawCommand(["openclaw", "memory", "status"])).toBe(false);
+    expect(isConfigMutatingOpenclawCommand(["bash", "/opt/teamyou.sh", "ty", "agent", "register"])).toBe(false);
+    expect(isConfigMutatingOpenclawCommand([])).toBe(false);
+  });
+
+  it("runs config-mutating commands without the write guard when asked", () => {
+    const spawnSyncImpl = vi.fn(() => ({ status: 0 }));
+
+    runOpenclawRuntimeCommand({
+      commandArgs: ["openclaw", "plugins", "install", "/tmp/plugin.tgz"],
+      env: { HOME: "/home/alphaclaw" },
+      cwd: "/home/alphaclaw/app",
+      spawnSyncImpl,
+      allowConfigMutation: true,
+      buildAgentVaultRuntimeEnvImpl: () => ({}),
+    });
+
+    const [, , options] = spawnSyncImpl.mock.calls[0];
+    expect(options.env.OPENCLAW_CONFIG_READONLY).toBeUndefined();
+    expect(options.env.OPENCLAW_SUPERVISOR_MODE).toBe("external");
+    expect(options.env.OPENCLAW_NO_AUTO_UPDATE).toBe("1");
   });
 });

@@ -25,6 +25,7 @@ const {
 } = require("../lib/cli/openclaw-doctor-oauth-guard");
 const {
   buildOpenclawRuntimeEnv,
+  isConfigMutatingOpenclawCommand,
   runOpenclawRuntimeCommand,
 } = require("../lib/cli/openclaw-runtime-command");
 const {
@@ -161,6 +162,9 @@ migrate options:
 
 openclaw-runtime options:
   -- <command...>           Command to run with Agent Vault and OpenClaw runtime environment
+  --allow-config-mutation   Lift the openclaw.json write guard for this command
+                            (implied for openclaw plugins install/uninstall/enable/disable
+                            and openclaw config set/unset)
 
 openclaw-doctor-guard options:
   -- <command...>           Command to run while OAuth auth profiles are shielded
@@ -406,6 +410,8 @@ if (command === "openclaw-doctor-guard") {
 
 const runManagedOpenclawRuntimeCommand = () => {
   const separatorIndex = commandArgs.indexOf("--");
+  const wrapperArgs =
+    separatorIndex >= 0 ? commandArgs.slice(1, separatorIndex) : [];
   const runtimeCommandArgs =
     separatorIndex >= 0 ? commandArgs.slice(separatorIndex + 1) : commandArgs.slice(1);
   if (runtimeCommandArgs.length === 0) {
@@ -414,12 +420,16 @@ const runManagedOpenclawRuntimeCommand = () => {
     );
     return 1;
   }
+  const allowConfigMutation =
+    wrapperArgs.includes("--allow-config-mutation") ||
+    isConfigMutatingOpenclawCommand(runtimeCommandArgs);
   try {
     return runOpenclawRuntimeCommand({
       commandArgs: runtimeCommandArgs,
       env: buildCliOpenclawBaseEnv(),
       cwd: process.cwd(),
       stdio: "inherit",
+      allowConfigMutation,
       logger: console,
     });
   } catch (e) {

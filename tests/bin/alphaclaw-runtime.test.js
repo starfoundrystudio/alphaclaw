@@ -106,4 +106,51 @@ describe("bin/alphaclaw openclaw-runtime", () => {
       teamyouApiKey: "__agent_vault_teamyou_api_key__",
     });
   });
+
+  it("keeps the write guard by default and lifts it for --allow-config-mutation", () => {
+    const capturePath = path.join(rootDir, "capture-readonly.js");
+    fs.writeFileSync(
+      capturePath,
+      `process.stdout.write(JSON.stringify({
+  args: process.argv.slice(2),
+  readonly: process.env.OPENCLAW_CONFIG_READONLY ?? null,
+  supervisor: process.env.OPENCLAW_SUPERVISOR_MODE,
+}) + "\\n");\n`,
+    );
+    const run = (wrapperArgs) =>
+      parseCapturedRuntime(
+        execFileSync(
+          process.execPath,
+          [
+            binPath,
+            "--root-dir",
+            rootDir,
+            "openclaw-runtime",
+            ...wrapperArgs,
+            "--",
+            process.execPath,
+            capturePath,
+            "plugins",
+            "install",
+            "x.tgz",
+          ],
+          {
+            encoding: "utf8",
+            env: { ...process.env, ALPHACLAW_ROOT_DIR: rootDir },
+          },
+        ),
+      );
+
+    // The capture script is not an `openclaw` binary, so nothing is implied.
+    expect(run([])).toEqual({
+      args: ["plugins", "install", "x.tgz"],
+      readonly: "1",
+      supervisor: "external",
+    });
+    expect(run(["--allow-config-mutation"])).toEqual({
+      args: ["plugins", "install", "x.tgz"],
+      readonly: null,
+      supervisor: "external",
+    });
+  });
 });

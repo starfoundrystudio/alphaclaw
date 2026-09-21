@@ -302,8 +302,54 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   on replace; the merge treats streamed assistant bubbles as provisional
   once the snapshot's newest row is the assistant reply. Tests on relay
   and merge. Needs a beta.5.
-- Finding #15 correction pending: Bill notes a managed llama-server and
-  model download already exist in setup; the 2026.9.5 Gateway still
-  reports "local embeddings need the managed llama.cpp server config" on
-  the fresh host — to be checked against what clawctl provisions before
-  any change.
+- **G3 finding #17 (S1, first boot on 2026.9.5): the TeamYou memory plugin
+  never installs, and `alphaclaw-post-onboard-reconcile.service` fails every
+  five minutes for the life of the host.** On `test-g3-oc95-03` the journal
+  shows "Downloading TeamYou memory plugin 0.3.0" on every run and never
+  "Installed"; `plugins.entries.openclaw-teamyou-memory` stays a stale entry
+  ("plugin not found"), and everything after that step in clawctl's
+  `install_teamyou_memory_plugin` (the llama-cpp provider install and the
+  embedding-model pre-fetch) never runs. `openclaw plugins install <tgz>`
+  through `run_openclaw_as_alphaclaw` trips four 2026.9 gates in sequence:
+  (1) `--pin` is rejected for anything but npm registry installs; (2) a
+  local archive is cancelled without `--force` (ClawHub trust warning);
+  (3) capability consent is mandatory (`--accept-capabilities`); and (4)
+  while a Gateway is running the CLI delegates the install to it
+  (`plugins.install` RPC, owner taken from the gateway lock) and our Gateway
+  runs with `OPENCLAW_CONFIG_READONLY=1`, so it refuses with "Config is
+  externally managed … | OPENCLAW_CONFIG_READONLY". No CLI flag forces the
+  local path. That is also why alphaclaw's own startup reconcile installs
+  managed plugins fine: it runs before the Gateway starts. Verified on 03:
+  with `alphaclaw.service` stopped, `openclaw plugins install <tgz> --force
+  --accept-capabilities` through the wrapper installs the plugin and the
+  next Gateway start discovers it ("plugin disabled (disabled in config)",
+  the pre-activation state by design). Fixed so far: alphaclaw's
+  `openclaw-runtime` lifts the write guard for config-mutating openclaw
+  subcommands (`plugins install|uninstall|enable|disable`, `config
+  set|unset`) and accepts `--allow-config-mutation`; clawctl's helper drops
+  `--pin` and always passes `--force` (uncommitted). Necessary, not
+  sufficient. Open decision for Bill, who installs the plugin on 2026.9
+  hosts: (A) alphaclaw's startup plugin reconcile, from a spec clawctl
+  hands over (runs at the onboarding hand-off restart before the Gateway
+  starts, no extra restart, the finding #10 retry covers failures), or (B)
+  clawctl's reconcile stops and starts `alphaclaw.service` around the
+  install (one Gateway restart during the first chat session). Recommend
+  A. Fleet note for `rs8GE45wtye2`: a 7.1 host upgraded to 9.x hits the
+  same gates when the reconcile re-runs after the marker version changes.
+  Host 03 state: wrapper and helper patched in place (backups
+  `*.orig-beta4`, `teamyou-install.sh.orig-f62fa09f`), plugin installed by
+  hand; treat 03 as patched, not as a clean beta.4 host.
+- Finding #15 correction: the managed model download Bill remembers is
+  clawctl's `prefetch_local_embedding_model` (`npx node-llama-cpp pull`
+  into `~/.node-llama-cpp/models`, for the 7.1 in-process runtime). It sits
+  after the memory plugin install, so finding #17 kept it from running on
+  03, and on 2026.9.5 it is inert anyway: the in-process runtime is retired
+  and the llama-cpp plugin serves embeddings from a managed `llama-server`
+  (pinned build `b10809` plus EmbeddingGemma, about 0.3 GB, installed under
+  OpenClaw's localService supervisor only after explicit consent through
+  `openclaw configure` or the plugin's embedding-only setup;
+  `memory.search.local.modelPath` accepts a GGUF path or `hf:` URI). No
+  non-interactive setup entry point found in the 2026.9.5 dist yet. On 9.x
+  hosts the node-llama-cpp pre-fetch should be skipped; whether to drive
+  the managed llama-server setup for new provisions is Bill's call (options
+  (a)/(b) above).
