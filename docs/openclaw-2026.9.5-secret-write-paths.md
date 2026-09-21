@@ -60,11 +60,25 @@ Already closed:
    read-only. It can read the Gateway token from `.env` and it owns the
    state files. Closing that needs exec policy or sandboxing, not config
    flags.
-4. Lead worth evaluating: OpenClaw 2026.9 has its own sentinel-and-egress
-   design (`secrets.egressProxy`, host-scoped `allowedHosts` on
-   secret-store entries). It is off on our instances (`enabled: false`). It
-   is conceptually what Agent Vault does, and may be how user-installed
-   plugins get credentials without leaving raw values on disk.
+4. OpenClaw's own secrets egress proxy (`secrets.egressProxy`) is **not** a
+   custody alternative to Agent Vault (evaluated 2026-09-21, from
+   `docs/gateway/secrets/secret-store-and-egress.md` and
+   `docs/start/why-openclaw/secrets.md` in the pinned package). The store
+   is unencrypted SQLite (`state/openclaw.sqlite`, mode 0600) on the same
+   host, owned by the same user the agent's shell runs as. OpenClaw states
+   that the store "does not stop a host-exec agent from reading files",
+   that restricting file access is the sandbox's job, and that its proxy
+   is not "a substitute for process and network isolation". The proxy
+   only covers Gateway-hosted exec, and its traffic allowlist binds only
+   clients that honour `HTTPS_PROXY`. It keeps values out of model context
+   and off unbound hosts for cooperating clients; it does not protect
+   against anything with shell access to the host. Agent Vault keeps the
+   real value on a separate VPS, so nothing on the instance, root
+   included, can read it. The useful idea to borrow is the pattern, which
+   Agent Vault already implements: placeholder on the instance plus
+   substitution bound to exact hosts. For user-installed plugins, extend
+   Clawbridge's `__agent_vault_*__` placeholder flow (already used for
+   model and channel keys) rather than adopting OpenClaw's store.
 
 ## Not verified
 
