@@ -385,3 +385,12 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   later replaces. Bill's real key is on 03; rotate it when 03 is retired.
   Second audit finding, `.env` `TEAMYOU_API_URL`, is a name-heuristic false
   positive (a URL).
+  Update: `.env` on 03 also holds the raw key (`AI_GATEWAY_API_KEY`, same
+  shape). In this branch, onboarding writes the wizard's model key to
+  `.env` and syncs it into the auth store (`lib/server/onboarding/index.js`,
+  `syncApiKeyAuthProfilesFromEnvVars`) with no Agent Vault step. The
+  enrolment gate (ac8fecc, "Gate onboarding on usable chat and settled
+  Vault enrollment") is already in beta.4. Bill recalls unreleased changes
+  that set up Agent Vault before the key is entered; not found in
+  alphaclaw, teamyou, or clawctl on any branch or worktree on this machine
+  (2026-09-21). Waiting on where they live.
