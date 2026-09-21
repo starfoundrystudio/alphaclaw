@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-19T18:14:35.984Z",
+  "generatedAt": "2026-09-21T05:07:25.021Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -4227,7 +4227,7 @@
             {
               "key": "kilocode/baidu/ernie-4.5-vl-424b-a47b",
               "provider": "kilocode",
-              "label": "Baidu: ERNIE 4.5 VL 424B A47B",
+              "label": "Baidu: ERNIE 4.5 VL 424B A47B  (retires Oct 8)",
               "accessModes": [
                 "gateway"
               ],
@@ -4389,7 +4389,7 @@
             {
               "key": "kilocode/deepseek/deepseek-v3.1-terminus",
               "provider": "kilocode",
-              "label": "DeepSeek: DeepSeek V3.1 Terminus",
+              "label": "DeepSeek: DeepSeek V3.1 Terminus (retires Sep 28)",
               "accessModes": [
                 "gateway"
               ],
@@ -4398,7 +4398,7 @@
             {
               "key": "kilocode/deepseek/deepseek-v3.2",
               "provider": "kilocode",
-              "label": "DeepSeek: DeepSeek V3.2",
+              "label": "DeepSeek: DeepSeek V3.2 (retires Sep 28)",
               "accessModes": [
                 "gateway"
               ],
@@ -4407,7 +4407,7 @@
             {
               "key": "kilocode/deepseek/deepseek-v3.2-exp",
               "provider": "kilocode",
-              "label": "DeepSeek: DeepSeek V3.2 Exp",
+              "label": "DeepSeek: DeepSeek V3.2 Exp (retires Sep 28)",
               "accessModes": [
                 "gateway"
               ],
@@ -4426,15 +4426,6 @@
               "key": "kilocode/deepseek/deepseek-v4-flash-0731",
               "provider": "kilocode",
               "label": "DeepSeek: DeepSeek V4 Flash 0731",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/deepseek/deepseek-v4-flash-0731:free",
-              "provider": "kilocode",
-              "label": "DeepSeek: DeepSeek V4 Flash 0731 (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -4506,7 +4497,7 @@
             {
               "key": "kilocode/deepseek/deepseek-r1-distill-llama-70b",
               "provider": "kilocode",
-              "label": "DeepSeek: R1 Distill Llama 70B",
+              "label": "DeepSeek: R1 Distill Llama 70B (retires Sep 28)",
               "accessModes": [
                 "gateway"
               ],
@@ -4524,7 +4515,7 @@
             {
               "key": "kilocode/google/gemini-2.5-flash",
               "provider": "kilocode",
-              "label": "Google: Gemini 2.5 Flash",
+              "label": "Google: Gemini 2.5 Flash (retires Oct 20)",
               "accessModes": [
                 "gateway"
               ],
@@ -4533,7 +4524,7 @@
             {
               "key": "kilocode/google/gemini-2.5-flash-lite",
               "provider": "kilocode",
-              "label": "Google: Gemini 2.5 Flash Lite",
+              "label": "Google: Gemini 2.5 Flash Lite (retires Oct 20)",
               "accessModes": [
                 "gateway"
               ],
@@ -4542,7 +4533,7 @@
             {
               "key": "kilocode/google/gemini-2.5-pro",
               "provider": "kilocode",
-              "label": "Google: Gemini 2.5 Pro",
+              "label": "Google: Gemini 2.5 Pro (retires Oct 20)",
               "accessModes": [
                 "gateway"
               ],
@@ -5055,7 +5046,7 @@
             {
               "key": "kilocode/minimax/minimax-m2.1",
               "provider": "kilocode",
-              "label": "MiniMax: MiniMax M2.1",
+              "label": "MiniMax: MiniMax M2.1 (retires Oct 8)",
               "accessModes": [
                 "gateway"
               ],
@@ -7890,15 +7881,6 @@
               "key": "openrouter/deepseek/deepseek-v4-flash-0731:batch",
               "provider": "openrouter",
               "label": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/deepseek/deepseek-v4-flash-0731:free",
-              "provider": "openrouter",
-              "label": "DeepSeek: DeepSeek V4 Flash 0731 (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -13509,6 +13491,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/stepfun/step-5-preview",
+              "provider": "vercel-ai-gateway",
+              "label": "Step 5 Preview",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/stepfun/step-3.5-flash",
               "provider": "vercel-ai-gateway",
               "label": "StepFun 3.5 Flash",
@@ -14389,7 +14380,7 @@
     {
       "key": "kilocode/baidu/ernie-4.5-vl-424b-a47b",
       "provider": "kilocode",
-      "label": "Baidu: ERNIE 4.5 VL 424B A47B",
+      "label": "Baidu: ERNIE 4.5 VL 424B A47B  (retires Oct 8)",
       "accessModes": [
         "gateway"
       ],
@@ -14551,7 +14542,7 @@
     {
       "key": "kilocode/deepseek/deepseek-v3.1-terminus",
       "provider": "kilocode",
-      "label": "DeepSeek: DeepSeek V3.1 Terminus",
+      "label": "DeepSeek: DeepSeek V3.1 Terminus (retires Sep 28)",
       "accessModes": [
         "gateway"
       ],
@@ -14560,7 +14551,7 @@
     {
       "key": "kilocode/deepseek/deepseek-v3.2",
       "provider": "kilocode",
-      "label": "DeepSeek: DeepSeek V3.2",
+      "label": "DeepSeek: DeepSeek V3.2 (retires Sep 28)",
       "accessModes": [
         "gateway"
       ],
@@ -14569,7 +14560,7 @@
     {
       "key": "kilocode/deepseek/deepseek-v3.2-exp",
       "provider": "kilocode",
-      "label": "DeepSeek: DeepSeek V3.2 Exp",
+      "label": "DeepSeek: DeepSeek V3.2 Exp (retires Sep 28)",
       "accessModes": [
         "gateway"
       ],
@@ -14588,15 +14579,6 @@
       "key": "kilocode/deepseek/deepseek-v4-flash-0731",
       "provider": "kilocode",
       "label": "DeepSeek: DeepSeek V4 Flash 0731",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/deepseek/deepseek-v4-flash-0731:free",
-      "provider": "kilocode",
-      "label": "DeepSeek: DeepSeek V4 Flash 0731 (free)",
       "accessModes": [
         "gateway"
       ],
@@ -14668,7 +14650,7 @@
     {
       "key": "kilocode/deepseek/deepseek-r1-distill-llama-70b",
       "provider": "kilocode",
-      "label": "DeepSeek: R1 Distill Llama 70B",
+      "label": "DeepSeek: R1 Distill Llama 70B (retires Sep 28)",
       "accessModes": [
         "gateway"
       ],
@@ -14686,7 +14668,7 @@
     {
       "key": "kilocode/google/gemini-2.5-flash",
       "provider": "kilocode",
-      "label": "Google: Gemini 2.5 Flash",
+      "label": "Google: Gemini 2.5 Flash (retires Oct 20)",
       "accessModes": [
         "gateway"
       ],
@@ -14695,7 +14677,7 @@
     {
       "key": "kilocode/google/gemini-2.5-flash-lite",
       "provider": "kilocode",
-      "label": "Google: Gemini 2.5 Flash Lite",
+      "label": "Google: Gemini 2.5 Flash Lite (retires Oct 20)",
       "accessModes": [
         "gateway"
       ],
@@ -14704,7 +14686,7 @@
     {
       "key": "kilocode/google/gemini-2.5-pro",
       "provider": "kilocode",
-      "label": "Google: Gemini 2.5 Pro",
+      "label": "Google: Gemini 2.5 Pro (retires Oct 20)",
       "accessModes": [
         "gateway"
       ],
@@ -15217,7 +15199,7 @@
     {
       "key": "kilocode/minimax/minimax-m2.1",
       "provider": "kilocode",
-      "label": "MiniMax: MiniMax M2.1",
+      "label": "MiniMax: MiniMax M2.1 (retires Oct 8)",
       "accessModes": [
         "gateway"
       ],
@@ -19622,15 +19604,6 @@
       "key": "openrouter/deepseek/deepseek-v4-flash-0731:batch",
       "provider": "openrouter",
       "label": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/deepseek/deepseek-v4-flash-0731:free",
-      "provider": "openrouter",
-      "label": "DeepSeek: DeepSeek V4 Flash 0731 (free)",
       "accessModes": [
         "gateway"
       ],
@@ -26327,6 +26300,15 @@
       "key": "vercel-ai-gateway/stepfun/step-3.7-flash",
       "provider": "vercel-ai-gateway",
       "label": "Step 3.7 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/stepfun/step-5-preview",
+      "provider": "vercel-ai-gateway",
+      "label": "Step 5 Preview",
       "accessModes": [
         "gateway"
       ],
