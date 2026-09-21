@@ -328,14 +328,22 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   subcommands (`plugins install|uninstall|enable|disable`, `config
   set|unset`) and accepts `--allow-config-mutation`; clawctl's helper drops
   `--pin` and always passes `--force` (uncommitted). Necessary, not
-  sufficient. Open decision for Bill, who installs the plugin on 2026.9
-  hosts: (A) alphaclaw's startup plugin reconcile, from a spec clawctl
-  hands over (runs at the onboarding hand-off restart before the Gateway
-  starts, no extra restart, the finding #10 retry covers failures), or (B)
-  clawctl's reconcile stops and starts `alphaclaw.service` around the
-  install (one Gateway restart during the first chat session). Recommend
-  A. Fleet note for `rs8GE45wtye2`: a 7.1 host upgraded to 9.x hits the
-  same gates when the reconcile re-runs after the marker version changes.
+  sufficient. **Decision (Bill, 2026-09-21): option A.** Implemented:
+  on 2026.9 hosts clawctl stages the archive at host bootstrap (before
+  `alphaclaw-setup` starts) under `/var/lib/alphaclaw-managed-plugins/` and
+  hands its path, version, and URL to Clawbridge through `.env`
+  (`ALPHACLAW_TEAMYOU_MEMORY_PLUGIN_ARCHIVE|VERSION|URL`, hidden from the
+  Env Vars page). Clawbridge's startup plugin reconcile, which runs after
+  the finalize restart and before the Gateway starts, installs it with
+  `--force --accept-capabilities` and writes clawctl's marker, so the
+  post-onboard reconcile then reports "already installed". clawctl never
+  runs the install on 2026.9; it re-stages the archive and config and says
+  Clawbridge installs it at its next start. The finding #10 in-process
+  retry now stops the Gateway around the reconcile and starts it again,
+  because on 2026.9 it too would otherwise be refused. 2026.7 hosts keep
+  the old clawctl install path. Fleet note for `rs8GE45wtye2`: a 7.1 host
+  upgraded to 9.x gets the staged archive from `reconcile_teamyou_install`
+  and Clawbridge installs it on the upgrade's final restart.
   Host 03 state: wrapper and helper patched in place (backups
   `*.orig-beta4`, `teamyou-install.sh.orig-f62fa09f`), plugin installed by
   hand; treat 03 as patched, not as a clean beta.4 host.
@@ -350,6 +358,16 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   `openclaw configure` or the plugin's embedding-only setup;
   `memory.search.local.modelPath` accepts a GGUF path or `hf:` URI). No
   non-interactive setup entry point found in the 2026.9.5 dist yet. On 9.x
-  hosts the node-llama-cpp pre-fetch should be skipped; whether to drive
-  the managed llama-server setup for new provisions is Bill's call (options
-  (a)/(b) above).
+  hosts the node-llama-cpp pre-fetch is skipped. **Decision (Bill,
+  2026-09-21): local embeddings are not offered on 2026.9.** Reason, from
+  upstream openclaw/openclaw#123105: the in-process wrapper pinned an old
+  llama.cpp build that could not load new model architectures; the
+  replacement managed `llama-server` needs interactive consent, and
+  openclaw/openclaw#125792 (open) reports it reserving about 5.3 GB for
+  embeddings, too much for 8 GB hosts. clawctl now writes
+  `memory.search = { provider: "none" }` (OpenClaw's documented FTS-only
+  mode) on 2026.9, replaces the exact `{ provider: "local" }` earlier betas
+  wrote, keeps any other user value, and no longer allow-lists or installs
+  `llama-cpp` there. To verify on the next fresh host: `openclaw memory
+  status` reports FTS available (03 reported "FTS: unavailable" under
+  `provider: "local"`).

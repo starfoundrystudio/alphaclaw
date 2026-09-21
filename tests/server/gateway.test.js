@@ -1708,4 +1708,30 @@ describe("server/gateway parseMigrationLockRetryAfterMs", () => {
       }),
     ).toBe(null);
   });
+
+  it("runs plugin maintenance with the Gateway stopped and restarts it even when the work fails", async () => {
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const order = [];
+    const restart = vi.fn(async () => {
+      order.push("restart");
+    });
+
+    await expect(
+      gateway.runWithGatewayStopped(async () => {
+        order.push("work");
+        expect(gateway.isGatewayLifecycleBusy()).toBe(true);
+        return "done";
+      }, { restart }),
+    ).resolves.toBe("done");
+    expect(order).toEqual(["work", "restart"]);
+    expect(gateway.isGatewayLifecycleBusy()).toBe(false);
+
+    await expect(
+      gateway.runWithGatewayStopped(() => {
+        throw new Error("install refused");
+      }, { restart }),
+    ).rejects.toThrow("install refused");
+    expect(restart).toHaveBeenCalledTimes(2);
+  });
 });

@@ -453,6 +453,8 @@ const runReconcileOpenclawPlugins = () => {
       execSyncImpl: execSync,
       logger: console,
       env: buildCliOpenclawMaintenanceEnv(),
+      // Runs before the Gateway starts (startup and the CLI subcommand).
+      installTeamyouMemoryPlugin: true,
     });
     return 0;
   } catch (e) {
