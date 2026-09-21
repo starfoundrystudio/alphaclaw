@@ -150,3 +150,66 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   because 2026.9.5's Anthropic catalog has no Sonnet 4.6). Both need a
   `beta.2` and a re-provision; `test-g3-oc95-01` stays stuck at wizard
   step 3 and is to be destroyed.
+- **2026-09-21 (beta.2): `test-g3-oc95-02` provisioned by Bill on channel
+  `beta`; onboarding completed (Vercel AI Gateway, Opus 5 preselected and
+  chosen, no channel yet); tailnet up ~06:33 UTC.** Checks:
+  1. Host: PASS — AlphaClaw `0.9.18-starfoundry.23-beta.2`, OpenClaw
+     2026.9.5, Node 26.9.0, `KillMode=mixed` + `TimeoutStopSec=90`
+     (the Gateway logs "shutdown budget … source=systemd … 90000ms"),
+     gated `teamyou-install.sh`, fixed backup export, first state snapshot.
+  2. Pre-onboarding server: PASS. 3. Wizard: done by Bill.
+  4. Config: PASS with two findings — no retired keys; `gateway.auth.token`
+     is the env SecretRef and `.env` carries the minted
+     `OPENCLAW_GATEWAY_TOKEN` (**finding #11 fix verified live**);
+     `tools.web.search` had `enabled` but no provider and the SearXNG
+     plugin was installed but **disabled** (finding #12); `memory.search`
+     absent so Doctor assumed provider `openai` with no key (finding #13).
+     H4 (Birth Sequence) not yet exercised: `BOOTSTRAP.md` present, 0
+     sessions — waits for Bill's first chat.
+  5. Plugins: PASS — reconciled at 2026.9.5, "already installed" on the
+     next start, SearXNG service answering JSON on 127.0.0.1:8888.
+  6. Gateway: PASS — external supervision env present; `systemctl stop`
+     took 1 s with active-work drain and **no orphan** (finding #3 does not
+     reproduce on 2026.9.5's shutdown path); Clawbridge handoff restart
+     34 s to `ready`, one Gateway process after. Also observed live: a
+     config-validation failure (my `memory.search.local.contextSize` shape
+     test) → launcher exit 78 → Doctor-first relaunch, during which the
+     finding #10 reconciliation retry ran ("retry 1/5 failed … retry 2/5
+     succeeded").
+  7. Clawbridge API: PASS — login; `/api/models` bootstrap (1,447 models,
+     refreshing) → explicit refresh `source: openclaw` (250 models,
+     `restartRequired: false`); zero GPT-5.5; primary Opus 5. Control UI
+     gate and Add Model dialog not re-checked in the pane (verified on
+     9.4 at G2; API surfaces identical).
+  8. Channel round trip: pending Bill (no channel configured yet).
+  9. Backups: PASS — manual state run from `test-g3-oc95-02-gateway`
+     → snapshot `e4153435…`, 2 sqlite snapshots.
+  10. Plugin SDK deprecation warnings: none.
+- **G3 finding #12 (S1 for fresh provisions): web search has no provider.**
+  2026.9 retired the bundledDiscovery mode that surfaced the SearXNG
+  plugin, and OpenClaw's `web_search` auto-detection only considers
+  providers with a credential (SearXNG has none), so a fresh host ends up
+  with the plugin disabled and `tools.web.search.provider` unset. Fixed in
+  alphaclaw `4412ae0`: the managed fallback enables `plugins.entries.searxng`,
+  adds it to an existing allow-list and sets the provider; verified live
+  by patching the instance (plugin `enabled`, provider `searxng`, config
+  validates).
+- **G3 finding #13 (S2): `memory.search` missing on fresh 2026.9 hosts.**
+  clawctl's gated writer dropped `agents.defaults.memorySearch` on 2026.9
+  without writing its replacement. Fixed in clawctl `4d030f5` (writes
+  `memory.search = { provider: "local" }`; `local.contextSize` is not a
+  2026.9 key and fails validation, learned live), bundle `f7f510f1`
+  pinned on Preview beta, preview redeployed. Doctor now reports "local
+  embeddings are not confirmed ready" until first use (the documented
+  degrade-to-keyword path).
+- **Observations, not blocking:** `plugins.deny` carries 2026.7.1-era
+  channel plugin ids that 2026.9.5 no longer knows (`buzz`, `clickclack`,
+  … `zalouser`); `openclaw config validate` prints one "stale config entry
+  ignored" warning per id — clean the deny writer up post-release.
+  OpenClaw's onboard added `vercel-ai-gateway/anthropic/claude-opus-4.6`
+  to `agents.defaults.models` as its own default before `models set`
+  pinned Opus 5; harmless allowed extra.
+- Pending on this instance: Bill's first chat (Birth Sequence, H4), a
+  channel + round trip (check 8). Pending decision: `beta.3` with
+  `4412ae0` and one more fresh provision on bundle `f7f510f1` to prove
+  findings #12/#13 fixed from first boot.
