@@ -104,6 +104,9 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   Registry confirms `dependencies.openclaw = 2026.9.5`. `latest` unchanged
   (`0.9.18-starfoundry.22`).
 - TeamYou preview redeployed at `232b7343` for the `f62fa09f` beta bundle pin.
+- 2026-09-21: `0.9.18-starfoundry.23-beta.2` published on the `beta` tag
+  from `5c8d1ab` (finding #11 fix + recommendations), same gated chain,
+  full vitest exit 0. `latest` unchanged.
 
 ## Provision log
 
