@@ -123,6 +123,18 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   vitest 167 files / 1,496 tests. This is the build the third provision
   installs.
 
+- **beta.5 (2026-09-21):** `0.9.18-starfoundry.23-beta.5` published to the
+  `beta` tag (release commit `ae6e702`; `latest` stays `…22`). Contents:
+  read-only config guard removed (Bill's decision, see
+  `docs/openclaw-2026.9.5-secret-write-paths.md`), chat `replace` events
+  (#16), TeamYou memory plugin installed from the startup reconcile (#17),
+  reconcile retry with the Gateway stopped, model catalog refresh (13
+  added, 8 retired; no GPT-5.5; recommendations unchanged). Full vitest
+  168 files / 1509 tests green before publish. Needs the clawctl bundle
+  from `31cbcad` (archive staging, `memory.search` provider `none`) for a
+  fresh provision to exercise #17 and FTS-only memory; the preview's beta
+  bundle pin still points at `f7f510f1`.
+
 ## Provision log
 
 - 2026-09-21 05:14 UTC (Bill's submit): instance `test-g3-oc95-01`
