@@ -141,3 +141,9 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   running instance cannot be patched (no tailnet until onboarding
   finalises) and managed hosts do not self-update, so G3 continues on a
   beta.2 and a re-provision.
+- Fix commits on the branch: `829f54a` (finding #11, token minted before
+  onboard) and `d3bfc0b` (recommendations: Opus 5 → Fable 5.1 → Sonnet, in
+  spec order via `recommendationRank`; Anthropic direct uses Sonnet 5
+  because 2026.9.5's Anthropic catalog has no Sonnet 4.6). Both need a
+  `beta.2` and a re-provision; `test-g3-oc95-01` stays stuck at wizard
+  step 3 and is to be destroyed.
