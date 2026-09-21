@@ -238,3 +238,8 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   Claude-login retries unchanged. Needs a beta.4 before the next
   provision; H4 itself (Birth Sequence ran, agent asked for a name) is
   confirmed by the screenshot.
+- 2026-09-21 07:48 UTC (Bill's submit): third provision `test-g3-oc95-03`
+  (`inst_366ae02d33724ffbada03243c0f45bb6`), run
+  `wrun_01M31F0CNBHRQGSVCQXPP3PEBS`, channel `beta` → AlphaClaw beta.4,
+  host bundle `f7f510f1`. Purpose: prove findings #11–#14 fixed from first
+  boot with no hand-patching.
