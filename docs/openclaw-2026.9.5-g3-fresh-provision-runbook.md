@@ -474,3 +474,33 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     (`agents set-identity`). The TeamYou warning is the pre-activation
     state and is gone after activation. Also: the agent wrote a raw HTML
     `<details>` block, which the chat shows as text.
+- **2026-09-21 22:3x UTC, host 04 follow-ups.**
+  - **#19 migration PASS:** Bill moved the Vercel AI Gateway key to Agent
+    Vault from the Models page. `.env` `AI_GATEWAY_API_KEY` and the auth
+    profile in `state/openclaw.sqlite` (`config_machine_state`) both hold
+    the placeholder, so the scrub does reach 2026.9.5's storage location.
+    No live row in any database holds the raw key (exact-substring search;
+    a first `LIKE '%vck_%'` pass gave false hits because `_` is a
+    wildcard). Raw bytes remain in freed pages of `state/openclaw.sqlite`
+    and its WAL, the residue the spec already calls best-effort.
+  - **G3 finding #21 (S1): adding Slack from Clawbridge after onboarding
+    hung on "Verifying vault credential..." and silently rolled back.**
+    Sequence: placeholders written to `.env`, `slack` allowed, then
+    `reconcileOpenclawPlugins` ran `openclaw plugins install
+    npm:@openclaw/slack@2026.9.5`. With the Gateway running (read-only now
+    removed) the CLI handed the install to the Gateway; the Gateway's
+    `npm view` hung and `plugins.install` failed after 120 s ("npm view
+    failed", only npm's `always-auth` warning captured). The channel flow
+    then rolled back (Slack env removed, config restored). The same minute
+    a 5 s fetch to `ai-gateway.vercel.sh` timed out and the Gateway logged
+    a delayed liveness heartbeat. A minute later `npm view` through the
+    same runtime env answered instantly, and an earlier Gateway install
+    (groq) worked, so the hang looks transient; cause not confirmed.
+    Why the page stuck: the reconcile runs `execSync` inside the Clawbridge
+    server, blocking its event loop for the whole install (the Gateway's
+    log lines from 22:31 were only written at 22:34). The "Installing
+    channel plugin..." phase and the failure event on the operation stream
+    never reached the browser, so it kept the last label it had. Slack
+    plugin files were left in `npm/projects/openclaw-slack-*`, not enabled.
+    Fix to decide: run plugin installs off the event loop (async spawn) so
+    progress and errors reach the page, and retry a failed install once.
