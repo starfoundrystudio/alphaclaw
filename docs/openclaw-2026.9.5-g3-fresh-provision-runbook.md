@@ -504,3 +504,18 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     plugin files were left in `npm/projects/openclaw-slack-*`, not enabled.
     Fix to decide: run plugin installs off the event loop (async spawn) so
     progress and errors reach the page, and retry a failed install once.
+  - **#21 addendum, the error Bill finally saw:** "OpenClaw config
+    validation failed while installing slack, and no safe managed-plugin
+    references could be suppressed". Misleading. The real failure was the
+    Gateway's `npm view` timeout. `isOpenclawConfigReferenceError`
+    (`lib/cli/openclaw-plugin-compat.js`) matches `not found … plugin`
+    anywhere in the command output, and every config-writing OpenClaw call
+    on 2026.9.5 prints the 26 `plugins.deny: plugin not found: …` warnings
+    (#20). So any install failure is misread as a config-reference error,
+    routed to the suppression fallback, which finds nothing to suppress
+    and throws this message. Reproduced offline: the classifier returns
+    true with the warning line in stderr, false without it. Never seen
+    before because on 2026.7.1 installs did not fail this way and the deny
+    warnings did not exist. Fixes: classifier ignores OpenClaw's
+    `warnings:` lines; #20 removes the warnings; #21 makes installs
+    non-blocking with one retry and shows the real error.
