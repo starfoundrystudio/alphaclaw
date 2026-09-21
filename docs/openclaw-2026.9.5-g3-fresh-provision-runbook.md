@@ -135,6 +135,17 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   fresh provision to exercise #17 and FTS-only memory; the preview's beta
   bundle pin still points at `f7f510f1`.
 
+- **Bundle `37c70d18` (2026-09-21):** clawctl host-asset bundle published
+  from `31cbcad` (provenance clean; sha256 verified after download; install
+  helper byte-identical to the commit), recorded in clawctl `5c59c97`, and
+  pinned on TeamYou **Preview beta** only (`OPENCLAW_HOST_ASSET_BUNDLE_URL_BETA`
+  / `_SHA256_BETA`; stable unchanged). Preview redeployed at `83e103bc`.
+  Contents vs `f7f510f1`: TeamYou memory plugin archive staged at bootstrap
+  and handed to Clawbridge (#17), `memory.search` provider `none` on 2026.9,
+  no `llama-cpp` allow/install or model pre-fetch on 2026.9, no `--pin`,
+  always `--force` for the archive. Fresh provision on channel `beta` now
+  gets beta.5 plus this bundle.
+
 ## Provision log
 
 - 2026-09-21 05:14 UTC (Bill's submit): instance `test-g3-oc95-01`
