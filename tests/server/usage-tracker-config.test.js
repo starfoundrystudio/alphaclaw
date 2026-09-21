@@ -171,6 +171,45 @@ describe("server/usage-tracker-config", () => {
     }
   });
 
+  it("leaves the web-search provider unset when another provider plugin is enabled or credentialed", () => {
+    const {
+      hasOtherWebSearchProviderAvailable,
+      applyManagedSearxngWebSearchFallback,
+    } = require("../../lib/server/web-search-config");
+    // Enabled plugin entry wins even without a key in the environment.
+    const withPlugin = { plugins: { entries: { tavily: { enabled: true } }, allow: ["usage-tracker"] } };
+    expect(hasOtherWebSearchProviderAvailable({ cfg: withPlugin, env: {} })).toBe(true);
+    expect(
+      applyManagedSearxngWebSearchFallback({
+        cfg: withPlugin,
+        env: { SEARXNG_BASE_URL: "http://127.0.0.1:8888" },
+      }),
+    ).toBe(true);
+    // Web search stays on; only the SearXNG selection is skipped.
+    expect(withPlugin.tools.web.search).toEqual({ enabled: true });
+    expect(withPlugin.plugins.entries.searxng).toBeUndefined();
+    expect(withPlugin.plugins.allow).not.toContain("searxng");
+    // A credential in the environment for another provider also wins.
+    const withKey = { plugins: { entries: {} } };
+    expect(
+      hasOtherWebSearchProviderAvailable({
+        cfg: withKey,
+        env: { TAVILY_API_KEY: "tvly-test" },
+      }),
+    ).toBe(true);
+    // Codex-native search is a separate switch and does not count.
+    const codexOnly = { tools: { web: { search: { openaiCodex: { enabled: true } } } }, plugins: { entries: {} } };
+    expect(hasOtherWebSearchProviderAvailable({ cfg: codexOnly, env: {} })).toBe(false);
+    expect(
+      applyManagedSearxngWebSearchFallback({
+        cfg: codexOnly,
+        env: { SEARXNG_BASE_URL: "http://127.0.0.1:8888" },
+      }),
+    ).toBe(true);
+    expect(codexOnly.tools.web.search.provider).toBe("searxng");
+    expect(codexOnly.tools.web.search.openaiCodex).toEqual({ enabled: true });
+  });
+
   it("preserves an explicit web search opt-out when SearXNG is available on boot", () => {
     const openclawDir = createTempOpenclawDir();
     const configPath = path.join(openclawDir, "openclaw.json");
