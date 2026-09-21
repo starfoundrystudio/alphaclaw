@@ -73,8 +73,10 @@ completes the wizard (vault, one channel, a model).
    the fresh state dir; managed plugins installed once at 2026.9.5 and
    reported "already installed" on the next restart; SearXNG service up and
    answering on 127.0.0.1:8888.
-6. **Gateway:** ready under external supervision, `OPENCLAW_CONFIG_READONLY=1`
-   honoured (Control UI write refused), handoff restart from Clawbridge,
+6. **Gateway:** ready under external supervision, handoff restart from Clawbridge,
+   config writable (read-only guard removed in beta.5, decision 2026-09-21:
+   a plugin install from the Control UI Plugins page and a channel/provider
+   add from Clawbridge after onboarding both succeed),
    `systemctl stop alphaclaw` completes within the deadline with no orphan
    `openclaw-gateway` (finding #3 re-test on 2026.9.5's restart rules).
 7. **Clawbridge:** login, `/api/models` (bootstrap → cache → openclaw

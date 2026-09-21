@@ -35,7 +35,7 @@ describe("server/openclaw-runtime-env", () => {
     expect(env.OPENCLAW_NO_RESPAWN).toBe("0");
   });
 
-  it("enforces managed supervision, config ownership, and update refusal", () => {
+  it("enforces managed supervision and update refusal without the config write guard", () => {
     const env = withManagedOpenclawEnv({
       OPENCLAW_SUPERVISOR_MODE: "systemd",
       OPENCLAW_CONFIG_READONLY: "0",
@@ -45,10 +45,11 @@ describe("server/openclaw-runtime-env", () => {
     expect(env).toEqual(expect.objectContaining({
       OPENCLAW_SUPERVISOR_MODE: "external",
       OPENCLAW_SERVICE_REPAIR_POLICY: "external",
-      OPENCLAW_CONFIG_READONLY: "1",
       OPENCLAW_DISABLE_UPDATE_CHECK: "1",
       OPENCLAW_NO_AUTO_UPDATE: "1",
     }));
+    expect(env.OPENCLAW_CONFIG_READONLY).toBeUndefined();
+    expect(withManagedOpenclawEnv({ OPENCLAW_CONFIG_READONLY: "1" }).OPENCLAW_CONFIG_READONLY).toBeUndefined();
   });
 
   it("keeps lifecycle ownership while allowing Clawbridge maintenance writes", () => {

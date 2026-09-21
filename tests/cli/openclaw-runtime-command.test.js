@@ -23,7 +23,6 @@ describe("cli/openclaw-runtime-command", () => {
       SSL_CERT_FILE: "/private/agent-vault-ca.pem",
       OPENCLAW_SUPERVISOR_MODE: "external",
       OPENCLAW_SERVICE_REPAIR_POLICY: "external",
-      OPENCLAW_CONFIG_READONLY: "1",
       OPENCLAW_DISABLE_UPDATE_CHECK: "1",
       OPENCLAW_NO_AUTO_UPDATE: "1",
     }));
@@ -51,7 +50,6 @@ describe("cli/openclaw-runtime-command", () => {
         env: expect.objectContaining({
           HOME: "/home/alphaclaw",
           OPENCLAW_PROXY_URL: "http://vault:token@127.0.0.1:14322/",
-          OPENCLAW_CONFIG_READONLY: "1",
           OPENCLAW_SUPERVISOR_MODE: "external",
         }),
         stdio: "inherit",
@@ -59,7 +57,7 @@ describe("cli/openclaw-runtime-command", () => {
     );
   });
 
-  it("removes only the config write guard for Clawbridge-owned maintenance", () => {
+  it("keeps lifecycle controls for Clawbridge-owned maintenance and never sets the config write guard", () => {
     const env = buildOpenclawRuntimeEnv({
       env: { OPENCLAW_CONFIG_READONLY: "1" },
       allowConfigMutation: true,

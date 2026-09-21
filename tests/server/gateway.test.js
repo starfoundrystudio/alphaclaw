@@ -148,11 +148,11 @@ describe("server/gateway restart behavior", () => {
           OPENCLAW_NO_RESPAWN: "1",
           OPENCLAW_SUPERVISOR_MODE: "external",
           OPENCLAW_SERVICE_REPAIR_POLICY: "external",
-          OPENCLAW_CONFIG_READONLY: "1",
           OPENCLAW_DISABLE_UPDATE_CHECK: "1",
           OPENCLAW_NO_AUTO_UPDATE: "1",
         }),
       );
+      expect(gateway.gatewayEnv().OPENCLAW_CONFIG_READONLY).toBeUndefined();
       expect(gateway.gatewayEnv().HOME).toBe("/home/alphaclaw");
       expect(gateway.gatewayEnv().OPENCLAW_HOME).toBe(ALPHACLAW_DIR);
       expect(gateway.gatewayEnv().HOME).not.toBe(gateway.gatewayEnv().OPENCLAW_HOME);
@@ -366,7 +366,6 @@ describe("server/gateway restart behavior", () => {
       ],
       expect.objectContaining({ env: expect.objectContaining({
         OPENCLAW_SUPERVISOR_MODE: "external",
-        OPENCLAW_CONFIG_READONLY: "1",
       }) }),
     );
     expect(exitHandler).toHaveBeenCalledWith(expect.objectContaining({

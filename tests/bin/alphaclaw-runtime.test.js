@@ -107,7 +107,7 @@ describe("bin/alphaclaw openclaw-runtime", () => {
     });
   });
 
-  it("keeps the write guard by default and lifts it for --allow-config-mutation", () => {
+  it("never sets the config write guard, with or without --allow-config-mutation", () => {
     const capturePath = path.join(rootDir, "capture-readonly.js");
     fs.writeFileSync(
       capturePath,
@@ -141,10 +141,9 @@ describe("bin/alphaclaw openclaw-runtime", () => {
         ),
       );
 
-    // The capture script is not an `openclaw` binary, so nothing is implied.
     expect(run([])).toEqual({
       args: ["plugins", "install", "x.tgz"],
-      readonly: "1",
+      readonly: null,
       supervisor: "external",
     });
     expect(run(["--allow-config-mutation"])).toEqual({
