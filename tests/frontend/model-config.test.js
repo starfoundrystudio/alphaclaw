@@ -113,6 +113,8 @@ describe("frontend/model-config", () => {
     const modelConfig = await loadModelConfig();
     const featured = modelConfig.getFeaturedModels([
       { key: "google/gemini-3.1-pro-preview", label: "Gemini 3.1 Pro" },
+      { key: "anthropic/claude-opus-5", label: "Opus 5" },
+      { key: "anthropic/claude-fable-5-1", label: "Fable 5.1" },
       { key: "anthropic/claude-opus-4-8", label: "Opus 4.8" },
       { key: "anthropic/claude-opus-4-7", label: "Opus 4.7" },
       { key: "anthropic/claude-opus-4-6", label: "Opus 4.6" },
@@ -124,13 +126,15 @@ describe("frontend/model-config", () => {
     ]);
 
     expect(featured.map((entry) => entry.key)).toEqual([
-      "anthropic/claude-opus-4-8",
+      "anthropic/claude-opus-5",
+      "anthropic/claude-fable-5-1",
       "anthropic/claude-sonnet-4-6",
       "openai/gpt-5.6",
     ]);
-    expect(featured[0]?.featuredLabel).toBe("Opus 4.8");
-    expect(featured[1]?.featuredLabel).toBe("Sonnet 4.6");
-    expect(featured[2]?.featuredLabel).toBe("GPT-5.6");
+    expect(featured[0]?.featuredLabel).toBe("Opus 5");
+    expect(featured[1]?.featuredLabel).toBe("Fable 5.1");
+    expect(featured[2]?.featuredLabel).toBe("Sonnet 4.6");
+    expect(featured[3]?.featuredLabel).toBe("GPT-5.6");
     expect(featured.some((entry) => entry.featuredLabel === "Gemini 3.1 Pro")).toBe(
       false,
     );

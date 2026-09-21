@@ -410,10 +410,20 @@ const applyRecommendationMetadata = ({ modelsByKey, providers }) => {
       ...configuredRecommendedAccessModes,
     ]).filter((accessMode) => model.accessModes.includes(accessMode));
     if (recommendedAccessModes.length === 0) continue;
+    // Position in the provider's recommended list (lowest across access
+    // modes) so consumers can present recommendations in the spec's order
+    // instead of alphabetically; explicit rows without a list entry rank
+    // after listed ones.
+    const ranks = uniqueStrings(providerMeta.accessModes || [])
+      .map((accessMode) =>
+        getRecommendedModelKeysForAccessMode({ providerMeta, accessMode }).indexOf(key),
+      )
+      .filter((index) => index >= 0);
     modelsByKey.set(key, {
       ...model,
       recommendation: "recommended",
       recommendedAccessModes,
+      recommendationRank: ranks.length > 0 ? Math.min(...ranks) : 1000,
     });
   }
 };
@@ -526,6 +536,11 @@ const buildSegmentedAccessModes = ({ supportSpec, models }) => {
         const rightRecommended =
           recommendedKeys.has(right.key) || right.recommendation === "recommended";
         if (leftRecommended !== rightRecommended) return leftRecommended ? -1 : 1;
+        if (leftRecommended) {
+          const rankCompare =
+            (left.recommendationRank ?? 1000) - (right.recommendationRank ?? 1000);
+          if (rankCompare !== 0) return rankCompare;
+        }
         return left.label.localeCompare(right.label);
       });
       providers.push({

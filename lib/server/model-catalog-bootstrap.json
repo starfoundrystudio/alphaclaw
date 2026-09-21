@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-21T05:07:25.021Z",
+  "generatedAt": "2026-09-21T05:56:15.615Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -28,14 +28,15 @@
           "envKeys": [],
           "requiredPlugins": [],
           "recommendedModelKeys": [
-            "claude-cli/claude-opus-4-8",
+            "claude-cli/claude-opus-5",
+            "claude-cli/claude-fable-5-1",
             "claude-cli/claude-sonnet-4-6"
           ],
           "models": [
             {
-              "key": "claude-cli/claude-opus-4-8",
+              "key": "claude-cli/claude-opus-5",
               "provider": "claude-cli",
-              "label": "Claude Opus 4.8 (Claude CLI)",
+              "label": "Claude Opus 5 (Claude CLI)",
               "accessModes": [
                 "subscription"
               ],
@@ -43,7 +44,22 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "subscription"
-              ]
+              ],
+              "recommendationRank": 0
+            },
+            {
+              "key": "claude-cli/claude-fable-5-1",
+              "provider": "claude-cli",
+              "label": "Claude Fable 5.1 (Claude CLI)",
+              "accessModes": [
+                "subscription"
+              ],
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe",
+              "recommendation": "recommended",
+              "recommendedAccessModes": [
+                "subscription"
+              ],
+              "recommendationRank": 1
             },
             {
               "key": "claude-cli/claude-sonnet-4-6",
@@ -56,21 +72,13 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "subscription"
-              ]
+              ],
+              "recommendationRank": 2
             },
             {
               "key": "claude-cli/claude-fable-5",
               "provider": "claude-cli",
               "label": "Claude Fable 5 (Claude CLI)",
-              "accessModes": [
-                "subscription"
-              ],
-              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
-            },
-            {
-              "key": "claude-cli/claude-fable-5-1",
-              "provider": "claude-cli",
-              "label": "Claude Fable 5.1 (Claude CLI)",
               "accessModes": [
                 "subscription"
               ],
@@ -95,9 +103,9 @@
               "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
-              "key": "claude-cli/claude-opus-5",
+              "key": "claude-cli/claude-opus-4-8",
               "provider": "claude-cli",
-              "label": "Claude Opus 5 (Claude CLI)",
+              "label": "Claude Opus 4.8 (Claude CLI)",
               "accessModes": [
                 "subscription"
               ],
@@ -142,7 +150,8 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "subscription"
-              ]
+              ],
+              "recommendationRank": 0
             },
             {
               "key": "openai/gpt-5.6-luna",
@@ -184,14 +193,15 @@
           ],
           "requiredPlugins": [],
           "recommendedModelKeys": [
-            "anthropic/claude-opus-4-8",
-            "anthropic/claude-sonnet-4-6"
+            "anthropic/claude-opus-5",
+            "anthropic/claude-fable-5-1",
+            "anthropic/claude-sonnet-5"
           ],
           "models": [
             {
-              "key": "anthropic/claude-opus-4-8",
+              "key": "anthropic/claude-opus-5",
               "provider": "anthropic",
-              "label": "Claude Opus 4.8",
+              "label": "Claude Opus 5",
               "accessModes": [
                 "provider-api"
               ],
@@ -199,21 +209,41 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "provider-api"
-              ]
-            },
-            {
-              "key": "anthropic/claude-fable-5",
-              "provider": "anthropic",
-              "label": "Claude Fable 5",
-              "accessModes": [
-                "provider-api"
               ],
-              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+              "recommendationRank": 0
             },
             {
               "key": "anthropic/claude-fable-5-1",
               "provider": "anthropic",
               "label": "Claude Fable 5.1",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe",
+              "recommendation": "recommended",
+              "recommendedAccessModes": [
+                "provider-api"
+              ],
+              "recommendationRank": 1
+            },
+            {
+              "key": "anthropic/claude-sonnet-5",
+              "provider": "anthropic",
+              "label": "Claude Sonnet 5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-bundled-catalog+openclaw-provider-probe",
+              "recommendation": "recommended",
+              "recommendedAccessModes": [
+                "provider-api"
+              ],
+              "recommendationRank": 2
+            },
+            {
+              "key": "anthropic/claude-fable-5",
+              "provider": "anthropic",
+              "label": "Claude Fable 5",
               "accessModes": [
                 "provider-api"
               ],
@@ -238,18 +268,9 @@
               "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
-              "key": "anthropic/claude-opus-5",
+              "key": "anthropic/claude-opus-4-8",
               "provider": "anthropic",
-              "label": "Claude Opus 5",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
-            },
-            {
-              "key": "anthropic/claude-sonnet-5",
-              "provider": "anthropic",
-              "label": "Claude Sonnet 5",
+              "label": "Claude Opus 4.8",
               "accessModes": [
                 "provider-api"
               ],
@@ -726,7 +747,8 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "provider-api"
-              ]
+              ],
+              "recommendationRank": 0
             },
             {
               "key": "minimax/MiniMax-M2.7",
@@ -2364,7 +2386,8 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "provider-api"
-              ]
+              ],
+              "recommendationRank": 0
             },
             {
               "key": "openai/gpt-5.6-sol",
@@ -2378,7 +2401,8 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "subscription"
-              ]
+              ],
+              "recommendationRank": 0
             },
             {
               "key": "openai/gpt-5.6-luna",
@@ -3887,8 +3911,42 @@
           "requiredPlugins": [
             "cloudflare-ai-gateway"
           ],
-          "recommendedModelKeys": [],
+          "recommendedModelKeys": [
+            "cloudflare-ai-gateway/anthropic/claude-opus-5",
+            "cloudflare-ai-gateway/anthropic/claude-fable-5.1",
+            "cloudflare-ai-gateway/anthropic/claude-sonnet-4.6"
+          ],
           "models": [
+            {
+              "key": "cloudflare-ai-gateway/anthropic/claude-opus-5",
+              "provider": "cloudflare-ai-gateway",
+              "label": "Claude Opus 5",
+              "accessModes": [
+                "gateway"
+              ],
+              "accessLabel": "via Cloudflare AI Gateway",
+              "recommendation": "recommended",
+              "recommendedAccessModes": [
+                "gateway"
+              ],
+              "source": "alphaclaw-support-spec",
+              "recommendationRank": 0
+            },
+            {
+              "key": "cloudflare-ai-gateway/anthropic/claude-fable-5.1",
+              "provider": "cloudflare-ai-gateway",
+              "label": "Claude Fable 5.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "accessLabel": "via Cloudflare AI Gateway",
+              "recommendation": "recommended",
+              "recommendedAccessModes": [
+                "gateway"
+              ],
+              "source": "alphaclaw-support-spec",
+              "recommendationRank": 1
+            },
             {
               "key": "cloudflare-ai-gateway/anthropic/claude-sonnet-4.6",
               "provider": "cloudflare-ai-gateway",
@@ -3901,7 +3959,8 @@
               "recommendedAccessModes": [
                 "gateway"
               ],
-              "source": "alphaclaw-support-spec"
+              "source": "alphaclaw-support-spec",
+              "recommendationRank": 2
             }
           ]
         },
@@ -7224,10 +7283,42 @@
           ],
           "requiredPlugins": [],
           "recommendedModelKeys": [
-            "openrouter/openai/gpt-5.6-sol",
-            "openrouter/anthropic/claude-sonnet-4.6"
+            "openrouter/anthropic/claude-opus-5",
+            "openrouter/anthropic/claude-fable-5.1",
+            "openrouter/anthropic/claude-sonnet-4.6",
+            "openrouter/openai/gpt-5.6-sol"
           ],
           "models": [
+            {
+              "key": "openrouter/anthropic/claude-opus-5",
+              "provider": "openrouter",
+              "label": "Claude Opus 5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
+              "accessLabel": "via OpenRouter",
+              "recommendation": "recommended",
+              "recommendedAccessModes": [
+                "gateway"
+              ],
+              "recommendationRank": 0
+            },
+            {
+              "key": "openrouter/anthropic/claude-fable-5.1",
+              "provider": "openrouter",
+              "label": "Claude Fable 5.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
+              "accessLabel": "via OpenRouter",
+              "recommendation": "recommended",
+              "recommendedAccessModes": [
+                "gateway"
+              ],
+              "recommendationRank": 1
+            },
             {
               "key": "openrouter/anthropic/claude-sonnet-4.6",
               "provider": "openrouter",
@@ -7240,7 +7331,8 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "gateway"
-              ]
+              ],
+              "recommendationRank": 2
             },
             {
               "key": "openrouter/openai/gpt-5.6-sol",
@@ -7253,7 +7345,8 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "gateway"
-              ]
+              ],
+              "recommendationRank": 3
             },
             {
               "key": "openrouter/aion-labs/aion-2.0",
@@ -7358,15 +7451,6 @@
               "key": "openrouter/anthropic/claude-fable-5:batch",
               "provider": "openrouter",
               "label": "Anthropic: Claude Fable 5 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/anthropic/claude-fable-5.1",
-              "provider": "openrouter",
-              "label": "Anthropic: Claude Fable 5.1",
               "accessModes": [
                 "gateway"
               ],
@@ -7499,18 +7583,18 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/anthropic/claude-opus-4.8:batch",
+              "key": "openrouter/anthropic/claude-opus-4.8",
               "provider": "openrouter",
-              "label": "Anthropic: Claude Opus 4.8 (batch)",
+              "label": "Anthropic: Claude Opus 4.8",
               "accessModes": [
                 "gateway"
               ],
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/anthropic/claude-opus-5",
+              "key": "openrouter/anthropic/claude-opus-4.8:batch",
               "provider": "openrouter",
-              "label": "Anthropic: Claude Opus 5",
+              "label": "Anthropic: Claude Opus 4.8 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -7731,16 +7815,6 @@
                 "gateway"
               ],
               "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/anthropic/claude-opus-4.8",
-              "provider": "openrouter",
-              "label": "Claude Opus 4.8",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
-              "accessLabel": "via OpenRouter"
             },
             {
               "key": "openrouter/cohere/command-a",
@@ -11284,15 +11358,16 @@
             "vercel-ai-gateway"
           ],
           "recommendedModelKeys": [
-            "vercel-ai-gateway/anthropic/claude-opus-4.8",
+            "vercel-ai-gateway/anthropic/claude-opus-5",
+            "vercel-ai-gateway/anthropic/claude-fable-5.1",
             "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
             "vercel-ai-gateway/openai/gpt-5.6-sol"
           ],
           "models": [
             {
-              "key": "vercel-ai-gateway/anthropic/claude-opus-4.8",
+              "key": "vercel-ai-gateway/anthropic/claude-opus-5",
               "provider": "vercel-ai-gateway",
-              "label": "Claude Opus 4.8",
+              "label": "Claude Opus 5",
               "accessModes": [
                 "gateway"
               ],
@@ -11301,7 +11376,23 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "gateway"
-              ]
+              ],
+              "recommendationRank": 0
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-fable-5.1",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Fable 5.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
+              "accessLabel": "via Vercel AI Gateway",
+              "recommendation": "recommended",
+              "recommendedAccessModes": [
+                "gateway"
+              ],
+              "recommendationRank": 1
             },
             {
               "key": "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
@@ -11315,7 +11406,8 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "gateway"
-              ]
+              ],
+              "recommendationRank": 2
             },
             {
               "key": "vercel-ai-gateway/openai/gpt-5.6-sol",
@@ -11328,7 +11420,8 @@
               "recommendation": "recommended",
               "recommendedAccessModes": [
                 "gateway"
-              ]
+              ],
+              "recommendationRank": 3
             },
             {
               "key": "vercel-ai-gateway/quiverai/arrow-2",
@@ -11370,15 +11463,6 @@
               "key": "vercel-ai-gateway/anthropic/claude-fable-5",
               "provider": "vercel-ai-gateway",
               "label": "Claude Fable 5",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/anthropic/claude-fable-5.1",
-              "provider": "vercel-ai-gateway",
-              "label": "Claude Fable 5.1",
               "accessModes": [
                 "gateway"
               ],
@@ -11430,18 +11514,18 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-fast",
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.8",
               "provider": "vercel-ai-gateway",
-              "label": "Claude Opus 4.8 (Fast)",
+              "label": "Claude Opus 4.8",
               "accessModes": [
                 "gateway"
               ],
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/anthropic/claude-opus-5",
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-fast",
               "provider": "vercel-ai-gateway",
-              "label": "Claude Opus 5",
+              "label": "Claude Opus 4.8 (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -13584,7 +13668,12 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "provider-api"
+      ],
+      "recommendationRank": 1
     },
     {
       "key": "anthropic/claude-haiku-4-5",
@@ -13611,11 +13700,7 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
-      "recommendation": "recommended",
-      "recommendedAccessModes": [
-        "provider-api"
-      ]
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "anthropic/claude-opus-5",
@@ -13624,7 +13709,12 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "provider-api"
+      ],
+      "recommendationRank": 0
     },
     {
       "key": "anthropic/claude-sonnet-5",
@@ -13633,7 +13723,12 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "provider-api"
+      ],
+      "recommendationRank": 2
     },
     {
       "key": "byteplus/deepseek-v4-flash-260425",
@@ -13723,7 +13818,12 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "subscription"
+      ],
+      "recommendationRank": 1
     },
     {
       "key": "claude-cli/claude-opus-4-6",
@@ -13750,11 +13850,7 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
-      "recommendation": "recommended",
-      "recommendedAccessModes": [
-        "subscription"
-      ]
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
       "key": "claude-cli/claude-opus-5",
@@ -13763,7 +13859,12 @@
       "accessModes": [
         "subscription"
       ],
-      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog+openclaw-provider-probe",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "subscription"
+      ],
+      "recommendationRank": 0
     },
     {
       "key": "claude-cli/claude-sonnet-4-6",
@@ -13776,7 +13877,8 @@
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "subscription"
-      ]
+      ],
+      "recommendationRank": 2
     },
     {
       "key": "claude-cli/claude-sonnet-5",
@@ -13786,6 +13888,36 @@
         "subscription"
       ],
       "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+    },
+    {
+      "key": "cloudflare-ai-gateway/anthropic/claude-fable-5.1",
+      "provider": "cloudflare-ai-gateway",
+      "label": "Claude Fable 5.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "accessLabel": "via Cloudflare AI Gateway",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "gateway"
+      ],
+      "source": "alphaclaw-support-spec",
+      "recommendationRank": 1
+    },
+    {
+      "key": "cloudflare-ai-gateway/anthropic/claude-opus-5",
+      "provider": "cloudflare-ai-gateway",
+      "label": "Claude Opus 5",
+      "accessModes": [
+        "gateway"
+      ],
+      "accessLabel": "via Cloudflare AI Gateway",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "gateway"
+      ],
+      "source": "alphaclaw-support-spec",
+      "recommendationRank": 0
     },
     {
       "key": "cloudflare-ai-gateway/anthropic/claude-sonnet-4.6",
@@ -13799,7 +13931,8 @@
       "recommendedAccessModes": [
         "gateway"
       ],
-      "source": "alphaclaw-support-spec"
+      "source": "alphaclaw-support-spec",
+      "recommendationRank": 2
     },
     {
       "key": "cohere/command-a-03-2025",
@@ -17394,7 +17527,8 @@
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "provider-api"
-      ]
+      ],
+      "recommendationRank": 0
     },
     {
       "key": "mistral/codestral-latest",
@@ -18928,7 +19062,8 @@
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "provider-api"
-      ]
+      ],
+      "recommendationRank": 0
     },
     {
       "key": "openai/gpt-5.6-luna",
@@ -18952,7 +19087,8 @@
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "subscription"
-      ]
+      ],
+      "recommendationRank": 0
     },
     {
       "key": "openai/gpt-5.6-terra",
@@ -19067,15 +19203,6 @@
       "key": "openrouter/anthropic/claude-fable-5:batch",
       "provider": "openrouter",
       "label": "Anthropic: Claude Fable 5 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/anthropic/claude-fable-5.1",
-      "provider": "openrouter",
-      "label": "Anthropic: Claude Fable 5.1",
       "accessModes": [
         "gateway"
       ],
@@ -19208,18 +19335,18 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/anthropic/claude-opus-4.8:batch",
+      "key": "openrouter/anthropic/claude-opus-4.8",
       "provider": "openrouter",
-      "label": "Anthropic: Claude Opus 4.8 (batch)",
+      "label": "Anthropic: Claude Opus 4.8",
       "accessModes": [
         "gateway"
       ],
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/anthropic/claude-opus-5",
+      "key": "openrouter/anthropic/claude-opus-4.8:batch",
       "provider": "openrouter",
-      "label": "Anthropic: Claude Opus 5",
+      "label": "Anthropic: Claude Opus 4.8 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -19442,14 +19569,34 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/anthropic/claude-opus-4.8",
+      "key": "openrouter/anthropic/claude-fable-5.1",
       "provider": "openrouter",
-      "label": "Claude Opus 4.8",
+      "label": "Claude Fable 5.1",
       "accessModes": [
         "gateway"
       ],
       "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
-      "accessLabel": "via OpenRouter"
+      "accessLabel": "via OpenRouter",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "gateway"
+      ],
+      "recommendationRank": 1
+    },
+    {
+      "key": "openrouter/anthropic/claude-opus-5",
+      "provider": "openrouter",
+      "label": "Claude Opus 5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
+      "accessLabel": "via OpenRouter",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "gateway"
+      ],
+      "recommendationRank": 0
     },
     {
       "key": "openrouter/anthropic/claude-sonnet-4.6",
@@ -19463,7 +19610,8 @@
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "gateway"
-      ]
+      ],
+      "recommendationRank": 2
     },
     {
       "key": "openrouter/cohere/command-a",
@@ -21555,7 +21703,8 @@
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "gateway"
-      ]
+      ],
+      "recommendationRank": 3
     },
     {
       "key": "openrouter/openai/gpt-5.6-sol:batch",
@@ -24156,7 +24305,13 @@
       "accessModes": [
         "gateway"
       ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
+      "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
+      "accessLabel": "via Vercel AI Gateway",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "gateway"
+      ],
+      "recommendationRank": 1
     },
     {
       "key": "vercel-ai-gateway/anthropic/claude-haiku-4.5",
@@ -24210,12 +24365,7 @@
       "accessModes": [
         "gateway"
       ],
-      "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
-      "accessLabel": "via Vercel AI Gateway",
-      "recommendation": "recommended",
-      "recommendedAccessModes": [
-        "gateway"
-      ]
+      "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
       "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-fast",
@@ -24233,7 +24383,13 @@
       "accessModes": [
         "gateway"
       ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
+      "source": "openclaw-provider-probe+public-provider-catalog+alphaclaw-support-spec",
+      "accessLabel": "via Vercel AI Gateway",
+      "recommendation": "recommended",
+      "recommendedAccessModes": [
+        "gateway"
+      ],
+      "recommendationRank": 0
     },
     {
       "key": "vercel-ai-gateway/anthropic/claude-opus-5-fast",
@@ -24274,7 +24430,8 @@
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "gateway"
-      ]
+      ],
+      "recommendationRank": 2
     },
     {
       "key": "vercel-ai-gateway/anthropic/claude-sonnet-5",
@@ -24908,7 +25065,8 @@
       "recommendation": "recommended",
       "recommendedAccessModes": [
         "gateway"
-      ]
+      ],
+      "recommendationRank": 3
     },
     {
       "key": "vercel-ai-gateway/openai/gpt-5.6-sol-fast",
