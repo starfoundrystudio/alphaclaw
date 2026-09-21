@@ -799,3 +799,29 @@ describe("server/onboarding/openclaw", () => {
   });
 
 });
+
+describe("ensureGatewayTokenEnvVar", () => {
+  const { ensureGatewayTokenEnvVar } = require("../../lib/server/onboarding/index");
+
+  it("mints a Gateway token into the env file when neither the file nor the process has one", () => {
+    const items = [{ key: "TELEGRAM_BOT_TOKEN", value: "t" }];
+    const result = ensureGatewayTokenEnvVar(items, { processEnv: {} });
+    expect(result.generated).toBe(true);
+    expect(result.value).toMatch(/^[0-9a-f]{64}$/);
+    expect(items).toContainEqual({ key: "OPENCLAW_GATEWAY_TOKEN", value: result.value });
+  });
+
+  it("keeps an existing token from the env file untouched", () => {
+    const items = [{ key: "OPENCLAW_GATEWAY_TOKEN", value: "keep-me" }];
+    const result = ensureGatewayTokenEnvVar(items, { processEnv: { OPENCLAW_GATEWAY_TOKEN: "other" } });
+    expect(result).toEqual({ generated: false, value: "keep-me" });
+    expect(items).toEqual([{ key: "OPENCLAW_GATEWAY_TOKEN", value: "keep-me" }]);
+  });
+
+  it("persists a token that only the process env knows, and fills an empty file entry", () => {
+    const items = [{ key: "OPENCLAW_GATEWAY_TOKEN", value: "" }];
+    const result = ensureGatewayTokenEnvVar(items, { processEnv: { OPENCLAW_GATEWAY_TOKEN: "from-process" } });
+    expect(result).toEqual({ generated: false, value: "from-process" });
+    expect(items).toEqual([{ key: "OPENCLAW_GATEWAY_TOKEN", value: "from-process" }]);
+  });
+});

@@ -883,6 +883,32 @@ describe("server/routes/onboarding", () => {
     });
   });
 
+  it("writes a Gateway token into the env file before running onboard on a fresh host", async () => {
+    const deps = createBaseDeps();
+    const savedToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+    delete process.env.OPENCLAW_GATEWAY_TOKEN;
+    try {
+      const app = createApp(deps);
+      const res = await request(app).post("/api/onboard").send({
+        tailscaleApiToken: "tskey-api-test_123456789",
+        modelKey: "vercel-ai-gateway/anthropic/claude-opus-5",
+        vars: [{ key: "AI_GATEWAY_API_KEY", value: "vck_live_test" }],
+      });
+      expect(res.status).toBe(200);
+      const written = deps.writeEnvFile.mock.calls[0][0];
+      const token = written.find((item) => item.key === "OPENCLAW_GATEWAY_TOKEN");
+      expect(token?.value).toMatch(/^[0-9a-f]{64}$/);
+      // The env file is written (and reloaded) before the onboard child runs.
+      expect(deps.writeEnvFile.mock.invocationCallOrder[0]).toBeLessThan(
+        deps.shellCmd.mock.invocationCallOrder.find((_, i) =>
+          String(deps.shellCmd.mock.calls[i][0]).startsWith("openclaw onboard"),
+        ),
+      );
+    } finally {
+      if (savedToken !== undefined) process.env.OPENCLAW_GATEWAY_TOKEN = savedToken;
+    }
+  });
+
   it("configures and reconciles the Codex runtime for OpenAI models with Codex OAuth", async () => {
     const deps = createBaseDeps({ hasCodexOauth: true });
     deps.fs.readFileSync.mockImplementation((p) => {
