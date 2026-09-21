@@ -107,6 +107,15 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
 - 2026-09-21: `0.9.18-starfoundry.23-beta.2` published on the `beta` tag
   from `5c8d1ab` (finding #11 fix + recommendations), same gated chain,
   full vitest exit 0. `latest` unchanged.
+- 2026-09-21: `0.9.18-starfoundry.23-beta.3` published on the `beta` tag
+  from `0d9314d`: SearXNG enabled and named as the fallback web-search
+  provider (`4412ae0`), skipped whenever another web-search provider
+  plugin is enabled or credentialed (`4b7b429`, Bill's design intent:
+  SearXNG must never displace a better option; Codex-native search is a
+  separate switch and unaffected). Full vitest 167 files / 1,495 tests.
+  clawctl bundle `f7f510f1` (memory.search local default) already pinned
+  on Preview beta. Third provision `test-g3-oc95-03` prepared to prove
+  findings #12/#13 fixed from first boot.
 
 ## Provision log
 
