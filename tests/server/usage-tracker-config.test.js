@@ -157,12 +157,18 @@ describe("server/usage-tracker-config", () => {
 
     expect(changed).toBe(true);
     const next = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    // G3 (2026-09-21): on a fresh 2026.9 host nothing else enables the
+    // SearXNG plugin and web_search auto-detection skips credential-less
+    // providers, so the fallback must enable it and name it explicitly.
     expect(next.tools.web.search).toEqual({
       enabled: true,
+      provider: "searxng",
     });
     expect(next.plugins.bundledDiscovery).toBeUndefined();
-    expect(next.plugins.allow).not.toContain("searxng");
-    expect(next.plugins.entries.searxng).toBeUndefined();
+    expect(next.plugins.entries.searxng).toEqual({ enabled: true });
+    if (Array.isArray(next.plugins.allow)) {
+      expect(next.plugins.allow).toContain("searxng");
+    }
   });
 
   it("preserves an explicit web search opt-out when SearXNG is available on boot", () => {
