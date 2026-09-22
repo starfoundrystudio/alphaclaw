@@ -898,3 +898,11 @@ Findings:
   - Proposed fix: clawctl writes `baseUrl: "${TEAMYOU_API_URL}"` into the
     plugin's config entry, like `apiKey`. Can be tried live on host 07 first
     (plugins.* hot-reloads).
+- **#31/#32 live trial on host 07 (2026-09-22 23:05 UTC):** set
+  `plugins.entries.active-memory.config.mode = "always"` and
+  `plugins.entries.openclaw-teamyou-memory.config.baseUrl =
+  "${TEAMYOU_API_URL}"` by hand (backup `/root/openclaw.json.pre-31-32-live`;
+  mode stays 0600). Hot reload applied at 23:05:29, no restart; the plugin
+  reloaded and reconfigured. clawctl's timer spreads existing config, so both
+  keys survive its passes. Awaiting Bill's recall test (plain question in
+  Slack and in the Control UI chat), then Agent Vault `request_logs` check.
