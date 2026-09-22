@@ -91,27 +91,34 @@ Controls, same host, proxy and token:
 
 | Variant | Result |
 | --- | --- |
-| Same client, **no** `dispatcher` option (Socket Mode builds its own env-proxy dispatcher) | Connects, `hello`, pongs within 0.1 s, stable 25 s |
-| `dispatcher` = `new EnvHttpProxyAgent()` from socket-mode's undici 7 | Connects, stable |
-| Same, with `@openclaw/proxyline` managed mode installed | Connects, stable |
+| `dispatcher` = `new EnvHttpProxyAgent()` from Slack's own undici 7 (resolved next to the plugin, the copy socket-mode uses) | Connects through the proxy, `hello`, stable |
+| Same, with that dispatcher pointed at a dead proxy port | Fails, close 1006 (proves the WebSocket uses the proxy) |
+| No `dispatcher` option | Connects **directly**, bypassing the proxy: socket-mode's default is a plain `undici.Agent` (`buildDefaultDispatcher`), which ignores `HTTPS_PROXY` |
 | `dispatcher` = `createHttp1EnvHttpProxyAgent(...)` (OpenClaw's undici 8) | Fails at handshake, close 1006 |
 
-Removing `dispatcher: slackDispatcher` from the `createSlackBoltApp(...)` call in
-the installed `dist/.setup/provider-*.mjs` makes the Gateway's Slack channel
-connect (`socket mode connected`, zero errors) through the same proxy.
+Replacing `dispatcher: slackDispatcher` in the installed
+`dist/.setup/provider-*.mjs` with an `EnvHttpProxyAgent` from Slack's undici
+(when a proxy env is set) makes the Gateway's Slack channel connect through the
+proxy (`socket mode connected`, zero errors; the Gateway's only outbound
+connection is to the proxy).
 
 ### Suggested fix
 
-Either of:
+On Node, build the Socket Mode dispatcher with the undici copy that
+`@slack/socket-mode` uses (as #112963 did), and keep
+`createHttp1EnvHttpProxyAgent` for Web API fetch, which is paired with
+OpenClaw's fetch.
 
-1. Build the Socket Mode dispatcher with the undici copy that `@slack/socket-mode`
-   uses (as #112963 did), keeping `createHttp1EnvHttpProxyAgent` for Web API
-   fetch; under Bun, fall back to option 2.
-2. Stop passing `dispatcher` to `SocketModeReceiver` and let Socket Mode build
-   its default env-proxy dispatcher, which honours `HTTPS_PROXY`/`NO_PROXY`.
+Not passing a dispatcher is **not** a fix: Socket Mode's default dispatcher is a
+direct `Agent`, so proxy-only deployments would lose Socket Mode entirely (the
+proxy support #112963 added), and under Bun the default would fall back to the
+partial bare-`undici` exports that #147421 was avoiding.
 
-A regression test that opens a Socket Mode connection through a local CONNECT
-proxy (as in #112963's evidence) would catch this class of mismatch.
+Bun needs its own answer, which we cannot verify (we do not run Bun): the
+dispatcher must come from whatever undici implementation Socket Mode's
+WebSocket actually uses under Bun. Maintainers who own the Bun path should
+choose it; a Socket Mode handshake through a local CONNECT proxy, on both Node
+and Bun (as in #112963's evidence), would catch this class of mismatch.
 
 ### Other channels checked (2026.9.5)
 

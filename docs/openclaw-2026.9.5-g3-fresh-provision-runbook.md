@@ -624,3 +624,17 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     shared proxy helper. Only Slack Socket Mode hands the helper to a library
     with its own undici. Not live-tested on 2026.9.5: Telegram and Discord.
     Correction: #147421 first shipped in 2026.9.5, not 2026.9.4.
+  - **#22 hotfix corrected (2026-09-22):** the first version (removing the
+    dispatcher) made Socket Mode connect **directly**, bypassing Agent Vault:
+    `@slack/socket-mode`'s `buildDefaultDispatcher` is a plain `undici.Agent`
+    that ignores `HTTPS_PROXY` (host 04 showed a direct TCP connection to
+    `52.11.79.54:443`). The hotfix now replaces the argument with an
+    `EnvHttpProxyAgent` built from Slack's own undici 7.29.1 (resolved next to
+    the provider file, the same copy Socket Mode uses) whenever a proxy env is
+    set. Proven: through the Agent Vault proxy it connects; with only that
+    dispatcher pointed at a dead proxy it fails (close 1006). Installed on
+    host 04 and restarted: `socket mode connected`, zero WebSocket errors,
+    and the Gateway's only established TCP connection is to the proxy
+    (`127.0.0.1:14323`). Upstream draft revised: dropping the dispatcher is
+    not a fix (loses proxy support; under Bun falls back to the partial
+    undici #147421 avoided); Bun path left to maintainers.

@@ -28,7 +28,8 @@ describe("cli/openclaw-plugin-hotfixes", () => {
     expect(first.map((r) => r.status)).toEqual(["applied"]);
     const patched = fs.readFileSync(file, "utf8");
     expect(patched).not.toContain("dispatcher: slackDispatcher,");
-    expect(patched).toContain("clientOptions, /* clawbridge-hotfix:slack-socket-mode-proxy-dispatcher */ wrapReceiver");
+    expect(patched).toContain("clientOptions, dispatcher: /* clawbridge-hotfix:slack-socket-mode-proxy-dispatcher */ (process.env.HTTPS_PROXY");
+    expect(patched).toContain('createRequire(import.meta.url)("undici").EnvHttpProxyAgent)() : void 0, wrapReceiver');
 
     const second = applyOpenclawPluginHotfixes({ openclawDir, logger });
     expect(second.map((r) => r.status)).toEqual(["already-applied"]);
