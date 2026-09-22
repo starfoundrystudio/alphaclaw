@@ -916,3 +916,19 @@ Findings:
   `enabled` flag was still false), so there is no Clawbridge chat gap.
   Fix committed in clawctl `af4b8c2` (on
   `codex/openclaw-2026.9.4-upgrade`); needs a new host bundle.
+
+#### beta.10 batch (implemented 2026-09-22, not yet released)
+
+- #27 (`131057a`): a minute-by-minute watcher applies pending plugin
+  hotfixes and restarts the Gateway when a patched file is newer than the
+  running Gateway (2-minute grace, skipped while another lifecycle operation
+  owns the Gateway). Covers Slack installed from the Control UI Plugins page.
+- #28 logging (`36b5f0d`): the reconcile logs each OpenClaw command with its
+  duration and first error line; the runtime runner relays every attempt's
+  outcome, duration, and child output. The "plugin already exists" first
+  install was the reconcile's own `--force` recovery inside one attempt, not
+  the runner retry; the next Slack add will show what created the folder.
+- Deferred by Bill (2026-09-22): #29 (exec completion follow-up message,
+  accepted as OpenClaw behaviour) and #30 (pre-activation config warning).
+- Pairs with clawctl `af4b8c2` (#31/#32) in a new host bundle.
+- Full vitest 173 files / 1,552 tests.
