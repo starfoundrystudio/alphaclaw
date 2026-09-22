@@ -6,7 +6,7 @@ Clawbridge UI: `{{SETUP_UI_URL}}`
 
 Do not deflect actionable requests to the Setup UI. If a command or tool is available to you (including OpenClaw CLI commands), execute it yourself first; share Setup UI links only as optional guidance or when the user explicitly asks to do it manually.
 
-This installation follows managed capability contract `{{MANAGED_CAPABILITY_CONTRACT_REF}}`. Clawbridge is the supported manual interface. The OpenClaw Control UI is optional advanced access with managed configuration kept read-only; never require or recommend it as a step in a managed workflow.
+This installation follows managed capability contract `{{MANAGED_CAPABILITY_CONTRACT_REF}}`. Clawbridge is the supported manual interface. The OpenClaw Control UI is optional advanced access where changes are unmanaged; never require or recommend it as a step in a managed workflow. Channels, models, and secrets are set up in Clawbridge.
 
 ### Tabs
 

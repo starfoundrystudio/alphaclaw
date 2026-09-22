@@ -13,7 +13,7 @@ const {
 describe("server/managed-capability-contract", () => {
   it("defines the approved managed and advanced surface boundary", () => {
     expect(kManagedCapabilityContractRef).toBe(
-      "teamyou.managed-capabilities/v1@2026-09-18.1",
+      "teamyou.managed-capabilities/v1@2026-09-22.1",
     );
     const pinnedOpenclawPackage = JSON.parse(
       fs.readFileSync(
@@ -31,12 +31,12 @@ describe("server/managed-capability-contract", () => {
       },
       controlUi: {
         role: "optional-advanced-access",
-        mode: "managed-config-read-only",
+        mode: "managed-config-warned",
         customerRequired: false,
         hostedClawbridgeSections: false,
         label: "Advanced — unmanaged changes",
         basePath: "/openclaw",
-        warningVersion: "teamyou.advanced-control-warning/v1",
+        warningVersion: "teamyou.advanced-control-warning/v2",
         requiresSignedSessionAcknowledgement: true,
         directGatewayExposure: "loopback-only",
       },
@@ -75,7 +75,7 @@ describe("server/managed-capability-contract", () => {
         "contract={{MANAGED_CAPABILITY_CONTRACT_REF}} revision={{MANAGED_CAPABILITY_CONTRACT_REVISION}}",
       ),
     ).toBe(
-      "contract=teamyou.managed-capabilities/v1@2026-09-18.1 revision=2026-09-18.1",
+      "contract=teamyou.managed-capabilities/v1@2026-09-22.1 revision=2026-09-22.1",
     );
 
     const uiFiles = [

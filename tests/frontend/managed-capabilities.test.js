@@ -5,7 +5,7 @@ describe("frontend/managed-capabilities", () => {
     );
 
     expect(capabilities.kManagedCapabilityContractRef).toBe(
-      "teamyou.managed-capabilities/v1@2026-09-18.1",
+      "teamyou.managed-capabilities/v1@2026-09-22.1",
     );
     expect(capabilities.kManagedSurfaceId).toBe("clawbridge");
     expect(capabilities.kAdvancedControlUiLabel).toBe(

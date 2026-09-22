@@ -83,7 +83,7 @@ describe("server/auth-db", () => {
       sessionId: "session-123",
       instanceId: "oc_inst_123",
       warningVersion: "teamyou.advanced-control-warning/v1",
-      managedConfigRevision: "2026-09-18.1",
+      managedConfigRevision: "2026-09-22.1",
       clientIp: "100.64.0.5",
       acknowledgedAt: "2026-09-18T16:30:00.000Z",
     });
@@ -96,7 +96,7 @@ describe("server/auth-db", () => {
         sessionId: "session-123",
         instanceId: "oc_inst_123",
         warningVersion: "teamyou.advanced-control-warning/v1",
-        managedConfigRevision: "2026-09-18.1",
+        managedConfigRevision: "2026-09-22.1",
         clientIp: "100.64.0.5",
         acknowledgedAt: "2026-09-18T16:30:00.000Z",
       },

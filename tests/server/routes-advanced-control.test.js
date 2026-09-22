@@ -103,8 +103,8 @@ describe("server/routes/advanced-control", () => {
       ok: true,
       acknowledged: false,
       instanceId: "oc_inst_test",
-      warningVersion: "teamyou.advanced-control-warning/v1",
-      managedConfigRevision: "2026-09-18.1",
+      warningVersion: "teamyou.advanced-control-warning/v2",
+      managedConfigRevision: "2026-09-22.1",
     });
 
     const acknowledgement = await agent
@@ -122,8 +122,8 @@ describe("server/routes/advanced-control", () => {
       expect.objectContaining({
         userIdentity: "person@example.com",
         instanceId: "oc_inst_test",
-        warningVersion: "teamyou.advanced-control-warning/v1",
-        managedConfigRevision: "2026-09-18.1",
+        warningVersion: "teamyou.advanced-control-warning/v2",
+        managedConfigRevision: "2026-09-22.1",
         acknowledgedAt: "2026-09-18T16:30:00.000Z",
       }),
     ]);

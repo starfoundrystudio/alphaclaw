@@ -1191,7 +1191,7 @@ describe("server/routes/onboarding", () => {
     expect(deps.authProfiles.syncConfigAuthReferencesForAgent).toHaveBeenCalledTimes(1);
     expect(deps.fs.writeFileSync).toHaveBeenCalledWith(
       "/tmp/openclaw/workspace/hooks/bootstrap/AGENTS.md",
-      "Contract: teamyou.managed-capabilities/v1@2026-09-18.1",
+      "Contract: teamyou.managed-capabilities/v1@2026-09-22.1",
     );
     const toolsWriteCall = deps.fs.writeFileSync.mock.calls
       .filter(

@@ -155,17 +155,17 @@ describe("server/onboarding/workspace", () => {
       expect(tools).not.toContain("| Providers |");
       expect(tools).toContain("outside managed OpenClaw state");
       expect(tools).toContain(
-        "teamyou.managed-capabilities/v1@2026-09-18.1",
+        "teamyou.managed-capabilities/v1@2026-09-22.1",
       );
       expect(tools).toContain("Clawbridge is the supported manual interface");
       expect(tools).not.toContain("OpenClaw dashboard |");
 
       const agents = getWrittenAgentsContent(written);
       expect(agents).toContain(
-        "teamyou.managed-capabilities/v1@2026-09-18.1",
+        "teamyou.managed-capabilities/v1@2026-09-22.1",
       );
       expect(agents).toContain(
-        "The OpenClaw Control UI is optional advanced access with managed configuration kept read-only",
+        "The OpenClaw Control UI is optional advanced access where changes are unmanaged",
       );
       expect(agents).toContain(
         "Never tell the user to open the OpenClaw Control UI",

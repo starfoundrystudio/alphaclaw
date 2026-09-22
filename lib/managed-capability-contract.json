@@ -1,7 +1,7 @@
 {
   "contractId": "teamyou.managed-capabilities",
   "schemaVersion": 1,
-  "revision": "2026-09-18.1",
+  "revision": "2026-09-22.1",
   "targetOpenClawVersion": "2026.9.5",
   "surfaces": {
     "managed": {
@@ -11,12 +11,12 @@
     "controlUi": {
       "id": "openclaw-control-ui",
       "role": "optional-advanced-access",
-      "mode": "managed-config-read-only",
+      "mode": "managed-config-warned",
       "basePath": "/openclaw",
       "customerRequired": false,
       "hostedClawbridgeSections": false,
       "label": "Advanced — unmanaged changes",
-      "warningVersion": "teamyou.advanced-control-warning/v1",
+      "warningVersion": "teamyou.advanced-control-warning/v2",
       "requiresSignedSessionAcknowledgement": true,
       "directGatewayExposure": "loopback-only"
     }

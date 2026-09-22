@@ -139,6 +139,7 @@ describe("server/routes/system", () => {
       expect(deps.clawCmd).toHaveBeenCalledTimes(1);
       expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open --json", {
         quiet: true,
+        timeoutMs: 60000,
       });
     } finally {
       if (previousGatewayToken === undefined) {
@@ -184,6 +185,7 @@ describe("server/routes/system", () => {
       expect(deps.clawCmd).toHaveBeenCalledTimes(1);
       expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open --json", {
         quiet: true,
+        timeoutMs: 60000,
       });
       // The shared Gateway token never reaches the browser on this path.
       expect(res.body.url).not.toContain("gw-token");
@@ -195,6 +197,68 @@ describe("server/routes/system", () => {
         process.env.OPENCLAW_GATEWAY_TOKEN = previousGatewayToken;
       }
     }
+  });
+
+  it("never hands a 2026.9 browser the token URL when the bootstrap link fails", async () => {
+    // G3 finding #26: the mint timed out and the token URL put the customer
+    // on OpenClaw's "Approve this browser" screen.
+    const deps = createSystemDeps();
+    deps.openclawVersionService.readOpenclawVersion.mockReturnValue("2026.9.5");
+    const previousGatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
+    process.env.OPENCLAW_GATEWAY_TOKEN = "managed-gateway-token";
+    deps.clawCmd.mockResolvedValue({ ok: false, stdout: "", stderr: "", timedOut: true });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const app = createApp(deps);
+
+    try {
+      const res = await request(app).get("/api/gateway/dashboard");
+
+      expect(res.status).toBe(503);
+      expect(res.body).toMatchObject({ ok: false, retryable: true });
+      expect(JSON.stringify(res.body)).not.toContain("managed-gateway-token");
+      expect(deps.clawCmd).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("timed out"));
+    } finally {
+      warn.mockRestore();
+      if (previousGatewayToken === undefined) {
+        delete process.env.OPENCLAW_GATEWAY_TOKEN;
+      } else {
+        process.env.OPENCLAW_GATEWAY_TOKEN = previousGatewayToken;
+      }
+    }
+  });
+
+  it("shares one bootstrap mint between overlapping dashboard requests", async () => {
+    const deps = createSystemDeps();
+    deps.openclawVersionService.readOpenclawVersion.mockReturnValue("2026.9.5");
+    let finishMint;
+    deps.clawCmd.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishMint = () =>
+            resolve({
+              ok: true,
+              stdout: JSON.stringify({
+                ok: true,
+                browserUrl:
+                  "http://127.0.0.1:18789/openclaw/#bootstrapToken=one-time&bootstrapProfile=owner",
+                browserBootstrapExpiresAtMs: 1789776583564,
+              }),
+            });
+        }),
+    );
+    const app = createApp(deps);
+
+    const first = request(app).get("/api/gateway/dashboard").then((res) => res);
+    const second = request(app).get("/api/gateway/dashboard").then((res) => res);
+    await vi.waitFor(() => expect(finishMint).toBeTypeOf("function"));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    finishMint();
+    const [a, b] = await Promise.all([first, second]);
+
+    expect(deps.clawCmd).toHaveBeenCalledTimes(1);
+    expect(a.body.source).toBe("bootstrap");
+    expect(b.body.source).toBe("bootstrap");
   });
 
   it("falls back to the token hand-off when the dashboard JSON has no bootstrap URL", async () => {
@@ -250,6 +314,7 @@ describe("server/routes/system", () => {
       expect(deps.clawCmd).toHaveBeenCalledTimes(1);
       expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open --json", {
         quiet: true,
+        timeoutMs: 60000,
       });
     } finally {
       if (previousGatewayToken === undefined) {
@@ -651,6 +716,7 @@ describe("server/routes/system", () => {
     expect(deps.clawCmd).toHaveBeenCalledTimes(1);
     expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open --json", {
       quiet: true,
+      timeoutMs: 60000,
     });
   });
 
@@ -785,6 +851,7 @@ describe("server/routes/system", () => {
       expect(deps.clawCmd).toHaveBeenCalledTimes(1);
     expect(deps.clawCmd).toHaveBeenCalledWith("dashboard --no-open --json", {
       quiet: true,
+      timeoutMs: 60000,
     });
     } finally {
       if (previousEnvToken === undefined) delete process.env.OPENCLAW_GATEWAY_TOKEN;

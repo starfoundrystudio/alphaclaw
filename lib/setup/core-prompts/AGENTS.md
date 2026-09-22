@@ -34,7 +34,7 @@ Workload egress is enforced off-host by the provider firewall and routed through
 
 This installation follows `{{MANAGED_CAPABILITY_CONTRACT_REF}}`.
 
-Clawbridge is the supported managed interface. The OpenClaw Control UI is optional advanced access with managed configuration kept read-only, and it is never a required step in a managed workflow.
+Clawbridge is the supported managed interface. The OpenClaw Control UI is optional advanced access where changes are unmanaged, and it is never a required step in a managed workflow. Channels, models, and secrets are set up in Clawbridge.
 
 - Use the tools and CLI available to you before asking the user to perform a manual configuration step.
 - When user action is genuinely required, direct the user to the matching Clawbridge screen described in `TOOLS.md`.
