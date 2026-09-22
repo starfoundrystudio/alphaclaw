@@ -67,9 +67,10 @@ On a host with an HTTP CONNECT proxy and a Slack app token (`xapp-…`,
 `connections:write`):
 
 ```js
-// Run from the installed @openclaw/slack package with HTTPS_PROXY set.
+// Save as repro.mjs inside the installed @openclaw/slack package; run with HTTPS_PROXY set.
 import { createRequire } from "node:module";
-const req = createRequire(require.resolve("@slack/socket-mode/package.json"));
+const here = createRequire(import.meta.url);
+const req = createRequire(here.resolve("@slack/socket-mode/package.json"));
 const fr = await import("openclaw/plugin-sdk/fetch-runtime");
 const { SocketModeClient } = req("./dist/src/index.js");
 
