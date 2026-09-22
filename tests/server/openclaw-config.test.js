@@ -77,6 +77,22 @@ describe("server/openclaw-config", () => {
       }
     });
 
+    it("leaves the config owner-only even when replacing a readable file", () => {
+      // G3 finding #25: the config was left 0644 after every Clawbridge write.
+      const openclawDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), "alphaclaw-openclaw-config-"),
+      );
+      try {
+        const configPath = path.join(openclawDir, "openclaw.json");
+        fs.writeFileSync(configPath, "{}\n", { mode: 0o644 });
+        fs.chmodSync(configPath, 0o644);
+        writeOpenclawConfig({ openclawDir, config: { gateway: { mode: "local" } } });
+        expect(fs.statSync(configPath).mode & 0o777).toBe(0o600);
+      } finally {
+        fs.rmSync(openclawDir, { recursive: true, force: true });
+      }
+    });
+
     it("ends the file with a newline, as OpenClaw does", () => {
       // G3 finding #23: OpenClaw 2026.9 compares raw config bytes across
       // startup, so the same settings must serialize to the same bytes
