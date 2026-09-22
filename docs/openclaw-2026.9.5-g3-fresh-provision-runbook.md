@@ -771,3 +771,21 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     the wait overlaps the acknowledgement; on 2026.9 never fall back to the
     token URL (it cannot pair) and show a retryable error instead; log when
     the bootstrap path fails.
+
+#### beta.9 batch (implemented 2026-09-22, not yet released)
+
+- #24 (`68232a7`): no Gateway restart for TeamYou memory activation on
+  2026.9; chat view recovers after any Gateway restart.
+- #25 (`2514e29`): Clawbridge writes `openclaw.json` 0600.
+- #26 (`fa6c89a`): dashboard link mint gets a 60 s timeout and one shared
+  in-flight mint; no token-URL fallback on 2026.9 (retryable 503, "Try
+  again" in the launcher); failures logged. Stale read-only wording removed
+  from the launcher, the interstitial, and the agent's `AGENTS.md`/`TOOLS.md`;
+  capability contract revision `2026-09-22.1`, mode `managed-config-warned`,
+  warning `v2` (existing acknowledgements must be renewed).
+- Page-specific Control UI warnings (`b9ee9f9`): prominent amber panel on
+  Channels, Model providers/Model setup, and Secrets, each linking to the
+  matching Clawbridge page; follows in-page navigation; hideable per visit.
+- Full vitest 172 files / 1,546 tests; UI build OK. To verify after release:
+  fresh provision (ritual with no mid-turn restart, silent Control UI
+  pairing, warnings on the three pages, config mode 600).
