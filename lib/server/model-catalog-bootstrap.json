@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-22T17:38:42.687Z",
+  "generatedAt": "2026-09-22T21:10:14.595Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -3116,6 +3116,24 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "venice/openai-gpt-6-luna",
+              "provider": "venice",
+              "label": "GPT-6 Luna",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "venice/openai-gpt-6-sol",
+              "provider": "venice",
+              "label": "GPT-6 Sol",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "venice/grok-4-20",
               "provider": "venice",
               "label": "Grok 4.20",
@@ -6003,6 +6021,42 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/openai/gpt-6-luna",
+              "provider": "kilocode",
+              "label": "OpenAI: GPT-6 Luna",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/openai/gpt-6-luna-pro",
+              "provider": "kilocode",
+              "label": "OpenAI: GPT-6 Luna Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/openai/gpt-6-sol",
+              "provider": "kilocode",
+              "label": "OpenAI: GPT-6 Sol",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/openai/gpt-6-sol-pro",
+              "provider": "kilocode",
+              "label": "OpenAI: GPT-6 Sol Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/openai/gpt-oss-120b",
               "provider": "kilocode",
               "label": "OpenAI: gpt-oss-120b",
@@ -6690,6 +6744,15 @@
               "key": "kilocode/qwen/qwen3.8-max-0902",
               "provider": "kilocode",
               "label": "Qwen: Qwen3.8 Max (0902)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/qwen/qwen3.8-omni-flash",
+              "provider": "kilocode",
+              "label": "Qwen: Qwen3.8 Omni Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -10040,6 +10103,78 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-6-luna",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-6 Luna",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-6-luna:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-6 Luna (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-6-luna-pro",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-6 Luna Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-6-luna-pro:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-6 Luna Pro (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-6-sol",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-6 Sol",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-6-sol:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-6 Sol (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-6-sol-pro",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-6 Sol Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-6-sol-pro:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-6 Sol Pro (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-oss-120b",
               "provider": "openrouter",
               "label": "OpenAI: gpt-oss-120b",
@@ -10763,6 +10898,15 @@
               "key": "openrouter/qwen/qwen3.8-max-0902",
               "provider": "openrouter",
               "label": "Qwen: Qwen3.8 Max (0902)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/qwen/qwen3.8-omni-flash",
+              "provider": "openrouter",
+              "label": "Qwen: Qwen3.8 Omni Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -12498,6 +12642,42 @@
               "key": "vercel-ai-gateway/openai/gpt-6-astra-fast",
               "provider": "vercel-ai-gateway",
               "label": "GPT-6 Astra (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-6-luna",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-6 Luna",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-6-luna-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-6 Luna (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-6-sol",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-6 Sol",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-6-sol-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-6 Sol (Fast)",
               "accessModes": [
                 "gateway"
               ],
@@ -16311,6 +16491,42 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/openai/gpt-6-luna",
+      "provider": "kilocode",
+      "label": "OpenAI: GPT-6 Luna",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/openai/gpt-6-luna-pro",
+      "provider": "kilocode",
+      "label": "OpenAI: GPT-6 Luna Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/openai/gpt-6-sol",
+      "provider": "kilocode",
+      "label": "OpenAI: GPT-6 Sol",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/openai/gpt-6-sol-pro",
+      "provider": "kilocode",
+      "label": "OpenAI: GPT-6 Sol Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/openai/gpt-oss-120b",
       "provider": "kilocode",
       "label": "OpenAI: gpt-oss-120b",
@@ -16998,6 +17214,15 @@
       "key": "kilocode/qwen/qwen3.8-max-0902",
       "provider": "kilocode",
       "label": "Qwen: Qwen3.8 Max (0902)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/qwen/qwen3.8-omni-flash",
+      "provider": "kilocode",
+      "label": "Qwen: Qwen3.8 Omni Flash",
       "accessModes": [
         "gateway"
       ],
@@ -21932,6 +22157,78 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-6-luna",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-6 Luna",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-6-luna:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-6 Luna (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-6-luna-pro",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-6 Luna Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-6-luna-pro:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-6 Luna Pro (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-6-sol",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-6 Sol",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-6-sol:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-6 Sol (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-6-sol-pro",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-6 Sol Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-6-sol-pro:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-6 Sol Pro (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-oss-120b",
       "provider": "openrouter",
       "label": "OpenAI: gpt-oss-120b",
@@ -22655,6 +22952,15 @@
       "key": "openrouter/qwen/qwen3.8-max-0902",
       "provider": "openrouter",
       "label": "Qwen: Qwen3.8 Max (0902)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/qwen/qwen3.8-omni-flash",
+      "provider": "openrouter",
+      "label": "Qwen: Qwen3.8 Omni Flash",
       "accessModes": [
         "gateway"
       ],
@@ -23924,6 +24230,24 @@
       "key": "venice/openai-gpt-6-astra-pro",
       "provider": "venice",
       "label": "GPT-6 Astra Pro",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "venice/openai-gpt-6-luna",
+      "provider": "venice",
+      "label": "GPT-6 Luna",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "venice/openai-gpt-6-sol",
+      "provider": "venice",
+      "label": "GPT-6 Sol",
       "accessModes": [
         "provider-api"
       ],
@@ -25486,6 +25810,42 @@
       "key": "vercel-ai-gateway/openai/gpt-6-astra-fast",
       "provider": "vercel-ai-gateway",
       "label": "GPT-6 Astra (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-6-luna",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-6 Luna",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-6-luna-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-6 Luna (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-6-sol",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-6 Sol",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-6-sol-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-6 Sol (Fast)",
       "accessModes": [
         "gateway"
       ],
