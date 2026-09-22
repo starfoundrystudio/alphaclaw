@@ -168,6 +168,17 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   release. Not yet installed on any host; host 04 still runs beta.6 with the
   hand-patched Slack provider.
 
+- **Bundle `8dcfb758` + beta.8 (2026-09-22):** the G3 finding #23 pair.
+  clawctl bundle published from `299867a` (provenance clean, sha verified
+  after download, install helper byte-identical to the commit), recorded in
+  clawctl `b5aa81e`, pinned on TeamYou **Preview beta** only
+  (`OPENCLAW_HOST_ASSET_BUNDLE_URL_BETA` / `_SHA256_BETA`; stable unchanged),
+  Preview redeployed at `c36c762e` (Vercel success). alphaclaw
+  `0.9.18-starfoundry.23-beta.8` published to the `beta` tag (release commit
+  `f5485e7`; `latest` stays `…22`), full vitest 171 files / 1,530 tests
+  before publish. A fresh provision on channel `beta` now gets beta.8 plus
+  this bundle; no host has been upgraded.
+
 ## Provision log
 
 - 2026-09-21 05:14 UTC (Bill's submit): instance `test-g3-oc95-01`
