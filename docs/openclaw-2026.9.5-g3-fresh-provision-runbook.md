@@ -755,3 +755,19 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   it over the config. No secrets are stored in the file (only env
   references), and the state dir is 755. Fix: write with the existing mode or
   0600 and create the state dir 0700. Batch with #24 for beta.9.
+
+- **G3 finding #26 (S1, ours): the advanced Control UI shows OpenClaw's
+  "Approve this browser" screen again.** The silent pairing from `cf6be72`
+  (G2) is intact, but it is timing out. `GET /api/gateway/dashboard` runs
+  `openclaw dashboard --no-open --json` through `clawCmd`, whose default
+  timeout is 15 s. On host 06 that command takes 17.5 s cold and 13.2–14.3 s
+  warm (4 vCPU; the one-time link it mints lives 599 s). When it is killed,
+  the route quietly falls back to the shared-token URL, and on 2026.9 a
+  token-only browser always lands on the approval screen. The link is minted
+  inside the CLI process (`issueDeviceBootstrapToken`), not through a
+  Gateway call, so the CLI start-up cost cannot be bypassed.
+  - Proposed fix: its own longer timeout (60 s) with a "preparing" state in
+    the launcher; start minting when the advanced-access interstitial opens so
+    the wait overlaps the acknowledgement; on 2026.9 never fall back to the
+    token URL (it cannot pair) and show a retryable error instead; log when
+    the bootstrap path fails.
