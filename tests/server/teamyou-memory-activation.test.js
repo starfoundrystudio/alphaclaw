@@ -349,6 +349,83 @@ describe("server/teamyou-memory-activation", () => {
     ).toBe(true);
   });
 
+  it("lets a hot-reloading Gateway apply activation instead of restarting it", async () => {
+    // G3 finding #24: on OpenClaw 2026.9 the post-ritual restart cut the
+    // agent's last turn, although the Gateway applies plugins.* live.
+    const root = createTempRoot();
+    const openclawDir = path.join(root, "openclaw");
+    const workspaceDir = path.join(root, "workspace");
+    writeJson(path.join(workspaceDir, "openclaw-workspace-state.json"), {
+      version: 1,
+      bootstrapSeededAt: "2026-07-04T00:00:00.000Z",
+      setupCompletedAt: "2026-07-04T00:01:00.000Z",
+    });
+    writeJson(path.join(openclawDir, "openclaw.json"), {
+      plugins: {
+        allow: [],
+        entries: {
+          "active-memory": { enabled: true, config: { queryMode: "recent" } },
+          "openclaw-teamyou-memory": { enabled: false, config: {} },
+        },
+        slots: { memory: "memory-core" },
+      },
+      skills: { entries: { teamyou: { enabled: false } } },
+      agents: { defaults: { workspace: workspaceDir } },
+      gateway: { mode: "local" },
+    });
+    installTeamyouMemoryPlugin({ openclawDir });
+    const restartGateway = vi.fn(async () => {});
+
+    const result = await activateTeamyouMemoryIfBootstrapComplete({
+      fsModule: fs,
+      openclawDir,
+      workspaceDir,
+      restartGateway,
+      gatewayHotReloadsConfig: () => true,
+      logger: { log: vi.fn(), warn: vi.fn() },
+    });
+
+    const cfg = JSON.parse(fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8"));
+    expect(result).toMatchObject({ ok: true, activated: true, teamyouPluginEnabled: true });
+    expect(cfg.plugins.entries["openclaw-teamyou-memory"].enabled).toBe(true);
+    expect(cfg.plugins.entries["active-memory"].config.enabled).toBe(true);
+    expect(cfg.skills.entries.teamyou.enabled).toBe(true);
+    expect(restartGateway).not.toHaveBeenCalled();
+  });
+
+  it("still restarts the Gateway when it does not hot-reload the config", async () => {
+    const root = createTempRoot();
+    const openclawDir = path.join(root, "openclaw");
+    const workspaceDir = path.join(root, "workspace");
+    writeJson(path.join(workspaceDir, "openclaw-workspace-state.json"), {
+      version: 1,
+      bootstrapSeededAt: "2026-07-04T00:00:00.000Z",
+      setupCompletedAt: "2026-07-04T00:01:00.000Z",
+    });
+    writeJson(path.join(openclawDir, "openclaw.json"), {
+      plugins: {
+        allow: [],
+        entries: { "openclaw-teamyou-memory": { enabled: false, config: {} } },
+        slots: { memory: "memory-core" },
+      },
+      skills: { entries: { teamyou: { enabled: false } } },
+      agents: { defaults: { workspace: workspaceDir } },
+    });
+    installTeamyouMemoryPlugin({ openclawDir });
+    const restartGateway = vi.fn(async () => {});
+
+    await activateTeamyouMemoryIfBootstrapComplete({
+      fsModule: fs,
+      openclawDir,
+      workspaceDir,
+      restartGateway,
+      gatewayHotReloadsConfig: () => false,
+      logger: { log: vi.fn(), warn: vi.fn() },
+    });
+
+    expect(restartGateway).toHaveBeenCalledTimes(1);
+  });
+
   it("treats a fully activated config as terminal without rewriting it", async () => {
     const root = createTempRoot();
     const openclawDir = path.join(root, "openclaw");

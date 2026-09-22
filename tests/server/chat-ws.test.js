@@ -395,6 +395,32 @@ describe("server/chat-ws", () => {
       );
     });
 
+    it("tells the browser its run was interrupted when the Gateway goes away", async () => {
+      // G3 finding #24: after a Gateway restart mid-run the browser stayed in
+      // streaming mode and never read the resumed turn from history.
+      const { received, waitForMessage, sendChat } = await startBridge({
+        onChatSend: (socket, frame) => {
+          socket.send(
+            JSON.stringify({
+              type: "res",
+              id: frame.id,
+              ok: true,
+              payload: { runId: "run-cut" },
+            }),
+          );
+          socket.send(agentEvent(assistantText("run-cut", "Half a")));
+          setTimeout(() => socket.terminate(), 50);
+        },
+      });
+
+      sendChat("Finish the ritual");
+      const interrupted = await waitForMessage((m) => m.type === "interrupted");
+
+      expect(interrupted).toMatchObject({ sessionKey: kSessionKey, runId: "run-cut" });
+      expect(received.filter((m) => m.type === "interrupted")).toHaveLength(1);
+      expect(received.some((m) => m.type === "done")).toBe(false);
+    });
+
     it("buffers early events for the run later claimed by chat.send", async () => {
       // Agent events can outrun the chat.send response; they carry the run's
       // id before the bridge knows it. They must flush once the response

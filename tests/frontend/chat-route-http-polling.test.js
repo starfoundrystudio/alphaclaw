@@ -118,3 +118,45 @@ it("preserves completed tool results when an older WebSocket history response ar
   expect(harness.states[0].value.main[0].debugPayload.toolResult.text).toBe("Setup verified");
   expect(rawHistory.value).toBe(completedRaw);
 });
+
+it("reconciles history after the server reports an interrupted run", async () => {
+  // G3 finding #24: a Gateway restart mid-run left the browser in streaming
+  // mode, so the turn OpenClaw resumed never appeared until a reload.
+  vi.useFakeTimers();
+  harness.effects = [];
+  harness.states = [];
+  harness.authFetch.mockReset();
+  harness.authFetch.mockImplementation(() => new Promise(() => {}));
+  vi.stubGlobal("window", { location: { protocol: "https:", host: "example.test", search: "" } });
+  vi.stubGlobal("document", { hidden: false });
+  const sockets = [];
+  const requests = [];
+  vi.stubGlobal("WebSocket", class {
+    constructor() { sockets.push(this); }
+    readyState = 0;
+    close() {}
+    send(message) { requests.push(JSON.parse(message)); }
+  });
+  ChatRoute({ selectedSessionKey: "main" });
+  cleanups = harness.effects.map((effect) => effect());
+  const ws = sockets[0];
+  ws.readyState = 1;
+  ws.onopen();
+  const idle = (request) => ws.onmessage({ data: JSON.stringify({
+    type: "history", sessionKey: "main", historyRequestId: request.historyRequestId,
+    messages: [{ role: "assistant", content: "Ritual step done", timestamp: 100 }],
+    rawHistory: { sessionInfo: { hasActiveRun: false } },
+  }) });
+  await vi.advanceTimersByTimeAsync(10000);
+  for (const request of requests.filter((r) => r.type === "history")) idle(request);
+  await vi.advanceTimersByTimeAsync(5000);
+  for (const request of requests.filter((r) => r.type === "history")) idle(request);
+  const reconciliation = harness.states.find(
+    (state) => state.value && typeof state.value === "object" && typeof state.value.main === "boolean",
+  );
+  expect(reconciliation.value.main).toBe(false);
+
+  ws.onmessage({ data: JSON.stringify({ type: "interrupted", sessionKey: "main", runId: "run-cut" }) });
+
+  expect(reconciliation.value.main).toBe(true);
+});
