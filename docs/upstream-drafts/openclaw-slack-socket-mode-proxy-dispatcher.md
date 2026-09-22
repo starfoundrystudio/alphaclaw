@@ -43,8 +43,11 @@ into `createSlackBoltApp`, which forwards it to `SocketModeReceiver`, and
 `slackDispatcher` comes from `resolveSlackProxyDispatcher()`, which since #147421
 returns `createHttp1EnvHttpProxyAgent(...)` from
 `openclaw/plugin-sdk/fetch-runtime`, built with **OpenClaw's undici 8.10.x**. An
-undici 8 dispatcher used by an undici 7 WebSocket fails the handshake at once
-(close code 1006, empty `ErrorEvent`).
+undici 7 WebSocket dispatches with the legacy handler interface (`onConnect`,
+`onHeaders`, and related callbacks), while the undici 8 dispatcher requires the
+new `onRequestStart`/`onResponseError` interface. It rejects the handler with
+`UND_ERR_INVALID_ARG: invalid onRequestStart method`; Socket Mode surfaces that
+as an immediate close 1006 with an empty `ErrorEvent`.
 
 `resolveSlackProxyDispatcher()` returns `undefined` when no proxy env is set,
 which is why this only affects proxied Gateways.
@@ -70,7 +73,8 @@ On a host with an HTTP CONNECT proxy and a Slack app token (`xapp-…`,
 // Save as repro.mjs inside the installed @openclaw/slack package; run with HTTPS_PROXY set.
 import { createRequire } from "node:module";
 const here = createRequire(import.meta.url);
-const req = createRequire(here.resolve("@slack/socket-mode/package.json"));
+const boltReq = createRequire(here.resolve("@slack/bolt/package.json"));
+const req = createRequire(boltReq.resolve("@slack/socket-mode/package.json"));
 const fr = await import("openclaw/plugin-sdk/fetch-runtime");
 const { SocketModeClient } = req("./dist/src/index.js");
 
