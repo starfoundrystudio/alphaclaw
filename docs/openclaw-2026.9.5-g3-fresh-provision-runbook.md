@@ -579,7 +579,7 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     `@slack/socket-mode/package.json`), and proved a Socket Mode handshake
     through a real CONNECT proxy. The regression is openclaw/openclaw#147421
     "fix: restore plugin networking under Bun" (merged 2026-09-14, first in
-    2026.9.4): to avoid Bun's placeholder bare-`undici` exports it replaced
+    2026.9.5; 2026.9.4 shipped 2026-09-11): to avoid Bun's placeholder bare-`undici` exports it replaced
     that with OpenClaw's shared `createHttp1EnvHttpProxyAgent` (OpenClaw's
     undici 8), while its own notes say Slack keeps undici 7 because Socket
     Mode requires that peer version. The mismatch is only hit when a proxy
@@ -614,3 +614,13 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     (23:36, 00:49 UTC), so it aged its last hop reading past the 6-minute
     stale limit and never refetched channel accounts. Minor follow-up:
     reconnect/refetch after a server restart.
+  - **#22 scope check (2026-09-22):** other channel plugins in 2026.9.5 do
+    not have this mismatch. Discord pairs `createHttp1EnvHttpProxyAgent` with
+    OpenClaw's `fetchWithRuntimeDispatcher` (same undici) for REST, and its
+    gateway WebSocket uses `ws` (proxy via `channels.discord.proxy`, which
+    Clawbridge writes). Telegram is bundled in core and uses OpenClaw's fetch
+    and dispatcher over HTTP long polling. Mattermost and Nextcloud Talk have
+    no undici/ws dependency of their own; Microsoft Teams does not use the
+    shared proxy helper. Only Slack Socket Mode hands the helper to a library
+    with its own undici. Not live-tested on 2026.9.5: Telegram and Discord.
+    Correction: #147421 first shipped in 2026.9.5, not 2026.9.4.

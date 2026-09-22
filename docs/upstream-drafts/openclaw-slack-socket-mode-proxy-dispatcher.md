@@ -1,12 +1,12 @@
 # DRAFT — not filed. Needs Bill's review before anything is posted to openclaw/openclaw.
 
-**Title:** [Bug]: Slack Socket Mode never connects when HTTPS_PROXY is set (2026.9.4+): undici 8 proxy dispatcher passed to @slack/socket-mode's undici 7 WebSocket
+**Title:** [Bug]: Slack Socket Mode never connects when HTTPS_PROXY is set (2026.9.5): undici 8 proxy dispatcher passed to @slack/socket-mode's undici 7 WebSocket
 
 ---
 
 ### Summary
 
-Since 2026.9.4, the Slack channel in Socket Mode cannot connect on any Gateway
+Since 2026.9.5, the Slack channel in Socket Mode cannot connect on any Gateway
 that has `HTTPS_PROXY`/`HTTP_PROXY` set. The WebSocket handshake fails
 immediately with an empty error, the channel retries forever, and no events are
 received. Slack Web API calls (`auth.test`, `apps.connections.open`) keep
@@ -14,7 +14,7 @@ working, so the channel looks configured and the probe is green.
 
 ### Environment
 
-- openclaw `2026.9.5` (also affects `2026.9.4`), `@openclaw/slack@2026.9.5`
+- openclaw `2026.9.5`, `@openclaw/slack@2026.9.5` (#147421 merged 2026-09-14, after 2026.9.4 shipped)
 - Node 26.9.0, Linux x64
 - Slack channel, `mode` default (Socket Mode), single account
 - Gateway process environment has `HTTPS_PROXY`/`HTTP_PROXY` pointing at an
@@ -112,6 +112,14 @@ Either of:
 
 A regression test that opens a Socket Mode connection through a local CONNECT
 proxy (as in #112963's evidence) would catch this class of mismatch.
+
+### Other channels checked (2026.9.5)
+
+Not affected by this mismatch: Discord (REST pairs `createHttp1EnvHttpProxyAgent`
+with `fetchWithRuntimeDispatcher`, same undici; the gateway WebSocket uses `ws`
+options), Telegram (bundled; OpenClaw fetch + OpenClaw dispatcher, HTTP long
+polling), Mattermost and Nextcloud Talk (no own undici/ws dependency), Microsoft
+Teams (does not use the shared proxy helper).
 
 ### Related
 
