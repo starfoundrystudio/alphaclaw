@@ -602,3 +602,15 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     (not filed). No inbound DM seen since the fix (`lastInboundAt` null, no
     pairing request): Slack still counted 6 connections at connect time, so
     earlier DMs went to dead sockets; Bill to DM again.
+  - **Slack round trip PASS on host 04 (2026-09-22, check 8):** with the
+    hand-applied #22 fix, Bill DM'd the bot, received a pairing code,
+    approved it in Clawbridge (`openclaw pairing approve --channel slack
+    --account default`, 01:08 UTC; `allowFrom` and
+    `channel_pairing_allow_entries` both updated), and the bot answered.
+    The Channels card kept "Awaiting pairing" and the security gateway row
+    showed "Unknown" until a page reload; Clawbridge's API already reported
+    `paired` and a healthy, fresh hop probe. Likely cause: the page's status
+    stream did not recover after the two Clawbridge restarts that night
+    (23:36, 00:49 UTC), so it aged its last hop reading past the 6-minute
+    stale limit and never refetched channel accounts. Minor follow-up:
+    reconnect/refetch after a server restart.
