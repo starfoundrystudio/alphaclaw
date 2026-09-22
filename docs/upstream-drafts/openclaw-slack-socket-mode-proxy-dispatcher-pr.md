@@ -37,6 +37,7 @@ Not passing a dispatcher at all was rejected: Socket Mode's default is a direct 
 - New `extensions/slack/src/socket-mode-dispatcher.test.ts`: no proxy env keeps the default; the dispatcher is an instance of Socket Mode's own undici `EnvHttpProxyAgent`; a trusted `wss://` handshake uses only `HTTPS_PROXY` and asserts its CONNECT target; a separate HTTPS-proxy case first fails without the managed proxy CA, then succeeds with it; and a plain `ws://` end-to-end case remains covered.
 - Provider-boundary coverage starts the Slack monitor and proves the dispatcher handed to `SocketModeReceiver` comes from Socket Mode's own undici copy.
 - Final candidate after rebasing onto current `upstream/main` (2026-09-22): `node --import ./scripts/tsx.mjs scripts/test-extension.mts slack` passed 174 files and 3140 tests. `pnpm tsgo:extensions` passes. oxlint and oxfmt are clean on the changed files.
+- Measured test cost with one worker and a warm compiler cache: `socket-mode-dispatcher.test.ts` took 10.17 s wall / 7.83 s Vitest duration (1.47 s test time), and `monitor/provider.proxy-dispatcher.test.ts` took 13.88 s wall / 11.70 s Vitest duration (0.20 s test time). On this PR, CI preflight passed in 49 s and `checks-node-changed-extensions-config` passed in 444 s.
 - Node 24.18, the real module against a local CONNECT proxy and echo WebSocket:
 
   | Socket Mode dispatcher | Result | Through proxy |
