@@ -694,3 +694,29 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
 - Also seen: `.env` still holds `ALPHACLAW_GATEWAY_PENDING_SETUP_URL` and
   `ALPHACLAW_GATEWAY_PENDING_PUBLIC_BASE_URL` after setup sealed, although
   Clawbridge logged clearing them. Not investigated.
+
+### Host 06 (`test-g3-oc95-06`, beta.8 + bundle `8dcfb758`, 2026-09-22)
+
+- **Finding #23 fix verified.** The post-onboard timer ran at 19:51:03, inside
+  the post-ritual Gateway startup (spawned 19:50:06, ready 19:51:10), and
+  wrote nothing: `.env` untouched since 19:07:29, `openclaw.json` last written
+  by the activation at 19:50:05, zero "changed externally" reloads, no
+  startup refusal, no watchdog repair.
+- **G3 finding #24 (S2, ours): the TeamYou memory restart interrupts the
+  agent's last ritual turn.** The agent deletes `BOOTSTRAP.md` and keeps
+  working (memory note, config sync, onboarding recommendations). Activation
+  triggers on the file being gone (`bootstrap_file_absent`) and SIGTERMs the
+  Gateway at 19:50:05 while that turn is still running. OpenClaw 2026.9.5's
+  main-session restart recovery resumed the turn at 19:51:13 and it completed
+  at 19:51:56, but the resume prompt ("Your previous turn was interrupted by
+  a gateway restart ...") shows in the chat as a user message, and the open
+  chat view did not show the resumed turn until Bill navigated away and back.
+  - OpenClaw offers a deferred restart: the `gateway.restart.request` RPC
+    (behind `openclaw gateway restart --safe`) waits for tracked active work
+    to drain, then restarts through the restart hand-off Clawbridge already
+    consumes. Clawbridge's managed restarts use SIGTERM plus
+    `openclaw gateway --force` and never ask for it.
+  - Proposed fix, not implemented: activation (and other non-urgent
+    Clawbridge restarts) request the safe restart and fall back to the forced
+    path only on timeout; plus make the chat view reattach after a Gateway
+    restart.
