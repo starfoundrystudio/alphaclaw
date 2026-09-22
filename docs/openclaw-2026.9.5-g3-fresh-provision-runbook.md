@@ -906,3 +906,13 @@ Findings:
   reloaded and reconfigured. clawctl's timer spreads existing config, so both
   keys survive its passes. Awaiting Bill's recall test (plain question in
   Slack and in the Control UI chat), then Agent Vault `request_logs` check.
+- **#31/#32 live trial passed (23:09–23:10 UTC).** Bill asked a plain
+  question in Slack and in the Clawbridge chat and got the expected answer.
+  Active memory ran in both (Slack thread session and `agent:main:main`,
+  status ok). Agent Vault logged every lookup (search/topics, search/details,
+  topic reads) against the preview host, matched `teamyou-external-api`,
+  HTTP 200. Correction: the Clawbridge chat's earlier
+  `destination-not-allowed` lines all predate activation (active memory's
+  `enabled` flag was still false), so there is no Clawbridge chat gap.
+  Fix committed in clawctl `af4b8c2` (on
+  `codex/openclaw-2026.9.4-upgrade`); needs a new host bundle.
