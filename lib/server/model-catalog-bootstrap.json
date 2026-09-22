@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-21T23:31:15.045Z",
+  "generatedAt": "2026-09-22T16:00:26.585Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -4887,15 +4887,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/kwaipilot/kat-coder-pro-v2",
-              "provider": "kilocode",
-              "label": "Kwaipilot: KAT-Coder-Pro V2",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/kwaipilot/kat-coder-pro-v2.5",
               "provider": "kilocode",
               "label": "Kwaipilot: KAT-Coder-Pro V2.5",
@@ -5409,9 +5400,27 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/nex-agi/nex-n2.5-mini",
+              "provider": "kilocode",
+              "label": "Nex AGI: Nex-N2.5-Mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/nex-agi/nex-n2.5-mini:free",
               "provider": "kilocode",
               "label": "Nex AGI: Nex-N2.5-Mini (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/nex-agi/nex-n2.5-pro",
+              "provider": "kilocode",
+              "label": "Nex AGI: Nex-N2.5-Pro",
               "accessModes": [
                 "gateway"
               ],
@@ -7979,15 +7988,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/deepseek/deepseek-v4-flash-0731:batch",
-              "provider": "openrouter",
-              "label": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/~deepseek/deepseek-v4-flash-latest",
               "provider": "openrouter",
               "label": "DeepSeek: DeepSeek V4 Flash Latest",
@@ -8000,15 +8000,6 @@
               "key": "openrouter/deepseek/deepseek-v4-flash-vision-exp",
               "provider": "openrouter",
               "label": "DeepSeek: DeepSeek V4 Flash Vision Exp",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/deepseek/deepseek-v4-flash-vision-exp:batch",
-              "provider": "openrouter",
-              "label": "DeepSeek: DeepSeek V4 Flash Vision Exp (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -8033,18 +8024,18 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/deepseek/deepseek-v4-pro-0813:batch",
+              "key": "openrouter/deepseek/deepseek-v4.1-flash",
               "provider": "openrouter",
-              "label": "DeepSeek: DeepSeek V4 Pro 0813 (batch)",
+              "label": "DeepSeek: DeepSeek V4.1 Flash",
               "accessModes": [
                 "gateway"
               ],
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/deepseek/deepseek-v4.1-flash",
+              "key": "openrouter/deepseek/deepseek-v4.1-flash:batch",
               "provider": "openrouter",
-              "label": "DeepSeek: DeepSeek V4.1 Flash",
+              "label": "DeepSeek: DeepSeek V4.1 Flash (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -8600,15 +8591,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/kwaipilot/kat-coder-pro-v2",
-              "provider": "openrouter",
-              "label": "Kwaipilot: KAT-Coder-Pro V2",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/kwaipilot/kat-coder-pro-v2.5",
               "provider": "openrouter",
               "label": "Kwaipilot: KAT-Coder-Pro V2.5",
@@ -8729,15 +8711,6 @@
               "key": "openrouter/meta/muse-glimmer-30b",
               "provider": "openrouter",
               "label": "Meta: Muse Glimmer 30B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/meta/muse-glimmer-30b:batch",
-              "provider": "openrouter",
-              "label": "Meta: Muse Glimmer 30B (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -9149,6 +9122,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/moonshotai/kimi-k3:batch",
+              "provider": "openrouter",
+              "label": "MoonshotAI: Kimi K3 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/~moonshotai/kimi-latest",
               "provider": "openrouter",
               "label": "MoonshotAI: Kimi Latest",
@@ -9185,9 +9167,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/nex-agi/nex-n2.5-mini",
+              "provider": "openrouter",
+              "label": "Nex AGI: Nex-N2.5-Mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/nex-agi/nex-n2.5-mini:free",
               "provider": "openrouter",
               "label": "Nex AGI: Nex-N2.5-Mini (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/nex-agi/nex-n2.5-pro",
+              "provider": "openrouter",
+              "label": "Nex AGI: Nex-N2.5-Pro",
               "accessModes": [
                 "gateway"
               ],
@@ -10016,6 +10016,15 @@
               "key": "openrouter/openai/gpt-oss-20b",
               "provider": "openrouter",
               "label": "OpenAI: gpt-oss-20b",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-oss-20b:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: gpt-oss-20b (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11258,15 +11267,6 @@
               "key": "openrouter/z-ai/glm-5.2",
               "provider": "openrouter",
               "label": "Z.ai: GLM 5.2",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/z-ai/glm-5.2:batch",
-              "provider": "openrouter",
-              "label": "Z.ai: GLM 5.2 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -15150,15 +15150,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/kwaipilot/kat-coder-pro-v2",
-      "provider": "kilocode",
-      "label": "Kwaipilot: KAT-Coder-Pro V2",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/kwaipilot/kat-coder-pro-v2.5",
       "provider": "kilocode",
       "label": "Kwaipilot: KAT-Coder-Pro V2.5",
@@ -15672,9 +15663,27 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/nex-agi/nex-n2.5-mini",
+      "provider": "kilocode",
+      "label": "Nex AGI: Nex-N2.5-Mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/nex-agi/nex-n2.5-mini:free",
       "provider": "kilocode",
       "label": "Nex AGI: Nex-N2.5-Mini (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/nex-agi/nex-n2.5-pro",
+      "provider": "kilocode",
+      "label": "Nex AGI: Nex-N2.5-Pro",
       "accessModes": [
         "gateway"
       ],
@@ -19812,15 +19821,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/deepseek/deepseek-v4-flash-0731:batch",
-      "provider": "openrouter",
-      "label": "DeepSeek: DeepSeek V4 Flash 0731 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/~deepseek/deepseek-v4-flash-latest",
       "provider": "openrouter",
       "label": "DeepSeek: DeepSeek V4 Flash Latest",
@@ -19833,15 +19833,6 @@
       "key": "openrouter/deepseek/deepseek-v4-flash-vision-exp",
       "provider": "openrouter",
       "label": "DeepSeek: DeepSeek V4 Flash Vision Exp",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/deepseek/deepseek-v4-flash-vision-exp:batch",
-      "provider": "openrouter",
-      "label": "DeepSeek: DeepSeek V4 Flash Vision Exp (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -19866,18 +19857,18 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/deepseek/deepseek-v4-pro-0813:batch",
+      "key": "openrouter/deepseek/deepseek-v4.1-flash",
       "provider": "openrouter",
-      "label": "DeepSeek: DeepSeek V4 Pro 0813 (batch)",
+      "label": "DeepSeek: DeepSeek V4.1 Flash",
       "accessModes": [
         "gateway"
       ],
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/deepseek/deepseek-v4.1-flash",
+      "key": "openrouter/deepseek/deepseek-v4.1-flash:batch",
       "provider": "openrouter",
-      "label": "DeepSeek: DeepSeek V4.1 Flash",
+      "label": "DeepSeek: DeepSeek V4.1 Flash (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -20433,15 +20424,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/kwaipilot/kat-coder-pro-v2",
-      "provider": "openrouter",
-      "label": "Kwaipilot: KAT-Coder-Pro V2",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/kwaipilot/kat-coder-pro-v2.5",
       "provider": "openrouter",
       "label": "Kwaipilot: KAT-Coder-Pro V2.5",
@@ -20562,15 +20544,6 @@
       "key": "openrouter/meta/muse-glimmer-30b",
       "provider": "openrouter",
       "label": "Meta: Muse Glimmer 30B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/meta/muse-glimmer-30b:batch",
-      "provider": "openrouter",
-      "label": "Meta: Muse Glimmer 30B (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -20982,6 +20955,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/moonshotai/kimi-k3:batch",
+      "provider": "openrouter",
+      "label": "MoonshotAI: Kimi K3 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/~moonshotai/kimi-latest",
       "provider": "openrouter",
       "label": "MoonshotAI: Kimi Latest",
@@ -21018,9 +21000,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/nex-agi/nex-n2.5-mini",
+      "provider": "openrouter",
+      "label": "Nex AGI: Nex-N2.5-Mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/nex-agi/nex-n2.5-mini:free",
       "provider": "openrouter",
       "label": "Nex AGI: Nex-N2.5-Mini (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/nex-agi/nex-n2.5-pro",
+      "provider": "openrouter",
+      "label": "Nex AGI: Nex-N2.5-Pro",
       "accessModes": [
         "gateway"
       ],
@@ -21863,6 +21863,15 @@
       "key": "openrouter/openai/gpt-oss-20b",
       "provider": "openrouter",
       "label": "OpenAI: gpt-oss-20b",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-oss-20b:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: gpt-oss-20b (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -23105,15 +23114,6 @@
       "key": "openrouter/z-ai/glm-5.2",
       "provider": "openrouter",
       "label": "Z.ai: GLM 5.2",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/z-ai/glm-5.2:batch",
-      "provider": "openrouter",
-      "label": "Z.ai: GLM 5.2 (batch)",
       "accessModes": [
         "gateway"
       ],
