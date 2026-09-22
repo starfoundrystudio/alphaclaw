@@ -542,3 +542,31 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     with `openclaw config unset plugins.entries.groq`. Add to the fix set:
     a disabled entry must not make a plugin relevant, and one unrelated
     plugin's install failure should not abort a channel add.
+- **G3 finding #22 (S1, upstream OpenClaw bug): Slack Socket Mode never
+  connects on Agent Vault-managed 2026.9.5 instances.** After beta.6 the
+  Slack channel added cleanly on `test-g3-oc95-04`, but DMs got no reply:
+  the Gateway logged an empty `socket-mode:socket-mode WebSocket error
+  occurred:` / `SMWebsocketError` about every 15 s. Isolated step by step
+  on the host (Slack tokens via Agent Vault placeholders, nothing printed):
+  `apps.connections.open` through the vault proxy works; the WebSocket
+  (`wss-primary.slack.com`) opens, says `hello` and answers pings both
+  through the proxy and direct, with `ws`, with undici, with Slack's own
+  `SocketModeClient`, and with OpenClaw's managed `proxyline` installed.
+  It fails only when the `SocketModeClient` is given the dispatcher the
+  Slack plugin builds: `@openclaw/slack` 2026.9.5 passes
+  `dispatcher: resolveSlackProxyDispatcher()` into `createSlackBoltApp`,
+  an `EnvHttpProxyAgent` from OpenClaw's undici **8.10.2** (via
+  `openclaw/plugin-sdk/fetch-runtime` `createHttp1EnvHttpProxyAgent`), and
+  `@slack/socket-mode` 3.0.1 creates its WebSocket with its bundled undici
+  **7.29.1**. The cross-version dispatcher makes the handshake fail at once
+  (reproduced: `WebSocket error occurred:` then close 1006 at 0.6 s). The
+  plugin only builds that dispatcher when `HTTP(S)_PROXY` is set in the
+  Gateway env, which Clawbridge does on every Agent Vault-managed instance,
+  so every managed 2026.9.5 instance is affected; without a proxy env
+  Socket Mode uses its own default dispatcher and works. Not the Slack app's
+  Agent View vs assistant view setup (events reach test connections; 9.5
+  still supports `assistant_view` apps). No upstream issue found
+  (2026-09-21). Related upstream: openclaw/openclaw#128809 (reconnects leak
+  sockets; ping-timeout warnings suppressed). Side effects seen: Slack
+  reported up to 6 open connections for the app; my test connections could
+  receive a DM meant for the Gateway while open (all stopped).
