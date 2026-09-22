@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-22T16:00:26.585Z",
+  "generatedAt": "2026-09-22T17:38:42.687Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2630,6 +2630,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "venice/claude-opus-5-5",
+              "provider": "venice",
+              "label": "Claude Opus 5.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "venice/claude-sonnet-4-5",
               "provider": "venice",
               "label": "Claude Sonnet 4.5",
@@ -4170,6 +4179,15 @@
               "key": "kilocode/anthropic/claude-opus-5",
               "provider": "kilocode",
               "label": "Anthropic: Claude Opus 5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/anthropic/claude-opus-5.5",
+              "provider": "kilocode",
+              "label": "Anthropic: Claude Opus 5.5",
               "accessModes": [
                 "gateway"
               ],
@@ -7640,6 +7658,24 @@
               "key": "openrouter/anthropic/claude-opus-5:batch",
               "provider": "openrouter",
               "label": "Anthropic: Claude Opus 5 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-opus-5.5",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Opus 5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-opus-5.5:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Opus 5.5 (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11550,6 +11586,24 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-5.5",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-5.5-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 5.5 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/anthropic/claude-sonnet-4",
               "provider": "vercel-ai-gateway",
               "label": "Claude Sonnet 4",
@@ -14433,6 +14487,15 @@
       "key": "kilocode/anthropic/claude-opus-5",
       "provider": "kilocode",
       "label": "Anthropic: Claude Opus 5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/anthropic/claude-opus-5.5",
+      "provider": "kilocode",
+      "label": "Anthropic: Claude Opus 5.5",
       "accessModes": [
         "gateway"
       ],
@@ -19434,6 +19497,24 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/anthropic/claude-opus-5.5",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Opus 5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-opus-5.5:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Opus 5.5 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/~anthropic/claude-opus-latest",
       "provider": "openrouter",
       "label": "Anthropic: Claude Opus Latest",
@@ -23363,6 +23444,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "venice/claude-opus-5-5",
+      "provider": "venice",
+      "label": "Claude Opus 5.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "venice/claude-sonnet-4-5",
       "provider": "venice",
       "label": "Claude Sonnet 4.5",
@@ -24449,6 +24539,24 @@
       "key": "vercel-ai-gateway/anthropic/claude-opus-5-fast",
       "provider": "vercel-ai-gateway",
       "label": "Claude Opus 5 (Fast)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-5.5",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-5.5-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 5.5 (Fast)",
       "accessModes": [
         "gateway"
       ],
