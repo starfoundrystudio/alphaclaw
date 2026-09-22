@@ -588,3 +588,17 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     probes. Upstream fix candidate: build the Socket Mode dispatcher with
     Slack's undici again (Node), or stop passing the OpenClaw dispatcher to
     `SocketModeReceiver` and let Socket Mode build its env-proxy default.
+  - **#22 workaround (2026-09-22):** verified by hand on host 04 (original
+    kept as `provider-w36VTgZ3.mjs.orig-2026.9.5`): removing
+    `dispatcher: slackDispatcher,` from the `createSlackBoltApp` call and
+    restarting gave `socket mode connected` with zero WebSocket errors;
+    `channels status --probe`: running, connected, lifecycle ready. Built
+    into Clawbridge as a version-pinned hotfix applied after every plugin
+    reconcile (`lib/cli/openclaw-plugin-hotfixes.js`, commit `4b4c442`;
+    exact text once, marker comment, `@openclaw/slack@2026.9.5` only);
+    checked against the real 2026.9.5 file. Not released yet. Upstream issue
+    drafted for Bill's review:
+    `docs/upstream-drafts/openclaw-slack-socket-mode-proxy-dispatcher.md`
+    (not filed). No inbound DM seen since the fix (`lastInboundAt` null, no
+    pairing request): Slack still counted 6 connections at connect time, so
+    earlier DMs went to dead sockets; Bill to DM again.
