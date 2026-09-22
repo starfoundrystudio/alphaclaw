@@ -716,7 +716,17 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     to drain, then restarts through the restart hand-off Clawbridge already
     consumes. Clawbridge's managed restarts use SIGTERM plus
     `openclaw gateway --force` and never ask for it.
-  - Proposed fix, not implemented: activation (and other non-urgent
-    Clawbridge restarts) request the safe restart and fall back to the forced
-    path only on timeout; plus make the chat view reattach after a Gateway
-    restart.
+  - **Better option found while implementing:** OpenClaw 2026.9.5's reload
+    plan hot-reloads everything under `plugins` (action `reloadPlugins`) and
+    needs no action for `skills`, which is all activation writes. Verified on
+    host 06: setting the TeamYou plugin entry to disabled unloaded it, and
+    back to enabled loaded and configured it, with the same Gateway process
+    IDs throughout (config bytes restored afterwards).
+  - **Fix (alphaclaw `68232a7`):** on OpenClaw 2026.9+ activation writes the
+    config and lets the running Gateway apply it, with no restart (older lines
+    still restart). The chat bridge now tells each browser when the Gateway
+    connection drops mid-run, and the chat view leaves streaming mode and
+    reads history until the session is idle, so a turn OpenClaw resumes after
+    any restart appears without a reload. The deferred restart
+    (`gateway.restart.request`) is not needed for activation and was not
+    adopted. Not yet released.
