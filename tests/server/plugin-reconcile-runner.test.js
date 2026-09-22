@@ -33,6 +33,27 @@ describe("server/plugin-reconcile-runner", () => {
     expect(args).toEqual(["/b.js", "--root-dir", "/r", "reconcile-openclaw-plugins", "--only", "slack"]);
   });
 
+  it("relays the child's output and timing even when the reconcile succeeds", async () => {
+    // G3 finding #28: a slow Slack add left no trace of which command took the
+    // time, because successful output was dropped.
+    const stdout = [
+      kWarnings,
+      "[alphaclaw] Installing slack: @openclaw/slack@2026.9.5",
+      "[alphaclaw] openclaw plugins install @openclaw/slack@2026.9.5: failed in 17.2s: plugin already exists",
+      "[alphaclaw] openclaw plugins install @openclaw/slack@2026.9.5 --force: ok in 101.4s",
+    ].join("\n");
+    const spawnImpl = vi.fn(() => fakeChild({ code: 0, stdout }));
+    const logger = { log: vi.fn(), warn: vi.fn() };
+    const run = createPluginReconcileRunner({ rootDir: "/r", spawnImpl, wait: async () => {}, logger });
+    await run({ onlyPluginKeys: ["slack"] });
+    const lines = logger.log.mock.calls.map(([line]) => line);
+    expect(lines[0]).toMatch(/^\[alphaclaw\] Plugin reconcile attempt 1\/2 \(slack\) succeeded in \d+\.\ds$/);
+    expect(lines).toContain(
+      "[plugin-reconcile] [alphaclaw] openclaw plugins install @openclaw/slack@2026.9.5 --force: ok in 101.4s",
+    );
+    expect(lines.join("\n")).not.toContain("plugins.deny: plugin not found");
+  });
+
   it("retries once and succeeds", async () => {
     const spawnImpl = vi
       .fn()
