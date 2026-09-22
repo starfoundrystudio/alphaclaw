@@ -793,3 +793,63 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
 - Full vitest 172 files / 1,546 tests; UI build OK. To verify after release:
   fresh provision (ritual with no mid-turn restart, silent Control UI
   pairing, warnings on the three pages, config mode 600).
+
+### Host 07 (`test-g3-oc95-07`, beta.9 + bundle `8dcfb758`, 2026-09-22)
+
+Verified:
+- **#24 fixed.** Activation at 22:09:48 applied by hot reload at 22:10:02
+  (`plugins.entries.active-memory.config.enabled`,
+  `plugins.entries.openclaw-teamyou-memory.enabled`); no Gateway restart
+  after the ritual.
+- **#25 fixed.** `openclaw.json` is 0600 after Clawbridge writes.
+- **#23 holds.** Four timer passes since activation, no config or `.env`
+  rewrites.
+- **Slack (check 8, round trip).** Connected at 22:22:21 through the proxy;
+  Bill paired and chatted. The #22 hotfix was applied by the reconcile.
+- **Egress.** The Gateway's only connection is the local Agent Vault proxy;
+  the host's only outside connections go to its security gateway
+  (10.55.202.3).
+- **Pending (Bill):** open the advanced Control UI (silent pairing, #26) and
+  visit Channels, Models, Secrets (page warnings); three-turn recall.
+
+Findings:
+- **#27 (S2, ours): the Slack hotfix lands after the Gateway loads the
+  plugin.** The Gateway hot-loaded the new Slack plugin at 22:19:09; the
+  reconcile patched the file at 22:19:15. The first Slack start (22:20:25)
+  ran unpatched code and failed the handshake (`SMWebsocketError`); the
+  channel-add restart at 22:20:40 loaded the patched file. Works only
+  because channel add restarts the Gateway (for the new token env). A Slack
+  plugin installed any other way (Control UI Plugins page) stays unpatched
+  until the next reconcile and restart.
+- **#28 (S2, ours + upstream cost): adding Slack took about 8 minutes**
+  (22:14:27 → 22:22:21):
+
+  | Step | Time |
+  | --- | --- |
+  | Config write + plugin hot reload (event loop blocked) | 15 s |
+  | Reconcile child: OpenClaw CLI start-ups before the install call | ~75 s |
+  | First `plugins.install` fails: "plugin already exists … (delete it first)" for an unsuffixed project dir created moments earlier | 2 s |
+  | Retry (5 s delay) + CLI start-ups again | ~85 s |
+  | Second `plugins.install` (npm through Agent Vault, then hot reload) | 101 s |
+  | Channel config write + hot reload | 26 s |
+  | Gateway restart to pick up the Slack token env | 67 s |
+
+  Each OpenClaw CLI start costs ~13–17 s on this host class (same root as
+  #26). The first-attempt collision needs the reconcile child's output,
+  which the runner only keeps on failure; log it.
+- **#29 (S3): extra agent message after the ritual.** `openclaw agents
+  set-identity` ran longer than exec's foreground window, was backgrounded,
+  and OpenClaw's `[OpenClaw exec completion]` event (tools.exec.notifyOnExit,
+  default true) started a second turn that re-reported the result.
+- **#30 (S3, ours): pre-activation config warning reaches the agent.**
+  Every OpenClaw CLI call before activation prints "plugins.entries.
+  openclaw-teamyou-memory: plugin disabled (disabled in config) but config
+  is present" (clawctl stages the entry disabled with its config). The agent
+  saw it in its first tool result and repeated it to Bill.
+- Tool calls before the greeting: the agent runs `openclaw onboard
+  recommendations --json` and `ls` as the ritual instructs; the kickoff
+  message that started the turn is hidden, so the tool rows appear first.
+  Cosmetic.
+- Also seen: the Gateway launcher ended with SIGKILL 2 s after Clawbridge's
+  SIGTERM during the channel-add restart (not Clawbridge's drain timer,
+  which logs); restart succeeded. Not investigated.
