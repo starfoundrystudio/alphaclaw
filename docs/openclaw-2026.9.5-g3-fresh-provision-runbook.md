@@ -875,3 +875,26 @@ Findings:
     logs `destination-not-allowed` on every turn, so it never recalls there
     either; `allowedChatTypes` is `direct` and `channel` only. Needs a
     decision on whether the Clawbridge chat should get TeamYou recall.
+- **#32 (S1 for non-production control planes, ours): the TeamYou memory
+  plugin calls production TeamYou from a preview-provisioned instance.**
+  With `mode` unchanged, Bill's "Do you remember what size shoes I wear?"
+  in the Control UI chat started active memory (22:55:56), and the plugin
+  got HTTP 401 at 22:56:01. Agent Vault's `request_logs` show those calls
+  went to `www.teamyou.com` (`POST /api/external/v1/search/topics` and
+  `/search/details`, no matched service, 401), while the vault's
+  `teamyou-external-api` service is scoped to the preview host
+  (`teamyou-git-preview-openclaw-202694-g2-…vercel.app/api/external/v1/*`,
+  from clawctl `85a738b`). Through the vault, the preview host answers 200
+  with the same key (tested `GET /todos`, with and without the placeholder).
+  - Cause: plugin 0.3.0 reads `apiKey` from its config entry
+    (`${TEAMYOU_API_KEY}`, resolved from the Gateway env: works) but reads
+    the base URL from `process.env.TEAMYOU_API_URL`, falling back to
+    `https://www.teamyou.com/api/external/v1`. The Gateway process has
+    `TEAMYOU_API_URL` set to the preview URL, yet the plugin fell back, so
+    the plugin did not see it (most likely OpenClaw 2026.9 exposing only
+    config-referenced env to plugins; not traced in OpenClaw's code).
+  - Production instances are unaffected in practice (the fallback is the
+    production URL), which is why this only shows on preview provisions.
+  - Proposed fix: clawctl writes `baseUrl: "${TEAMYOU_API_URL}"` into the
+    plugin's config entry, like `apiKey`. Can be tried live on host 07 first
+    (plugins.* hot-reloads).
