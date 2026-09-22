@@ -772,7 +772,11 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     token URL (it cannot pair) and show a retryable error instead; log when
     the bootstrap path fails.
 
-#### beta.9 batch (implemented 2026-09-22, not yet released)
+#### beta.9 batch (released 2026-09-22)
+
+- `0.9.18-starfoundry.23-beta.9` published to the `beta` tag (release commit
+  `22b6a24`; `latest` stays `…22`; host bundle stays `8dcfb758`). Full vitest
+  172 files / 1,546 tests before publish. Not installed on any host.
 
 - #24 (`68232a7`): no Gateway restart for TeamYou memory activation on
   2026.9; chat view recovers after any Gateway restart.
