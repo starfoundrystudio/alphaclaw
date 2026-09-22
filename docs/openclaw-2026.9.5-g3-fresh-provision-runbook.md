@@ -853,3 +853,25 @@ Findings:
 - Also seen: the Gateway launcher ended with SIGKILL 2 s after Clawbridge's
   SIGTERM during the channel-add restart (not Clawbridge's drain timer,
   which logs); restart succeeded. Not investigated.
+- **#31 (S1, ours + upstream default change): active memory no longer runs
+  for ordinary questions on 2026.9.5.** Bill's Slack DM "What size shoes do
+  I wear?" (22:39:23, session `42ae87fd`) passed the session and destination
+  checks, then OpenClaw's new escalation step skipped recall at debug level
+  (nothing in the info log). Active memory's `mode` defaults to `escalate`:
+  deep recall runs only when `hasRecallIntent` matches phrases like "do you
+  remember", "last time", "what did we decide", or "yesterday". A knowledge
+  question never matches. The main agent then ran `memory_search` over local
+  files only (no hits; it has no TeamYou tool, since `teamyou_retrieve_context`
+  is allowed only for active memory) and answered that it had no
+  information. The option is `plugins.entries.active-memory.config.mode`
+  with values `escalate` (default), `always` ("preserves blocking recall on
+  every eligible turn"), and `off`; our managed config sets none.
+  - Proposed fix: clawctl's managed active-memory config writes
+    `mode: "always"` on 2026.9+ hosts (gated by installed version like the
+    retired-key handling, since 2026.7.1's schema has no `mode`). Cost: one
+    blocking recall pass per eligible turn, which is the pre-2026.9
+    behaviour.
+  - Related: in the Clawbridge chat (main session, webchat) active memory
+    logs `destination-not-allowed` on every turn, so it never recalls there
+    either; `allowedChatTypes` is `direct` and `channel` only. Needs a
+    decision on whether the Clawbridge chat should get TeamYou recall.
