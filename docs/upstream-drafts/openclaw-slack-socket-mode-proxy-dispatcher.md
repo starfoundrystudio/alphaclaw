@@ -1,4 +1,4 @@
-# DRAFT — not filed. Needs Bill's review before anything is posted to openclaw/openclaw.
+# Filed upstream: https://github.com/openclaw/openclaw/issues/155840
 
 **Title:** [Bug]: Slack Socket Mode never connects when HTTPS_PROXY is set (2026.9.5): undici 8 proxy dispatcher passed to @slack/socket-mode's undici 7 WebSocket
 
@@ -109,8 +109,7 @@ connection is to the proxy).
 
 ### Fix
 
-A PR accompanies this issue (draft: `openclaw-slack-socket-mode-proxy-dispatcher-pr.md`).
-It builds the Socket Mode dispatcher from the undici copy `@slack/socket-mode`
+The accompanying PR builds the Socket Mode dispatcher from the undici copy `@slack/socket-mode`
 uses, loaded through the explicit `undici/index.js` subpath the runtime already
 uses to avoid Bun's bare-specifier substitution. The Web API dispatcher stays on
 `createHttp1EnvHttpProxyAgent`, so #147421's Bun networking fix is untouched.

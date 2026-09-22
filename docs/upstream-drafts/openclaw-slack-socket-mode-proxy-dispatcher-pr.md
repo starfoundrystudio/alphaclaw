@@ -1,14 +1,14 @@
-# DRAFT — not opened. Needs Bill's review before anything is pushed to openclaw/openclaw.
+# Opened upstream: https://github.com/openclaw/openclaw/pull/155841
 
 - Local branch: `fix/slack-socket-mode-proxy-dispatcher` in `/Users/billk/Development/openclaw-slack-socket-proxy`
-- Base: `upstream/main` 21cbb3cd724; commit 88758c90b1e
+- Base: `upstream/main` 1b2c512c1eb; commits cff6d8c182f and 65a8a0e0612
 - Would push to: `bill-starfoundry/openclaw` (fork), PR against `openclaw/openclaw:main`, "Allow edits from maintainers" on
 
 **Title:** fix(slack): Socket Mode never connects when HTTPS_PROXY is set
 
 ---
 
-Closes #<issue-number>
+Closes #155840
 
 ## What Problem This Solves
 
@@ -36,7 +36,7 @@ Not passing a dispatcher at all was rejected: Socket Mode's default is a direct 
 
 - New `extensions/slack/src/socket-mode-dispatcher.test.ts`: no proxy env keeps the default; the dispatcher is an instance of Socket Mode's own undici `EnvHttpProxyAgent`; a trusted `wss://` handshake uses only `HTTPS_PROXY` and asserts its CONNECT target; a separate HTTPS-proxy case first fails without the managed proxy CA, then succeeds with it; and a plain `ws://` end-to-end case remains covered.
 - Provider-boundary coverage starts the Slack monitor and proves the dispatcher handed to `SocketModeReceiver` comes from Socket Mode's own undici copy.
-- Final staged candidate, rerun after adding all provider and network cases (2026-09-22): `node --import ./scripts/tsx.mjs scripts/test-extension.mts slack` passed 174 files and 3139 tests. `pnpm tsgo:extensions` passes. oxlint and oxfmt are clean on the changed files.
+- Final candidate after rebasing onto current `upstream/main` (2026-09-22): `node --import ./scripts/tsx.mjs scripts/test-extension.mts slack` passed 174 files and 3140 tests. `pnpm tsgo:extensions` passes. oxlint and oxfmt are clean on the changed files.
 - Node 24.18, the real module against a local CONNECT proxy and echo WebSocket:
 
   | Socket Mode dispatcher | Result | Through proxy |
@@ -53,5 +53,3 @@ Gaps:
 - Public Bun 1.3.12 cannot load the runtime's undici 8 (`webidl.util.markAsUncloneable`), so the full provider could not be run there. Bun 1.4.0 can load it and the Socket Mode loader/WebSocket behavior was checked there, but the full Slack provider was not exercised under Bun. The public Bun CI lane currently covers launcher and module-generation paths rather than Slack Socket Mode.
 - Bun's native WebSocket still ignores the proxy for Socket Mode. That predates this change and is out of scope here.
 - `pnpm tsgo:extensions:test` fails on upstream `main` in an unrelated qa-lab Discord test (missing `assertHealthy`); no Slack errors.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
