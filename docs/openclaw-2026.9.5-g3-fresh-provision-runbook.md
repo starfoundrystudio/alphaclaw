@@ -570,3 +570,21 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   sockets; ping-timeout warnings suppressed). Side effects seen: Slack
   reported up to 6 open connections for the app; my test connections could
   receive a DM meant for the Gateway while open (all stopped).
+  - **#22 origin (upstream history, 2026-09-21):** the shared proxy
+    dispatcher came from openclaw/openclaw#112963 (merged 2026-07-24), the
+    Bolt 5 / Web API 8 / `@slack/socket-mode` 3 migration: socket-mode 3
+    opens its WebSocket with undici, so to keep Slack proxy support the PR
+    shared "one structural Undici dispatcher across Web API fetch and Socket
+    Mode", built with Slack's own undici (loaded via
+    `@slack/socket-mode/package.json`), and proved a Socket Mode handshake
+    through a real CONNECT proxy. The regression is openclaw/openclaw#147421
+    "fix: restore plugin networking under Bun" (merged 2026-09-14, first in
+    2026.9.4): to avoid Bun's placeholder bare-`undici` exports it replaced
+    that with OpenClaw's shared `createHttp1EnvHttpProxyAgent` (OpenClaw's
+    undici 8), while its own notes say Slack keeps undici 7 because Socket
+    Mode requires that peer version. The mismatch is only hit when a proxy
+    env is set, and #147421's validation did not include a Socket Mode
+    handshake through a proxy. #147846 (same day) kept the helper for health
+    probes. Upstream fix candidate: build the Socket Mode dispatcher with
+    Slack's undici again (Node), or stop passing the OpenClaw dispatcher to
+    `SocketModeReceiver` and let Socket Mode build its env-proxy default.
