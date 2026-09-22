@@ -647,3 +647,39 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     (`127.0.0.1:14323`). Upstream draft revised: dropping the dispatcher is
     not a fix (loses proxy support; under Bun falls back to the partial
     undici #147421 avoided); Bun path left to maintainers.
+
+### Host 05 (`test-g3-oc95-05`, beta.7 + bundle `37c70d18`, 2026-09-22)
+
+- Fresh provision and birth ritual completed. Startup reconcile installed
+  `codex`; the other managed plugins were already present. TeamYou memory
+  activated after the ritual.
+- **G3 finding #23 (S1, ours): Gateway stranded after the post-ritual
+  restart.** Timeline (UTC):
+  - 16:31:49 TeamYou memory activation writes `openclaw.json` (plugin entry,
+    active-memory and skill enabled) and restarts the Gateway.
+  - 16:31:59 `alphaclaw-post-onboard-reconcile.timer` (every 5 min) runs
+    clawctl's `teamyou-install.sh`, which rewrote `.env` (three upserts) and
+    `openclaw.json` unconditionally, with no setting changed.
+  - 16:32:03 OpenClaw 2026.9.5 refuses: "Refusing to run automatic gateway
+    startup migrations because the selected config changed during startup.
+    Retry startup". Its guard compares the raw config hash; Clawbridge wrote
+    the file without a trailing newline and clawctl with one, so identical
+    settings were different bytes (reproduced locally).
+  - Clawbridge's restart supervisor only retried a stale migrations lock, so
+    it gave up; the watchdog's relaunch was refused because the restart still
+    owned startup. Down until the watchdog's auto-repair at 16:34 (doctor, then
+    relaunch; ready 16:36:16 with `openclaw-teamyou-memory` loaded).
+  - Relation to G2 finding #1: same timer. G2 fixed what it wrote (retired
+    keys, clawctl `455ed6e`), not that it rewrites on every pass. Harmless on
+    2026.7.1; 2026.9's startup guard made it an outage whenever a timer pass
+    overlaps a Gateway start (about one start in seven).
+  - **Fix:** clawctl `299867a` writes `openclaw.json` only when a setting
+    changed (compared on the parsed config, so formatting alone never writes)
+    and skips `.env` upserts whose value is already set. alphaclaw `9c41b18`
+    retries the config-changed refusals on both launch paths, relaunches once
+    if a managed restart still fails, logs early exits accurately, and ends
+    `openclaw.json` with a newline. Needs a new clawctl bundle, beta.8, and a
+    fresh provision.
+- Also seen: `.env` still holds `ALPHACLAW_GATEWAY_PENDING_SETUP_URL` and
+  `ALPHACLAW_GATEWAY_PENDING_PUBLIC_BASE_URL` after setup sealed, although
+  Clawbridge logged clearing them. Not investigated.
