@@ -415,6 +415,7 @@ describe("server/routes/proxy OpenAI compatibility", () => {
     expect(res.text).toContain('id="teamyou-managed-control-warning"');
     expect(res.text).toContain("Advanced — unmanaged changes");
     expect(res.text).toContain("/openclaw/_teamyou/advanced-control.css");
+    expect(res.text).toContain('<script src="/openclaw/_teamyou/advanced-control.js" defer></script>');
     expect(res.headers.etag).toBeUndefined();
     expect(res.headers["cache-control"]).toBe("no-store");
   });

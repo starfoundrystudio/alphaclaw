@@ -93,6 +93,26 @@ describe("server/routes/advanced-control", () => {
     expect(interstitial.text).not.toContain("Starfoundry");
   });
 
+  it("serves the page warning script only behind the acknowledgement", async () => {
+    const { app } = createApp();
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({ password: "test-secret" }).expect(200);
+
+    const gated = await agent.get("/openclaw/_teamyou/advanced-control.js");
+    expect(gated.status).not.toBe(200);
+
+    await agent
+      .post("/api/advanced-control/acknowledge")
+      .send({ returnTo: "/openclaw" })
+      .expect(200);
+    const script = await agent.get("/openclaw/_teamyou/advanced-control.js");
+    expect(script.status).toBe(200);
+    expect(script.headers["content-type"]).toContain("javascript");
+    expect(script.text).toContain("/#/general");
+    expect(script.text).toContain("/#/models");
+    expect(script.text).toContain("/#/credentials");
+  });
+
   it("records the audit fields and binds the acknowledgement to the login session", async () => {
     const { app, acknowledgements } = createApp();
     const agent = request.agent(app);
