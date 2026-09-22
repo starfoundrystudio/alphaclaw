@@ -520,6 +520,92 @@ describe("server/gateway restart behavior", () => {
     expect(spawnMock).toHaveBeenCalledTimes(2);
   });
 
+  it("retries a restart OpenClaw refused because the config changed during startup", async () => {
+    // G3 finding #23: a host timer rewrote openclaw.json mid-restart.
+    vi.useFakeTimers();
+    const first = createChild(201);
+    const second = createChild(202);
+    const spawnMock = vi.fn().mockReturnValueOnce(first).mockReturnValueOnce(second);
+    childProcess.spawn = spawnMock;
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    let running = false;
+    net.createConnection = vi.fn(() => createSocket(() => running));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const exits = vi.fn();
+    gateway.setGatewayExitHandler(exits);
+    const restart = gateway.restartGateway(vi.fn());
+    await Promise.resolve();
+    expect(spawnMock).toHaveBeenCalledTimes(1);
+    first.stderr.on.mock.calls.find(([event]) => event === "data")[1](
+      "Refusing to run automatic gateway startup migrations because the selected config changed during startup. Retry startup so the new config can be validated.\n");
+    first.exitCode = 1;
+    first.on.mock.calls.find(([event]) => event === "exit")[1](1, null);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(exits).toHaveBeenCalledWith(
+      expect.objectContaining({ code: 1, expectedExit: true, expectedExitReason: "migration_retry", startupConfigRefusal: false }),
+    );
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(spawnMock).toHaveBeenCalledTimes(2);
+    running = true;
+    await vi.advanceTimersByTimeAsync(1000);
+    await restart;
+    expect(gateway.hasActiveManagedGatewayChild()).toBe(true);
+  });
+
+  it("retries an initial launch refused because the config changed during startup", async () => {
+    vi.useFakeTimers();
+    const first = createChild(301);
+    const retry = createChild(302);
+    const spawnMock = vi.fn().mockReturnValueOnce(first).mockReturnValueOnce(retry);
+    childProcess.spawn = spawnMock;
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    net.createConnection = vi.fn(() => createSocket(false));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    const exitHandler = vi.fn();
+    gateway.setGatewayExitHandler(exitHandler);
+
+    gateway.launchGatewayProcess();
+    first.stderr.on.mock.calls.find(([event]) => event === "data")[1](
+      Buffer.from("OpenClaw migration inputs changed during startup; refusing to report the gateway ready.\n"));
+    first.on.mock.calls.find(([event]) => event === "exit")[1](78, null);
+
+    expect(exitHandler).toHaveBeenCalledWith(
+      expect.objectContaining({ code: 78, expectedExit: true, expectedExitReason: "migration_retry", startupConfigRefusal: false }),
+    );
+    await vi.advanceTimersByTimeAsync(3001);
+    expect(spawnMock).toHaveBeenCalledTimes(2);
+    expect(spawnMock).toHaveBeenLastCalledWith("openclaw", ["gateway", "run"], expect.any(Object));
+  });
+
+  it("relaunches the Gateway when a managed restart fails outright", async () => {
+    vi.useFakeTimers();
+    const first = createChild(401);
+    const relaunched = createChild(402);
+    const spawnMock = vi.fn().mockReturnValueOnce(first).mockReturnValueOnce(relaunched);
+    childProcess.spawn = spawnMock;
+    childProcess.execSync = vi.fn(() => "");
+    fs.existsSync = vi.fn(() => false);
+    net.createConnection = vi.fn(() => createSocket(false));
+    delete require.cache[modulePath];
+    const gateway = require(modulePath);
+    gateway.setGatewayExitHandler(vi.fn());
+    const restart = gateway.restartGateway(vi.fn());
+    const settled = restart.then(() => "resolved", (error) => error.message);
+    await Promise.resolve();
+    first.stderr.on.mock.calls.find(([event]) => event === "data")[1]("Error: something else broke\n");
+    first.exitCode = 1;
+    first.on.mock.calls.find(([event]) => event === "exit")[1](1, null);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(await settled).toBe("OpenClaw gateway did not become ready after restart");
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(spawnMock).toHaveBeenCalledTimes(2);
+    expect(spawnMock).toHaveBeenLastCalledWith("openclaw", ["gateway", "run"], expect.any(Object));
+  });
+
   it("does not kill a gateway still completing its initial migrations", async () => {
     vi.useFakeTimers();
     const first = createChild(101);

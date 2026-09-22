@@ -76,5 +76,23 @@ describe("server/openclaw-config", () => {
         fs.rmSync(openclawDir, { recursive: true, force: true });
       }
     });
+
+    it("ends the file with a newline, as OpenClaw does", () => {
+      // G3 finding #23: OpenClaw 2026.9 compares raw config bytes across
+      // startup, so the same settings must serialize to the same bytes
+      // whichever writer saved them last.
+      const openclawDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), "alphaclaw-openclaw-config-"),
+      );
+      try {
+        const config = { gateway: { mode: "local" } };
+        writeOpenclawConfig({ openclawDir, config });
+        expect(fs.readFileSync(path.join(openclawDir, "openclaw.json"), "utf8")).toBe(
+          `${JSON.stringify(config, null, 2)}\n`,
+        );
+      } finally {
+        fs.rmSync(openclawDir, { recursive: true, force: true });
+      }
+    });
   });
 });
