@@ -159,6 +159,15 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
   `agents.entries.main.default` marker stays until OpenClaw's next config
   write strips it; Clawbridge no longer re-adds it.
 
+- **beta.7 (2026-09-22):** `0.9.18-starfoundry.23-beta.7` published to the
+  `beta` tag (release commit `3de437e`; `latest` stays `…22`): the Slack
+  Socket Mode proxy hotfix for `@openclaw/slack` 2026.9.5 (#22; `4b4c442`,
+  corrected in `9363d28`), applied by the plugin reconcile to that exact
+  version only. Full vitest 171 files / 1,526 tests before publish. Bill
+  confirmed a Control UI plugin install on `test-g3-oc95-04` before the
+  release. Not yet installed on any host; host 04 still runs beta.6 with the
+  hand-patched Slack provider.
+
 ## Provision log
 
 - 2026-09-21 05:14 UTC (Bill's submit): instance `test-g3-oc95-01`
