@@ -103,23 +103,21 @@ Replacing `dispatcher: slackDispatcher` in the installed
 proxy (`socket mode connected`, zero errors; the Gateway's only outbound
 connection is to the proxy).
 
-### Suggested fix
+### Fix
 
-On Node, build the Socket Mode dispatcher with the undici copy that
-`@slack/socket-mode` uses (as #112963 did), and keep
-`createHttp1EnvHttpProxyAgent` for Web API fetch, which is paired with
-OpenClaw's fetch.
+A PR accompanies this issue (draft: `openclaw-slack-socket-mode-proxy-dispatcher-pr.md`).
+It builds the Socket Mode dispatcher from the undici copy `@slack/socket-mode`
+uses, loaded through the explicit `undici/index.js` subpath the runtime already
+uses to avoid Bun's bare-specifier substitution. The Web API dispatcher stays on
+`createHttp1EnvHttpProxyAgent`, so #147421's Bun networking fix is untouched.
+
+Under Bun, Socket Mode's WebSocket is Bun's native one, which ignores
+`dispatcher`, so Bun behavior is identical before and after (checked on Bun
+1.3.12 against a local CONNECT proxy).
 
 Not passing a dispatcher is **not** a fix: Socket Mode's default dispatcher is a
 direct `Agent`, so proxy-only deployments would lose Socket Mode entirely (the
-proxy support #112963 added), and under Bun the default would fall back to the
-partial bare-`undici` exports that #147421 was avoiding.
-
-Bun needs its own answer, which we cannot verify (we do not run Bun): the
-dispatcher must come from whatever undici implementation Socket Mode's
-WebSocket actually uses under Bun. Maintainers who own the Bun path should
-choose it; a Socket Mode handshake through a local CONNECT proxy, on both Node
-and Bun (as in #112963's evidence), would catch this class of mismatch.
+proxy support #112963 added).
 
 ### Other channels checked (2026.9.5)
 
