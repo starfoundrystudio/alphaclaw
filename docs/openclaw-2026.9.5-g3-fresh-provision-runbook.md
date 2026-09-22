@@ -730,3 +730,28 @@ All ten checks pass or have an accepted limit; then promote the AlphaClaw
     any restart appears without a reload. The deferred restart
     (`gateway.restart.request`) is not needed for activation and was not
     adopted. Not yet released.
+
+#### Host 06 G3 checks (2026-09-22, beta.8 + bundle `8dcfb758`)
+
+| # | Check | Result |
+| --- | --- | --- |
+| 1 | Host bootstrap | PASS. alphaclaw `0.9.18-starfoundry.23-beta.8`, openclaw `2026.9.5`, Node 26.10.0, `KillMode=mixed`, `TimeoutStopSec=90`, install library from bundle `8dcfb758` (commit `299867a`). First state snapshot at 19:18 before onboarding. |
+| 2 | Pre-onboarding server | PASS by Bill (wizard served; provision completed). |
+| 3 | Wizard | PASS by Bill: Agent Vault, Vercel AI Gateway model. Channel still to add (check 8). |
+| 4 | 9.x config | PASS. No retired keys, `memory.search.provider: none`, web search `searxng`, memory slot `memory-core`, no deny list, `BOOTSTRAP.md` gone. Doctor lint: 34 warnings, none retired-key: 29 bundled skills lacking binaries or env, 3 expected under Clawbridge supervision (no service manager, loopback bind, device-pair off), 2 permissions (finding #25). |
+| 5 | Plugins | PASS. Managed plugins at 2026.9.5 and "already installed" on restart; TeamYou memory 0.3.0 installed once from the staged archive; SearXNG answers on 127.0.0.1:8888. |
+| 6 | Gateway | PASS. Managed restart ready in 50 s after the ritual; timer pass during that startup wrote nothing (#23 fix); `systemctl stop alphaclaw` took 0.9 s with no leftover Gateway process; clean start with 8 plugins. Control UI plugin install verified earlier on host 04. |
+| 7 | Clawbridge | PENDING (needs a logged-in session): `/api/models` lifecycle, Add Model dialog, no GPT-5.5, advanced Control UI gate. |
+| 8 | Channel round trip + three-turn recall | PENDING (Bill): add Slack, DM round trip; the #22 hotfix should apply on its own. |
+| 9 | Backups | PASS. Manual state run from the gateway after the ritual: snapshot `4bae0937`, 2 SQLite snapshots, 55 MB added; state, gateway, host, and check timers scheduled. |
+| 10 | Plugin SDK warnings | Recorded: only `cli registration missing explicit commands metadata` for `openclaw-teamyou-memory`. None for usage-tracker or agent-vault. |
+
+- Egress spot check: the only established non-loopback connections on the
+  workload go to its security gateway's private address (10.173.183.3).
+  Repeat with Slack connected.
+- **G3 finding #25 (S3, ours): Clawbridge leaves `openclaw.json` mode
+  644.** OpenClaw writes its copies 600 (`.bak*`, `.last-good`); Clawbridge's
+  `writeOpenclawConfig` writes a temp file with the default umask and renames
+  it over the config. No secrets are stored in the file (only env
+  references), and the state dir is 755. Fix: write with the existing mode or
+  0600 and create the state dir 0700. Batch with #24 for beta.9.
