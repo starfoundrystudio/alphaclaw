@@ -26,6 +26,7 @@ describe("cli/openclaw-plugin-hotfixes", () => {
     const file = installSlack("2026.9.5");
     const first = applyOpenclawPluginHotfixes({ openclawDir, logger });
     expect(first.map((r) => r.status)).toEqual(["applied"]);
+    expect(first[0].patchedFiles).toEqual([file]);
     const patched = fs.readFileSync(file, "utf8");
     expect(patched).not.toContain("dispatcher: slackDispatcher,");
     expect(patched).toContain("clientOptions, dispatcher: /* clawbridge-hotfix:slack-socket-mode-proxy-dispatcher */ (process.env.HTTPS_PROXY");
@@ -33,6 +34,9 @@ describe("cli/openclaw-plugin-hotfixes", () => {
 
     const second = applyOpenclawPluginHotfixes({ openclawDir, logger });
     expect(second.map((r) => r.status)).toEqual(["already-applied"]);
+    // The watcher uses these to tell whether a running Gateway loaded the
+    // file before it was patched (G3 finding #27).
+    expect(second[0].patchedFiles).toEqual([file]);
     expect(fs.readFileSync(file, "utf8")).toBe(patched);
   });
 
