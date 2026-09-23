@@ -917,7 +917,20 @@ Findings:
   Fix committed in clawctl `af4b8c2` (on
   `codex/openclaw-2026.9.4-upgrade`); needs a new host bundle.
 
-#### beta.10 batch (implemented 2026-09-22, not yet released)
+#### beta.10 batch (released 2026-09-23)
+
+- `0.9.18-starfoundry.23-beta.10` published to the `beta` tag (release commit
+  `992b39e`; `latest` stays `…22`) after one `prepack` and full vitest 173
+  files / 1,552 tests; published with `--ignore-scripts` so the package
+  matches the committed artifacts (UI bundle and watcher confirmed in the
+  pack listing). No `v*` tag pushed: the tag-triggered workflow runs Node 22,
+  outside the package's engine range, and this line's betas have all been
+  published locally.
+- Host bundle `42536ffa` published from clawctl `af4b8c2` (#31/#32),
+  provenance clean, sha verified after download, install helper
+  byte-identical; recorded in clawctl `9e356eb`; pinned on TeamYou Preview
+  beta only; Preview redeployed at `6601c11e` (Vercel success). A fresh
+  provision on channel `beta` now gets beta.10 plus this bundle.
 
 - #27 (`131057a`): a minute-by-minute watcher applies pending plugin
   hotfixes and restarts the Gateway when a patched file is newer than the
