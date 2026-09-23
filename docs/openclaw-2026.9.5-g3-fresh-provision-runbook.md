@@ -1007,3 +1007,17 @@ repaired it. Timeline (UTC):
   new token env without a restart if OpenClaw's secrets reload covers `.env`
   (its log suggests `openclaw secrets reload`; unverified); replace CLI steps
   with direct config writes where Clawbridge already owns the config.
+  - **Control UI vs Clawbridge (checked in OpenClaw v2026.9.5 source):** the
+    Control UI's channel setup runs OpenClaw's server-side wizard
+    (`wizard.start`/`wizard.next`, `runChannelsSetupWizard`). It installs a
+    missing plugin in-flow without touching the config, then makes one write,
+    `commitConfigWithPendingPluginInstalls`, carrying the install record,
+    plugin entry, channel config, and routing bindings together. That is one
+    hot reload and no restart (tokens go into the config itself).
+    Clawbridge's `lib/server/agents/channels.js` makes four writes: plugin
+    allow/entry (`saveConfig`, which also starts OpenClaw's own install,
+    #34), `openclaw channels add`, an accounts/defaultAccount normalization
+    (`saveConfig`), and `openclaw agents bind`, then restarts the Gateway so
+    the new token env vars load. Redesign to match the wizard's shape: install
+    first without enabling the entry, then one config write with entry,
+    channel (token env references), and binding, then one env load.
