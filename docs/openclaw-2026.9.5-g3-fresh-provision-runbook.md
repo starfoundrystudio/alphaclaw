@@ -1093,3 +1093,32 @@ repaired it. Timeline (UTC):
   allow entry is still in the state database after removal, because removal
   no longer runs `openclaw channels remove --delete`. Re-adding the same bot
   would come back already approved.
+- **#36 fixed (`34b2341`, not yet released):** Clawbridge reads approved
+  senders from `state/openclaw.sqlite` read-only; both the account list and
+  the Gateway channel status count config `allowFrom` plus stored approvals.
+  #37 accepted by Bill (approvals may outlive a removed channel). Bill
+  confirmed the TeamYou recall check ran on host 08.
+- **#38 (S2, ours): a second Slack workspace cannot be added on an Agent
+  Vault instance.** Two defects:
+  1. The "Store token in Agent Vault" step renders above the Name field and
+     requests vault access with the account id derived from the name; before
+     a name is typed the id is empty, and `POST /api/channels/vault-token`
+     falls back to `"default"`. With the first workspace's credentials
+     already in the vault the request is "available" and the modal fills in
+     the first workspace's placeholders (what Bill saw).
+  2. Even with a name, the vault matches services by host only
+     (`serviceMatchesAccess`), so the second account's request finds the
+     existing `channel-slack` (`slack.com`) service and proposes only the
+     new credentials (`SLACK_BOT_TOKEN_<ACCOUNT>`, …). The service's
+     substitution list keeps only the first account's placeholders (host 09:
+     `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`), so the new placeholders would
+     reach Slack unsubstituted.
+  - Proposed fix, not implemented: require an explicit account name before
+    the vault step on multi-account providers (Slack, Telegram) and refuse
+    an empty/default account id when the provider already has accounts;
+    build the channel service request with substitutions for every
+    configured account plus the new one and include the service in the
+    proposal whenever a new account is added. Needs a check of how Agent
+    Vault applies a proposal for an existing host (merge vs replace of
+    substitutions) before implementing. Telegram multi-account has the same
+    shape.
