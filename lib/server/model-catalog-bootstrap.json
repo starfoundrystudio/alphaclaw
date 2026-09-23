@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-22T21:10:14.595Z",
+  "generatedAt": "2026-09-23T16:25:46.738Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2549,6 +2549,24 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "venice/aion-labs-aion-3-5",
+              "provider": "venice",
+              "label": "Aion 3.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "venice/aion-labs-aion-3-5-mini",
+              "provider": "venice",
+              "label": "Aion 3.5 Mini",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "venice/claude-fable-5",
               "provider": "venice",
               "label": "Claude Fable 5 (via Venice)",
@@ -4014,6 +4032,24 @@
           "recommendedModelKeys": [],
           "models": [
             {
+              "key": "kilocode/aion-labs/aion-3.5",
+              "provider": "kilocode",
+              "label": "AionLabs: Aion 3.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/aion-labs/aion-3.5-mini",
+              "provider": "kilocode",
+              "label": "AionLabs: Aion 3.5 Mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/aion-labs/aion-2.0",
               "provider": "kilocode",
               "label": "AionLabs: Aion-2.0",
@@ -4205,7 +4241,7 @@
             {
               "key": "kilocode/anthropic/claude-opus-5.5",
               "provider": "kilocode",
-              "label": "Anthropic: Claude Opus 5.5",
+              "label": "Anthropic: Claude Opus 5.5 (new)",
               "accessModes": [
                 "gateway"
               ],
@@ -4395,6 +4431,15 @@
               "key": "kilocode/cohere/command-a",
               "provider": "kilocode",
               "label": "Cohere: Command A",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/cohere/command-a-plus",
+              "provider": "kilocode",
+              "label": "Cohere: Command A+",
               "accessModes": [
                 "gateway"
               ],
@@ -4896,15 +4941,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/inclusionai/ling-3.0-flash-vl:free",
-              "provider": "kilocode",
-              "label": "inclusionAI: Ling 3.0 Flash VL (free)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/inference-net/schematron-v2-small",
               "provider": "kilocode",
               "label": "Inference.net: Schematron V2 Small",
@@ -5196,15 +5232,6 @@
               "key": "kilocode/mistralai/codestral-2508",
               "provider": "kilocode",
               "label": "Mistral: Codestral 2508",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/mistralai/devstral-2512",
-              "provider": "kilocode",
-              "label": "Mistral: Devstral 2 2512",
               "accessModes": [
                 "gateway"
               ],
@@ -6041,7 +6068,7 @@
             {
               "key": "kilocode/openai/gpt-6-sol",
               "provider": "kilocode",
-              "label": "OpenAI: GPT-6 Sol",
+              "label": "OpenAI: GPT-6 Sol (new)",
               "accessModes": [
                 "gateway"
               ],
@@ -7137,6 +7164,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/upstage/solar-mini4",
+              "provider": "kilocode",
+              "label": "Upstage: Solar Mini 4",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/upstage/solar-pro-3",
               "provider": "kilocode",
               "label": "Upstage: Solar Pro 3",
@@ -7473,6 +7509,24 @@
                 "gateway"
               ],
               "recommendationRank": 3
+            },
+            {
+              "key": "openrouter/aion-labs/aion-3.5",
+              "provider": "openrouter",
+              "label": "AionLabs: Aion 3.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/aion-labs/aion-3.5-mini",
+              "provider": "openrouter",
+              "label": "AionLabs: Aion 3.5 Mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
               "key": "openrouter/aion-labs/aion-2.0",
@@ -7955,6 +8009,15 @@
               "key": "openrouter/cohere/command-a",
               "provider": "openrouter",
               "label": "Cohere: Command A",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/cohere/command-a-plus",
+              "provider": "openrouter",
+              "label": "Cohere: Command A+",
               "accessModes": [
                 "gateway"
               ],
@@ -8663,15 +8726,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/inclusionai/ling-3.0-flash-vl:free",
-              "provider": "openrouter",
-              "label": "inclusionAI: Ling 3.0 Flash VL (free)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/inference-net/schematron-v2-small",
               "provider": "openrouter",
               "label": "Inference.net: Schematron V2 Small",
@@ -8972,15 +9026,6 @@
               "key": "openrouter/mistralai/codestral-2508:batch",
               "provider": "openrouter",
               "label": "Mistral: Codestral 2508 (batch)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/mistralai/devstral-2512",
-              "provider": "openrouter",
-              "label": "Mistral: Devstral 2 2512",
               "accessModes": [
                 "gateway"
               ],
@@ -11249,6 +11294,15 @@
               "key": "openrouter/thinkingmachines/inkling-small:free",
               "provider": "openrouter",
               "label": "Thinking Machines: Inkling Small (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/upstage/solar-mini4",
+              "provider": "openrouter",
+              "label": "Upstage: Solar Mini 4",
               "accessModes": [
                 "gateway"
               ],
@@ -14484,6 +14538,24 @@
       "source": "openclaw-bundled-catalog"
     },
     {
+      "key": "kilocode/aion-labs/aion-3.5",
+      "provider": "kilocode",
+      "label": "AionLabs: Aion 3.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/aion-labs/aion-3.5-mini",
+      "provider": "kilocode",
+      "label": "AionLabs: Aion 3.5 Mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/aion-labs/aion-2.0",
       "provider": "kilocode",
       "label": "AionLabs: Aion-2.0",
@@ -14675,7 +14747,7 @@
     {
       "key": "kilocode/anthropic/claude-opus-5.5",
       "provider": "kilocode",
-      "label": "Anthropic: Claude Opus 5.5",
+      "label": "Anthropic: Claude Opus 5.5 (new)",
       "accessModes": [
         "gateway"
       ],
@@ -14865,6 +14937,15 @@
       "key": "kilocode/cohere/command-a",
       "provider": "kilocode",
       "label": "Cohere: Command A",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/cohere/command-a-plus",
+      "provider": "kilocode",
+      "label": "Cohere: Command A+",
       "accessModes": [
         "gateway"
       ],
@@ -15366,15 +15447,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/inclusionai/ling-3.0-flash-vl:free",
-      "provider": "kilocode",
-      "label": "inclusionAI: Ling 3.0 Flash VL (free)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/inference-net/schematron-v2-small",
       "provider": "kilocode",
       "label": "Inference.net: Schematron V2 Small",
@@ -15666,15 +15738,6 @@
       "key": "kilocode/mistralai/codestral-2508",
       "provider": "kilocode",
       "label": "Mistral: Codestral 2508",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/mistralai/devstral-2512",
-      "provider": "kilocode",
-      "label": "Mistral: Devstral 2 2512",
       "accessModes": [
         "gateway"
       ],
@@ -16511,7 +16574,7 @@
     {
       "key": "kilocode/openai/gpt-6-sol",
       "provider": "kilocode",
-      "label": "OpenAI: GPT-6 Sol",
+      "label": "OpenAI: GPT-6 Sol (new)",
       "accessModes": [
         "gateway"
       ],
@@ -17601,6 +17664,15 @@
       "key": "kilocode/thinkingmachines/inkling-small:free",
       "provider": "kilocode",
       "label": "Thinking Machines: Inkling Small (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/upstage/solar-mini4",
+      "provider": "kilocode",
+      "label": "Upstage: Solar Mini 4",
       "accessModes": [
         "gateway"
       ],
@@ -19470,6 +19542,24 @@
       "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
+      "key": "openrouter/aion-labs/aion-3.5",
+      "provider": "openrouter",
+      "label": "AionLabs: Aion 3.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/aion-labs/aion-3.5-mini",
+      "provider": "openrouter",
+      "label": "AionLabs: Aion 3.5 Mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/aion-labs/aion-2.0",
       "provider": "openrouter",
       "label": "AionLabs: Aion-2.0",
@@ -19995,6 +20085,15 @@
       "key": "openrouter/cohere/command-a",
       "provider": "openrouter",
       "label": "Cohere: Command A",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/cohere/command-a-plus",
+      "provider": "openrouter",
+      "label": "Cohere: Command A+",
       "accessModes": [
         "gateway"
       ],
@@ -20703,15 +20802,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/inclusionai/ling-3.0-flash-vl:free",
-      "provider": "openrouter",
-      "label": "inclusionAI: Ling 3.0 Flash VL (free)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/inference-net/schematron-v2-small",
       "provider": "openrouter",
       "label": "Inference.net: Schematron V2 Small",
@@ -21012,15 +21102,6 @@
       "key": "openrouter/mistralai/codestral-2508:batch",
       "provider": "openrouter",
       "label": "Mistral: Codestral 2508 (batch)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/mistralai/devstral-2512",
-      "provider": "openrouter",
-      "label": "Mistral: Devstral 2 2512",
       "accessModes": [
         "gateway"
       ],
@@ -23309,6 +23390,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/upstage/solar-mini4",
+      "provider": "openrouter",
+      "label": "Upstage: Solar Mini 4",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/upstage/solar-pro-3",
       "provider": "openrouter",
       "label": "Upstage: Solar Pro 3",
@@ -23663,6 +23753,24 @@
       "key": "venice/aion-labs-aion-3-0-mini",
       "provider": "venice",
       "label": "Aion 3.0 Mini",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "venice/aion-labs-aion-3-5",
+      "provider": "venice",
+      "label": "Aion 3.5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "venice/aion-labs-aion-3-5-mini",
+      "provider": "venice",
+      "label": "Aion 3.5 Mini",
       "accessModes": [
         "provider-api"
       ],
