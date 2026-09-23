@@ -3143,6 +3143,27 @@ describe("server/agents/service vault-brokered channels", () => {
     expect(deps.restartGateway).not.toHaveBeenCalled();
   });
 
+  it("restarts once when a plugin hotfix landed during the install", async () => {
+    // The Slack Socket Mode hotfix is written right after OpenClaw installs
+    // the plugin; restart in case the Gateway already imported the file.
+    const deps = buildVaultDeps();
+    deps.reconcileOpenclawPlugins.mockResolvedValue({ ok: true, hotfixesApplied: true });
+    const service = buildService(deps);
+
+    await service.createChannelAccount({
+      provider: "telegram",
+      name: "Telegram",
+      accountId: "default",
+      token: kTelegramPlaceholder,
+      agentId: "main",
+    });
+
+    expect(deps.restartGateway).toHaveBeenCalledTimes(1);
+    expect(
+      deps.fsMock.readConfig().channels.telegram.accounts.default.botToken,
+    ).toBe(kTelegramPlaceholder);
+  });
+
   it("blocks the flow when the post-approval probe fails (D5)", async () => {
     const deps = buildVaultDeps();
     deps.probeChannelToken.mockRejectedValue(

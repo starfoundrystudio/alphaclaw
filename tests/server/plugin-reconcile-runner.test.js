@@ -54,6 +54,22 @@ describe("server/plugin-reconcile-runner", () => {
     expect(lines.join("\n")).not.toContain("plugins.deny: plugin not found");
   });
 
+  it("reports when the child applied a plugin hotfix", async () => {
+    const stdout = "[alphaclaw] Applied OpenClaw plugin hotfix slack-socket-mode-proxy-dispatcher to @openclaw/slack@2026.9.5";
+    const spawnImpl = vi.fn(() => fakeChild({ code: 0, stdout }));
+    const run = createPluginReconcileRunner({
+      rootDir: "/r",
+      spawnImpl,
+      wait: async () => {},
+      logger: { log: () => {}, warn: () => {} },
+    });
+    await expect(run({ onlyPluginKeys: ["slack"] })).resolves.toEqual({
+      ok: true,
+      attempt: 1,
+      hotfixesApplied: true,
+    });
+  });
+
   it("retries once and succeeds", async () => {
     const spawnImpl = vi
       .fn()
