@@ -1022,7 +1022,13 @@ repaired it. Timeline (UTC):
     first without enabling the entry, then one config write with entry,
     channel (token env references), and binding, then one env load.
 
-#### beta.11 batch (implemented 2026-09-23, not yet released)
+#### beta.11 batch (released 2026-09-23)
+
+- `0.9.18-starfoundry.23-beta.11` published to the `beta` tag (release commit
+  `d185373`; `latest` stays `…22`; host bundle stays `42536ffa`) after one
+  `prepack` and full vitest 173 files / 1,554 tests; published with
+  `--ignore-scripts`, watcher absent and UI bundle present in the pack
+  listing. No `v*` tag (see beta.10). Not installed on any host.
 
 - **Secrets-reload question, answered from OpenClaw v2026.9.5 source:**
   `openclaw secrets reload` (`secrets.reload` → `createGatewaySecretsReloader`)
