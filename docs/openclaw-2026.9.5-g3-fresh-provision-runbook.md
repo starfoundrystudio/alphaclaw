@@ -1122,3 +1122,42 @@ repaired it. Timeline (UTC):
     Vault applies a proposal for an existing host (merge vs replace of
     substitutions) before implementing. Telegram multi-account has the same
     shape.
+- **#38 Agent Vault behaviour (checked in Infisical Agent Vault v0.32.0,
+  the version our gateways run; `internal/proposal/merge.go`,
+  `internal/server/handle_services.go`, `internal/brokercore/credential.go`):**
+  - An approved proposal upserts services by name, and a proposed service for
+    a host the vault already has adopts the existing service's name
+    (`adoptByHost`). So there is exactly one `slack.com` service
+    (`channel-slack`) per vault, shared by every Slack account.
+  - For an existing service, a proposal's `substitutions` list REPLACES the
+    stored list (an empty list keeps it). A proposal carrying only the new
+    account's placeholders would drop the first account's and break it.
+  - The proxy applies every substitution on the matched service, so one
+    service can carry several accounts' placeholders.
+  - Every substitution's credential must exist: if any one is missing, every
+    request to that host fails (`ErrCredentialMissing`). Deleting one
+    account's credential from the vault would break all Slack accounts.
+  - `/discover` does not expose substitutions, so Clawbridge cannot see the
+    current list.
+- **#38 plan:**
+  1. Account name before the vault step for multi-account providers (Slack,
+     Telegram); `POST /api/channels/vault-token` rejects an empty or
+     already-configured account id once the provider has accounts.
+  2. Adding an account always proposes the provider's service with the
+     UNION of substitutions: every configured account whose credentials the
+     vault reports available, plus the new account (whose credentials are in
+     the same proposal, applied atomically). Only the missing credentials are
+     requested.
+  3. Removal leaves the account's substitution and credentials in the vault
+     (consistent with #37); the removal note warns that deleting that
+     credential in the vault would break the provider's other accounts.
+  4. The existing-instance migration path (`migrationProposals` from the
+     channel credential quarantine) builds one proposal per provider with
+     all its accounts; today it plans each account separately, so a second
+     account's placeholders would never be substituted. This belongs to the
+     fleet-upgrade project (`rs8GE45wtye2`).
+  5. Verify with a second Slack app on a test instance: both workspaces
+     connect, and the vault's `channel-slack` service lists both accounts'
+     substitutions.
+  - Scope note: several Slack conversations in one workspace use one bot
+    and need none of this; only several Slack apps/workspaces do.
