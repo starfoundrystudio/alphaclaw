@@ -945,3 +945,38 @@ Findings:
   accepted as OpenClaw behaviour) and #30 (pre-activation config warning).
 - Pairs with clawctl `af4b8c2` (#31/#32) in a new host bundle.
 - Full vitest 173 files / 1,552 tests.
+
+### Host 08 (`test-g3-oc95-08`, beta.10 + bundle `42536ffa`, 2026-09-23)
+
+Slack add failed ("OpenClaw did not finish in time"), Clawbridge rolled the
+channel back, and the Gateway was down 20:01:53–20:08:41 until the watchdog
+repaired it. Timeline (UTC):
+
+| Time | Event |
+| --- | --- |
+| 19:57:26 | Clawbridge writes the Slack tokens and `plugins.entries.slack` + `plugins.allow` |
+| 19:57:48 | OpenClaw: Slack "state migration is pending: the configured plugin package is missing"; it starts installing the package itself |
+| 19:58:50 | Hotfix watcher patches the half-prepared package (OpenClaw then logs "Plugin source changed while preparing it") |
+| 19:59:03 | OpenClaw: "Deferred state migration completed for plugin slack" (its own install done) |
+| 19:59:07 | Clawbridge's reconcile `plugins install` → "plugin already exists"; its `--force` recovery re-downloads and the CLI blocks on the pending migration until the 180 s command timeout (20:00:35) |
+| 20:00:48 | Reconcile attempt 2: "already installed", succeeds |
+| 20:01:40 | Slack provider starts (patched file) |
+| 20:01:50 | Hotfix watcher restarts the Gateway: patched file (19:58:50) newer than the Gateway process → judged stale, although the Gateway loaded Slack after the patch |
+| 20:03:58 | Restart not ready in 120 s; channel-add CLI commands fail; Slack tokens removed 20:04:22 |
+| 20:08:41 | Gateway ready again after the watchdog's repair |
+
+- **#33 (S1, regression from beta.10 `131057a`, ours): the #27 watcher's
+  staleness test is wrong.** "Patched file newer than the Gateway process"
+  does not mean the Gateway loaded the old code: on 2026.9 the Gateway
+  hot-loads plugins after start. It restarted a healthy Gateway in the
+  middle of a channel add (the flow holds no lifecycle ownership during its
+  CLI steps), and its periodic patch touched a package OpenClaw was still
+  preparing.
+- **#34 (S1, root cause of the #28 collision): OpenClaw 2026.9.5 installs an
+  enabled official plugin by itself.** Writing `plugins.entries.slack`
+  makes it a pending state migration that OpenClaw converges (install)
+  within ~90 s. Clawbridge's reconcile then runs its own install, collides
+  ("plugin already exists"), and the `--force` recovery hangs on the pending
+  migration. Host 07's slow add had the same shape.
+- Retry on host 08 should now succeed: Slack 2026.9.5 is installed and
+  patched, and the Gateway (started 20:07:54) loaded the patched file.
