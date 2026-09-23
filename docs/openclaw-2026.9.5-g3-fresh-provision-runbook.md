@@ -1021,3 +1021,37 @@ repaired it. Timeline (UTC):
     the new token env vars load. Redesign to match the wizard's shape: install
     first without enabling the entry, then one config write with entry,
     channel (token env references), and binding, then one env load.
+
+#### beta.11 batch (implemented 2026-09-23, not yet released)
+
+- **Secrets-reload question, answered from OpenClaw v2026.9.5 source:**
+  `openclaw secrets reload` (`secrets.reload` → `createGatewaySecretsReloader`)
+  re-resolves secret references against the Gateway's in-process
+  environment. `.env` files are loaded only at startup
+  (`loadGlobalRuntimeDotEnvFiles` is called from the CLI and the Gateway's
+  pre-bootstrap only), so a token Clawbridge adds to `.env` never reaches a
+  running Gateway without a restart. Hosts 07 and 08 showed the same:
+  "secret reference was not found" until the restart. Instead, on Agent
+  Vault instances the channel config now holds the vault placeholders
+  themselves; Clawbridge's managed credential policy already treats them as
+  safe (`isUnsafeManagedChannelCredential`).
+- **#35 + #34 (`393d135`):** channel add for Slack, Discord, Telegram and
+  WhatsApp installs the plugin first (a targeted reconcile counts an explicit
+  request as relevance; OpenClaw's install enables the entry and
+  allowlist), then makes one config write (plugin entry, channel account,
+  binding) with no `channels add` / `agents bind`. Vault instances write the
+  placeholders into the channel config and skip the restart; other
+  instances keep env references and one restart; WhatsApp keeps its restart.
+  The channel normalizer keeps placeholders. Removal is one config write for
+  every channel but WhatsApp (Discord keeps its restart). "plugin already
+  exists" with the target version already installed counts as done (no
+  `--force`). A failure after the install keeps the install record.
+- **Restart guard (`578bdff`):** the Slack provider module is outside the
+  static import closure of the plugin's load path (checked on host 08; the
+  channel imports it with `import()` when it starts), so a hotfix written
+  right after install should be picked up without a restart. As a guard, a
+  channel add that applied a hotfix restarts once.
+- **#33 (`5cf5b13`):** the beta.10 hotfix watcher is reverted.
+- Full vitest 173 files / 1,554 tests. Needs a live add on 2026.9.5 for each
+  channel (Slack, Discord, Telegram) and a removal before Checkpoint G3;
+  only Slack has been verified end to end so far.
