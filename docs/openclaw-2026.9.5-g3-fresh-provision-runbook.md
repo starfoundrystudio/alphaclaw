@@ -1061,3 +1061,35 @@ repaired it. Timeline (UTC):
 - Full vitest 173 files / 1,554 tests. Needs a live add on 2026.9.5 for each
   channel (Slack, Discord, Telegram) and a removal before Checkpoint G3;
   only Slack has been verified end to end so far.
+
+### Host 09 (`test-g3-oc95-09`, beta.11 + bundle `42536ffa`, 2026-09-23)
+
+| Channel | Tokens saved → working | Notes |
+| --- | --- | --- |
+| Slack | 21:36:58 → 21:39:12 (2 min 14 s) | Reconcile 69 s: `plugins install` returned "plugin already exists" after 61.5 s, the new check saw 2026.9.5 installed and did not force (#34 fix working); hotfix applied → one restart (44 s to supervisor ready, Gateway ready at +60 s) |
+| Telegram | 21:41:33 → 21:41:52 (19 s) | Reconcile 2.9 s (bundled); ONE reload covering plugin entry, allowlist, channel and bindings; no restart; polling via vault |
+| Discord | 21:43:08 → 21:44:56 (1 min 48 s) | Install 74.8 s (`ok`), one channel reload, no restart; REST and gateway proxy enabled |
+| Discord removal | 21:47:01 | One config write, restart kept by design (48 s) |
+
+- Vault placeholders are in the channel config (`__agent_vault_slack_bot_token__`,
+  `…app_token__`, `…telegram_bot_token__`); Telegram's placeholder in the
+  URL path is substituted by the vault (`channel-telegram`, HTTP 200).
+- Bindings: slack, telegram (Discord's removed). Config 0600; timer passes
+  wrote nothing; active memory `mode: always`, plugin `baseUrl:
+  ${TEAMYOU_API_URL}`, both from bundle `42536ffa`.
+- Recall evidence not found on this host: the only active-memory run after
+  setup was on "Cool" (21:46, `no_relevant_memory`), and the vault logged no
+  TeamYou recall requests (only the 21:27 agent registration).
+- **#36 (S2, ours): later channels show "Awaiting pairing" after approval.**
+  OpenClaw 2026.9.5 stores pairing approvals in `state/openclaw.sqlite`
+  (`channel_pairing_allow_entries`; entries present for slack, telegram and
+  discord). Only the first owner is also bootstrapped into the config
+  (`commands.ownerAllowFrom` + that channel's `allowFrom`), which is why
+  Slack shows paired. Clawbridge's `getChannelStatus` (gateway.js) counts
+  only inline `allowFrom`. Neither `openclaw pairing list` nor
+  `channels.pairing.list` returns approved senders. Fix: read the allow
+  entries from the state database, read-only.
+- **#37 (S3, ours): channel removal keeps pairing approvals.** The Discord
+  allow entry is still in the state database after removal, because removal
+  no longer runs `openclaw channels remove --delete`. Re-adding the same bot
+  would come back already approved.
