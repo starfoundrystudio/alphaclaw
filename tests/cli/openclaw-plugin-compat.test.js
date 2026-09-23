@@ -915,6 +915,94 @@ describe("openclaw plugin compatibility manifest", () => {
     expect(installs[1]).toContain("'--force'");
   });
 
+  it("does not force a reinstall when OpenClaw already installed the target version", () => {
+    // G3 #34 (host 08): OpenClaw 2026.9 installs an enabled plugin by itself;
+    // the forced reinstall then blocked on its pending plugin migration.
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, { channels: { discord: {} } });
+    const manifestPath = writeManifest(tmpDir, baseManifest());
+    const commands = [];
+    let listCalls = 0;
+    const execSyncImpl = (command) => {
+      const text = String(command);
+      commands.push(text);
+      if (text.includes("'--version'")) return "2026.5.6\n";
+      if (text.includes("'plugins' 'list' '--json'")) {
+        listCalls += 1;
+        // Not installed when the reconcile starts; OpenClaw's own install
+        // finishes before ours reaches the Gateway.
+        return JSON.stringify({
+          plugins:
+            listCalls === 1
+              ? []
+              : [{ id: "discord", name: "@openclaw/discord", version: "2026.5.6" }],
+        });
+      }
+      if (text.includes("'plugins' 'install'")) {
+        const error = new Error("plugin already exists");
+        error.stderr =
+          "plugin already exists: /state/npm/projects/discord/node_modules/@openclaw/discord (delete it first)";
+        throw error;
+      }
+      return "";
+    };
+
+    const result = reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:00.000Z",
+    });
+
+    const installs = commands.filter((command) => command.includes("'plugins' 'install'"));
+    expect(installs).toHaveLength(1);
+    expect(installs[0]).not.toContain("'--force'");
+    expect(result.plugins).toEqual([
+      expect.objectContaining({ id: "discord", version: "2026.5.6" }),
+    ]);
+  });
+
+  it("installs a requested plugin before the config references it", () => {
+    // G3 #34/#35: channel add installs first and writes the channel config
+    // afterwards, so the targeted reconcile cannot rely on config relevance.
+    const rootDir = path.join(tmpDir, "root");
+    const openclawDir = path.join(rootDir, ".openclaw");
+    writeOpenclawConfig(openclawDir, {});
+    const manifestPath = writeManifest(tmpDir, baseManifest());
+    const commands = [];
+    let plugins = [];
+    const execSyncImpl = (command) => {
+      const text = String(command);
+      commands.push(text);
+      if (text.includes("'--version'")) return "2026.5.6\n";
+      if (text.includes("'plugins' 'list' '--json'")) return JSON.stringify({ plugins });
+      if (text.includes("'plugins' 'install'")) {
+        plugins = [{ id: "discord", name: "@openclaw/discord", version: "2026.5.6" }];
+      }
+      return "";
+    };
+
+    const result = reconcileOpenclawPlugins({
+      rootDir,
+      openclawDir,
+      manifestPath,
+      openclawCliPath: "/tmp/openclaw.mjs",
+      execSyncImpl,
+      logger: { log: () => {} },
+      now: () => "2026-05-14T00:00:00.000Z",
+      onlyPluginKeys: ["discord"],
+    });
+
+    expect(result.plugins).toEqual([
+      expect.objectContaining({ id: "discord", action: "installed", reasons: ["requested"] }),
+    ]);
+    expect(commands.some((cmd) => cmd.includes("'npm:@openclaw/discord@2026.5.6'"))).toBe(true);
+  });
+
   it("fails closed when OpenClaw plugin inventory JSON is malformed", () => {
     expect(() => parsePluginList("not-json")).toThrow(
       "OpenClaw plugin inventory returned invalid JSON",

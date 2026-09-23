@@ -1017,16 +1017,12 @@ describe("server/agents/service", () => {
       { key: "TELEGRAM_BOT_TOKEN", value: "123:abc" },
     ]);
     expect(reloadEnv).toHaveBeenCalled();
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      1,
-      "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
+    // G3 #35: no OpenClaw CLI steps; one config write after the install.
+    expect(clawCmd).not.toHaveBeenCalled();
+    const configWrites = fsMock.writeFileSync.mock.calls.filter(([target]) =>
+      String(target).endsWith("openclaw.json"),
     );
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      2,
-      "agents bind --agent 'main' --bind 'telegram:default'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
+    expect(configWrites).toHaveLength(1);
     expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
       rootDir: "/tmp",
       openclawDir: "/tmp/openclaw",
@@ -1035,9 +1031,12 @@ describe("server/agents/service", () => {
       env: process.env,
       onlyPluginKeys: ["telegram"],
     });
-    expect(
-      reconcileOpenclawPlugins.mock.invocationCallOrder[0],
-    ).toBeLessThan(clawCmd.mock.invocationCallOrder[0]);
+    expect(reconcileOpenclawPlugins.mock.invocationCallOrder[0]).toBeLessThan(
+      fsMock.writeFileSync.mock.invocationCallOrder[0],
+    );
+    expect(fsMock.readConfig().bindings).toEqual([
+      { agentId: "main", match: { channel: "telegram", accountId: "default" } },
+    ]);
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
         channels: {
@@ -1061,78 +1060,41 @@ describe("server/agents/service", () => {
     );
   });
 
-  it("retries channel add when OpenClaw reports a config mutation conflict", async () => {
+  it("adds a channel without OpenClaw CLI steps and restarts once for env tokens", async () => {
+    // G3 #35: OpenClaw 2026.9 hot-reloads every plugin on each config write;
+    // the add used to write four times (entry, channels add, accounts,
+    // agents bind). Without Agent Vault the tokens are env references, so
+    // one restart loads them.
     const fsMock = buildFsMock({
-      initialConfig: {
-        agents: {
-          list: [{ id: "main", default: true }],
-        },
-      },
+      initialConfig: { agents: { list: [{ id: "main", default: true }] } },
     });
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    let addAttempts = 0;
-    const clawCmd = vi.fn(async (command) => {
-      if (String(command).startsWith("channels add")) {
-        addAttempts += 1;
-        if (addAttempts === 1) {
-          return {
-            ok: false,
-            stdout: "",
-            stderr:
-              "ConfigMutationConflictError: config changed since last load",
-          };
-        }
-      }
-      return { ok: true, stdout: "", stderr: "" };
-    });
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
+    const restartGateway = vi.fn(async () => {});
     const service = createAgentsService({
       fs: fsMock,
       OPENCLAW_DIR: "/tmp/openclaw",
       readEnvFile: vi.fn(() => []),
       writeEnvFile: vi.fn(),
       reloadEnv: vi.fn(),
+      restartGateway,
       clawCmd,
     });
 
-    try {
-      const result = await service.createChannelAccount({
-        provider: "telegram",
-        name: "Telegram",
-        accountId: "default",
-        token: "123:abc",
-        agentId: "main",
-      });
+    await service.createChannelAccount({
+      provider: "telegram",
+      name: "Telegram",
+      accountId: "default",
+      token: "123:abc",
+      agentId: "main",
+    });
 
-      expect(result.channel).toBe("telegram");
-      expect(addAttempts).toBe(2);
-      expect(warnSpy).toHaveBeenCalledWith(
-        "[alphaclaw] Retrying openclaw channels add after config mutation conflict",
-      );
-      expect(clawCmd).toHaveBeenNthCalledWith(
-        1,
-        "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-        { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-      );
-      expect(clawCmd).toHaveBeenNthCalledWith(
-        2,
-        "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-        { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-      );
-      expect(clawCmd).toHaveBeenNthCalledWith(
-        3,
-        "agents bind --agent 'main' --bind 'telegram:default'",
-        { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-      );
-      expect(fsMock.readConfig().channels.telegram.accounts.default).toEqual(
-        expect.objectContaining({
-          botToken: "${TELEGRAM_BOT_TOKEN}",
-          dmPolicy: "pairing",
-          name: "Telegram",
-        }),
-      );
-    } finally {
-      warnSpy.mockRestore();
-    }
+    expect(clawCmd).not.toHaveBeenCalled();
+    expect(
+      fsMock.writeFileSync.mock.calls.filter(([target]) =>
+        String(target).endsWith("openclaw.json"),
+      ),
+    ).toHaveLength(1);
+    expect(restartGateway).toHaveBeenCalledTimes(1);
   });
 
   it("migrates single-account channel config before adding another account", async () => {
@@ -1180,16 +1142,7 @@ describe("server/agents/service", () => {
       { key: "TELEGRAM_BOT_TOKEN", value: "123:abc" },
       { key: "TELEGRAM_BOT_TOKEN_ALERTS", value: "456:def" },
     ]);
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      1,
-      "channels add --channel 'telegram' --account 'alerts' --name 'Alerts' --token '456:def'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      2,
-      "agents bind --agent 'ops' --bind 'telegram:alerts'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
+    expect(clawCmd).not.toHaveBeenCalled();
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
         channels: {
@@ -1314,7 +1267,9 @@ describe("server/agents/service", () => {
     );
   });
 
-  it("ensures provider plugin allowlist before channel add cli call", async () => {
+  it("enables the provider plugin in the same config write as the channel", async () => {
+    // G3 #34/#35: the plugin entry used to be enabled before the install,
+    // which made OpenClaw 2026.9 install the package itself and collide.
     const fsMock = buildFsMock({
       initialConfig: {
         agents: {
@@ -1334,6 +1289,10 @@ describe("server/agents/service", () => {
     ]);
     const writeEnvFile = vi.fn();
     const reloadEnv = vi.fn();
+    const reconcileOpenclawPlugins = vi.fn(async () => {
+      // The install runs before the entry is enabled.
+      expect(fsMock.readConfig().plugins.entries.telegram).toBeUndefined();
+    });
     const restartGateway = vi.fn(async () => {
       const currentConfig = fsMock.readConfig();
       expect(currentConfig.plugins).toEqual({
@@ -1349,20 +1308,7 @@ describe("server/agents/service", () => {
         botToken: "${TELEGRAM_BOT_TOKEN}",
       });
     });
-    const clawCmd = vi.fn(async (command) => {
-      if (String(command).startsWith("channels add")) {
-        const currentConfig = fsMock.readConfig();
-        expect(currentConfig.plugins).toEqual({
-          allow: ["discord", "usage-tracker", "telegram"],
-          entries: {
-            discord: { enabled: true },
-            "usage-tracker": { enabled: true },
-            telegram: { enabled: true },
-          },
-        });
-      }
-      return { ok: true, stdout: "", stderr: "" };
-    });
+    const clawCmd = vi.fn(async () => ({ ok: true, stdout: "", stderr: "" }));
     const service = createAgentsService({
       fs: fsMock,
       OPENCLAW_DIR: "/tmp/openclaw",
@@ -1370,6 +1316,7 @@ describe("server/agents/service", () => {
       writeEnvFile,
       reloadEnv,
       restartGateway,
+      reconcileOpenclawPlugins,
       clawCmd,
     });
 
@@ -1382,20 +1329,14 @@ describe("server/agents/service", () => {
     });
 
     expect(result.channel).toBe("telegram");
+    expect(reconcileOpenclawPlugins).toHaveBeenCalledTimes(1);
     expect(writeEnvFile.mock.invocationCallOrder[0]).toBeLessThan(
       fsMock.writeFileSync.mock.invocationCallOrder[0],
     );
     expect(fsMock.writeFileSync.mock.invocationCallOrder[0]).toBeLessThan(
-      clawCmd.mock.invocationCallOrder[0],
-    );
-    expect(clawCmd.mock.invocationCallOrder[1]).toBeLessThan(
       restartGateway.mock.invocationCallOrder[0],
     );
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      1,
-      "channels add --channel 'telegram' --name 'Telegram' --token '123:abc'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
+    expect(clawCmd).not.toHaveBeenCalled();
     expect(restartGateway).toHaveBeenCalledTimes(1);
   });
 
@@ -1452,16 +1393,7 @@ describe("server/agents/service", () => {
       { key: "DISCORD_BOT_TOKEN", value: "discord-token" },
     ]);
     expect(reloadEnv).toHaveBeenCalled();
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      1,
-      "channels add --channel 'discord' --name 'Discord' --token 'discord-token'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      2,
-      "agents bind --agent 'main' --bind 'discord:default'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
+    expect(clawCmd).not.toHaveBeenCalled();
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
         channels: {
@@ -1559,11 +1491,7 @@ describe("server/agents/service", () => {
       { key: "SLACK_BOT_TOKEN", value: "xoxb-bot-token" },
       { key: "SLACK_APP_TOKEN", value: "xapp-app-token" },
     ]);
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      1,
-      "channels add --channel 'slack' --name 'Slack' --bot-token 'xoxb-bot-token' --app-token 'xapp-app-token'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
+    expect(clawCmd).not.toHaveBeenCalled();
     expect(reconcileOpenclawPlugins).toHaveBeenCalledWith({
       rootDir: "/tmp",
       openclawDir: "/tmp/openclaw",
@@ -1572,15 +1500,11 @@ describe("server/agents/service", () => {
       env: process.env,
       onlyPluginKeys: ["slack"],
     });
-    expect(
-      reconcileOpenclawPlugins.mock.invocationCallOrder[0],
-    ).toBeLessThan(clawCmd.mock.invocationCallOrder[0]);
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      2,
-      "agents bind --agent 'main' --bind 'slack:default'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
+    expect(reconcileOpenclawPlugins.mock.invocationCallOrder[0]).toBeLessThan(
+      fsMock.writeFileSync.mock.invocationCallOrder[0],
     );
-    expect(clawCmd.mock.invocationCallOrder[1]).toBeLessThan(
+    expect(clawCmd).not.toHaveBeenCalled();
+    expect(fsMock.writeFileSync.mock.invocationCallOrder.at(-1)).toBeLessThan(
       restartGateway.mock.invocationCallOrder[0],
     );
     expect(fsMock.readConfig()).toEqual(
@@ -1685,7 +1609,7 @@ describe("server/agents/service", () => {
     );
   });
 
-  it("rolls back env and config when channel add CLI step fails", async () => {
+  it("rolls back env and config when the plugin install fails", async () => {
     const fsMock = buildFsMock({
       initialConfig: {
         agents: {
@@ -1696,12 +1620,6 @@ describe("server/agents/service", () => {
     const initialEnvVars = [{ key: "OPENAI_API_KEY", value: "sk-test" }];
     const writeEnvFile = vi.fn();
     const reloadEnv = vi.fn();
-    const clawCmd = vi.fn(async (command) => {
-      if (String(command).startsWith("channels add")) {
-        return { ok: false, stdout: "", stderr: "CLI add failed" };
-      }
-      return { ok: true, stdout: "", stderr: "" };
-    });
     const service = createAgentsService({
       fs: fsMock,
       OPENCLAW_DIR: "/tmp/openclaw",
@@ -1709,7 +1627,10 @@ describe("server/agents/service", () => {
       writeEnvFile,
       reloadEnv,
       restartGateway: vi.fn(async () => {}),
-      clawCmd,
+      reconcileOpenclawPlugins: vi.fn(async () => {
+        throw new Error("install failed");
+      }),
+      clawCmd: vi.fn(async () => ({ ok: true, stdout: "", stderr: "" })),
     });
 
     await expect(
@@ -1720,7 +1641,7 @@ describe("server/agents/service", () => {
         token: "123:abc",
         agentId: "main",
       }),
-    ).rejects.toThrow("CLI add failed");
+    ).rejects.toThrow("install failed");
 
     expect(writeEnvFile).toHaveBeenNthCalledWith(1, [
       { key: "OPENAI_API_KEY", value: "sk-test" },
@@ -1733,6 +1654,57 @@ describe("server/agents/service", () => {
         entries: { main: { default: true } },
       },
     });
+  });
+
+  it("keeps the plugin install but removes the channel when the restart fails", async () => {
+    const fsMock = buildFsMock({
+      initialConfig: {
+        agents: {
+          list: [{ id: "main", default: true }],
+        },
+      },
+    });
+    const writeEnvFile = vi.fn();
+    const service = createAgentsService({
+      fs: fsMock,
+      OPENCLAW_DIR: "/tmp/openclaw",
+      readEnvFile: vi.fn(() => []),
+      writeEnvFile,
+      reloadEnv: vi.fn(),
+      restartGateway: vi.fn(async () => {
+        throw new Error("gateway did not come back");
+      }),
+      // The install records itself in the config, like OpenClaw does.
+      reconcileOpenclawPlugins: vi.fn(async () => {
+        const cfg = fsMock.readConfig();
+        fsMock.writeFileSync(
+          "/tmp/openclaw/openclaw.json",
+          JSON.stringify({
+            ...cfg,
+            plugins: { installs: { telegram: { version: "2026.9.5" } } },
+          }),
+        );
+      }),
+      clawCmd: vi.fn(async () => ({ ok: true, stdout: "", stderr: "" })),
+    });
+
+    await expect(
+      service.createChannelAccount({
+        provider: "telegram",
+        name: "Telegram",
+        accountId: "default",
+        token: "123:abc",
+        agentId: "main",
+      }),
+    ).rejects.toThrow("gateway did not come back");
+
+    const cfg = fsMock.readConfig();
+    expect(cfg.channels).toBeUndefined();
+    expect(cfg.bindings).toBeUndefined();
+    // A missing install record next to an installed package would make the
+    // next attempt collide with the package on disk (G3 #34).
+    expect(cfg.plugins.installs.telegram).toEqual({ version: "2026.9.5" });
+    expect(writeEnvFile).toHaveBeenLastCalledWith([]);
   });
 
   it("prevents creating multiple discord channel accounts", async () => {
@@ -1840,16 +1812,7 @@ describe("server/agents/service", () => {
       { key: "SLACK_BOT_TOKEN_ALERTS", value: "xoxb-bot-token-2" },
       { key: "SLACK_APP_TOKEN_ALERTS", value: "xapp-app-token-2" },
     ]);
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      1,
-      "channels add --channel 'slack' --account 'alerts' --name 'Slack Alerts' --bot-token 'xoxb-bot-token-2' --app-token 'xapp-app-token-2'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
-    expect(clawCmd).toHaveBeenNthCalledWith(
-      2,
-      "agents bind --agent 'main' --bind 'slack:alerts'",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
+    expect(clawCmd).not.toHaveBeenCalled();
     expect(fsMock.readConfig()).toEqual(
       expect.objectContaining({
         channels: {
@@ -2617,10 +2580,8 @@ describe("server/agents/service", () => {
     });
 
     expect(result).toEqual({ ok: true });
-    expect(clawCmd).toHaveBeenCalledWith(
-      "channels remove --channel 'telegram' --account 'alerts' --delete",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
+    // G3 #35: removal is one config write; the Gateway hot-reloads it.
+    expect(clawCmd).not.toHaveBeenCalled();
     expect(writeEnvFile).toHaveBeenCalledWith([
       { key: "TELEGRAM_BOT_TOKEN", value: "123:abc" },
     ]);
@@ -2683,10 +2644,8 @@ describe("server/agents/service", () => {
     });
 
     expect(result).toEqual({ ok: true });
-    expect(clawCmd).toHaveBeenCalledWith(
-      "channels remove --channel 'telegram' --account 'default' --delete",
-      { allowConfigMutation: true, quiet: true, timeoutMs: 90000 },
-    );
+    // G3 #35: removal is one config write; the Gateway hot-reloads it.
+    expect(clawCmd).not.toHaveBeenCalled();
     expect(writeEnvFile).toHaveBeenCalledWith([]);
     expect(reloadEnv).toHaveBeenCalled();
     expect(fsMock.readConfig()).toEqual(
@@ -3099,6 +3058,7 @@ describe("server/agents/service vault-brokered channels", () => {
       reloadEnv: vi.fn(),
       clawCmd: vi.fn(async () => ({ ok: true, stdout: "", stderr: "" })),
       reconcileOpenclawPlugins: vi.fn(async () => ({ plugins: [] })),
+      restartGateway: vi.fn(async () => {}),
       hasVaultRuntime: vi.fn(() => true),
       createVaultProbeFetch: vi.fn(() => async () => {
         throw new Error("probe fetch should be exercised via probeChannelToken");
@@ -3116,6 +3076,7 @@ describe("server/agents/service vault-brokered channels", () => {
       writeEnvFile: deps.writeEnvFile,
       reloadEnv: deps.reloadEnv,
       reconcileOpenclawPlugins: deps.reconcileOpenclawPlugins,
+      restartGateway: deps.restartGateway,
       clawCmd: deps.clawCmd,
       hasVaultRuntime: deps.hasVaultRuntime,
       createVaultProbeFetch: deps.createVaultProbeFetch,
@@ -3174,9 +3135,12 @@ describe("server/agents/service vault-brokered channels", () => {
     expect(deps.writeEnvFile).toHaveBeenCalledWith([
       { key: "TELEGRAM_BOT_TOKEN", value: kTelegramPlaceholder },
     ]);
+    // G3 #35: vault placeholders go into the channel config itself, so the
+    // running Gateway needs no new env vars and no restart.
     expect(
       deps.fsMock.readConfig().channels.telegram.accounts.default.botToken,
-    ).toBe("${TELEGRAM_BOT_TOKEN}");
+    ).toBe(kTelegramPlaceholder);
+    expect(deps.restartGateway).not.toHaveBeenCalled();
   });
 
   it("blocks the flow when the post-approval probe fails (D5)", async () => {
@@ -3214,7 +3178,10 @@ describe("server/agents/service vault-brokered channels", () => {
     const discordConfig = deps.fsMock.readConfig().channels.discord;
     expect(discordConfig.proxy).toBe("${OPENCLAW_PROXY_URL}");
     expect(discordConfig.accounts.default.applicationId).toBe("1541896507");
-    expect(discordConfig.accounts.default.token).toBe("${DISCORD_BOT_TOKEN}");
+    expect(discordConfig.accounts.default.token).toBe(
+      "__agent_vault_discord_bot_token__",
+    );
+    expect(deps.restartGateway).not.toHaveBeenCalled();
   });
 
   it("keeps the raw path unchanged when the vault runtime is absent", async () => {
