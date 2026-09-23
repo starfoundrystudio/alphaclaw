@@ -980,3 +980,30 @@ repaired it. Timeline (UTC):
   migration. Host 07's slow add had the same shape.
 - Retry on host 08 should now succeed: Slack 2026.9.5 is installed and
   patched, and the Gateway (started 20:07:54) loaded the patched file.
+- **Host 08 Slack retry succeeded, still ~4.2 minutes** (tokens 20:11:36 →
+  `socket mode connected` 20:15:49; pairing approved 20:16:27). The
+  reconcile was fast this time (6.0 s, "already installed"), so none of the
+  time was the plugin install:
+
+  | Step | Time |
+  | --- | --- |
+  | Reconcile (plugins list 5.2 s, skip) | 6 s |
+  | `plugins.entries.slack` hot reload (all plugins reload; Gateway event loop stalls) | 34 s |
+  | Clawbridge channel-add CLI steps before the channel config lands | 34 s |
+  | `channels.slack` hot reload (+ a superseded second reload) | 37 s |
+  | Bind to the agent (`bindings` reload) | 20 s |
+  | Gateway restart to load the Slack token env | 74 s to supervisor ready, 115 s to Gateway ready |
+  | Socket Mode connect | 4 s |
+
+  The pre-restart Socket Mode error at 20:13:31 is the token env not yet
+  loaded (same as host 07), not the hotfix. Load average was 3.4 on 4 vCPU.
+- **#35 (S2, ours + OpenClaw 2026.9 cost): channel add is minutes long even
+  without an install.** Three separate config writes each trigger a full
+  plugin hot reload (~30 s each on this host), each Clawbridge CLI step
+  costs 5–20 s of OpenClaw start-up, and the final Gateway restart takes
+  75–115 s. Not measured on 2026.7.1 for comparison (no 7.1 test host).
+  Candidate fixes, not implemented: write the plugin entry, channel config
+  and binding in one config write (one reload instead of three); load the
+  new token env without a restart if OpenClaw's secrets reload covers `.env`
+  (its log suggests `openclaw secrets reload`; unverified); replace CLI steps
+  with direct config writes where Clawbridge already owns the config.
