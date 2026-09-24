@@ -1331,10 +1331,26 @@ repaired it. Timeline (UTC):
   whether the agent's `memory_search` tool does the same on an empty index is
   unconfirmed, and host 12 can no longer show it because the index is now
   built. Not a blocker.
-- Still to confirm on host 12 (Bill):
-  - A DM round trip on both Slack accounts after pairing.
-  - The short Agent Vault approval page.
-  - "Paired" status (#36).
-  - Check 7: Models page, Add Model dialog, no GPT-5.5, and the Advanced
-    controls gate.
+- **Bill confirmed on host 12 (2026-09-24):** both Slack accounts replied
+  and show "paired" (#36 PASS); the short Agent Vault approval page, and
+  check 7 (Models page, Add Model dialog, no GPT-5.5, Advanced controls
+  gate) PASS.
 
+## G3 result (2026-09-24)
+
+All ten checks pass across hosts 01–12, with the limits accepted along the
+way (#29, #37, #39 infrastructure). Beta soak: alphaclaw beta.1–beta.14
+and host bundles `f62fa09f` → `7d902eb0` on Preview beta. Checkpoint G3
+(Bill approves production promotion) is next.
+
+Promotion notes, checked 2026-09-24:
+- TeamYou needs no code merge. The preview branch only adds a deploy
+  trigger, and `main` has 2 provisioning commits since the fork (opt-in
+  tailnet identity reuse `b90556321`, owner canonicalization `3c2c3366e`),
+  neither on the 2026.9 path.
+- alphaclaw `codex/openclaw-2026.9.4-upgrade` is 127 commits ahead of
+  `main` (0 behind); clawctl's is 20 ahead (0 behind). Both fast-forward.
+- Order matters: pin the stable bundle `7d902eb0` before `latest` moves.
+  The old stable bundle `4c6e717d` lacks the 2026.9 host fixes, so
+  `latest` on 2026.9.5 with the old bundle is a broken window, while the
+  new bundle's scripts are version-gated and still handle 2026.7.1.
