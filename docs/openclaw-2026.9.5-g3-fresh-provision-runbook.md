@@ -1354,3 +1354,32 @@ Promotion notes, checked 2026-09-24:
   The old stable bundle `4c6e717d` lacks the 2026.9 host fixes, so
   `latest` on 2026.9.5 with the old bundle is a broken window, while the
   new bundle's scripts are version-gated and still handle 2026.7.1.
+
+## Production promotion (2026-09-24, Bill's Checkpoint G3 approval)
+
+1. **Stable host bundle:** TeamYou Production `OPENCLAW_HOST_ASSET_BUNDLE_URL`
+   / `_SHA256` repinned from `4c6e717d` to `7d902eb0` (clawctl `9e3c6d9`).
+   Production redeployed by redeploying the live deployment
+   (`teamyou-k5it35og3`, same code) as `teamyou-e3qp49ttf`, which is now
+   aliased to www.teamyou.com.
+2. **alphaclaw `0.9.18-starfoundry.23`** published to `latest` (release
+   commit `6411e87`, `dependencies.openclaw = 2026.9.5`) after one
+   `prepack` and full vitest 174 files / 1,563 tests (exit code 0). `beta`
+   stays on beta.14 (same code). No `v*` tag (the tag workflow runs Node 22).
+3. **Branches:** alphaclaw `main` fast-forwarded to `6411e87` and clawctl
+   `main` to `f23cba2`. TeamYou needed no merge.
+4. **Still to do:** Bill runs one production-channel provision; Claude
+   verifies the host (alphaclaw `…23`, openclaw 2026.9.5, bundle
+   provenance `9e3c6d9`).
+
+Rollback, if needed:
+- Repin Production to `4c6e717d`
+  (`…/sha256/4c6e717dc41b14bdcf9a7a5f4f43c81f01510e4c9eae897366149d6e4e1db8e0.tar.gz`)
+  and redeploy.
+- `npm dist-tag add @starfoundrystudio/alphaclaw@0.9.18-starfoundry.22 latest`.
+- Existing instances are unaffected either way.
+
+The restore-version policy is tracked separately in TeamYou project
+`noKAlXtKZtJ4`. Until it is decided, restores provision on `latest`
+(2026.9.5).
+
