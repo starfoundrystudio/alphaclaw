@@ -332,6 +332,7 @@ describe("server/routes/pairings", () => {
     expect(res.status).toBe(200);
     expect(clawCmd).toHaveBeenCalledWith(
       "pairing approve --channel 'telegram' --account 'tester' 'ABCD1234'",
+      { timeoutMs: 60000 },
     );
   });
 
