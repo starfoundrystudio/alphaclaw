@@ -1379,6 +1379,20 @@ Rollback, if needed:
 - `npm dist-tag add @starfoundrystudio/alphaclaw@0.9.18-starfoundry.22 latest`.
 - Existing instances are unaffected either way.
 
+- **Production beta pins (Bill, 2026-09-24):** Production
+  `OPENCLAW_HOST_ASSET_BUNDLE_URL_BETA` / `_SHA256_BETA` were 19 days old,
+  so a beta-channel provision on production would have paired beta.14 with
+  a stale bundle. Both are now repinned to `7d902eb0`, and production was
+  redeployed from the same code as `teamyou-m52xh143f` (aliased to
+  www.teamyou.com). Both production channels now use bundle `7d902eb0`.
+- **Why TeamYou needed no merge:** the preview branch has zero file changes
+  since it forked from `main` (17 September); it only created the preview
+  deployment and its database branch. All 2026.9 work ships as artifacts
+  TeamYou consumes by channel: the alphaclaw npm package (`@latest` /
+  `@beta`) and the clawctl bundle (URL and sha in environment variables).
+  The channel picker and bundle lookup are already on `main` and
+  `development`.
+
 The restore-version policy is tracked separately in TeamYou project
 `noKAlXtKZtJ4`. Until it is decided, restores provision on `latest`
 (2026.9.5).
