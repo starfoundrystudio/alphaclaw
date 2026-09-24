@@ -1289,3 +1289,21 @@ repaired it. Timeline (UTC):
   the sandbox and not run. Needs a new host bundle pinned on Preview beta
   to take effect.
 
+#### Bundle `7d902eb0` + beta.14 (released 2026-09-24)
+
+- Host bundle `7d902eb0` published from clawctl `9e3c6d9` (apt-get update
+  retry). Provenance is clean (not dirty), the sha256 was verified after
+  download, and the bundled `alphaclaw-host-bootstrap.sh` is byte-identical
+  to the commit; the bootstrap, SearXNG and TeamYou installers all carry
+  `apt_get_update`. Recorded in clawctl `f23cba2`. Pinned on TeamYou
+  **Preview beta** only (`OPENCLAW_HOST_ASSET_BUNDLE_URL_BETA` /
+  `_SHA256_BETA`; stable unchanged); Preview redeployed at `19810f69`
+  (Vercel success).
+- `0.9.18-starfoundry.23-beta.14` published to the `beta` tag (release
+  commit `8eb2012`; `latest` stays `…22`) after one `prepack` and full
+  vitest 174 files / 1,563 tests (exit code 0); `--ignore-scripts`, UI
+  bundle present in the pack listing. The model catalog bootstrap has all
+  244 Novita entries (2,987 total), restoring what beta.13 lost.
+- A fresh provision on channel `beta` now gets beta.14 plus bundle
+  `7d902eb0`.
+
