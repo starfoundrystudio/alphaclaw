@@ -760,7 +760,7 @@ describe("server/routes/agents vault-token", () => {
       slots: [
         {
           envKey: "TELEGRAM_BOT_TOKEN_WORK",
-          placeholder: "__agent_vault_telegram_bot_token_work__",
+          placeholder: "__av_telegram_bot_token_work__",
         },
       ],
     }));
@@ -785,6 +785,16 @@ describe("server/routes/agents vault-token", () => {
     expect(ensureChannelProviderAccess).toHaveBeenCalledWith(
       "telegram",
       "work",
+      { addAccount: true, approvedProposalId: null },
+    );
+
+    await request(app)
+      .post("/api/channels/vault-token")
+      .send({ provider: "telegram", accountId: "work", approvedProposalId: 31 });
+    expect(ensureChannelProviderAccess).toHaveBeenLastCalledWith(
+      "telegram",
+      "work",
+      { addAccount: true, approvedProposalId: 31 },
     );
   });
 

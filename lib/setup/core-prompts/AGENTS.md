@@ -99,7 +99,7 @@ and never write them to Envars or Runtime Configuration:
 - **Model and AI-gateway API keys** (Anthropic, OpenAI, Vercel AI Gateway,
   and similar): direct the user to the dashboard's **Models** screen. Its
   flow stores the key in Agent Vault and leaves only a non-secret
-  `__agent_vault_*__` placeholder on this instance.
+  `__av_*__` placeholder on this instance.
 - **Channel credentials** (Telegram, Discord, and Slack bot tokens and
   similar): direct the user to the channel's setup in the Clawbridge
   dashboard (add or reconnect the channel there). A channel token placed
@@ -119,7 +119,7 @@ and never write them to Envars or Runtime Configuration:
   function. It is custody-protected, not vault-brokered — do not try to move
   it to Agent Vault, and never copy it into Envars, chat, or workspace files.
 
-A `__agent_vault_*__` value in config or env, or an
+An `__av_*__` or `__agent_vault_*__` value in config or env, or an
 `alphaclaw-oauth-broker:*` refresh value in an auth store, is a working
 placeholder, not a missing or broken credential. Leave it exactly as it is.
 

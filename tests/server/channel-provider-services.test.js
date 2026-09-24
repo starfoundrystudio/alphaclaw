@@ -81,8 +81,8 @@ describe("server/agent-vault/channel-provider-services", () => {
       "SLACK_BOT_TOKEN",
     ]);
     expect(defaults.slots.map((slot) => slot.placeholder)).toEqual([
-      "__agent_vault_slack_app_token__",
-      "__agent_vault_slack_bot_token__",
+      "__av_slack_app_token__",
+      "__av_slack_bot_token__",
     ]);
     const work = getChannelVaultConfig("slack", "work-team");
     expect(work.slots.map((slot) => slot.envKey)).toEqual([
@@ -101,7 +101,7 @@ describe("server/agent-vault/channel-provider-services", () => {
     expect(discordCom.service.substitutions).toEqual([
       {
         key: "DISCORD_BOT_TOKEN",
-        placeholder: "__agent_vault_discord_bot_token__",
+        placeholder: "__av_discord_bot_token__",
         in: ["header", "websocket"],
       },
     ]);

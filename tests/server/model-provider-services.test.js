@@ -2,6 +2,7 @@ const {
   buildModelProviderAccessRequests,
   buildPlaceholderForCredentialKey,
   getModelProviderVaultConfig,
+  isPlaceholderForCredentialKey,
   isVaultPlaceholderValue,
   kModelProviderVaultServices,
   listVaultBrokeredModelProviders,
@@ -65,7 +66,7 @@ describe("server/agent-vault/model-provider-services", () => {
   it("uses the env var name as the credential slot and the agent_vault placeholder convention", () => {
     const config = getModelProviderVaultConfig("anthropic");
     expect(config.credentialKey).toBe("ANTHROPIC_API_KEY");
-    expect(config.placeholder).toBe("__agent_vault_anthropic_api_key__");
+    expect(config.placeholder).toBe("__av_anthropic_api_key__");
     expect(config.services).toEqual([
       { name: "model-anthropic", host: "api.anthropic.com" },
     ]);
@@ -105,6 +106,8 @@ describe("server/agent-vault/model-provider-services", () => {
   });
 
   it("detects placeholder values by shape, including the TeamYou runtime placeholder", () => {
+    expect(isVaultPlaceholderValue("__av_anthropic_api_key__")).toBe(true);
+    expect(isVaultPlaceholderValue("__avx_anthropic_api_key__")).toBe(false);
     expect(isVaultPlaceholderValue("__agent_vault_anthropic_api_key__")).toBe(
       true,
     );
@@ -127,5 +130,63 @@ describe("server/agent-vault/model-provider-services", () => {
       expect(placeholder).toBe(buildPlaceholderForCredentialKey(credentialKey));
       expect(isVaultPlaceholderValue(placeholder)).toBe(true);
     }
+  });
+  it("generates short placeholders and keeps a legacy one still in use", () => {
+    expect(buildPlaceholderForCredentialKey("SLACK_BOT_TOKEN_WORK")).toBe(
+      "__av_slack_bot_token_work__",
+    );
+    expect(
+      buildPlaceholderForCredentialKey("OPENAI_API_KEY", {
+        placeholdersInUse: new Set(["__agent_vault_openai_api_key__"]),
+      }),
+    ).toBe("__agent_vault_openai_api_key__");
+    expect(
+      isPlaceholderForCredentialKey("__av_openai_api_key__", "OPENAI_API_KEY"),
+    ).toBe(true);
+    expect(
+      isPlaceholderForCredentialKey(
+        "__agent_vault_openai_api_key__",
+        "OPENAI_API_KEY",
+      ),
+    ).toBe(true);
+    expect(
+      isPlaceholderForCredentialKey("__av_openai_api_key__", "ANTHROPIC_API_KEY"),
+    ).toBe(false);
+  });
+
+  it("keeps model proposal copy to the key the owner pastes", () => {
+    const [request] = buildModelProviderAccessRequests("openai");
+    expect(request.credentials[0].description).toBe("OpenAI API key");
+    expect(request.userMessage).toBe("Paste your OpenAI API key.");
+    expect(request.reason).toBe("Connect OpenAI models.");
+  });
+
+  it("re-proposes an available service only when asked", () => {
+    const [request] = buildModelProviderAccessRequests("openai");
+    const discovered = {
+      available_credentials: ["OPENAI_API_KEY"],
+      services: [{ name: "model-openai", host: "api.openai.com" }],
+    };
+    const plan = (includeService) =>
+      planAgentVaultAccess(
+        normalizeAgentVaultAccessRequest({ ...request, includeService }),
+        discovered,
+      );
+    expect(plan(undefined)).toMatchObject({
+      status: "available",
+      proposal: { services: [] },
+    });
+    expect(plan("missing")).toMatchObject({
+      status: "available",
+      proposal: { services: [] },
+    });
+    expect(plan("always").status).toBe("proposal_required");
+    expect(plan("always").proposal.services).toHaveLength(1);
+    const missing = planAgentVaultAccess(
+      normalizeAgentVaultAccessRequest({ ...request, includeService: "missing" }),
+      { ...discovered, available_credentials: [] },
+    );
+    expect(missing.proposal.services).toHaveLength(1);
+    expect(missing.proposal.credentials).toHaveLength(1);
   });
 });

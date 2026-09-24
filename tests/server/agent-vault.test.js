@@ -550,7 +550,7 @@ describe("server/agent-vault", () => {
     expect(envVars).toEqual([
       {
         key: "ANTHROPIC_API_KEY",
-        value: "__agent_vault_anthropic_api_key__",
+        value: "__av_anthropic_api_key__",
       },
       { key: "OPENAI_API_KEY", value: "sk-raw" },
     ]);
@@ -559,7 +559,7 @@ describe("server/agent-vault", () => {
       {
         type: "api_key",
         provider: "anthropic",
-        key: "__agent_vault_anthropic_api_key__",
+        key: "__av_anthropic_api_key__",
       },
     );
     expect(authProfiles.removeApiKeyProfileForEnvVar).not.toHaveBeenCalled();
@@ -634,7 +634,7 @@ describe("server/agent-vault", () => {
       status: "proposal_created",
       provider: "minimax",
       credentialKey: "MINIMAX_API_KEY",
-      placeholder: "__agent_vault_minimax_api_key__",
+      placeholder: "__av_minimax_api_key__",
       proposal: {
         id: 11,
         approvalUrl:
@@ -657,7 +657,7 @@ describe("server/agent-vault", () => {
     expect(proposalBody.services[0].substitutions).toEqual([
       {
         key: "MINIMAX_API_KEY",
-        placeholder: "__agent_vault_minimax_api_key__",
+        placeholder: "__av_minimax_api_key__",
         in: ["header"],
       },
     ]);
@@ -683,7 +683,198 @@ describe("server/agent-vault", () => {
       status: "available",
       provider: "minimax",
       credentialKey: "MINIMAX_API_KEY",
-      placeholder: "__agent_vault_minimax_api_key__",
+      placeholder: "__av_minimax_api_key__",
+    });
+  });
+
+  it("keeps other accounts' substitutions when adding a channel account (#38)", async () => {
+    const {
+      writeAgentVaultRuntime,
+    } = require("../../lib/server/agent-vault/runtime-store");
+    writeAgentVaultRuntime({
+      token: "av_runtime_token_123456789",
+      vault: "default",
+      mode: "brokered",
+      operatorUrl: "https://agent-vault-test.tail123.ts.net",
+    });
+    const openclawDir = path.join(rootDir, ".openclaw");
+    fs.mkdirSync(openclawDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(openclawDir, "openclaw.json"),
+      JSON.stringify({
+        channels: {
+          slack: {
+            enabled: true,
+            accounts: {
+              default: {
+                botToken: "__agent_vault_slack_bot_token__",
+                appToken: "__agent_vault_slack_app_token__",
+              },
+              // Configured before the vault held its tokens: not retained.
+              legacy: { botToken: "${SLACK_BOT_TOKEN_LEGACY}" },
+            },
+          },
+        },
+      }),
+    );
+    let discoverPayload = {
+      vault: "default",
+      available_credentials: ["SLACK_BOT_TOKEN", "SLACK_APP_TOKEN"],
+      services: [{ name: "channel-slack", host: "slack.com" }],
+    };
+    let proposalStatus = "pending";
+    const requests = [];
+    const fetchImpl = vi.fn(async (url, options = {}) => {
+      requests.push({ url: String(url), options });
+      if (String(url).endsWith("/discover")) {
+        return Response.json(discoverPayload);
+      }
+      if (String(url).endsWith("/v1/proposals")) {
+        return Response.json({
+          id: 31,
+          status: "pending",
+          vault: "default",
+          approval_url:
+            "https://agent-vault-test.tail123.ts.net/approve/31?token=once",
+        });
+      }
+      if (String(url).endsWith("/v1/proposals/31")) {
+        return Response.json({ id: 31, status: proposalStatus });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    const envVars = [
+      {
+        key: "TEAMYOU_AGENT_VAULT_ENTRY_URL",
+        value: "https://www.teamyou.com/openclaw/agent-vault/inst_test123",
+      },
+    ];
+    const { createAgentVaultService } = require(
+      "../../lib/server/agent-vault/service"
+    );
+    const service = createAgentVaultService({
+      env: {},
+      readEnvFile: () => envVars,
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      openclawDir,
+      fetchImpl,
+    });
+
+    await expect(
+      service.ensureChannelProviderAccess("slack", "default", {
+        addAccount: true,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+
+    const created = await service.ensureChannelProviderAccess("slack", "work", {
+      addAccount: true,
+    });
+    expect(created.status).toBe("proposal_created");
+    const body = JSON.parse(
+      requests.find(({ url }) => url.endsWith("/v1/proposals")).options.body,
+    );
+    // The existing service is re-proposed with the union: the new account's
+    // short placeholders plus the default account's legacy ones, unchanged.
+    expect(body.services).toHaveLength(1);
+    expect(
+      body.services[0].substitutions.map(({ key, placeholder }) => [
+        key,
+        placeholder,
+      ]),
+    ).toEqual([
+      ["SLACK_APP_TOKEN_WORK", "__av_slack_app_token_work__"],
+      ["SLACK_BOT_TOKEN_WORK", "__av_slack_bot_token_work__"],
+      ["SLACK_APP_TOKEN", "__agent_vault_slack_app_token__"],
+      ["SLACK_BOT_TOKEN", "__agent_vault_slack_bot_token__"],
+    ]);
+    // Only the new account's tokens are requested, with short owner copy.
+    expect(body.credentials.map(({ key, description }) => [key, description])).toEqual([
+      ["SLACK_APP_TOKEN_WORK", "Slack app token for work (xapp-…)"],
+      ["SLACK_BOT_TOKEN_WORK", "Slack bot token for work (xoxb-…)"],
+    ]);
+    expect(body.user_message).toBe(
+      "Paste your Slack app token and bot token for “work”.",
+    );
+    expect(body.message).toBe("Connect the Slack “work” account.");
+
+    // Once approved, the confirming call names the applied proposal and
+    // resolves without filing another one.
+    discoverPayload = {
+      ...discoverPayload,
+      available_credentials: [
+        "SLACK_BOT_TOKEN",
+        "SLACK_APP_TOKEN",
+        "SLACK_BOT_TOKEN_WORK",
+        "SLACK_APP_TOKEN_WORK",
+      ],
+    };
+    proposalStatus = "applied";
+    requests.length = 0;
+    await expect(
+      service.ensureChannelProviderAccess("slack", "work", {
+        addAccount: true,
+        approvedProposalId: 31,
+      }),
+    ).resolves.toMatchObject({ status: "available" });
+    expect(requests.some(({ url }) => url.endsWith("/v1/proposals"))).toBe(false);
+
+    // A re-add whose credentials survived still re-proposes the service
+    // (service-only, so the short reason is the whole message).
+    requests.length = 0;
+    await service.ensureChannelProviderAccess("slack", "work", {
+      addAccount: true,
+    });
+    const serviceOnly = JSON.parse(
+      requests.find(({ url }) => url.endsWith("/v1/proposals")).options.body,
+    );
+    expect(serviceOnly.credentials).toEqual([]);
+    expect(serviceOnly.services[0].substitutions).toHaveLength(4);
+    expect(serviceOnly.user_message).toBe("Connect the Slack “work” account.");
+  });
+
+  it("reuses a model provider's legacy placeholder still referenced on the instance", async () => {
+    const {
+      writeAgentVaultRuntime,
+    } = require("../../lib/server/agent-vault/runtime-store");
+    writeAgentVaultRuntime({
+      token: "av_runtime_token_123456789",
+      vault: "default",
+      mode: "brokered",
+      operatorUrl: "https://agent-vault-test.tail123.ts.net",
+    });
+    const fetchImpl = vi.fn(async () =>
+      Response.json({
+        vault: "default",
+        available_credentials: ["OPENAI_API_KEY", "ANTHROPIC_API_KEY"],
+        services: [
+          { name: "model-openai", host: "api.openai.com" },
+          { name: "model-anthropic", host: "api.anthropic.com" },
+        ],
+      }),
+    );
+    const { createAgentVaultService } = require(
+      "../../lib/server/agent-vault/service"
+    );
+    const service = createAgentVaultService({
+      env: {},
+      readEnvFile: () => [
+        { key: "OPENAI_API_KEY", value: "__agent_vault_openai_api_key__" },
+      ],
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+    });
+
+    await expect(service.ensureModelProviderAccess("openai")).resolves.toMatchObject({
+      status: "available",
+      placeholder: "__agent_vault_openai_api_key__",
+    });
+    await expect(
+      service.ensureModelProviderAccess("anthropic"),
+    ).resolves.toMatchObject({
+      status: "available",
+      placeholder: "__av_anthropic_api_key__",
     });
   });
 
@@ -748,11 +939,11 @@ describe("server/agent-vault", () => {
       slots: [
         {
           envKey: "SLACK_APP_TOKEN_WORK",
-          placeholder: "__agent_vault_slack_app_token_work__",
+          placeholder: "__av_slack_app_token_work__",
         },
         {
           envKey: "SLACK_BOT_TOKEN_WORK",
-          placeholder: "__agent_vault_slack_bot_token_work__",
+          placeholder: "__av_slack_bot_token_work__",
         },
       ],
       proposal: {
@@ -914,7 +1105,7 @@ describe("server/agent-vault", () => {
     expect(envVars).toEqual([
       {
         key: "TELEGRAM_BOT_TOKEN",
-        value: "__agent_vault_telegram_bot_token__",
+        value: "__av_telegram_bot_token__",
       },
     ]);
     const config = JSON.parse(
