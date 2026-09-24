@@ -1307,3 +1307,34 @@ repaired it. Timeline (UTC):
 - A fresh provision on channel `beta` now gets beta.14 plus bundle
   `7d902eb0`.
 
+### Host 12 (`test-g3-oc95-12`, beta.14 + bundle `7d902eb0`, 2026-09-24)
+
+- Versions: alphaclaw `0.9.18-starfoundry.23-beta.14`, openclaw `2026.9.5`,
+  bundle provenance `9e3c6d9`. The bootstrap completed with no apt retries
+  needed. CPU steal was 0 (a healthy VM).
+- **Two Slack accounts added (Bill); #40 PASS:** no "already exists" flash
+  (Bill). Timings on a healthy host:
+  - First account: plugin install 65 s, then the hotfix restart, with the
+    Gateway ready in 43 s. Socket connected about 2 min after the tokens
+    were saved.
+  - Second account: hot reload in 4 s, no restart.
+- Config and `.env` hold only `__av_` placeholders for both accounts.
+- **#41 PASS:** both pairing approvals (22:03:17, 22:04:33) finished cleanly,
+  with no `Error:` or timeout lines; the first took about 6 s. Both entries
+  are in `channel_pairing_allow_entries`.
+- **Novita PASS:** 244 entries in the shipped bootstrap; Bill sees the full
+  list.
+- **FTS index:** `memory status` showed "0/3 files, FTS: unavailable" after
+  the ritual, as on host 03. A CLI `openclaw memory search` built the index
+  (3/3 files, 12 chunks, "FTS: ready") and returned the ritual notes, so
+  2026.9.5 builds the keyword index on first search. That was the CLI path;
+  whether the agent's `memory_search` tool does the same on an empty index is
+  unconfirmed, and host 12 can no longer show it because the index is now
+  built. Not a blocker.
+- Still to confirm on host 12 (Bill):
+  - A DM round trip on both Slack accounts after pairing.
+  - The short Agent Vault approval page.
+  - "Paired" status (#36).
+  - Check 7: Models page, Add Model dialog, no GPT-5.5, and the Advanced
+    controls gate.
+
