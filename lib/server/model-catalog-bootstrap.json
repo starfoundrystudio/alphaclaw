@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-23T21:03:28.216Z",
+  "generatedAt": "2026-09-24T16:28:18.003Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1111,18 +1111,18 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "novita/dev/glm46",
+              "key": "novita/deepseek/deepseek-v4.1-flash-p",
               "provider": "novita",
-              "label": "dev/glm46",
+              "label": "DeepSeek V4.1 Flash",
               "accessModes": [
                 "provider-api"
               ],
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "novita/deepseek/deepseek-v4.1-flash-z",
+              "key": "novita/dev/glm46",
               "provider": "novita",
-              "label": "DS F41 Flash",
+              "label": "dev/glm46",
               "accessModes": [
                 "provider-api"
               ],
@@ -1537,6 +1537,24 @@
               "key": "novita/mindai/macaron-v1-venti",
               "provider": "novita",
               "label": "Macaron V1 Venti",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/xiaomimimo/mimo-v2.6-flash",
+              "provider": "novita",
+              "label": "MiMo V2.6 Flash",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/xiaomimimo/mimo-v2.6-pro",
+              "provider": "novita",
+              "label": "MiMo V2.6 Pro",
               "accessModes": [
                 "provider-api"
               ],
@@ -4653,6 +4671,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/fireworks/ember-1",
+              "provider": "kilocode",
+              "label": "Fireworks: Ember-1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/google/gemini-2.5-flash",
               "provider": "kilocode",
               "label": "Google: Gemini 2.5 Flash (retires Oct 20)",
@@ -5463,27 +5490,9 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/nex-agi/nex-n2.5-mini",
-              "provider": "kilocode",
-              "label": "Nex AGI: Nex-N2.5-Mini",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/nex-agi/nex-n2.5-mini:free",
               "provider": "kilocode",
               "label": "Nex AGI: Nex-N2.5-Mini (free)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/nex-agi/nex-n2.5-pro",
-              "provider": "kilocode",
-              "label": "Nex AGI: Nex-N2.5-Pro",
               "accessModes": [
                 "gateway"
               ],
@@ -7425,6 +7434,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/z-ai/glm-5.3-prime",
+              "provider": "kilocode",
+              "label": "Z.ai: GLM 5.3 Prime",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/z-ai/glm-5v-turbo",
               "provider": "kilocode",
               "label": "Z.ai: GLM 5V Turbo",
@@ -8252,6 +8270,15 @@
               "key": "openrouter/dots-studio/dots-3-note-preview:free",
               "provider": "openrouter",
               "label": "Dots Studio: Dots3-Note Preview (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/fireworks/ember-1",
+              "provider": "openrouter",
+              "label": "Fireworks: Ember-1",
               "accessModes": [
                 "gateway"
               ],
@@ -9329,27 +9356,9 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/nex-agi/nex-n2.5-mini",
-              "provider": "openrouter",
-              "label": "Nex AGI: Nex-N2.5-Mini",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/nex-agi/nex-n2.5-mini:free",
               "provider": "openrouter",
               "label": "Nex AGI: Nex-N2.5-Mini (free)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/nex-agi/nex-n2.5-pro",
-              "provider": "openrouter",
-              "label": "Nex AGI: Nex-N2.5-Pro",
               "accessModes": [
                 "gateway"
               ],
@@ -10241,6 +10250,15 @@
               "key": "openrouter/openai/gpt-oss-120b",
               "provider": "openrouter",
               "label": "OpenAI: gpt-oss-120b",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-oss-120b:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: gpt-oss-120b (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11597,6 +11615,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/z-ai/glm-5.3-prime",
+              "provider": "openrouter",
+              "label": "Z.ai: GLM 5.3 Prime",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/z-ai/glm-5v-turbo",
               "provider": "openrouter",
               "label": "Z.ai: GLM 5V Turbo",
@@ -11967,6 +11994,15 @@
               "key": "vercel-ai-gateway/deepseek/deepseek-r1",
               "provider": "vercel-ai-gateway",
               "label": "DeepSeek-R1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/fireworks/ember-1",
+              "provider": "vercel-ai-gateway",
+              "label": "Ember-1",
               "accessModes": [
                 "gateway"
               ],
@@ -13692,6 +13728,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/alibaba/qwen3.8-max-prime",
+              "provider": "vercel-ai-gateway",
+              "label": "Qwen 3.8 Max Prime",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/alibaba/qwen3.8-omni-flash",
               "provider": "vercel-ai-gateway",
               "label": "Qwen 3.8 Omni Flash",
@@ -15186,6 +15231,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/fireworks/ember-1",
+      "provider": "kilocode",
+      "label": "Fireworks: Ember-1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/google/gemini-2.5-flash",
       "provider": "kilocode",
       "label": "Google: Gemini 2.5 Flash (retires Oct 20)",
@@ -15996,27 +16050,9 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/nex-agi/nex-n2.5-mini",
-      "provider": "kilocode",
-      "label": "Nex AGI: Nex-N2.5-Mini",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/nex-agi/nex-n2.5-mini:free",
       "provider": "kilocode",
       "label": "Nex AGI: Nex-N2.5-Mini (free)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/nex-agi/nex-n2.5-pro",
-      "provider": "kilocode",
-      "label": "Nex AGI: Nex-N2.5-Pro",
       "accessModes": [
         "gateway"
       ],
@@ -17958,6 +17994,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/z-ai/glm-5.3-prime",
+      "provider": "kilocode",
+      "label": "Z.ai: GLM 5.3 Prime",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/z-ai/glm-5v-turbo",
       "provider": "kilocode",
       "label": "Z.ai: GLM 5V Turbo",
@@ -18314,18 +18359,18 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "novita/dev/glm46",
+      "key": "novita/deepseek/deepseek-v4.1-flash-p",
       "provider": "novita",
-      "label": "dev/glm46",
+      "label": "DeepSeek V4.1 Flash",
       "accessModes": [
         "provider-api"
       ],
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "novita/deepseek/deepseek-v4.1-flash-z",
+      "key": "novita/dev/glm46",
       "provider": "novita",
-      "label": "DS F41 Flash",
+      "label": "dev/glm46",
       "accessModes": [
         "provider-api"
       ],
@@ -18740,6 +18785,24 @@
       "key": "novita/mindai/macaron-v1-venti",
       "provider": "novita",
       "label": "Macaron V1 Venti",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "novita/xiaomimimo/mimo-v2.6-flash",
+      "provider": "novita",
+      "label": "MiMo V2.6 Flash",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "novita/xiaomimimo/mimo-v2.6-pro",
+      "provider": "novita",
+      "label": "MiMo V2.6 Pro",
       "accessModes": [
         "provider-api"
       ],
@@ -20361,6 +20424,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/fireworks/ember-1",
+      "provider": "openrouter",
+      "label": "Fireworks: Ember-1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/free",
       "provider": "openrouter",
       "label": "Free Models Router",
@@ -21432,27 +21504,9 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/nex-agi/nex-n2.5-mini",
-      "provider": "openrouter",
-      "label": "Nex AGI: Nex-N2.5-Mini",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/nex-agi/nex-n2.5-mini:free",
       "provider": "openrouter",
       "label": "Nex AGI: Nex-N2.5-Mini (free)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/nex-agi/nex-n2.5-pro",
-      "provider": "openrouter",
-      "label": "Nex AGI: Nex-N2.5-Pro",
       "accessModes": [
         "gateway"
       ],
@@ -22358,6 +22412,15 @@
       "key": "openrouter/openai/gpt-oss-120b",
       "provider": "openrouter",
       "label": "OpenAI: gpt-oss-120b",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-oss-120b:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: gpt-oss-120b (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -23708,6 +23771,15 @@
       "key": "openrouter/z-ai/glm-5.3-flashx",
       "provider": "openrouter",
       "label": "Z.ai: GLM 5.3 FlashX",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/z-ai/glm-5.3-prime",
+      "provider": "openrouter",
+      "label": "Z.ai: GLM 5.3 Prime",
       "accessModes": [
         "gateway"
       ],
@@ -25202,6 +25274,15 @@
       "key": "vercel-ai-gateway/deepseek/deepseek-r1",
       "provider": "vercel-ai-gateway",
       "label": "DeepSeek-R1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/fireworks/ember-1",
+      "provider": "vercel-ai-gateway",
+      "label": "Ember-1",
       "accessModes": [
         "gateway"
       ],
@@ -26935,6 +27016,15 @@
       "key": "vercel-ai-gateway/alibaba/qwen3.8-max",
       "provider": "vercel-ai-gateway",
       "label": "Qwen 3.8 Max",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/alibaba/qwen3.8-max-prime",
+      "provider": "vercel-ai-gateway",
+      "label": "Qwen 3.8 Max Prime",
       "accessModes": [
         "gateway"
       ],
