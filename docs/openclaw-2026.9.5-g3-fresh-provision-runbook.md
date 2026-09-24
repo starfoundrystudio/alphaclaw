@@ -1224,3 +1224,47 @@ repaired it. Timeline (UTC):
   service lists all four substitutions); the approval page shows the
   one-line message and the short labels; the channel shows "paired" once
   the pairing is approved (#36).
+
+### Host 10 (`test-g3-oc95-10`, 2026-09-24): failed provision, not ours
+
+- The workload bootstrap's `apt-get update` hit Ubuntu's security mirror
+  mid-sync ("File has unexpected size … Mirror sync in progress?"), exited
+  100 and failed "Installing base system packages"; automatic cleanup
+  destroyed the instance. `Acquire::Retries=5` cannot help because the
+  mismatched file comes back on every attempt. A retry loop around
+  `apt-get update` in clawctl was proposed (not made; the edit was declined).
+
+### Host 11 (`test-g3-oc95-11`, beta.12 + bundle `42536ffa`, 2026-09-24)
+
+- **#38 verified live.** Two Slack apps (`default`, `slack-2`) were added
+  through the vault flow, both paired, and both delivered replies
+  (19:31:11 and 19:31:17). Config and `.env` hold only `__av_` placeholders
+  for both accounts, so the union service substitution works end to end.
+- **#39 (infrastructure, not ours): degraded workload VM.** From about 19:21
+  every connection through the Agent Vault proxy failed
+  (`ProxyConnectionError`, Slack `fetch failed`, model calls failing, active
+  memory timing out at 45 s). Clawbridge's own vault API calls timed out
+  too, which gave the "Security gateway: unreachable" and "Agent Vault:
+  unavailable" status. Measured at about 19:40:
+  - Workload CPU steal was 20–31%.
+  - Workload to gateway: 41% loss and 1.4 s average round trip over the
+    private network. Workload to DigitalOcean's VPC router: 0.66 s average.
+  - Gateway to workload: 42% loss and 4.3–6.9 s round trips. Gateway to the
+    VPC router: 0.66 ms, with zero steal on the gateway.
+  - The tunnel's TCP connection showed an 889 ms round trip, a 4.5 s
+    retransmit timeout, a congestion window of 2–5 and 100 SYN retransmits.
+    There were no drops on the gateway (queues, conntrack at 62/65536,
+    firewall accepts only), no Agent Vault restarts, and the tunnel process
+    stayed up. Agent Vault only logged client-side TLS handshake timeouts.
+  - The droplet sits on an oversubscribed hypervisor. The slow first Slack
+    add (a 186 s reconcile attempt, then an 88 s Gateway boot after the
+    hotfix restart) is the same cause.
+- **#40 (ours, fixed `35bd667`):** "A Slack account with this id already
+  exists." flashed after a successful add, because the channel list
+  reloads before the modal moves on. The modal now ignores the account it
+  is creating.
+- **#41 (ours, fixed `35bd667`):** pairing approve ran under a 15 s CLI
+  timeout. On the starved VM both approvals were killed after landing,
+  logging a bare `[alphaclaw] Error:`. Approve now gets 60 s, and timeouts
+  log as such.
+
