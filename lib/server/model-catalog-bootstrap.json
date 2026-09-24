@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-24T20:26:36.931Z",
+  "generatedAt": "2026-09-24T23:00:01.606Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -5265,6 +5265,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/mistralai/devstral-2512",
+              "provider": "kilocode",
+              "label": "Mistral: Devstral 2 2512",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/mistralai/ministral-14b-2512",
               "provider": "kilocode",
               "label": "Mistral: Ministral 3 14B 2512",
@@ -5286,6 +5295,15 @@
               "key": "kilocode/mistralai/ministral-8b-2512",
               "provider": "kilocode",
               "label": "Mistral: Ministral 3 8B 2512",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/mistralai/mistral-large-2512",
+              "provider": "kilocode",
+              "label": "Mistral: Mistral Large 3 2512",
               "accessModes": [
                 "gateway"
               ],
@@ -9077,6 +9095,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/mistralai/devstral-2512",
+              "provider": "openrouter",
+              "label": "Mistral: Devstral 2 2512",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/mistralai/ministral-14b-2512",
               "provider": "openrouter",
               "label": "Mistral: Ministral 3 14B 2512",
@@ -9107,6 +9134,15 @@
               "key": "openrouter/mistralai/ministral-8b-2512:batch",
               "provider": "openrouter",
               "label": "Mistral: Ministral 3 8B 2512 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/mistralai/mistral-large-2512",
+              "provider": "openrouter",
+              "label": "Mistral: Mistral Large 3 2512",
               "accessModes": [
                 "gateway"
               ],
@@ -15825,6 +15861,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/mistralai/devstral-2512",
+      "provider": "kilocode",
+      "label": "Mistral: Devstral 2 2512",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/mistralai/ministral-14b-2512",
       "provider": "kilocode",
       "label": "Mistral: Ministral 3 14B 2512",
@@ -15846,6 +15891,15 @@
       "key": "kilocode/mistralai/ministral-8b-2512",
       "provider": "kilocode",
       "label": "Mistral: Ministral 3 8B 2512",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/mistralai/mistral-large-2512",
+      "provider": "kilocode",
+      "label": "Mistral: Mistral Large 3 2512",
       "accessModes": [
         "gateway"
       ],
@@ -21225,6 +21279,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/mistralai/devstral-2512",
+      "provider": "openrouter",
+      "label": "Mistral: Devstral 2 2512",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/mistralai/ministral-14b-2512",
       "provider": "openrouter",
       "label": "Mistral: Ministral 3 14B 2512",
@@ -21255,6 +21318,15 @@
       "key": "openrouter/mistralai/ministral-8b-2512:batch",
       "provider": "openrouter",
       "label": "Mistral: Ministral 3 8B 2512 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/mistralai/mistral-large-2512",
+      "provider": "openrouter",
+      "label": "Mistral: Mistral Large 3 2512",
       "accessModes": [
         "gateway"
       ],
