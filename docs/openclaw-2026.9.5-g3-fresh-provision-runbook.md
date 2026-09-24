@@ -1161,3 +1161,46 @@ repaired it. Timeline (UTC):
      substitutions.
   - Scope note: several Slack conversations in one workspace use one bot
     and need none of this; only several Slack apps/workspaces do.
+- **#38 implemented (fcbd698, unreleased), with two additions Bill asked for
+  on 2026-09-24:**
+  - Items 1–3 as planned. Item 1 is enforced as "the id must not already be
+    configured" (re-adding a removed account is allowed). The wizard shows
+    Name before the vault step, disables "Store token in Agent Vault" until
+    the name is unique, and locks the name once the request is filed. In
+    vault mode the Telegram account id comes from the name only, so the bot
+    identity arriving after approval no longer re-derives and resets it.
+  - Every add re-proposes the service (`includeService: "always"`), because
+    `/discover` hides substitutions. A re-add whose credentials survived
+    therefore gets a one-click, service-only proposal. After approval the
+    wizard confirms with `approvedProposalId`, and the server skips the
+    re-proposal once that proposal is `applied`, so there is no loop.
+  - The migration path now also re-proposes the service with the union
+    whenever an account's credentials are missing
+    (`includeService: "missing"`). That fixes the per-account planning gap
+    in item 4 for Clawbridge's own code; fleet validation stays with
+    `rs8GE45wtye2`.
+  - Limit: Clawbridge caps substitutions at 10 per service, which is five
+    Slack accounts or ten Telegram/Discord accounts per provider.
+  - **Shorter placeholders.** New credentials use `__av_<key>__`.
+    `__agent_vault_<key>__` is still recognized everywhere: the server, the
+    UI, the core prompt and the channel placeholder check. Any key whose
+    legacy placeholder is still referenced keeps it, whether in `.env`,
+    `openclaw.json` or model auth profiles, because the vault substitutes
+    the exact string. The TeamYou runtime placeholder is unchanged.
+    - Known gaps, for the fleet project:
+      - A legacy migration proposal filed before the upgrade and approved
+        after it flips the raw value to `__av_`, which will not match the
+        vault's legacy substitution.
+      - clawctl `alphaclaw-backup-import.sh` synthesizes missing channel
+        env vars as `__agent_vault_<var>__`.
+  - **Shorter proposals.**
+    - The approval page's message is now one line naming what to paste
+      ("Paste your Slack app token and bot token for “work”.").
+    - Field labels are short ("Slack app token for work (xapp-…)",
+      "OpenAI API key").
+    - `message` is now "Connect the Slack “work” account." or "Connect
+      OpenAI models."; a service-only proposal shows only that line.
+  - Tests: full suite 174 files / 1563 tests pass. Sandbox UI checked:
+    name-first order, disabled until named, name locked while pending.
+  - Still to do: release with #36 (beta, after Bill approves), then a live
+    test with a second Slack app on a fresh provision.
