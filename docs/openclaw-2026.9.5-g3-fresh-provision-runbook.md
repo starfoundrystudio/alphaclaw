@@ -1204,3 +1204,23 @@ repaired it. Timeline (UTC):
     name-first order, disabled until named, name locked while pending.
   - Still to do: release with #36 (beta, after Bill approves), then a live
     test with a second Slack app on a fresh provision.
+
+#### beta.12 batch (released 2026-09-24)
+
+- `0.9.18-starfoundry.23-beta.12` published to the `beta` tag (release commit
+  `61a3257`; `latest` stays `…22`) after one `prepack` and full vitest
+  174 files / 1,563 tests (exit code 0); published with `--ignore-scripts`,
+  UI bundle present and watcher absent in the pack listing. No `v*` tag.
+  Not installed on any host.
+- Contents: #36 (channel shows paired once its pairing is approved, from
+  the pairing store) and #38 with the short `__av_` placeholders and the
+  one-line proposal copy.
+- Host bundle: not rebuilt. clawctl has no asset changes since `af4b8c2`
+  (only the `9e356eb` record commit), so a new build would match
+  `42536ffa`, which stays pinned on Preview beta. A fresh provision on
+  channel `beta` gets beta.12 plus `42536ffa`.
+- Live checks for the next fresh provision: add a first Slack app, then a
+  second one (name first; both keep working; the vault's `channel-slack`
+  service lists all four substitutions); the approval page shows the
+  one-line message and the short labels; the channel shows "paired" once
+  the pairing is approved (#36).
