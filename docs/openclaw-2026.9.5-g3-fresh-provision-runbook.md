@@ -1268,3 +1268,24 @@ repaired it. Timeline (UTC):
   logging a bare `[alphaclaw] Error:`. Approve now gets 60 s, and timeouts
   log as such.
 
+#### beta.13 batch (released 2026-09-24)
+
+- `0.9.18-starfoundry.23-beta.13` published to the `beta` tag (release
+  commit `736121f`; `latest` stays `…22`) after one `prepack` and full
+  vitest 174 files / 1,563 tests (exit code 0); `--ignore-scripts`, UI
+  bundle present in the pack listing. No `v*` tag. Not installed on any
+  host. Contents: #40 and #41 (`35bd667`).
+- **Known gap in beta.13:** the prepack's Novita probe came back thin, so
+  the model catalog bootstrap carries only OpenClaw's 8 bundled Novita
+  models instead of the 122 live ones (other providers unchanged). A re-run
+  restored them (`886e216`, not yet released). Novita has a
+  bundled catalog and no `minimumProbeModelCount`, so the generator accepts
+  a thin probe silently; a guard for that is a follow-up.
+- **clawctl apt retry (`9e3c6d9`, not yet in a bundle):** `apt_get_update`
+  retries `apt-get update` up to 6 times, 30 s apart, clearing partial lists
+  between attempts. Used by the host bootstrap and bake, and by the SearXNG
+  and TeamYou installers when sourced by them. clawctl `src` tests 45 files
+  / 287 pass; the behavioural check with a stub `apt-get` was blocked by
+  the sandbox and not run. Needs a new host bundle pinned on Preview beta
+  to take effect.
+
