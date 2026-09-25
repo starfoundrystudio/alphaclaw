@@ -1426,4 +1426,11 @@ The restore-version policy is tracked separately in TeamYou project
     race-dependent (1 of 7 observed).
 - Exposure: every new production instance goes through this activation hot
   reload right after its ritual.
+- **Host 13 recovered (2026-09-25 19:52, Bill's go):** `systemctl restart
+  alphaclaw`; the Gateway was ready in 69 s. `chat.history` and
+  `sessions.list` return normally from a fresh client and the error stopped.
+- Bill's decisions: fix forward (no production rollback), and document the
+  rollback process (`docs/production-release-rollback.md`). No upstream
+  issue for now: without a reproduction outside our setup (1 in 7 hosts)
+  it would be weak, and our fix does not depend on it.
 
