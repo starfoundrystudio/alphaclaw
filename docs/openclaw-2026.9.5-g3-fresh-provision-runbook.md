@@ -1397,3 +1397,33 @@ The restore-version policy is tracked separately in TeamYou project
 `noKAlXtKZtJ4`. Until it is decided, restores provision on `latest`
 (2026.9.5).
 
+### Host 13 (`test-g3-oc95-13`, production channel: alphaclaw `…23` + bundle `7d902eb0`, 2026-09-25)
+
+- The production promotion deployed correctly: alphaclaw
+  `0.9.18-starfoundry.23`, openclaw `2026.9.5`, bundle provenance
+  `9e3c6d9`. The birth ritual completed.
+- **#42 (S1, OpenClaw race, exposed by our hot reload): chat broken after
+  TeamYou activation.** Timeline (UTC):
+  - 04:20:05: Clawbridge activates TeamYou memory; the agent's final ritual
+    turn is still streaming.
+  - 04:20:29: OpenClaw applies the plugin change by hot reload.
+  - 04:20:30: `[agents/prepared-model-runtime] provider catalog refresh
+    failed: AbortError`.
+  - 04:46:49 onward: every `chat.history` fails with
+    `PluginInstanceUnavailableError: Plugin vercel-ai-gateway was reloaded
+    or disabled`. Clawbridge's chat polls every 5 s and shows each failure
+    as "Something went wrong. Please try again".
+  - It was still failing 12 h later. A fresh CLI client gets the same error
+    from `chat.history` and `sessions.list`, so it is Gateway-wide.
+- Mechanism (2026.9.5 dist):
+  - `session-catalog` `runSessionCatalogListSteps` throws when the
+    catalog's `vercel-ai-gateway` instance is revoked (`acceptingCalls`
+    false or `owner.revoked`).
+  - The refresh that should replace that instance
+    (`prepared-model-runtime`) was the one the reload aborted, and nothing
+    retries it.
+  - Hosts 07–12 took the same activation hot reload without this, so it is
+    race-dependent (1 of 7 observed).
+- Exposure: every new production instance goes through this activation hot
+  reload right after its ritual.
+
