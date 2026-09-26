@@ -1471,3 +1471,19 @@ The restore-version policy is tracked separately in TeamYou project
 - Not observable: the 20 s post-reload check itself. A healthy check logged
   nothing, and OpenClaw does not log `sessions.list` in the journal or its
   own log file. Fixed in `c84cba3`: each post-reload check now logs its result ("Gateway check after plugin reload: healthy").
+
+#### Stable `0.9.18-starfoundry.24` (released 2026-09-26, Bill: option 2)
+
+- Published to `latest` (release commit `738a3d0`,
+  `dependencies.openclaw = 2026.9.5`) after one `prepack` and full vitest
+  175 files / 1,570 tests (exit code 0). The pack includes the updated
+  `gateway-stale-plugin-guard.js`. CI on `main` passes on Node 24 and 26.
+  The host bundle is unchanged (`7d902eb0`).
+- Contents: the #42 recovery (`c4cab9d`) and post-reload check logging
+  (`c84cba3`).
+- Bill chose to skip a second beta provision (option 2). The first
+  production provision confirms the check: look for "Gateway check after
+  plugin reload: healthy" about 20 s after "Activated TeamYou-backed
+  memory".
+- `beta` stays on `…24-beta.1`, which is the same code without the log line.
+

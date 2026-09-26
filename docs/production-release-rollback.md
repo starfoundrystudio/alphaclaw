@@ -63,11 +63,11 @@ back first and the bundle second.
 - Restores follow `latest` until the restore policy (TeamYou project
   `noKAlXtKZtJ4`) says otherwise.
 
-## Current and previous values (2026-09-25)
+## Current and previous values (2026-09-26)
 
 | Pin | Current | Previous (rollback target) |
 | --- | --- | --- |
-| alphaclaw `latest` | `0.9.18-starfoundry.23` (OpenClaw 2026.9.5) | `0.9.18-starfoundry.22` (OpenClaw 2026.7.1) |
+| alphaclaw `latest` | `0.9.18-starfoundry.24` (OpenClaw 2026.9.5) | `0.9.18-starfoundry.23` (same OpenClaw; lacks the #42 recovery). Before 2026.9: `0.9.18-starfoundry.22` (OpenClaw 2026.7.1) |
 | Stable bundle | `7d902eb0…0c34` (clawctl `9e3c6d9`) | `4c6e717d…b8e0` (clawctl `942969f` record) |
 | Beta bundle | `7d902eb0…0c34` | `42536ffa…797b` |
 
