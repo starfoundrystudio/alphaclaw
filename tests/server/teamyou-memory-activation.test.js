@@ -376,12 +376,14 @@ describe("server/teamyou-memory-activation", () => {
     installTeamyouMemoryPlugin({ openclawDir });
     const restartGateway = vi.fn(async () => {});
 
+    const onHotReloadApplied = vi.fn();
     const result = await activateTeamyouMemoryIfBootstrapComplete({
       fsModule: fs,
       openclawDir,
       workspaceDir,
       restartGateway,
       gatewayHotReloadsConfig: () => true,
+      onHotReloadApplied,
       logger: { log: vi.fn(), warn: vi.fn() },
     });
 
@@ -391,6 +393,8 @@ describe("server/teamyou-memory-activation", () => {
     expect(cfg.plugins.entries["active-memory"].config.enabled).toBe(true);
     expect(cfg.skills.entries.teamyou.enabled).toBe(true);
     expect(restartGateway).not.toHaveBeenCalled();
+    // The caller checks the reloaded Gateway for a revoked plugin (#42).
+    expect(onHotReloadApplied).toHaveBeenCalledTimes(1);
   });
 
   it("still restarts the Gateway when it does not hot-reload the config", async () => {

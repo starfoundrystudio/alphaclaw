@@ -160,7 +160,12 @@ describe("server/chat-ws", () => {
      * connected through handleUpgrade. `onChatSend(socket, frame)` decides
      * how the gateway answers chat.send (and may emit events first).
      */
-    const startBridge = async ({ onChatSend, onConnect, onChatHistory }) => {
+    const startBridge = async ({
+      onChatSend,
+      onConnect,
+      onChatHistory,
+      onGatewayRequestError,
+    }) => {
       gatewayServer = new WebSocketServer({ host: "127.0.0.1", port: 0 });
       await waitForListening(gatewayServer);
       gatewayServer.on("connection", (socket) => {
@@ -199,6 +204,7 @@ describe("server/chat-ws", () => {
         fs,
         openclawDir: tempDir,
         getGatewayPort: () => gatewayServer.address().port,
+        onGatewayRequestError,
       });
 
       httpServer = http.createServer();
@@ -304,6 +310,43 @@ describe("server/chat-ws", () => {
         await waitForMessage((message) => message.type === "history"),
       ).toMatchObject({ messages: [], sessionKey: kSessionKey, historyRequestId: 9 });
       expect(attempts).toBe(2);
+    });
+
+    it("shows a revoked-plugin history failure in the connection banner and reports it (#42)", async () => {
+      const reported = [];
+      const { waitForMessage } = await startBridge({
+        onGatewayRequestError: (error, method) =>
+          reported.push({ message: error.message, method }),
+        onChatHistory: (socket, frame) =>
+          socket.send(
+            JSON.stringify({
+              type: "res",
+              id: frame.id,
+              ok: false,
+              error: {
+                code: "UNAVAILABLE",
+                message:
+                  "PluginInstanceUnavailableError: Plugin vercel-ai-gateway was reloaded or disabled; use its current tools.",
+              },
+            }),
+          ),
+      });
+      browserSocket.send(
+        JSON.stringify({ type: "history", sessionKey: kSessionKey }),
+      );
+      const error = await waitForMessage((message) => message.type === "error");
+      // Connection scope: the UI shows one banner and retries instead of
+      // appending "Something went wrong" to the thread on every poll.
+      expect(error).toMatchObject({
+        scope: "connection",
+        requestType: "history",
+        message:
+          "Your agent is recovering from a plugin reload. Chat will reconnect automatically.",
+      });
+      expect(reported).toEqual([
+        expect.objectContaining({ method: "chat.history" }),
+      ]);
+      expect(reported[0].message).toMatch(/PluginInstanceUnavailableError/);
     });
 
     it("forwards an OpenClaw replace event as a replace chunk instead of an append", async () => {
