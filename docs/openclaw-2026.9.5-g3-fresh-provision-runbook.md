@@ -1485,5 +1485,6 @@ The restore-version policy is tracked separately in TeamYou project
   production provision confirms the check: look for "Gateway check after
   plugin reload: healthy" about 20 s after "Activated TeamYou-backed
   memory".
-- `beta` stays on `…24-beta.1`, which is the same code without the log line.
+- `beta` repointed to `0.9.18-starfoundry.24` (Bill, 2026-09-26), so both
+  channels install the same build.
 
