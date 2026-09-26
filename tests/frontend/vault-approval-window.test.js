@@ -75,4 +75,67 @@ describe("frontend/vault-approval-window", () => {
     );
     expect(closed.location.replace).not.toHaveBeenCalled();
   });
+
+  describe("warmVaultOperator", () => {
+    beforeEach(() => {
+      global.fetch = vi.fn(() => Promise.resolve({}));
+    });
+
+    afterEach(() => {
+      delete global.fetch;
+    });
+
+    it("touches the operator origin once without credentials", async () => {
+      const mod = await loadVaultApprovalWindow();
+
+      expect(
+        mod.warmVaultOperator("https://agent-vault-x.tail123.ts.net/", {
+          now: 1000,
+        }),
+      ).toBe(true);
+      expect(
+        mod.warmVaultOperator("https://agent-vault-x.tail123.ts.net", {
+          now: 2000,
+        }),
+      ).toBe(false);
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://agent-vault-x.tail123.ts.net/health",
+        { mode: "no-cors", credentials: "omit", cache: "no-store" },
+      );
+    });
+
+    it("warms again after the interval has passed", async () => {
+      const mod = await loadVaultApprovalWindow();
+
+      mod.warmVaultOperator("https://agent-vault-x.tail123.ts.net", { now: 0 });
+      mod.warmVaultOperator("https://agent-vault-x.tail123.ts.net", {
+        now: 6 * 60 * 1000,
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("ignores missing or non-tailnet origins", async () => {
+      const mod = await loadVaultApprovalWindow();
+
+      expect(mod.warmVaultOperator("")).toBe(false);
+      expect(mod.warmVaultOperator("http://agent-vault-x.tail123.ts.net")).toBe(
+        false,
+      );
+      expect(mod.warmVaultOperator("https://evil.example.com")).toBe(false);
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it("swallows network failures", async () => {
+      global.fetch = vi.fn(() => Promise.reject(new Error("offline")));
+      const mod = await loadVaultApprovalWindow();
+
+      expect(
+        mod.warmVaultOperator("https://agent-vault-x.tail123.ts.net"),
+      ).toBe(true);
+      await Promise.resolve();
+    });
+  });
 });

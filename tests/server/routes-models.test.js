@@ -848,6 +848,22 @@ describe("server/routes/models vault-brokered keys", () => {
     expect(res.body.vaultBrokering.enforced).toBe(true);
     expect(res.body.vaultBrokering.providers).toContain("anthropic");
     expect(res.body.vaultBrokering.providers).not.toContain("vllm");
+    expect(res.body.vaultBrokering.operatorUrl).toBe("");
+  });
+
+  it("exposes the vault operator origin so the UI can pre-warm it", async () => {
+    const deps = createVaultDeps();
+    deps.agentVaultService = {
+      getVaultOperatorUrl: vi.fn(() => "https://agent-vault-test.tail123.ts.net"),
+    };
+    const app = createApp(deps);
+
+    const res = await request(app).get("/api/models/config");
+
+    expect(res.status).toBe(200);
+    expect(res.body.vaultBrokering.operatorUrl).toBe(
+      "https://agent-vault-test.tail123.ts.net",
+    );
   });
 
   it("rejects raw api keys for brokered providers once the runtime is claimed", async () => {
