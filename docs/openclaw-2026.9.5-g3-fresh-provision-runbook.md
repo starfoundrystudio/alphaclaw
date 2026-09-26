@@ -1433,4 +1433,17 @@ The restore-version policy is tracked separately in TeamYou project
   rollback process (`docs/production-release-rollback.md`). No upstream
   issue for now: without a reproduction outside our setup (1 in 7 hosts)
   it would be weak, and our fix does not depend on it.
+- **#42 fix (`c4cab9d`, implemented, not yet released):**
+  - `lib/server/gateway-stale-plugin-guard.js` checks `sessions.list` in two
+    cases: 20 s after the TeamYou activation hot reload, and whenever a
+    Gateway request from the chat bridge hits
+    `PluginInstanceUnavailableError`. On that error it restarts the Gateway
+    once, waiting for browser chat runs to finish (up to 2 min), at most
+    once per 10 min, and ignoring its own probe failures.
+  - A failed history read is now connection-scoped, so the chat shows one
+    retrying banner instead of a new "Something went wrong" per poll.
+  - Full vitest: 175 files / 1,570 tests.
+  - Not covered: a channel-add hot reload (#34/#35) is only caught when a
+    chat or other bridge request hits the error; it is not probed
+    proactively.
 
