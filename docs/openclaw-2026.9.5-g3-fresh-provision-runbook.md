@@ -1461,3 +1461,13 @@ The restore-version policy is tracked separately in TeamYou project
   running and staying quiet on a healthy host (the race cannot be forced),
   then stable `…24` on Bill's approval.
 
+### Host 14 (`test-g3-oc95-14`, `0.9.18-starfoundry.24-beta.1` + bundle `7d902eb0`, 2026-09-26)
+
+- Versions confirmed, including the recovery module
+  (`gateway-stale-plugin-guard.js`) wired into activation.
+- The ritual finished and TeamYou activation hot-reloaded cleanly (21:18:22
+  → 21:18:33). No `PluginInstanceUnavailableError`; `chat.history` works
+  from a fresh client.
+- Not observable: the 20 s post-reload check itself. A healthy check logged
+  nothing, and OpenClaw does not log `sessions.list` in the journal or its
+  own log file. Fixed in `c84cba3`: each post-reload check now logs its result ("Gateway check after plugin reload: healthy").
