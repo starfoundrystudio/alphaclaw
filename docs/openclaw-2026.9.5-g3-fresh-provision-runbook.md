@@ -1447,3 +1447,17 @@ The restore-version policy is tracked separately in TeamYou project
     chat or other bridge request hits the error; it is not probed
     proactively.
 
+#### `0.9.18-starfoundry.24-beta.1` ("beta.15", released 2026-09-26)
+
+- Published to the `beta` tag (release commit `25571e7`; `latest` stays
+  `…23`) after one `prepack` and full vitest 175 files / 1,570 tests (exit
+  code 0); `--ignore-scripts`. The pack listing includes the UI bundle and
+  `gateway-stale-plugin-guard.js`. The catalog has 2,989 models with
+  Novita complete. CI on `main` passes on Node 24 and 26.
+- Versioned as a pre-release of the next stable (`…24`) because `…23` is
+  released. Contents: the #42 fix (`c4cab9d`). The host bundle is unchanged
+  (`7d902eb0` on both production channels and Preview beta).
+- Next: one beta provision, which should show the post-activation check
+  running and staying quiet on a healthy host (the race cannot be forced),
+  then stable `…24` on Bill's approval.
+
