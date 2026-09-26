@@ -65,6 +65,9 @@ describe("server/gateway-stale-plugin-guard", () => {
     await h.runNextTimer();
     expect(h.probe).toHaveBeenCalledTimes(1);
     expect(h.restartGateway).not.toHaveBeenCalled();
+    expect(h.logger.log).toHaveBeenCalledWith(
+      "[alphaclaw] Gateway check after plugin reload: healthy",
+    );
   });
 
   it("restarts once when the reloaded Gateway serves a revoked plugin", async () => {
