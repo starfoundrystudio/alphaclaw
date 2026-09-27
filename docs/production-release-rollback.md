@@ -63,14 +63,28 @@ back first and the bundle second.
 - Restores follow `latest` until the restore policy (TeamYou project
   `noKAlXtKZtJ4`) says otherwise.
 
-## Current and previous values (2026-09-26)
+## Passwordless provisioning (TeamYou sign-in)
+
+`OPENCLAW_CLAWBRIDGE_SSO_CHANNELS` in TeamYou's Vercel Production env lists
+the AlphaClaw channels whose gateway provisions skip the setup password and
+sign the owner in through TeamYou. To give stable (or beta) provisions a
+setup password again, remove the channel from the list (for example set it
+to `beta`), then redeploy the live production deployment as in step 2. Keep
+a channel in the list only while its `latest`/`beta` Clawbridge release and
+its host bundle support passwordless start (Clawbridge
+`0.9.18-starfoundry.25-beta.2`+, host bundle `ae03f5f9`+); on a Clawbridge
+or bundle rollback below those, remove the channel first.
+
+## Current and previous values (2026-09-27)
 
 | Pin | Current | Previous (rollback target) |
 | --- | --- | --- |
-| alphaclaw `latest` | `0.9.18-starfoundry.24` (OpenClaw 2026.9.5) | `0.9.18-starfoundry.23` (same OpenClaw; lacks the #42 recovery). Before 2026.9: `0.9.18-starfoundry.22` (OpenClaw 2026.7.1) |
-| Stable bundle | `7d902eb0…0c34` (clawctl `9e3c6d9`) | `4c6e717d…b8e0` (clawctl `942969f` record) |
-| Beta bundle | `7d902eb0…0c34` | `42536ffa…797b` |
+| alphaclaw `latest` | `0.9.18-starfoundry.25` (OpenClaw 2026.9.5; TeamYou sign-in) | `0.9.18-starfoundry.24` (same OpenClaw; setup password only) |
+| alphaclaw `beta` | `0.9.18-starfoundry.25` | `0.9.18-starfoundry.25-beta.4` |
+| Stable bundle | `ae03f5f9…8708` (clawctl `dafa4d0`) | `7d902eb0…0c34` (clawctl `9e3c6d9`) |
+| Beta bundle | `ae03f5f9…8708` | `f63eb612…b7a6` |
+| `OPENCLAW_CLAWBRIDGE_SSO_CHANNELS` | `beta,latest` | `beta` (then unset) |
 
 Full previous stable bundle:
-`https://k9uoabobegtoma9k.public.blob.vercel-storage.com/clawctl/host-assets/sha256/4c6e717dc41b14bdcf9a7a5f4f43c81f01510e4c9eae897366149d6e4e1db8e0.tar.gz`
-(sha256 `4c6e717dc41b14bdcf9a7a5f4f43c81f01510e4c9eae897366149d6e4e1db8e0`).
+`https://k9uoabobegtoma9k.public.blob.vercel-storage.com/clawctl/host-assets/sha256/7d902eb00827288da1f0e906ea2974e9109b49f1a5d0fc05e7a6764dde270c34.tar.gz`
+(sha256 `7d902eb00827288da1f0e906ea2974e9109b49f1a5d0fc05e7a6764dde270c34`).
