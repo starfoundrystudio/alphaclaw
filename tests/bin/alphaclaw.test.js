@@ -183,6 +183,31 @@ Module._load = function patchedLoad(request, parent, isMain) {
     expect(output).toContain("SETUP_PASSWORD is missing or empty");
   });
 
+  it("starts without SETUP_PASSWORD when TeamYou sign-in is configured", () => {
+    const preloadPath = path.join(tmpDir, "capture-sso-env.js");
+    const capturePath = path.join(tmpDir, "captured-sso-env.json");
+    writeStartupPreload({ targetPath: preloadPath, capturePath });
+    const { publicKey } = require("crypto").generateKeyPairSync("ed25519");
+
+    execSync(`node "${binPath}" start`, {
+      stdio: "pipe",
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        SETUP_PASSWORD: "",
+        OPENCLAW_INSTANCE_ID: "inst_test123",
+        TEAMYOU_CLAWBRIDGE_SSO_PUBLIC_KEYS: `teamyou-clawbridge-v1:${publicKey.export({ format: "jwk" }).x}`,
+        TEAMYOU_CLAWBRIDGE_ENTRY_URL:
+          "https://www.teamyou.com/openclaw/clawbridge/inst_test123",
+        ALPHACLAW_ROOT_DIR: tmpDir,
+        ALPHACLAW_TEST_HOME: tmpHome,
+        NODE_OPTIONS: `--require=${preloadPath}`,
+      },
+    });
+
+    expect(fs.existsSync(capturePath)).toBe(true);
+  });
+
   it("exports OPENCLAW_STATE_DIR during managed startup", () => {
     const preloadPath = path.join(tmpDir, "capture-openclaw-env.js");
     const capturePath = path.join(tmpDir, "captured-openclaw-env.json");

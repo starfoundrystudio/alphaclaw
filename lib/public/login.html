@@ -37,10 +37,31 @@
           OpenClaw made easy
         </p>
       </div>
+      <div
+        id="teamyou-panel"
+        class="bg-surface border border-border rounded-xl p-4 space-y-3 hidden"
+      >
+        <p id="teamyou-message" class="text-sm text-center" style="color: var(--text)"></p>
+        <a
+          id="teamyou-open"
+          href="#"
+          class="block w-full text-center text-sm font-medium px-4 py-2 rounded-lg ac-btn-primary"
+        >
+          Open from TeamYou
+        </a>
+        <button
+          id="use-password"
+          type="button"
+          class="w-full text-xs hidden"
+          style="color: var(--text-muted)"
+        >
+          Use setup password instead
+        </button>
+      </div>
       <form
         id="login-form"
         autocomplete="on"
-        class="bg-surface border border-border rounded-xl p-4 space-y-3"
+        class="bg-surface border border-border rounded-xl p-4 space-y-3 hidden"
       >
         <input
           type="text"
@@ -73,6 +94,79 @@
       </form>
     </div>
     <script>
+      // Managed instances sign in through TeamYou; the password form is only
+      // for self-hosted installs (and the transition while both exist).
+      const kSsoMessages = {
+        invalid:
+          "That sign-in link isn't valid. Open Clawbridge from TeamYou to try again.",
+        expired:
+          "That sign-in link expired. Open Clawbridge from TeamYou to get a new one.",
+        used: "That sign-in link was already used. Open Clawbridge from TeamYou to get a new one.",
+        wrong_instance: "That sign-in link is for a different instance.",
+        wrong_address:
+          "That sign-in link is for a different address. Open Clawbridge from TeamYou again.",
+        throttled:
+          "Too many sign-in attempts. Wait a minute, then open Clawbridge from TeamYou again.",
+        unavailable: "Sign-in is temporarily unavailable. Try again in a moment.",
+      };
+      const kSignedOutMessage = "You're signed out.";
+
+      const panelEl = document.getElementById("teamyou-panel");
+      const panelMessageEl = document.getElementById("teamyou-message");
+      const openLinkEl = document.getElementById("teamyou-open");
+      const usePasswordEl = document.getElementById("use-password");
+      const loginFormEl = document.getElementById("login-form");
+
+      const showPasswordForm = () => {
+        loginFormEl.classList.remove("hidden");
+        document.getElementById("password").focus();
+      };
+
+      const buildEntryUrl = (entryUrl) => {
+        const url = new URL(entryUrl);
+        const tabMatch = /^#\/([a-z]+)/.exec(window.location.hash || "");
+        if (tabMatch) url.searchParams.set("return_to", `/#/${tabMatch[1]}`);
+        return url.toString();
+      };
+
+      const initSignIn = async () => {
+        const params = new URLSearchParams(window.location.search);
+        const ssoError = params.get("sso_error") || "";
+        const signedOut = params.get("signed_out") === "1";
+        let status = null;
+        try {
+          const res = await fetch("/api/auth/status", { cache: "no-store" });
+          status = await res.json();
+        } catch {}
+        if (status?.identity) {
+          window.location.replace("/");
+          return;
+        }
+        const entryUrl = status?.methods?.teamyou?.entryUrl || "";
+        if (!entryUrl) {
+          showPasswordForm();
+          return;
+        }
+        const target = buildEntryUrl(entryUrl);
+        if (!ssoError && !signedOut) {
+          window.location.replace(target);
+          return;
+        }
+        panelMessageEl.textContent = signedOut
+          ? kSignedOutMessage
+          : kSsoMessages[ssoError] || kSsoMessages.invalid;
+        openLinkEl.href = target;
+        panelEl.classList.remove("hidden");
+        if (status?.methods?.password) {
+          usePasswordEl.classList.remove("hidden");
+          usePasswordEl.addEventListener("click", () => {
+            usePasswordEl.classList.add("hidden");
+            showPasswordForm();
+          });
+        }
+      };
+      initSignIn();
+
       const formEl = document.getElementById("login-form");
       const passwordEl = document.getElementById("password");
       const submitButtonEl = document.getElementById("submit-btn");

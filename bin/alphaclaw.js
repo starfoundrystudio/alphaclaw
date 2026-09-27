@@ -28,6 +28,7 @@ const {
   isConfigMutatingOpenclawCommand,
   runOpenclawRuntimeCommand,
 } = require("../lib/cli/openclaw-runtime-command");
+const { readTeamYouSsoConfig } = require("../lib/server/auth/teamyou-sso");
 const {
   inspectOpenclawStartupState,
 } = require("../lib/cli/openclaw-startup-state-repair");
@@ -589,7 +590,9 @@ if (kPort === "18789") {
 }
 
 const kSetupPassword = String(process.env.SETUP_PASSWORD || "").trim();
-if (!kSetupPassword) {
+// Managed instances signed in through TeamYou may have no setup password.
+const kTeamYouSignInEnabled = readTeamYouSsoConfig(process.env).enabled;
+if (!kSetupPassword && !kTeamYouSignInEnabled) {
   console.error(
     [
       "[alphaclaw] Fatal config error: SETUP_PASSWORD is missing or empty.",
