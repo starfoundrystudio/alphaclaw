@@ -122,6 +122,35 @@ describe("server/auth/teamyou-sso", () => {
     });
   });
 
+  // Produced by TeamYou's signClawbridgeOwnerClaim with a test-only key
+  // (teamyou lib/services/clawbridge-sso-service.test.ts asserts the same
+  // token), pinning both sides to one wire format.
+  it("verifies the cross-repo TeamYou test vector", () => {
+    const vectorEnv = {
+      OPENCLAW_INSTANCE_ID: "inst_vector01",
+      TEAMYOU_CLAWBRIDGE_SSO_PUBLIC_KEYS:
+        "teamyou-clawbridge-v1:WeeArEHcknCuO8eKv7LNQQRXS7KcIyPidbJgGzSlK94",
+      TEAMYOU_CLAWBRIDGE_ENTRY_URL:
+        "https://www.teamyou.com/openclaw/clawbridge/inst_vector01",
+      ALPHACLAW_SETUP_URL: "https://gw-vector.tail000.ts.net",
+    };
+    const token =
+      "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsImtpZCI6InRlYW15b3UtY2xhd2JyaWRnZS12MSJ9.eyJ2IjoxLCJwdXJwb3NlIjoiY2xhd2JyaWRnZV9vd25lcl9zZXNzaW9uIiwiaW5zdGFuY2VfaWQiOiJpbnN0X3ZlY3RvcjAxIiwib3duZXJfY2xlcmtfdXNlcl9pZCI6InVzZXJfdmVjdG9yMDEiLCJlbWFpbCI6Im93bmVyQGV4YW1wbGUuY29tIiwiYXVkIjoiaHR0cHM6Ly9ndy12ZWN0b3IudGFpbDAwMC50cy5uZXQiLCJyZXR1cm5fdG8iOiIvIy9tb2RlbHMiLCJqdGkiOiI2ZjFjMmIzYS00ZDVlLTRmNjAtOGE3Yi05YzBkMWUyZjNhNGIiLCJpYXQiOjE3OTAwMDAwMDAsImV4cCI6MTc5MDAwMDMwMH0.XBctczUj9-jZd6OznxLuwqnaTrEmDqaDmSr3s-Ul5CDOX0HqIpTpIggdzn17L3umXBL-9Ci6pcPIdGpuvBh8Ag";
+    expect(
+      verifyClawbridgeClaim({
+        claim: token,
+        config: readTeamYouSsoConfig(vectorEnv),
+        requestOrigin: "https://gw-vector.tail000.ts.net",
+        env: vectorEnv,
+        nowMs: 1790000000 * 1000,
+      }),
+    ).toMatchObject({
+      ok: true,
+      returnTo: "/#/models",
+      identity: { sub: "user_vector01", email: "owner@example.com" },
+    });
+  });
+
   describe("return_to allowlist", () => {
     it.each([
       ["/", "/"],

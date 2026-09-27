@@ -1209,3 +1209,54 @@ describe("server/onboarding/tailscale-finalizer", () => {
     expect(gatewayTailscaleClient.status).not.toHaveBeenCalled();
   });
 });
+
+describe("TeamYou writeback: Clawbridge sign-in flag", () => {
+  const {
+    callTeamYouWriteback,
+    getTeamYouWritebackConfig,
+  } = require("../../lib/server/onboarding/tailscale-finalizer");
+  const baseEnv = {
+    OPENCLAW_WEBHOOK_URL: "https://teamyou.example/api/openclaw/webhook",
+    OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
+    OPENCLAW_INSTANCE_ID: "inst_abc123",
+  };
+  const ssoEnvVars = [
+    {
+      key: "TEAMYOU_CLAWBRIDGE_SSO_PUBLIC_KEYS",
+      value: `teamyou-clawbridge-v1:${require("crypto")
+        .generateKeyPairSync("ed25519")
+        .publicKey.export({ format: "jwk" }).x}`,
+    },
+    {
+      key: "TEAMYOU_CLAWBRIDGE_ENTRY_URL",
+      value: "https://www.teamyou.com/openclaw/clawbridge/inst_abc123",
+    },
+  ];
+
+  const sendWriteback = async (writebackConfig) => {
+    const fetchImpl = vi.fn(async () => ({ ok: true }));
+    await callTeamYouWriteback({
+      fetchImpl,
+      setupUrl: "https://gw.tail123.ts.net",
+      publicBaseUrl: "https://gw.tail123.ts.net:8443",
+      dnsName: "gw.tail123.ts.net",
+      writebackConfig,
+    });
+    return JSON.parse(fetchImpl.mock.calls[0][1].body);
+  };
+
+  it("reports TeamYou sign-in when the instance has it configured", async () => {
+    const config = getTeamYouWritebackConfig({
+      env: baseEnv,
+      envVars: ssoEnvVars,
+    });
+    expect(config.clawbridgeSso).toBe(true);
+    expect((await sendWriteback(config)).clawbridge_sso).toBe(true);
+  });
+
+  it("omits the field entirely otherwise, for TeamYou's strict schema", async () => {
+    const config = getTeamYouWritebackConfig({ env: baseEnv, envVars: [] });
+    expect(config.clawbridgeSso).toBe(false);
+    expect(await sendWriteback(config)).not.toHaveProperty("clawbridge_sso");
+  });
+});
