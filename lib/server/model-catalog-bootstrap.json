@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-26T23:46:03.577Z",
+  "generatedAt": "2026-09-27T00:41:53.587Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -6419,7 +6419,7 @@
             {
               "key": "kilocode/qwen/qwen3-30b-a3b",
               "provider": "kilocode",
-              "label": "Qwen: Qwen3 30B A3B",
+              "label": "Qwen: Qwen3 30B A3B (retires Oct 9)",
               "accessModes": [
                 "gateway"
               ],
@@ -16988,7 +16988,7 @@
     {
       "key": "kilocode/qwen/qwen3-30b-a3b",
       "provider": "kilocode",
-      "label": "Qwen: Qwen3 30B A3B",
+      "label": "Qwen: Qwen3 30B A3B (retires Oct 9)",
       "accessModes": [
         "gateway"
       ],
