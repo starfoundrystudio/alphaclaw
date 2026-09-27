@@ -22,7 +22,7 @@ describe("frontend/welcome handoff", () => {
     const { buildSetupRedirectUrl } = await loadWelcomeHook();
 
     expect(buildSetupRedirectUrl("https://alphaclaw.tail123.ts.net")).toBe(
-      "https://alphaclaw.tail123.ts.net/#/general",
+      "https://alphaclaw.tail123.ts.net/",
     );
     expect(buildSetupRedirectUrl("not a url")).toBe("");
   });
@@ -52,7 +52,7 @@ describe("frontend/welcome handoff", () => {
         { setupUrl: "https://alphaclaw.tail123.ts.net" },
         "https://bootstrap.openclaw.teamyou.ai",
       ),
-    ).toBe("https://alphaclaw.tail123.ts.net/#/general");
+    ).toBe("https://alphaclaw.tail123.ts.net/");
     expect(
       getSetupRedirectUrlForOnboardResult(
         { setupUrl: "https://alphaclaw.tail123.ts.net" },
