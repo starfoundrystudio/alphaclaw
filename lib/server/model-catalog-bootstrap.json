@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-27T00:41:53.587Z",
+  "generatedAt": "2026-09-27T01:52:42.747Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1123,6 +1123,24 @@
               "key": "novita/deepseek/deepseek-v4.1-flash-dst",
               "provider": "novita",
               "label": "DeepSeek V4.1 Flash DST",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/deepseek/deepseek-v4-flash-0731-p",
+              "provider": "novita",
+              "label": "deepseek/deepseek-v4-flash-0731-p",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/deepseek/deepseek-v4-pro-0813-p",
+              "provider": "novita",
+              "label": "deepseek/deepseek-v4-pro-0813-p",
               "accessModes": [
                 "provider-api"
               ],
@@ -18389,6 +18407,24 @@
       "key": "novita/deepseek/deepseek-v4.1-flash-dst",
       "provider": "novita",
       "label": "DeepSeek V4.1 Flash DST",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "novita/deepseek/deepseek-v4-flash-0731-p",
+      "provider": "novita",
+      "label": "deepseek/deepseek-v4-flash-0731-p",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "novita/deepseek/deepseek-v4-pro-0813-p",
+      "provider": "novita",
+      "label": "deepseek/deepseek-v4-pro-0813-p",
       "accessModes": [
         "provider-api"
       ],
