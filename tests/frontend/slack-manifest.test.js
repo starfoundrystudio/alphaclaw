@@ -6,7 +6,7 @@ describe("frontend/slack-manifest", () => {
     vi.resetModules();
   });
 
-  it("builds the default Slack manifest for OpenClaw's assistant messaging experience", async () => {
+  it("builds the default Slack manifest for Slack's Agent View experience", async () => {
     const { buildSlackManifest } = await loadCreateChannelModalModule();
 
     const manifest = JSON.parse(buildSlackManifest("Ops Agent"));
@@ -15,9 +15,10 @@ describe("frontend/slack-manifest", () => {
       name: "Ops Agent",
       description: "Slack connector for Clawbridge",
     });
-    expect(manifest.features.agent_view).toBeUndefined();
-    expect(manifest.features.assistant_view).toMatchObject({
-      assistant_description: "Clawbridge connects Slack assistant threads to OpenClaw agents.",
+    expect(manifest.features.assistant_view).toBeUndefined();
+    expect(manifest.features.agent_view).toMatchObject({
+      agent_description:
+        "Clawbridge connects Slack Agent View conversations to OpenClaw agents.",
       suggested_prompts: [
         {
           title: "What can you do?",
@@ -75,8 +76,9 @@ describe("frontend/slack-manifest", () => {
     expect(manifest.settings.event_subscriptions.bot_events).toEqual([
       "app_home_opened",
       "app_mention",
-      "assistant_thread_context_changed",
-      "assistant_thread_started",
+      "app_context_changed",
+      "agent_session_stopped",
+      "agent_session_title_changed",
       "channel_rename",
       "member_joined_channel",
       "member_left_channel",
@@ -101,6 +103,7 @@ describe("frontend/slack-manifest", () => {
     expect(url.pathname).toBe("/apps");
     expect(url.searchParams.get("new_app")).toBe("1");
     expect(manifest.display_information.name).toBe("Ops Agent");
-    expect(manifest.features.assistant_view).toBeDefined();
+    expect(manifest.features.agent_view).toBeDefined();
+    expect(manifest.features.assistant_view).toBeUndefined();
   });
 });
