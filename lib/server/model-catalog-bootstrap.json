@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-27T06:49:03.913Z",
+  "generatedAt": "2026-09-28T21:01:46.697Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -949,15 +949,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "novita/deepseek/deepseek-r1",
-              "provider": "novita",
-              "label": "DeepSeek R1",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "novita/deepseek/deepseek-r1/community",
               "provider": "novita",
               "label": "DeepSeek R1",
@@ -970,15 +961,6 @@
               "key": "novita/deepseek/deepseek-r1-0528",
               "provider": "novita",
               "label": "DeepSeek R1 0528",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/deepseek/deepseek-r1-distill-llama-70b",
-              "provider": "novita",
-              "label": "DeepSeek R1 Distill Llama 70B",
               "accessModes": [
                 "provider-api"
               ],
@@ -1006,51 +988,6 @@
               "key": "novita/deepseek/deepseek_v3",
               "provider": "novita",
               "label": "DeepSeek V3",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/deepseek/deepseek-v3/community",
-              "provider": "novita",
-              "label": "DeepSeek V3",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/deepseek/deepseek-v3.1",
-              "provider": "novita",
-              "label": "DeepSeek V3.1",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/deepseek/deepseek-v3.1-terminus",
-              "provider": "novita",
-              "label": "DeepSeek V3.1 Terminus",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/deepseek/deepseek-v3.2",
-              "provider": "novita",
-              "label": "DeepSeek V3.2",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/deepseek/deepseek-v3.2-exp",
-              "provider": "novita",
-              "label": "DeepSeek V3.2 Exp",
               "accessModes": [
                 "provider-api"
               ],
@@ -2702,6 +2639,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "venice/claude-opus-5-5-fast",
+              "provider": "venice",
+              "label": "Claude Opus 5.5 Fast",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "venice/claude-sonnet-4-5",
               "provider": "venice",
               "label": "Claude Sonnet 4.5",
@@ -2723,6 +2669,15 @@
               "key": "venice/claude-sonnet-5",
               "provider": "venice",
               "label": "Claude Sonnet 5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "venice/claude-sonnet-5-5",
+              "provider": "venice",
+              "label": "Claude Sonnet 5.5",
               "accessModes": [
                 "provider-api"
               ],
@@ -3380,6 +3335,15 @@
               "key": "venice/xiaomi-mimo-v2-5",
               "provider": "venice",
               "label": "MiMo-V2.5",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "venice/xiaomi-mimo-v2-6-flash",
+              "provider": "venice",
+              "label": "MiMo-V2.6-Flash",
               "accessModes": [
                 "provider-api"
               ],
@@ -4329,6 +4293,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/anthropic/claude-sonnet-5.5",
+              "provider": "kilocode",
+              "label": "Anthropic: Claude Sonnet 5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/~anthropic/claude-sonnet-latest",
               "provider": "kilocode",
               "label": "Anthropic: Claude Sonnet Latest",
@@ -4565,7 +4538,7 @@
             {
               "key": "kilocode/deepseek/deepseek-v3.1-terminus",
               "provider": "kilocode",
-              "label": "DeepSeek: DeepSeek V3.1 Terminus (retires Sep 28)",
+              "label": "DeepSeek: DeepSeek V3.1 Terminus",
               "accessModes": [
                 "gateway"
               ],
@@ -4574,7 +4547,7 @@
             {
               "key": "kilocode/deepseek/deepseek-v3.2",
               "provider": "kilocode",
-              "label": "DeepSeek: DeepSeek V3.2 (retires Sep 28)",
+              "label": "DeepSeek: DeepSeek V3.2",
               "accessModes": [
                 "gateway"
               ],
@@ -4583,7 +4556,7 @@
             {
               "key": "kilocode/deepseek/deepseek-v3.2-exp",
               "provider": "kilocode",
-              "label": "DeepSeek: DeepSeek V3.2 Exp (retires Sep 28)",
+              "label": "DeepSeek: DeepSeek V3.2 Exp",
               "accessModes": [
                 "gateway"
               ],
@@ -4665,15 +4638,6 @@
               "key": "kilocode/deepseek/deepseek-r1-0528",
               "provider": "kilocode",
               "label": "DeepSeek: R1 0528",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/deepseek/deepseek-r1-distill-llama-70b",
-              "provider": "kilocode",
-              "label": "DeepSeek: R1 Distill Llama 70B (retires Sep 28)",
               "accessModes": [
                 "gateway"
               ],
@@ -4953,15 +4917,6 @@
               "key": "kilocode/inclusionai/ling-3.0-flash-fin",
               "provider": "kilocode",
               "label": "inclusionAI: Ling 3.0 Flash Fin",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/inclusionai/ling-3.0-flash-fin:free",
-              "provider": "kilocode",
-              "label": "inclusionAI: Ling 3.0 Flash Fin (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -5520,6 +5475,24 @@
               "key": "kilocode/gryphe/mythomax-l2-13b",
               "provider": "kilocode",
               "label": "MythoMax 13B",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/nex-agi/nex-n2.5-mini",
+              "provider": "kilocode",
+              "label": "Nex AGI: Nex-N2.5-Mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/nex-agi/nex-n2.5-pro",
+              "provider": "kilocode",
+              "label": "Nex AGI: Nex-N2.5-Pro",
               "accessModes": [
                 "gateway"
               ],
@@ -7916,6 +7889,24 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/anthropic/claude-sonnet-5.5",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Sonnet 5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-sonnet-5.5:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Sonnet 5.5 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/~anthropic/claude-sonnet-latest",
               "provider": "openrouter",
               "label": "Anthropic: Claude Sonnet Latest",
@@ -8270,15 +8261,6 @@
               "key": "openrouter/deepseek/deepseek-r1-0528",
               "provider": "openrouter",
               "label": "DeepSeek: R1 0528",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/deepseek/deepseek-r1-distill-llama-70b",
-              "provider": "openrouter",
-              "label": "DeepSeek: R1 Distill Llama 70B",
               "accessModes": [
                 "gateway"
               ],
@@ -8756,15 +8738,6 @@
               "key": "openrouter/inclusionai/ling-3.0-flash-fin",
               "provider": "openrouter",
               "label": "inclusionAI: Ling 3.0 Flash Fin",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/inclusionai/ling-3.0-flash-fin:free",
-              "provider": "openrouter",
-              "label": "inclusionAI: Ling 3.0 Flash Fin (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -9386,6 +9359,24 @@
               "key": "openrouter/gryphe/mythomax-l2-13b",
               "provider": "openrouter",
               "label": "MythoMax 13B",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/nex-agi/nex-n2.5-mini",
+              "provider": "openrouter",
+              "label": "Nex AGI: Nex-N2.5-Mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/nex-agi/nex-n2.5-pro",
+              "provider": "openrouter",
+              "label": "Nex AGI: Nex-N2.5-Pro",
               "accessModes": [
                 "gateway"
               ],
@@ -11919,6 +11910,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/anthropic/claude-sonnet-5.5",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Sonnet 5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/cohere/command-a",
               "provider": "vercel-ai-gateway",
               "label": "Command A",
@@ -13989,24 +13989,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/perplexity/sonar-pro",
-              "provider": "vercel-ai-gateway",
-              "label": "Sonar Pro",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/perplexity/sonar-reasoning-pro",
-              "provider": "vercel-ai-gateway",
-              "label": "Sonar Reasoning Pro",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/stepfun/step-3.7-flash",
               "provider": "vercel-ai-gateway",
               "label": "Step 3.7 Flash",
@@ -14898,6 +14880,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/anthropic/claude-sonnet-5.5",
+      "provider": "kilocode",
+      "label": "Anthropic: Claude Sonnet 5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/~anthropic/claude-sonnet-latest",
       "provider": "kilocode",
       "label": "Anthropic: Claude Sonnet Latest",
@@ -15134,7 +15125,7 @@
     {
       "key": "kilocode/deepseek/deepseek-v3.1-terminus",
       "provider": "kilocode",
-      "label": "DeepSeek: DeepSeek V3.1 Terminus (retires Sep 28)",
+      "label": "DeepSeek: DeepSeek V3.1 Terminus",
       "accessModes": [
         "gateway"
       ],
@@ -15143,7 +15134,7 @@
     {
       "key": "kilocode/deepseek/deepseek-v3.2",
       "provider": "kilocode",
-      "label": "DeepSeek: DeepSeek V3.2 (retires Sep 28)",
+      "label": "DeepSeek: DeepSeek V3.2",
       "accessModes": [
         "gateway"
       ],
@@ -15152,7 +15143,7 @@
     {
       "key": "kilocode/deepseek/deepseek-v3.2-exp",
       "provider": "kilocode",
-      "label": "DeepSeek: DeepSeek V3.2 Exp (retires Sep 28)",
+      "label": "DeepSeek: DeepSeek V3.2 Exp",
       "accessModes": [
         "gateway"
       ],
@@ -15234,15 +15225,6 @@
       "key": "kilocode/deepseek/deepseek-r1-0528",
       "provider": "kilocode",
       "label": "DeepSeek: R1 0528",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/deepseek/deepseek-r1-distill-llama-70b",
-      "provider": "kilocode",
-      "label": "DeepSeek: R1 Distill Llama 70B (retires Sep 28)",
       "accessModes": [
         "gateway"
       ],
@@ -15522,15 +15504,6 @@
       "key": "kilocode/inclusionai/ling-3.0-flash-fin",
       "provider": "kilocode",
       "label": "inclusionAI: Ling 3.0 Flash Fin",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/inclusionai/ling-3.0-flash-fin:free",
-      "provider": "kilocode",
-      "label": "inclusionAI: Ling 3.0 Flash Fin (free)",
       "accessModes": [
         "gateway"
       ],
@@ -16089,6 +16062,24 @@
       "key": "kilocode/gryphe/mythomax-l2-13b",
       "provider": "kilocode",
       "label": "MythoMax 13B",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/nex-agi/nex-n2.5-mini",
+      "provider": "kilocode",
+      "label": "Nex AGI: Nex-N2.5-Mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/nex-agi/nex-n2.5-pro",
+      "provider": "kilocode",
+      "label": "Nex AGI: Nex-N2.5-Pro",
       "accessModes": [
         "gateway"
       ],
@@ -18233,15 +18224,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "novita/deepseek/deepseek-r1",
-      "provider": "novita",
-      "label": "DeepSeek R1",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "novita/deepseek/deepseek-r1/community",
       "provider": "novita",
       "label": "DeepSeek R1",
@@ -18254,15 +18236,6 @@
       "key": "novita/deepseek/deepseek-r1-0528",
       "provider": "novita",
       "label": "DeepSeek R1 0528",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/deepseek/deepseek-r1-distill-llama-70b",
-      "provider": "novita",
-      "label": "DeepSeek R1 Distill Llama 70B",
       "accessModes": [
         "provider-api"
       ],
@@ -18290,51 +18263,6 @@
       "key": "novita/deepseek/deepseek_v3",
       "provider": "novita",
       "label": "DeepSeek V3",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/deepseek/deepseek-v3/community",
-      "provider": "novita",
-      "label": "DeepSeek V3",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/deepseek/deepseek-v3.1",
-      "provider": "novita",
-      "label": "DeepSeek V3.1",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/deepseek/deepseek-v3.1-terminus",
-      "provider": "novita",
-      "label": "DeepSeek V3.1 Terminus",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/deepseek/deepseek-v3.2",
-      "provider": "novita",
-      "label": "DeepSeek V3.2",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/deepseek/deepseek-v3.2-exp",
-      "provider": "novita",
-      "label": "DeepSeek V3.2 Exp",
       "accessModes": [
         "provider-api"
       ],
@@ -20055,6 +19983,24 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/anthropic/claude-sonnet-5.5",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Sonnet 5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-sonnet-5.5:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Sonnet 5.5 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/~anthropic/claude-sonnet-latest",
       "provider": "openrouter",
       "label": "Anthropic: Claude Sonnet Latest",
@@ -20454,15 +20400,6 @@
       "key": "openrouter/deepseek/deepseek-r1-0528",
       "provider": "openrouter",
       "label": "DeepSeek: R1 0528",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/deepseek/deepseek-r1-distill-llama-70b",
-      "provider": "openrouter",
-      "label": "DeepSeek: R1 Distill Llama 70B",
       "accessModes": [
         "gateway"
       ],
@@ -20940,15 +20877,6 @@
       "key": "openrouter/inclusionai/ling-3.0-flash-fin",
       "provider": "openrouter",
       "label": "inclusionAI: Ling 3.0 Flash Fin",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/inclusionai/ling-3.0-flash-fin:free",
-      "provider": "openrouter",
-      "label": "inclusionAI: Ling 3.0 Flash Fin (free)",
       "accessModes": [
         "gateway"
       ],
@@ -21570,6 +21498,24 @@
       "key": "openrouter/gryphe/mythomax-l2-13b",
       "provider": "openrouter",
       "label": "MythoMax 13B",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/nex-agi/nex-n2.5-mini",
+      "provider": "openrouter",
+      "label": "Nex AGI: Nex-N2.5-Mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/nex-agi/nex-n2.5-pro",
+      "provider": "openrouter",
+      "label": "Nex AGI: Nex-N2.5-Pro",
       "accessModes": [
         "gateway"
       ],
@@ -24065,6 +24011,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "venice/claude-opus-5-5-fast",
+      "provider": "venice",
+      "label": "Claude Opus 5.5 Fast",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "venice/claude-sonnet-4-5",
       "provider": "venice",
       "label": "Claude Sonnet 4.5",
@@ -24086,6 +24041,15 @@
       "key": "venice/claude-sonnet-5",
       "provider": "venice",
       "label": "Claude Sonnet 5",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "venice/claude-sonnet-5-5",
+      "provider": "venice",
+      "label": "Claude Sonnet 5.5",
       "accessModes": [
         "provider-api"
       ],
@@ -24749,6 +24713,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "venice/xiaomi-mimo-v2-6-flash",
+      "provider": "venice",
+      "label": "MiMo-V2.6-Flash",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "venice/minimax-m25",
       "provider": "venice",
       "label": "MiniMax M2.5",
@@ -25229,6 +25202,15 @@
       "key": "vercel-ai-gateway/anthropic/claude-sonnet-5",
       "provider": "vercel-ai-gateway",
       "label": "Claude Sonnet 5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-sonnet-5.5",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Sonnet 5.5",
       "accessModes": [
         "gateway"
       ],
@@ -27313,24 +27295,6 @@
       "key": "vercel-ai-gateway/perplexity/sonar",
       "provider": "vercel-ai-gateway",
       "label": "Sonar",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/perplexity/sonar-pro",
-      "provider": "vercel-ai-gateway",
-      "label": "Sonar Pro",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/perplexity/sonar-reasoning-pro",
-      "provider": "vercel-ai-gateway",
-      "label": "Sonar Reasoning Pro",
       "accessModes": [
         "gateway"
       ],
