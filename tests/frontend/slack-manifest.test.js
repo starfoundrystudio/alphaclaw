@@ -16,23 +16,9 @@ describe("frontend/slack-manifest", () => {
       description: "Slack connector for Clawbridge",
     });
     expect(manifest.features.assistant_view).toBeUndefined();
-    expect(manifest.features.agent_view).toMatchObject({
+    expect(manifest.features.agent_view).toEqual({
       agent_description:
         "Clawbridge connects Slack Agent View conversations to OpenClaw agents.",
-      suggested_prompts: [
-        {
-          title: "What can you do?",
-          message: "What can you help me with?",
-        },
-        {
-          title: "Summarize this channel",
-          message: "Summarize the recent activity in this channel.",
-        },
-        {
-          title: "Draft a reply",
-          message: "Help me draft a reply.",
-        },
-      ],
     });
     expect(manifest.features.app_home).toMatchObject({
       home_tab_enabled: true,
