@@ -794,6 +794,7 @@ describe("AlphaClaw migrations", () => {
       maxConcurrent: 3,
       model: { primary: "openai/gpt-5.6-sol" },
       subagents: { maxConcurrent: 7 },
+      heartbeat: { target: "none" },
     });
     expect(config.plugins.entries["memory-core"].config.dreaming).toEqual({
       enabled: false,

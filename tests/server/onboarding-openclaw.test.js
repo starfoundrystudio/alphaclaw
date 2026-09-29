@@ -168,7 +168,7 @@ describe("server/onboarding/openclaw", () => {
     });
     expect(next.plugins.slots).toBeUndefined();
     expect(next.skills.entries.teamyou).toEqual({ enabled: false });
-    expect(next.agents.defaults.heartbeat).toBeUndefined();
+    expect(next.agents.defaults.heartbeat).toEqual({ target: "none" });
     expect(next.agents.defaults.memorySearch).toBeUndefined();
     expect(next.agents.defaults.maxConcurrent).toBe(3);
     expect(next.agents.defaults.subagents).toBeUndefined();
@@ -674,6 +674,7 @@ describe("server/onboarding/openclaw", () => {
       every: "45m",
       directPolicy: "summary",
       model: "anthropic/claude-opus-4.6",
+      target: "none",
     });
   });
 
