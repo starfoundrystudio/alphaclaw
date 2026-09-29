@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-28T22:58:32.958Z",
+  "generatedAt": "2026-09-29T16:39:20.667Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1402,6 +1402,15 @@
               "key": "novita/inclusionai/ling-3.0-flash-vl",
               "provider": "novita",
               "label": "Ling 3.0 Flash VL",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/inclusionai/ling-3.1-flash",
+              "provider": "novita",
+              "label": "Ling 3.1 Flash",
               "accessModes": [
                 "provider-api"
               ],
@@ -4241,7 +4250,7 @@
             {
               "key": "kilocode/anthropic/claude-opus-5.5",
               "provider": "kilocode",
-              "label": "Anthropic: Claude Opus 5.5 (new)",
+              "label": "Anthropic: Claude Opus 5.5",
               "accessModes": [
                 "gateway"
               ],
@@ -14828,7 +14837,7 @@
     {
       "key": "kilocode/anthropic/claude-opus-5.5",
       "provider": "kilocode",
-      "label": "Anthropic: Claude Opus 5.5 (new)",
+      "label": "Anthropic: Claude Opus 5.5",
       "accessModes": [
         "gateway"
       ],
@@ -18677,6 +18686,15 @@
       "key": "novita/inclusionai/ling-3.0-flash-vl",
       "provider": "novita",
       "label": "Ling 3.0 Flash VL",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "novita/inclusionai/ling-3.1-flash",
+      "provider": "novita",
+      "label": "Ling 3.1 Flash",
       "accessModes": [
         "provider-api"
       ],
