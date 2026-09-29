@@ -124,8 +124,27 @@ describe("server/managed-defaults-config", () => {
       egressProxy: { enabled: false, allowedHosts: ["api.openai.com"] },
     });
     expect(result.config.channels).toEqual({ telegram: { enabled: true } });
+    expect(result.config.agents.defaults.heartbeat).toEqual({ target: "none" });
 
     expect(ensureManagedOpenclawDefaults(result.config).changed).toBe(false);
+  });
+
+  it("keeps heartbeats internal unless a delivery target was chosen", () => {
+    // OpenClaw 2026.9 sends untargeted heartbeats to the owner's channel.
+    const unset = ensureManagedOpenclawDefaults({
+      agents: { defaults: { heartbeat: { every: "1h" } } },
+    });
+    expect(unset.config.agents.defaults.heartbeat).toEqual({
+      every: "1h",
+      target: "none",
+    });
+
+    const optedIn = ensureManagedOpenclawDefaults({
+      agents: { defaults: { heartbeat: { target: "owner" } } },
+    });
+    expect(optedIn.config.agents.defaults.heartbeat).toEqual({
+      target: "owner",
+    });
   });
 
   it("caps Telegram-managed concurrency without raising a lower explicit value", () => {
