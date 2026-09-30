@@ -6,8 +6,8 @@ const request = require("supertest");
 
 const {
   registerOnboardingRoutes,
-  scheduleAfterResponseTask,
 } = require("../../lib/server/routes/onboarding");
+const { createOperationEventsService } = require("../../lib/server/operation-events");
 const { kSetupDir } = require("../../lib/server/constants");
 
 const createBaseDeps = ({
@@ -100,6 +100,39 @@ const createBaseDeps = ({
     prepareAgentVaultRuntime: vi.fn(async () => ({ ready: true })),
     runOnboardedBootSequence: vi.fn(),
     getProcessStartedAtMs: vi.fn(() => processStartedAtMs),
+    operationEvents: createOperationEventsService(),
+    hostFinalizationDelayMs: 0,
+  };
+};
+
+const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+// Setup completion is asynchronous: the POST answers 202 with an operation
+// id and the result is published on the operation's event stream.
+const settleOperation = async (deps, operationId) => {
+  for (let attempt = 0; attempt < 500; attempt += 1) {
+    const operation = deps.operationEvents.getOperation(operationId);
+    if (operation && operation.status !== "pending") return operation;
+    await tick();
+  }
+  throw new Error("onboarding operation did not settle");
+};
+
+// Posts like the wizard and maps the operation outcome back onto the
+// request/response shape these tests assert on (done -> 200, error -> 500).
+const postOnboard = async (app, deps, body) => {
+  const res = await request(app).post("/api/onboard").send(body);
+  if (res.status !== 202) return { status: res.status, body: res.body };
+  const operation = await settleOperation(deps, res.body.operationId);
+  // Let the after-completion host finalization (delay 0 here) run.
+  await tick();
+  await tick();
+  const last = operation.events[operation.events.length - 1];
+  if (last.event === "done") return { status: 200, body: last.data, operation };
+  return {
+    status: 500,
+    body: { ok: false, error: last.data.error },
+    operation,
   };
 };
 
@@ -227,9 +260,7 @@ describe("server/routes/onboarding", () => {
       dnsName: "alphaclaw.tail123.ts.net",
       handoffViaBootstrapOrigin: true,
     });
-    const res = await request(createApp(deps))
-      .post("/api/onboard")
-      .send(makeValidBody());
+    const res = await postOnboard(createApp(deps), deps, makeValidBody());
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
@@ -495,7 +526,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps({ onboarded: true });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send(makeValidBody());
+    const res = await postOnboard(app, deps, makeValidBody());
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: false, error: "Already onboarded" });
@@ -505,7 +536,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({ modelKey: "openai/gpt-5.1" });
+    const res = await postOnboard(app, deps, { modelKey: "openai/gpt-5.1" });
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({ ok: false, error: "Missing vars array" });
@@ -515,7 +546,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({ vars: [] });
+    const res = await postOnboard(app, deps, { vars: [] });
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({ ok: false, error: "A model selection is required" });
@@ -527,7 +558,7 @@ describe("server/routes/onboarding", () => {
     const body = makeValidBody();
     delete body.tailscaleApiToken;
 
-    const res = await request(app).post("/api/onboard").send(body);
+    const res = await postOnboard(app, deps, body);
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({
@@ -551,7 +582,7 @@ describe("server/routes/onboarding", () => {
     );
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.1-codex",
       vars: [{ key: "OPENAI_API_KEY", value: "sk-test-123456789" }],
@@ -576,7 +607,7 @@ describe("server/routes/onboarding", () => {
     const body = makeValidBody();
     body.vars = body.vars.filter((entry) => entry.key !== "TELEGRAM_BOT_TOKEN");
 
-    const res = await request(app).post("/api/onboard").send(body);
+    const res = await postOnboard(app, deps, body);
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(kExpectedOnboardSuccess);
@@ -586,7 +617,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send(makeValidBody());
+    const res = await postOnboard(app, deps, makeValidBody());
 
     expect(res.status).toBe(200);
     const shellCommands = deps.shellCmd.mock.calls.map(([cmd]) => cmd);
@@ -637,7 +668,7 @@ describe("server/routes/onboarding", () => {
     const app = createApp(deps);
 
     const res = await Promise.race([
-      request(app).post("/api/onboard").send(makeValidBody()),
+      postOnboard(app, deps, makeValidBody()),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error("onboarding response timed out")), 1000),
       ),
@@ -658,7 +689,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send(makeValidBody());
+    const res = await postOnboard(app, deps, makeValidBody());
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({
@@ -684,7 +715,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send(makeValidBody());
+    const res = await postOnboard(app, deps, makeValidBody());
 
     expect(res.status).toBe(200);
     expect(deps.prepareAgentVaultRuntime).toHaveBeenCalledOnce();
@@ -714,7 +745,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send(makeValidBody());
+    const res = await postOnboard(app, deps, makeValidBody());
 
     expect(res.status).toBe(500);
     expect(res.body.error).toBe(
@@ -731,7 +762,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openrouter/anthropic/claude-sonnet-4-6",
       vars: [{ key: "OPENROUTER_API_KEY", value: "sk-or-test-123456789" }],
@@ -755,7 +786,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
       vars: [{ key: "AI_GATEWAY_API_KEY", value: "vck_test_123456789" }],
@@ -776,7 +807,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
       vars: [{ key: "AI_GATEWAY_API_KEY", value: "not-a-vercel-key" }],
@@ -795,7 +826,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.1-codex",
       vars: [
@@ -822,7 +853,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.1-codex",
       vars: [
@@ -853,7 +884,7 @@ describe("server/routes/onboarding", () => {
         : entry,
     );
 
-    const res = await request(app).post("/api/onboard").send(body);
+    const res = await postOnboard(app, deps, body);
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({
@@ -874,7 +905,7 @@ describe("server/routes/onboarding", () => {
       ],
     };
 
-    const res = await request(app).post("/api/onboard").send(body);
+    const res = await postOnboard(app, deps, body);
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({
@@ -889,7 +920,7 @@ describe("server/routes/onboarding", () => {
     delete process.env.OPENCLAW_GATEWAY_TOKEN;
     try {
       const app = createApp(deps);
-      const res = await request(app).post("/api/onboard").send({
+      const res = await postOnboard(app, deps, {
         tailscaleApiToken: "tskey-api-test_123456789",
         modelKey: "vercel-ai-gateway/anthropic/claude-opus-5",
         vars: [{ key: "AI_GATEWAY_API_KEY", value: "vck_live_test" }],
@@ -917,7 +948,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.5",
       agentRuntimeId: "codex",
@@ -989,7 +1020,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.5",
       agentRuntimeId: "codex",
@@ -1015,7 +1046,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai-codex/gpt-5.5",
       agentRuntimeId: "codex",
@@ -1045,7 +1076,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "claude-cli/claude-opus-4-8",
       agentRuntimeId: "claude-cli",
@@ -1080,7 +1111,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps({ hasCodexOauth: true });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.5",
       vars: [{ key: "TELEGRAM_BOT_TOKEN", value: "telegram_123456789" }],
@@ -1105,7 +1136,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.1-codex",
       vars: [{ key: "OPENAI_API_KEY", value: "sk-test-123456789" }],
@@ -1127,7 +1158,7 @@ describe("server/routes/onboarding", () => {
     );
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.1-codex",
       vars: [{ key: "OPENAI_API_KEY", value: "sk-test-123456789" }],
@@ -1149,7 +1180,7 @@ describe("server/routes/onboarding", () => {
     const deps = createBaseDeps();
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "anthropic/claude-opus-4-6",
       vars: [
@@ -1179,7 +1210,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send(makeValidBody());
+    const res = await postOnboard(app, deps, makeValidBody());
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(kExpectedOnboardSuccess);
@@ -1234,7 +1265,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "anthropic/claude-opus-4-6",
       vars: [
@@ -1265,7 +1296,7 @@ describe("server/routes/onboarding", () => {
     });
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "anthropic/claude-opus-4-6",
       vars: [
@@ -1312,7 +1343,7 @@ describe("server/routes/onboarding", () => {
       new Error('Command failed: openclaw onboard --openai-api-key "sk-test-secret-value"'),
     );
 
-    const res = await request(app).post("/api/onboard").send(makeValidBody());
+    const res = await postOnboard(app, deps, makeValidBody());
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({
@@ -1330,7 +1361,7 @@ describe("server/routes/onboarding", () => {
       new Error('boom github_pat_super_secret_value openclaw onboard'),
     );
 
-    const res = await request(app).post("/api/onboard").send(makeValidBody());
+    const res = await postOnboard(app, deps, makeValidBody());
 
     expect(res.status).toBe(500);
     expect(res.body.ok).toBe(false);
@@ -1347,7 +1378,7 @@ describe("server/routes/onboarding", () => {
       new Error("FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory"),
     );
 
-    const res = await request(app).post("/api/onboard").send(makeValidBody());
+    const res = await postOnboard(app, deps, makeValidBody());
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({
@@ -1364,7 +1395,7 @@ describe("server/routes/onboarding", () => {
     err.stderr = "remote: Permission denied";
     failShellCommand(deps, (cmd) => cmd.startsWith("openclaw onboard "), err);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.1-codex",
       vars: [{ key: "OPENAI_API_KEY", value: "sk-test-123456789" }],
@@ -1388,7 +1419,7 @@ describe("server/routes/onboarding", () => {
     );
     const app = createApp(deps);
 
-    const res = await request(app).post("/api/onboard").send({
+    const res = await postOnboard(app, deps, {
       tailscaleApiToken: "tskey-api-test_123456789",
       modelKey: "openai/gpt-5.5",
       agentRuntimeId: "codex",
@@ -1412,7 +1443,7 @@ describe("server/routes/onboarding", () => {
       new Error("invalid_api_key"),
     );
 
-    const res = await request(app).post("/api/onboard").send(makeValidBody());
+    const res = await postOnboard(app, deps, makeValidBody());
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({
@@ -1430,48 +1461,5 @@ describe("server/routes/onboarding", () => {
 
     expect(scan.status).toBe(404);
     expect(apply.status).toBe(404);
-  });
-});
-
-describe("scheduleAfterResponseTask", () => {
-  const { EventEmitter } = require("events");
-
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it("runs the task once when the response finishes normally", () => {
-    const res = new EventEmitter();
-    const task = vi.fn();
-    scheduleAfterResponseTask(res, task);
-    res.emit("finish");
-    res.emit("close");
-    vi.advanceTimersByTime(60000);
-    expect(task).toHaveBeenCalledTimes(1);
-  });
-
-  it("runs the task when the connection closes without finishing", () => {
-    const res = new EventEmitter();
-    const task = vi.fn();
-    scheduleAfterResponseTask(res, task);
-    res.emit("close");
-    vi.advanceTimersByTime(60000);
-    expect(task).toHaveBeenCalledTimes(1);
-  });
-
-  it("falls back to the timer when the socket was already dead", () => {
-    // An upstream proxy that cut the connection mid-onboard leaves a response
-    // that emits neither "finish" nor "close" after the handler completes;
-    // host finalization must still run.
-    const res = new EventEmitter();
-    const task = vi.fn();
-    scheduleAfterResponseTask(res, task, { fallbackDelayMs: 10000 });
-    vi.advanceTimersByTime(9999);
-    expect(task).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(1);
-    expect(task).toHaveBeenCalledTimes(1);
   });
 });

@@ -44,13 +44,20 @@ describe("server/ui-sandbox", () => {
           modelKey: "anthropic/claude-opus-4-8",
           tailscaleApiToken: "tskey-api-sandbox_123456789",
       });
-      expect(setup.status).toBe(200);
-      expect(setup.body).toMatchObject({
+      expect(setup.status).toBe(202);
+      expect(setup.body.operationId).toBe("sandbox-onboarding");
+      const stream = await request(sandbox.app).get(setup.body.streamUrl);
+      expect(stream.text).toContain("event: phase");
+      const doneLine = stream.text
+        .split("\n\n")
+        .find((frame) => frame.startsWith("event: done"));
+      const result = JSON.parse(doneLine.split("data: ")[1]);
+      expect(result).toMatchObject({
         ok: true,
         handoffViaBootstrapOrigin: true,
         sandbox: true,
       });
-      expect(setup.body.setupUrl).toContain("localhost:3101");
+      expect(result.setupUrl).toContain("localhost:3101");
 
       expect(
         (await request(sandbox.app).get("/api/onboard/runtime-ready.svg"))
