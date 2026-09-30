@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-09-30T00:53:49.000Z",
+  "generatedAt": "2026-09-30T19:16:24.397Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1370,6 +1370,15 @@
                 "provider-api"
               ],
               "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+            },
+            {
+              "key": "novita/moonshotai/kimi-k3-p",
+              "provider": "novita",
+              "label": "Kimi K3",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
             },
             {
               "key": "novita/inclusionai/ling-3.0-flash",
@@ -6104,7 +6113,7 @@
             {
               "key": "kilocode/openai/gpt-6.1-sol",
               "provider": "kilocode",
-              "label": "OpenAI: GPT-6.1 Sol",
+              "label": "OpenAI: GPT-6.1 Sol (new)",
               "accessModes": [
                 "gateway"
               ],
@@ -6446,7 +6455,7 @@
             {
               "key": "kilocode/qwen/qwen3-30b-a3b",
               "provider": "kilocode",
-              "label": "Qwen: Qwen3 30B A3B (retires Oct 9)",
+              "label": "Qwen: Qwen3 30B A3B",
               "accessModes": [
                 "gateway"
               ],
@@ -6968,7 +6977,7 @@
             {
               "key": "kilocode/stealth/space-bunny-alpha",
               "provider": "kilocode",
-              "label": "Space Bunny Alpha (new)",
+              "label": "Space Bunny Alpha",
               "accessModes": [
                 "gateway"
               ],
@@ -16781,7 +16790,7 @@
     {
       "key": "kilocode/openai/gpt-6.1-sol",
       "provider": "kilocode",
-      "label": "OpenAI: GPT-6.1 Sol",
+      "label": "OpenAI: GPT-6.1 Sol (new)",
       "accessModes": [
         "gateway"
       ],
@@ -17123,7 +17132,7 @@
     {
       "key": "kilocode/qwen/qwen3-30b-a3b",
       "provider": "kilocode",
-      "label": "Qwen: Qwen3 30B A3B (retires Oct 9)",
+      "label": "Qwen: Qwen3 30B A3B",
       "accessModes": [
         "gateway"
       ],
@@ -17645,7 +17654,7 @@
     {
       "key": "kilocode/stealth/space-bunny-alpha",
       "provider": "kilocode",
-      "label": "Space Bunny Alpha (new)",
+      "label": "Space Bunny Alpha",
       "accessModes": [
         "gateway"
       ],
@@ -18771,6 +18780,15 @@
         "provider-api"
       ],
       "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+    },
+    {
+      "key": "novita/moonshotai/kimi-k3-p",
+      "provider": "novita",
+      "label": "Kimi K3",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "novita/inclusionai/ling-3.0-flash",
