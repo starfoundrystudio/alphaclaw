@@ -6,6 +6,10 @@ const {
   parseCodexDeviceUsercodeResponse,
   registerCodexRoutes,
 } = require("../../lib/server/routes/codex");
+const {
+  kHostileOauthValues,
+  runOauthPopupPage,
+} = require("./oauth-popup-harness");
 
 const createDeps = (overrides = {}) => ({
   createPkcePair: vi.fn(() => ({
@@ -453,5 +457,76 @@ describe("server/routes/codex brokered consent", () => {
       changed: false,
       error: "effective_agent_config_unavailable",
     });
+  });
+});
+
+describe("server/routes/codex callback page", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it.each(kHostileOauthValues)(
+    "renders a hostile callback error as inert data: %j",
+    async (error) => {
+      const app = createApp(createDeps());
+
+      const response = await request(app)
+        .get("/auth/codex/callback")
+        .query({ error });
+
+      expect(response.status).toBe(200);
+      expect(response.headers["content-type"]).toMatch(/^text\/html/);
+      const page = runOauthPopupPage(response.text);
+      expect(page.message).toEqual({ codex: "error", message: error });
+      expect(page.targetOrigin).toBe("https://dashboard.example");
+      expect(page.text).toBe("Codex auth failed. You can close this window.");
+    },
+  );
+
+  it("escapes a hostile token exchange error in the script and the page text", async () => {
+    const hostile = "</script><script>alert(document.domain)</script>";
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error(hostile)));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const app = createApp(createDeps());
+    const start = await request(app).get("/auth/codex/start");
+    const state = new URL(start.headers.location).searchParams.get("state");
+
+    const response = await request(app)
+      .get("/auth/codex/callback")
+      .query({ code: "code", state });
+
+    const page = runOauthPopupPage(response.text);
+    expect(page.message).toEqual({ codex: "error", message: hostile });
+    expect(page.text).toBe(
+      "Error: &lt;/script&gt;&lt;script&gt;alert(document.domain)&lt;/script&gt;. You can close this window.",
+    );
+  });
+
+  it("posts callback results only to a same-origin opener", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          access_token: "access",
+          refresh_token: "refresh",
+          expires_in: 3600,
+        }),
+      }),
+    );
+    const app = createApp(createDeps());
+    const start = await request(app).get("/auth/codex/start");
+    const state = new URL(start.headers.location).searchParams.get("state");
+
+    const response = await request(app)
+      .get("/auth/codex/callback")
+      .query({ code: "code", state });
+
+    const page = runOauthPopupPage(response.text, {
+      origin: "https://clawbridge.example",
+    });
+    expect(page.message).toEqual({ codex: "success" });
+    expect(page.targetOrigin).toBe("https://clawbridge.example");
   });
 });
