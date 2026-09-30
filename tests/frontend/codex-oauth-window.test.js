@@ -6,7 +6,7 @@ describe("frontend/codex-oauth-window", () => {
     vi.resetModules();
     global.window = {
       open: vi.fn(),
-      location: { href: "http://localhost/" },
+      location: { href: "http://localhost/", origin: "http://localhost" },
     };
   });
 
@@ -48,6 +48,85 @@ describe("frontend/codex-oauth-window", () => {
       mod.isCodexAuthCallbackMessage({
         codex: "callback-input",
         input: "   ",
+      }),
+    ).toBe(false);
+  });
+
+  it("accepts results only from its own popup on the dashboard origin", async () => {
+    const popup = { closed: false };
+    global.window.open.mockReturnValue(popup);
+    const mod = await loadCodexOauthWindow();
+    const data = { codex: "success" };
+
+    expect(
+      mod.isCodexAuthPopupMessage({
+        data,
+        origin: "http://localhost",
+        source: popup,
+      }),
+    ).toBe(false);
+
+    mod.openCodexAuthWindow();
+
+    expect(
+      mod.isCodexAuthPopupMessage({
+        data,
+        origin: "http://localhost",
+        source: popup,
+      }),
+    ).toBe(true);
+    expect(
+      mod.isCodexAuthPopupMessage({
+        data,
+        origin: "https://attacker.example",
+        source: popup,
+      }),
+    ).toBe(false);
+    expect(
+      mod.isCodexAuthPopupMessage({
+        data,
+        origin: "http://localhost",
+        source: { closed: false },
+      }),
+    ).toBe(false);
+  });
+
+  it("rejects cross-origin callback-input messages", async () => {
+    const popup = { closed: false };
+    global.window.open.mockReturnValue(popup);
+    const mod = await loadCodexOauthWindow();
+    mod.openCodexAuthWindow();
+
+    expect(
+      mod.isCodexAuthPopupMessage({
+        data: {
+          codex: "callback-input",
+          input: "http://localhost:1455/auth/callback?code=abc&state=def",
+        },
+        origin: "https://attacker.example",
+        source: popup,
+      }),
+    ).toBe(false);
+  });
+
+  it("does not trust a popup that was blocked", async () => {
+    const attacker = { closed: false };
+    global.window.open.mockReturnValue(null);
+    const mod = await loadCodexOauthWindow();
+    mod.openCodexAuthWindow();
+
+    expect(
+      mod.isCodexAuthPopupMessage({
+        data: { codex: "success" },
+        origin: "http://localhost",
+        source: attacker,
+      }),
+    ).toBe(false);
+    expect(
+      mod.isCodexAuthPopupMessage({
+        data: { codex: "success" },
+        origin: "http://localhost",
+        source: null,
       }),
     ).toBe(false);
   });
