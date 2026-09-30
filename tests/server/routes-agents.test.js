@@ -2,6 +2,7 @@ const express = require("express");
 const request = require("supertest");
 
 const { registerAgentRoutes } = require("../../lib/server/routes/agents");
+const { registerOperationRoutes } = require("../../lib/server/routes/operations");
 
 const createAgentsServiceMock = () => ({
   listAgents: vi.fn(() => [{ id: "main", name: "Main Agent", default: true }]),
@@ -133,6 +134,7 @@ const createApp = (
     restartRequiredState,
     operationEvents,
   });
+  registerOperationRoutes({ app, operationEvents });
   return app;
 };
 
