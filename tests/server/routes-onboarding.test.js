@@ -181,6 +181,7 @@ describe("server/routes/onboarding", () => {
     expect(res.body).toEqual({
       onboarded: true,
       initialRuntimePending: false,
+      ingressMode: "tailscale",
       workspaceBootstrap: { complete: false, reason: "workspace_missing" },
     });
   });
@@ -244,6 +245,7 @@ describe("server/routes/onboarding", () => {
     expect(res.body).toEqual({
       onboarded: true,
       initialRuntimePending: false,
+      ingressMode: "tailscale",
       workspaceBootstrap: { complete: false, reason: "workspace_missing" },
       setupUrl: "https://alphaclaw.tail123.ts.net",
       publicBaseUrl: "https://alphaclaw.tail123.ts.net:8443",
