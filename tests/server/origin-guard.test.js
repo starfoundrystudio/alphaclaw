@@ -76,6 +76,30 @@ describe("origin guard", () => {
       }
     });
 
+    it("compares only the host when no proxy states the scheme", () => {
+      const legacyHeaders = { host: "alphaclaw.tail123.ts.net" };
+      expect(
+        isSameOriginOrAbsent({
+          headers: { ...legacyHeaders, origin: "https://alphaclaw.tail123.ts.net" },
+        }),
+      ).toBe(true);
+      expect(
+        isSameOriginOrAbsent({
+          headers: { ...legacyHeaders, origin: "https://other.tail123.ts.net" },
+        }),
+      ).toBe(false);
+      expect(
+        isSameOriginOrAbsent({
+          headers: { ...legacyHeaders, origin: "https://alphaclaw.tail123.ts.net:8443" },
+        }),
+      ).toBe(false);
+      expect(
+        isSameOriginOrAbsent({
+          headers: { host: "localhost:3000", origin: "http://localhost:3000" },
+        }),
+      ).toBe(true);
+    });
+
     it("protects the dashboard prefixes and exempts public callbacks", () => {
       for (const path of ["/api", "/api/onboard", "/setup/x", "/auth/logout", "/openclaw", "/openclaw/x", "/advanced-control/access"]) {
         expect(isOriginProtectedPath(path)).toBe(true);
