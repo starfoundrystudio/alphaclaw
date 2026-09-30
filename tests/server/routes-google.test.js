@@ -2,6 +2,10 @@ const express = require("express");
 const request = require("supertest");
 
 const { registerGoogleRoutes } = require("../../lib/server/routes/google");
+const {
+  kHostileOauthValues,
+  runOauthPopupPage,
+} = require("./oauth-popup-harness");
 
 const createApp = ({
   readGoogleCredentials = () => ({
@@ -85,6 +89,24 @@ describe("server/routes/google", () => {
     expect(response.text).toContain("access_denied");
     expect(response.text).not.toContain("/setup?google=error");
   });
+
+  it.each(kHostileOauthValues)(
+    "renders a hostile callback error as inert data: %j",
+    async (error) => {
+      const app = createApp();
+
+      const response = await request(app)
+        .get("/auth/google/callback")
+        .query({ error });
+
+      expect(response.status).toBe(200);
+      const page = runOauthPopupPage(response.text);
+      expect(page.message).toEqual({ google: "error", message: error });
+      // The callback host differs from the dashboard origin that opened it.
+      expect(page.targetOrigin).toBe("*");
+      expect(page.text).not.toMatch(/[<>"']/);
+    },
+  );
 
   it("deposits a Google refresh grant through the managed gog broker seam", async () => {
     const gogBrokerService = {
