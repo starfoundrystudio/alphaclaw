@@ -1,8 +1,11 @@
 const {
   ensureAlphaclawTailscalePolicy,
+  getOpsAccessMode,
   getTailscaleApiTokenValidation,
   createTailscaleFinalizer,
 } = require("../../lib/server/onboarding/tailscale-finalizer");
+
+const kOptedIn = { opsAccess: true };
 
 describe("server/onboarding/tailscale-finalizer", () => {
   it("validates Tailscale API access token shape", () => {
@@ -25,7 +28,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
       ssh: [],
     };
 
-    const result = ensureAlphaclawTailscalePolicy(input);
+    const result = ensureAlphaclawTailscalePolicy(input, kOptedIn);
 
     expect(result.changed).toBe(true);
     expect(result.policy.groups).toEqual(input.groups);
@@ -65,10 +68,13 @@ describe("server/onboarding/tailscale-finalizer", () => {
       action: "accept",
     };
 
-    const result = ensureAlphaclawTailscalePolicy({
-      acls: [],
-      ssh: [defaultSshRule, partialCloudOpsRule],
-    });
+    const result = ensureAlphaclawTailscalePolicy(
+      {
+        acls: [],
+        ssh: [defaultSshRule, partialCloudOpsRule],
+      },
+      kOptedIn,
+    );
 
     expect(result.policy.ssh).toEqual([
       defaultSshRule,
@@ -90,10 +96,13 @@ describe("server/onboarding/tailscale-finalizer", () => {
       action: "accept",
     };
 
-    const result = ensureAlphaclawTailscalePolicy({
-      acls: [],
-      ssh: [existingCloudOpsRule],
-    });
+    const result = ensureAlphaclawTailscalePolicy(
+      {
+        acls: [],
+        ssh: [existingCloudOpsRule],
+      },
+      kOptedIn,
+    );
 
     expect(result.changed).toBe(true);
     expect(result.policy.ssh).toEqual([
@@ -105,7 +114,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
   });
 
   it("uses ACLs when the policy does not use grants", () => {
-    const result = ensureAlphaclawTailscalePolicy({ acls: [] });
+    const result = ensureAlphaclawTailscalePolicy({ acls: [] }, kOptedIn);
 
     expect(result.policy.grants).toBeUndefined();
     expect(result.policy.acls).toEqual([
@@ -129,7 +138,7 @@ describe("server/onboarding/tailscale-finalizer", () => {
         grants: [],
         ssh: [existingSshRule],
       },
-      { tailscaleSsh: false },
+      { tailscaleSsh: false, opsAccess: true },
     );
 
     expect(result.policy.grants).toEqual([
@@ -140,6 +149,136 @@ describe("server/onboarding/tailscale-finalizer", () => {
       },
     ]);
     expect(result.policy.ssh).toEqual([existingSshRule]);
+  });
+
+  it("grants only tailnet admins when ops access is not opted in", () => {
+    const result = ensureAlphaclawTailscalePolicy(
+      { grants: [], ssh: [] },
+      { agentVaultServiceName: "svc:agent-vault-oc-inst-1-abc1234567" },
+    );
+
+    expect(result.policy.grants).toEqual([
+      {
+        src: ["autogroup:admin"],
+        dst: ["tag:openclaw"],
+        ip: ["tcp:443", "tcp:8443", "tcp:22"],
+      },
+      {
+        src: ["autogroup:admin"],
+        dst: ["svc:agent-vault-oc-inst-1-abc1234567"],
+        ip: ["tcp:443"],
+      },
+    ]);
+    expect(result.policy.ssh).toEqual([
+      {
+        action: "accept",
+        src: ["autogroup:admin"],
+        dst: ["tag:openclaw"],
+        users: ["root", "alphaclaw"],
+      },
+    ]);
+    expect(JSON.stringify(result.policy)).not.toContain("cloud-ops@teamyou.ai");
+  });
+
+  it("strips cloud-ops from Clawbridge rules but leaves customer rules alone", () => {
+    const customerRule = {
+      src: ["cloud-ops@teamyou.ai"],
+      dst: ["tag:db"],
+      ip: ["tcp:5432"],
+    };
+    const result = ensureAlphaclawTailscalePolicy({
+      grants: [
+        customerRule,
+        {
+          src: ["autogroup:admin", "cloud-ops@teamyou.ai"],
+          dst: ["tag:openclaw"],
+          ip: ["tcp:443", "tcp:8443", "tcp:22"],
+        },
+        {
+          src: ["autogroup:admin", "cloud-ops@teamyou.ai"],
+          dst: ["svc:agent-vault-earlier-instance-0123456789"],
+          ip: ["tcp:443"],
+        },
+      ],
+      ssh: [
+        {
+          action: "accept",
+          src: ["cloud-ops@teamyou.ai"],
+          dst: ["tag:openclaw"],
+          users: ["root"],
+        },
+        {
+          action: "accept",
+          src: ["autogroup:admin", "cloud-ops@teamyou.ai"],
+          dst: ["tag:openclaw"],
+          users: ["root", "alphaclaw"],
+        },
+      ],
+    });
+
+    expect(result.changed).toBe(true);
+    expect(result.policy.grants).toEqual([
+      customerRule,
+      {
+        src: ["autogroup:admin"],
+        dst: ["tag:openclaw"],
+        ip: ["tcp:443", "tcp:8443", "tcp:22"],
+      },
+      {
+        src: ["autogroup:admin"],
+        dst: ["svc:agent-vault-earlier-instance-0123456789"],
+        ip: ["tcp:443"],
+      },
+    ]);
+    expect(result.policy.ssh).toEqual([
+      {
+        action: "accept",
+        src: ["autogroup:admin"],
+        dst: ["tag:openclaw"],
+        users: ["root", "alphaclaw"],
+      },
+    ]);
+  });
+
+  it("reports no change for a policy already shaped without cloud-ops", () => {
+    const first = ensureAlphaclawTailscalePolicy({ grants: [], ssh: [] });
+    const second = ensureAlphaclawTailscalePolicy(first.policy);
+
+    expect(second.changed).toBe(false);
+    expect(second.policy).toEqual(first.policy);
+  });
+
+  it("resolves the ops access mode, defaulting to none", () => {
+    expect(getOpsAccessMode({ env: {}, envVars: [] })).toBe("none");
+    expect(
+      getOpsAccessMode({
+        env: {},
+        envVars: [{ key: "ALPHACLAW_OPS_ACCESS", value: "cloud-ops" }],
+      }),
+    ).toBe("cloud-ops");
+    expect(getOpsAccessMode({ env: { ALPHACLAW_OPS_ACCESS: " Cloud-Ops " } })).toBe(
+      "cloud-ops",
+    );
+    expect(() =>
+      getOpsAccessMode({ env: { ALPHACLAW_OPS_ACCESS: "support" } }),
+    ).toThrow("Unsupported Clawbridge ops access mode: support");
+  });
+
+  it("rejects an unknown ops access mode before touching the tailnet", async () => {
+    const fetchImpl = vi.fn();
+    const finalizer = createTailscaleFinalizer({
+      shellCmd: vi.fn(),
+      readEnvFile: vi.fn(() => [{ key: "ALPHACLAW_OPS_ACCESS", value: "yes" }]),
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      env: {},
+    });
+
+    await expect(
+      finalizer.finalizeTailscaleOnboarding({ tailscaleApiToken: "tskey-api-secret" }),
+    ).rejects.toThrow("Unsupported Clawbridge ops access mode: yes");
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it("runs policy, CLI, env, share, and TeamYou finalization in order", async () => {
@@ -195,12 +334,22 @@ describe("server/onboarding/tailscale-finalizer", () => {
         OPENCLAW_WEBHOOK_URL: "https://teamyou.example/api/openclaw/webhook",
         OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
         OPENCLAW_INSTANCE_ID: "oc_inst_123",
+        ALPHACLAW_OPS_ACCESS: "cloud-ops",
       },
     });
 
     const result = await finalizer.finalizeTailscaleOnboarding({
       tailscaleApiToken: "tskey-api-secret",
     });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.tailscale.com/api/v2/device/device-123/device-invites",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify([
+          { email: "cloud-ops@teamyou.ai", multiUse: false, allowExitNode: false },
+        ]),
+      }),
+    );
     const expectedTailscaleAuth = `Basic ${Buffer.from("tskey-api-secret:").toString("base64")}`;
 
     expect(result).toMatchObject({
@@ -684,6 +833,107 @@ describe("server/onboarding/tailscale-finalizer", () => {
         String(url).endsWith("/acl") && opts?.method === "POST",
     );
     expect(JSON.parse(policyWrite[1].body).ssh).toBeUndefined();
+    // No ALPHACLAW_OPS_ACCESS: the TeamYou Pro shape gets no standing ops access.
+    expect(policyWrite[1].body).not.toContain("cloud-ops@teamyou.ai");
+    expect(
+      fetchImpl.mock.calls.some(([url]) => String(url).includes("/device-invites")),
+    ).toBe(false);
+  });
+
+  it("invites cloud-ops to a security gateway only when ops access is opted in", async () => {
+    const fetchImpl = vi.fn(async (url, opts = {}) => {
+      if (String(url).endsWith("/acl") && (!opts.method || opts.method === "GET")) {
+        return {
+          ok: true,
+          headers: { get: () => '"etag-gateway"' },
+          text: async () => JSON.stringify({ grants: [] }),
+        };
+      }
+      if (String(url).endsWith("/keys")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () => JSON.stringify({ key: "tskey-auth-gateway-secret" }),
+        };
+      }
+      if (String(url).endsWith("/devices")) {
+        return {
+          ok: true,
+          headers: { get: () => "" },
+          text: async () =>
+            JSON.stringify({
+              devices: [
+                {
+                  id: "device-gateway-123",
+                  nodeId: "node-gateway-123",
+                  name: "alphaclaw-gateway.tail123.ts.net",
+                },
+              ],
+            }),
+        };
+      }
+      return {
+        ok: true,
+        headers: { get: () => "" },
+        text: async () => JSON.stringify({ ok: true }),
+      };
+    });
+    const finalizer = createTailscaleFinalizer({
+      shellCmd: vi.fn(),
+      readEnvFile: vi.fn(() => [
+        { key: "ALPHACLAW_CONNECTIVITY_MODE", value: "security_gateway" },
+        { key: "ALPHACLAW_OPS_ACCESS", value: "cloud-ops" },
+      ]),
+      writeEnvFile: vi.fn(),
+      reloadEnv: vi.fn(),
+      fetchImpl,
+      gatewayTailscaleClient: {
+        status: vi.fn(async () => ({ configured: false, sealed: false })),
+        configure: vi.fn(async () => ({
+          configured: true,
+          sealed: false,
+          dnsName: "alphaclaw-gateway.tail123.ts.net",
+          deviceId: "node-gateway-123",
+        })),
+        seal: vi.fn(async () => ({ sealed: true })),
+        cleanupIdentity: vi.fn(),
+      },
+      env: {
+        OPENCLAW_WEBHOOK_URL: "https://teamyou.example/api/openclaw/webhook",
+        OPENCLAW_WEBHOOK_TOKEN: "callback-secret",
+        OPENCLAW_INSTANCE_ID: "oc_inst_gateway",
+      },
+    });
+
+    await finalizer.finalizeTailscaleOnboarding({
+      tailscaleApiToken: "tskey-api-secret",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.tailscale.com/api/v2/device/device-gateway-123/device-invites",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify([
+          { email: "cloud-ops@teamyou.ai", multiUse: false, allowExitNode: false },
+        ]),
+      }),
+    );
+    const policyWrite = fetchImpl.mock.calls.find(
+      ([url, opts]) =>
+        String(url).endsWith("/acl") && opts?.method === "POST",
+    );
+    expect(JSON.parse(policyWrite[1].body).grants).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          src: ["autogroup:admin", "cloud-ops@teamyou.ai"],
+          dst: ["tag:openclaw"],
+        }),
+        expect.objectContaining({
+          src: ["autogroup:admin", "cloud-ops@teamyou.ai"],
+          dst: [expect.stringMatching(/^svc:agent-vault-/)],
+        }),
+      ]),
+    );
   });
 
   it("keeps the gateway setup channel open when TeamYou writeback fails", async () => {
