@@ -200,24 +200,25 @@ describe("asynchronous setup completion", () => {
 
   it("runs host finalization only after the final event is published", async () => {
     const deps = createDeps();
-    let completedWhenFinalizing = null;
-    let operationId = "";
+    const order = [];
+    const complete = deps.operationEvents.complete;
+    deps.operationEvents.complete = vi.fn((...args) => {
+      order.push("done-event");
+      return complete(...args);
+    });
     deps.shellCmd.mockImplementation(async (cmd) => {
-      if (cmd === kCompleteCmd) {
-        completedWhenFinalizing =
-          deps.operationEvents.getOperation(operationId)?.status;
-      }
+      if (cmd === kCompleteCmd) order.push("host-finalize");
       return "";
     });
     const app = createApp(deps);
 
     const res = await request(app).post("/api/onboard").send(kValidBody);
-    operationId = res.body.operationId;
-    await waitForSettled(deps, operationId);
-    await tick();
-    await tick();
+    await waitForSettled(deps, res.body.operationId);
+    for (let attempt = 0; attempt < 50 && order.length < 2; attempt += 1) {
+      await tick();
+    }
 
-    expect(completedWhenFinalizing).toBe("completed");
+    expect(order).toEqual(["done-event", "host-finalize"]);
     const marker = JSON.parse(deps.fs.readFileSync(kMarkerPath));
     expect(marker.hostFinalizationScheduled).toBe(true);
   });

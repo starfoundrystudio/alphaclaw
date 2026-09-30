@@ -24,7 +24,7 @@ const createFakeWs = () => {
 
 const listen = (server) =>
   new Promise((resolve) => {
-    server.listen(0, "127.0.0.1", () => resolve(server.address().port));
+    server.listen(0, () => resolve(server.address().port));
   });
 
 const waitFor = (emitter, event) =>
