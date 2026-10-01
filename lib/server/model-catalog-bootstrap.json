@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-10-01T19:28:43.520Z",
+  "generatedAt": "2026-10-01T23:54:39.090Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -2539,6 +2539,15 @@
           ],
           "recommendedModelKeys": [],
           "models": [
+            {
+              "key": "venice/abliteration-abliterated-model-large-v2",
+              "provider": "venice",
+              "label": "Abliterated Large V2",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
             {
               "key": "venice/aion-labs-aion-3-0",
               "provider": "venice",
@@ -24117,6 +24126,15 @@
         "provider-api"
       ],
       "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+    },
+    {
+      "key": "venice/abliteration-abliterated-model-large-v2",
+      "provider": "venice",
+      "label": "Abliterated Large V2",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "venice/aion-labs-aion-3-0",
