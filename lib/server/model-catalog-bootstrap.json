@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-10-01T17:09:36.595Z",
+  "generatedAt": "2026-10-01T19:28:43.520Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -4347,6 +4347,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/apodex/apodex-1.1-mini:free",
+              "provider": "kilocode",
+              "label": "Apodex: Apodex 1.1 Mini (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/arcee-ai/trinity-large-thinking",
               "provider": "kilocode",
               "label": "Arcee AI: Trinity Large Thinking",
@@ -7973,6 +7982,15 @@
               "key": "openrouter/~anthropic/claude-sonnet-latest",
               "provider": "openrouter",
               "label": "Anthropic: Claude Sonnet Latest",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/apodex/apodex-1.1-mini:free",
+              "provider": "openrouter",
+              "label": "Apodex: Apodex 1.1 Mini (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -15015,6 +15033,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/apodex/apodex-1.1-mini:free",
+      "provider": "kilocode",
+      "label": "Apodex: Apodex 1.1 Mini (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/arcee-ai/trinity-large-thinking",
       "provider": "kilocode",
       "label": "Arcee AI: Trinity Large Thinking",
@@ -20175,6 +20202,15 @@
       "key": "openrouter/~anthropic/claude-sonnet-latest",
       "provider": "openrouter",
       "label": "Anthropic: Claude Sonnet Latest",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/apodex/apodex-1.1-mini:free",
+      "provider": "openrouter",
+      "label": "Apodex: Apodex 1.1 Mini (free)",
       "accessModes": [
         "gateway"
       ],
