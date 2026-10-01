@@ -48,11 +48,34 @@ const createTestApp = ({ setupPassword, loginThrottle, trustProxy } = {}) => {
     res.type("image/svg+xml").send("<svg></svg>"),
   );
   app.get("/setup/protected", (req, res) => res.json({ ok: true }));
+  app.get("/auth/google/callback", (_req, res) => res.json({ callback: "google" }));
+  app.get("/auth/google/callback-extra", (_req, res) => res.json({ leaked: true }));
+  app.get("/auth/codex/callback", (_req, res) => res.json({ callback: "codex" }));
+  app.get("/auth/other", (_req, res) => res.json({ leaked: true }));
 
   return { app, throttle };
 };
 
 describe("server/routes/auth", () => {
+  // requireAuth is mounted at /auth, where req.path is mount-relative. The
+  // Google callback must still reach its handler without a session: on a
+  // Cloudflare Tunnel instance it arrives on the separate callback hostname,
+  // which never carries the dashboard's cookie.
+  it("lets the Google OAuth callback through without a session", async () => {
+    const { app } = createTestApp({ setupPassword: "secret-password-123" });
+
+    const google = await request(app).get("/auth/google/callback?code=abc&state=xyz");
+    expect(google.status).toBe(200);
+    expect(google.body).toEqual({ callback: "google" });
+
+    for (const path of ["/auth/google/callback-extra", "/auth/codex/callback", "/auth/other"]) {
+      const res = await request(app).get(path);
+      expect(res.status).toBe(302);
+      expect(res.headers.location).toBe("/login.html");
+    }
+  });
+
+
   afterEach(() => {
     delete process.env.SETUP_PASSWORD;
   });
