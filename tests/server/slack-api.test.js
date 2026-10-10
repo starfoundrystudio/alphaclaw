@@ -284,3 +284,25 @@ describe("server/slack-api", () => {
     expect(result.channel.name).toBe("general");
   });
 });
+
+describe("server/slack-api users.list", () => {
+  it("sends users.list arguments form-encoded", async () => {
+    const calls = [];
+    global.fetch = async (url, init) => {
+      calls.push({ url, init });
+      return {
+        ok: true,
+        json: async () => ({ ok: true, members: [] }),
+      };
+    };
+    const api = createSlackApi(() => "xoxb-test-token");
+
+    await api.listUsers({ cursor: "abc", limit: 200 });
+
+    expect(calls[0].url).toBe("https://slack.com/api/users.list");
+    expect(calls[0].init.headers["Content-Type"]).toBe(
+      "application/x-www-form-urlencoded",
+    );
+    expect(calls[0].init.body).toBe("cursor=abc&limit=200");
+  });
+});

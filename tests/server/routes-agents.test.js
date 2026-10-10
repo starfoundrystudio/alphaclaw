@@ -70,6 +70,18 @@ const createAgentsServiceMock = () => ({
     intents: { messageContent: true, guildMembers: true },
     guilds: [{ id: "234567890123456789", name: "Test Server" }],
   })),
+  startTelegramOwnerCapture: vi.fn(async () => ({
+    nonce: "nonce-1",
+    link: "https://t.me/alpha_wolf_bot?start=nonce-1",
+    expiresInMs: 600000,
+  })),
+  pollTelegramOwnerCapture: vi.fn(async () => ({
+    owner: { id: "42", username: "billk", name: "Bill" },
+  })),
+  listSlackWorkspaceMembers: vi.fn(async () => ({
+    members: [{ id: "U012ABC", name: "Bill", role: "primary_owner" }],
+    truncated: false,
+  })),
   inspectSlackCredentials: vi.fn(() => ({
     appId: "A0123456789",
     appSettingsUrl: "https://api.slack.com/apps/A0123456789",
@@ -160,6 +172,56 @@ describe("server/routes/agents", () => {
     expect(agentsService.inspectTelegramBotToken).toHaveBeenCalledWith(
       "123456789:AA-secret-token-value",
     );
+  });
+
+  it("exposes the owner lookups used by the channel setup modal", async () => {
+    const agentsService = createAgentsServiceMock();
+    const app = createApp(agentsService);
+
+    const link = await request(app)
+      .post("/api/channels/telegram/owner-link")
+      .send({ token: "123456789:AA-secret-token-value" });
+    expect(link.status).toBe(200);
+    expect(link.body).toEqual({
+      ok: true,
+      nonce: "nonce-1",
+      link: "https://t.me/alpha_wolf_bot?start=nonce-1",
+      expiresInMs: 600000,
+    });
+
+    const poll = await request(app)
+      .post("/api/channels/telegram/owner-poll")
+      .send({ token: "123456789:AA-secret-token-value", nonce: "nonce-1" });
+    expect(poll.body).toEqual({
+      ok: true,
+      owner: { id: "42", username: "billk", name: "Bill" },
+    });
+    expect(agentsService.pollTelegramOwnerCapture).toHaveBeenCalledWith({
+      token: "123456789:AA-secret-token-value",
+      nonce: "nonce-1",
+    });
+
+    const members = await request(app)
+      .post("/api/channels/slack/members")
+      .send({ botToken: "xoxb-bot-secret" });
+    expect(members.body.members).toEqual([
+      { id: "U012ABC", name: "Bill", role: "primary_owner" },
+    ]);
+  });
+
+  it("passes owner lookup failures through with their status", async () => {
+    const agentsService = createAgentsServiceMock();
+    const expired = new Error("This confirmation link expired. Start again.");
+    expired.statusCode = 410;
+    agentsService.pollTelegramOwnerCapture.mockRejectedValueOnce(expired);
+    const app = createApp(agentsService);
+
+    const response = await request(app)
+      .post("/api/channels/telegram/owner-poll")
+      .send({ token: "123456789:AA-secret-token-value", nonce: "old" });
+
+    expect(response.status).toBe(410);
+    expect(response.body).toEqual({ ok: false, error: expired.message });
   });
 
   it("verifies Discord settings and installation without persisting the token", async () => {

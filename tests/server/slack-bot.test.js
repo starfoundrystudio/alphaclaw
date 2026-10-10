@@ -266,3 +266,86 @@ describe("server/slack-bot vault-aware remediation copy", () => {
     ).rejects.toThrow(/copy the Bot User OAuth Token again/);
   });
 });
+
+describe("server/slack-bot workspace members", () => {
+  const { listSlackWorkspaceMembers } = require("../../lib/server/slack-bot");
+
+  const member = (id, extra = {}) => ({
+    id,
+    name: id.toLowerCase(),
+    profile: { display_name: `Name ${id}`, real_name: `Real ${id}` },
+    ...extra,
+  });
+
+  it("lists real people with owners and admins first, across pages", async () => {
+    const listUsers = vi.fn(async ({ cursor }) =>
+      cursor
+        ? {
+            members: [member("U0003", { is_primary_owner: true, is_owner: true })],
+            response_metadata: { next_cursor: "" },
+          }
+        : {
+            members: [
+              member("U0001"),
+              member("U0002", { is_admin: true }),
+              member("U0BOT", { is_bot: true }),
+              member("U0GONE", { deleted: true }),
+              member("USLACKBOT"),
+            ],
+            response_metadata: { next_cursor: "page-2" },
+          },
+    );
+    const createApi = vi.fn(() => ({ listUsers }));
+
+    const result = await listSlackWorkspaceMembers(
+      { botToken: "xoxb-bot-secret" },
+      { createApi },
+    );
+
+    expect(result.truncated).toBe(false);
+    expect(result.members.map((entry) => [entry.id, entry.role])).toEqual([
+      ["U0003", "primary_owner"],
+      ["U0002", "admin"],
+      ["U0001", ""],
+    ]);
+    expect(result.members[2]).toEqual(
+      expect.objectContaining({
+        name: "Name U0001",
+        realName: "Real U0001",
+        handle: "u0001",
+      }),
+    );
+    expect(listUsers).toHaveBeenNthCalledWith(2, {
+      cursor: "page-2",
+      limit: 200,
+    });
+  });
+
+  it("explains a missing users:read scope", async () => {
+    const error = new Error("missing_scope");
+    error.slackError = "missing_scope";
+    await expect(
+      listSlackWorkspaceMembers(
+        { botToken: "xoxb-bot-secret" },
+        {
+          createApi: () => ({
+            listUsers: vi.fn(async () => {
+              throw error;
+            }),
+          }),
+        },
+      ),
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      message: expect.stringContaining("users:read"),
+    });
+  });
+
+  it("rejects a non-bot token before calling Slack", async () => {
+    const createApi = vi.fn();
+    await expect(
+      listSlackWorkspaceMembers({ botToken: "xoxp-user" }, { createApi }),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(createApi).not.toHaveBeenCalled();
+  });
+});

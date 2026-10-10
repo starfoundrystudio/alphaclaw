@@ -3400,3 +3400,129 @@ describe("server/agents/service vault-brokered channels", () => {
     );
   });
 });
+
+describe("server/agents/service channel owner seeding", () => {
+  const createService = (initialConfig, readEnvFile = vi.fn(() => [])) => {
+    const fsMock = buildFsMock({
+      initialConfig: {
+        agents: { list: [{ id: "main", default: true }] },
+        ...initialConfig,
+      },
+    });
+    const writeEnvFile = vi.fn();
+    const service = createAgentsService({
+      fs: fsMock,
+      OPENCLAW_DIR: "/tmp/openclaw",
+      rootDir: "/tmp",
+      readEnvFile,
+      writeEnvFile,
+      reloadEnv: vi.fn(),
+      reconcileOpenclawPlugins: vi.fn(async () => ({ plugins: [] })),
+    });
+    return { fsMock, service, writeEnvFile };
+  };
+
+  it("seeds a Discord owner the way a completed pairing would", async () => {
+    const { fsMock, service } = createService({});
+
+    const result = await service.createChannelAccount({
+      provider: "discord",
+      name: "Discord",
+      token: "discord-token",
+      agentId: "main",
+      discordApplicationId: "123456789012345678",
+      ownerId: "<@111111111111111111>",
+    });
+
+    expect(result.ownerSeeded).toBe(true);
+    const cfg = fsMock.readConfig();
+    expect(cfg.channels.discord.accounts.default).toEqual(
+      expect.objectContaining({
+        dmPolicy: "allowlist",
+        allowFrom: ["111111111111111111"],
+        execApprovals: { approvers: ["111111111111111111"], enabled: "auto" },
+      }),
+    );
+    expect(cfg.commands.ownerAllowFrom).toEqual([
+      "discord:111111111111111111",
+    ]);
+  });
+
+  it("adds a Slack owner next to an existing Telegram owner", async () => {
+    const { fsMock, service } = createService({
+      commands: { ownerAllowFrom: ["telegram:987654321"] },
+    });
+
+    await service.createChannelAccount({
+      provider: "slack",
+      name: "Slack",
+      token: "xoxb-slack-token",
+      appToken: "xapp-1-slack-token",
+      agentId: "main",
+      ownerId: "U012ABC",
+    });
+
+    const cfg = fsMock.readConfig();
+    expect(cfg.channels.slack.accounts.default).toEqual(
+      expect.objectContaining({
+        dmPolicy: "allowlist",
+        allowFrom: ["U012ABC"],
+      }),
+    );
+    expect(cfg.commands.ownerAllowFrom).toEqual([
+      "telegram:987654321",
+      "slack:U012ABC",
+    ]);
+  });
+
+  it("makes the Telegram owner an exec approver", async () => {
+    const { fsMock, service } = createService({});
+
+    await service.createChannelAccount({
+      provider: "telegram",
+      name: "Telegram",
+      token: "123456789:AA-telegram-token",
+      agentId: "main",
+      ownerId: "987654321",
+    });
+
+    const account = fsMock.readConfig().channels.telegram.accounts.default;
+    expect(account.dmPolicy).toBe("allowlist");
+    expect(account.allowFrom).toEqual(["987654321"]);
+    expect(account.execApprovals).toEqual({ approvers: ["987654321"] });
+  });
+
+  it("keeps pairing when no owner is given", async () => {
+    const { fsMock, service } = createService({});
+
+    const result = await service.createChannelAccount({
+      provider: "telegram",
+      name: "Telegram",
+      token: "123456789:AA-telegram-token",
+      agentId: "main",
+    });
+
+    expect(result.ownerSeeded).toBeUndefined();
+    const cfg = fsMock.readConfig();
+    expect(cfg.channels.telegram.accounts.default.dmPolicy).toBe("pairing");
+    expect(cfg.channels.telegram.accounts.default.allowFrom).toBeUndefined();
+    expect(cfg.commands).toBeUndefined();
+  });
+
+  it("rejects an invalid owner id before writing anything", async () => {
+    const { fsMock, service, writeEnvFile } = createService({});
+    const before = JSON.stringify(fsMock.readConfig());
+
+    await expect(
+      service.createChannelAccount({
+        provider: "telegram",
+        name: "Telegram",
+        token: "123456789:AA-telegram-token",
+        agentId: "main",
+        ownerId: "@billk",
+      }),
+    ).rejects.toThrow('"@billk" is not a valid Telegram user id');
+    expect(writeEnvFile).not.toHaveBeenCalled();
+    expect(JSON.stringify(fsMock.readConfig())).toBe(before);
+  });
+});
