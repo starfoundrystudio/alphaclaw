@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-10-01T23:54:39.090Z",
+  "generatedAt": "2026-10-11T22:32:39.530Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1009,21 +1009,12 @@
               "accessModes": [
                 "provider-api"
               ],
-              "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+              "source": "openclaw-bundled-catalog"
             },
             {
               "key": "novita/deepseek/deepseek-v4-flash-0731",
               "provider": "novita",
               "label": "DeepSeek V4 Flash 0731",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/deepseek/deepseek-v4-flash-vision-exp",
-              "provider": "novita",
-              "label": "DeepSeek V4 Flash Vision Exp",
               "accessModes": [
                 "provider-api"
               ],
@@ -1105,15 +1096,6 @@
               "key": "novita/baidu/ernie-4.5-21B-a3b",
               "provider": "novita",
               "label": "ERNIE 4.5 21B A3B",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/baidu/ernie-4.5-vl-424b-a47b",
-              "provider": "novita",
-              "label": "ERNIE 4.5 VL 424B A47B",
               "accessModes": [
                 "provider-api"
               ],
@@ -1255,24 +1237,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "novita/thudm/glm-4-32b-0414",
-              "provider": "novita",
-              "label": "GLM-4-32B-0414",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/zai-org/glm-5-turbo",
-              "provider": "novita",
-              "label": "GLM-5-Turbo",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "novita/zai-org/glm-5.2",
               "provider": "novita",
               "label": "GLM-5.2",
@@ -1280,15 +1244,6 @@
                 "provider-api"
               ],
               "source": "openclaw-bundled-catalog+openclaw-provider-probe"
-            },
-            {
-              "key": "novita/zai-org/glm-5v-turbo",
-              "provider": "novita",
-              "label": "GLM-5V-Turbo",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
             },
             {
               "key": "novita/nousresearch/hermes-2-pro-llama-3-8b",
@@ -1444,27 +1399,9 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "novita/sao10k/l3-8b-lunaris",
-              "provider": "novita",
-              "label": "Llama 3 8B Lunaris",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "novita/Sao10K/L3-8B-Stheno-v3.2",
               "provider": "novita",
               "label": "Llama 3 8B Stheno V3.2",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/sao10k/l31-70b-euryale-v2.2",
-              "provider": "novita",
-              "label": "Llama 3.1 70B Euryale V2.2",
               "accessModes": [
                 "provider-api"
               ],
@@ -1579,36 +1516,9 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "novita/minimax/minimax-m2",
-              "provider": "novita",
-              "label": "MiniMax M2",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/minimax/minimax-m2.1",
-              "provider": "novita",
-              "label": "MiniMax M2.1",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "novita/minimax/minimax-m2.5",
               "provider": "novita",
               "label": "MiniMax M2.5",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/minimax/minimax-m2.5-highspeed",
-              "provider": "novita",
-              "label": "MiniMax M2.5 Highspeed",
               "accessModes": [
                 "provider-api"
               ],
@@ -1642,15 +1552,6 @@
               "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
-              "key": "novita/mistralai/mistral-nemo",
-              "provider": "novita",
-              "label": "Mistral Nemo",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "novita/gryphe/mythomax-l2-13b",
               "provider": "novita",
               "label": "MythoMax L2 13B",
@@ -1678,15 +1579,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "novita/openai/gpt-oss-20b",
-              "provider": "novita",
-              "label": "OpenAI GPT OSS 20B",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "novita/paddlepaddle/paddleocr-vl",
               "provider": "novita",
               "label": "PaddleOCR VL",
@@ -1705,117 +1597,9 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "novita/qwen/qwen-2.5-72b-instruct",
-              "provider": "novita",
-              "label": "Qwen2.5 72B Instruct",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-235b-a22b-fp8",
-              "provider": "novita",
-              "label": "Qwen3 235B A22B",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-235b-a22b-instruct-2507",
-              "provider": "novita",
-              "label": "Qwen3 235B A22B Instruct 2507",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-235b-a22b-thinking-2507",
-              "provider": "novita",
-              "label": "Qwen3 235B A22B Thinking 2507",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-coder-30b-a3b-instruct",
-              "provider": "novita",
-              "label": "Qwen3 Coder 30B A3B Instruct",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-coder-480b-a35b-instruct",
-              "provider": "novita",
-              "label": "Qwen3 Coder 480B A35B Instruct",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-coder-next",
-              "provider": "novita",
-              "label": "Qwen3 Coder Next",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-max",
-              "provider": "novita",
-              "label": "Qwen3 Max",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-next-80b-a3b-instruct",
-              "provider": "novita",
-              "label": "Qwen3 Next 80B A3B Instruct",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-omni-30b-a3b-instruct",
-              "provider": "novita",
-              "label": "Qwen3 Omni 30B A3B Instruct",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "novita/qwen/qwen3-omni-30b-a3b-thinking",
               "provider": "novita",
               "label": "Qwen3 Omni 30B A3B Thinking",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-vl-235b-a22b-instruct",
-              "provider": "novita",
-              "label": "Qwen3 VL 235B A22B Instruct",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3-vl-235b-a22b-thinking",
-              "provider": "novita",
-              "label": "Qwen3 VL 235B A22B Thinking",
               "accessModes": [
                 "provider-api"
               ],
@@ -1867,15 +1651,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "novita/qwen/qwen3.5-plus",
-              "provider": "novita",
-              "label": "Qwen3.5-Plus",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "novita/qwen/qwen3.6-27b",
               "provider": "novita",
               "label": "Qwen3.6 27B",
@@ -1888,15 +1663,6 @@
               "key": "novita/qwen/qwen3.6-35b-a3b",
               "provider": "novita",
               "label": "Qwen3.6 35B A3B",
-              "accessModes": [
-                "provider-api"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "novita/qwen/qwen3.6-plus",
-              "provider": "novita",
-              "label": "Qwen3.6-Plus",
               "accessModes": [
                 "provider-api"
               ],
@@ -2013,6 +1779,15 @@
                 "provider-api"
               ],
               "source": "openclaw-bundled-catalog"
+            },
+            {
+              "key": "nvidia/deepseek-ai/deepseek-v4.1-flash",
+              "provider": "nvidia",
+              "label": "DeepSeek V4.1 Flash",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
             },
             {
               "key": "nvidia/z-ai/glm-5.1",
@@ -2325,6 +2100,15 @@
               "source": "openclaw-bundled-catalog+openclaw-provider-probe"
             },
             {
+              "key": "ollama-cloud/mistral-large-4",
+              "provider": "ollama-cloud",
+              "label": "mistral-large-4",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "ollama-cloud/nemotron-3-nano:30b",
               "provider": "ollama-cloud",
               "label": "nemotron-3-nano:30b",
@@ -2597,6 +2381,15 @@
               "key": "venice/claude-fable-5-1",
               "provider": "venice",
               "label": "Claude Fable 5.1",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "venice/claude-haiku-5-5",
+              "provider": "venice",
+              "label": "Claude Haiku 5.5",
               "accessModes": [
                 "provider-api"
               ],
@@ -3191,6 +2984,15 @@
               "key": "venice/openai-gpt-61-sol",
               "provider": "venice",
               "label": "GPT-6.1 Sol",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "venice/openai-gpt-61-sol-ultrafast",
+              "provider": "venice",
+              "label": "GPT-6.1 Sol Ultrafast",
               "accessModes": [
                 "provider-api"
               ],
@@ -4221,6 +4023,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/anthropic/claude-haiku-5.5",
+              "provider": "kilocode",
+              "label": "Anthropic: Claude Haiku 5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/~anthropic/claude-haiku-latest",
               "provider": "kilocode",
               "label": "Anthropic: Claude Haiku Latest",
@@ -4356,15 +4167,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/apodex/apodex-1.1-mini:free",
-              "provider": "kilocode",
-              "label": "Apodex: Apodex 1.1 Mini (free)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/arcee-ai/trinity-large-thinking",
               "provider": "kilocode",
               "label": "Arcee AI: Trinity Large Thinking",
@@ -4419,18 +4221,9 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/baidu/ernie-4.5-vl-424b-a47b",
-              "provider": "kilocode",
-              "label": "Baidu: ERNIE 4.5 VL 424B A47B  (retires Oct 8)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/bytedance-seed/seed-1.6",
               "provider": "kilocode",
-              "label": "ByteDance Seed: Seed 1.6",
+              "label": "ByteDance Seed: Seed 1.6 (retires Nov 11)",
               "accessModes": [
                 "gateway"
               ],
@@ -4439,7 +4232,7 @@
             {
               "key": "kilocode/bytedance-seed/seed-1.6-flash",
               "provider": "kilocode",
-              "label": "ByteDance Seed: Seed 1.6 Flash",
+              "label": "ByteDance Seed: Seed 1.6 Flash (retires Nov 11)",
               "accessModes": [
                 "gateway"
               ],
@@ -4457,7 +4250,7 @@
             {
               "key": "kilocode/bytedance-seed/seed-2.0-code",
               "provider": "kilocode",
-              "label": "ByteDance Seed: Seed-2.0-Code",
+              "label": "ByteDance Seed: Seed-2.0-Code (retires Nov 11)",
               "accessModes": [
                 "gateway"
               ],
@@ -4977,9 +4770,9 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/inclusionai/ling-3.0-flash-sante:free",
+              "key": "kilocode/inclusionai/ling-3.0-flash-sante",
               "provider": "kilocode",
-              "label": "inclusionAI: Ling 3.0 Flash Sante (free)",
+              "label": "inclusionAI: Ling 3.0 Flash Sante",
               "accessModes": [
                 "gateway"
               ],
@@ -4989,6 +4782,15 @@
               "key": "kilocode/inclusionai/ling-3.0-flash-vl",
               "provider": "kilocode",
               "label": "inclusionAI: Ling 3.0 Flash VL",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/inclusionai/ling-3.1-flash",
+              "provider": "kilocode",
+              "label": "inclusionAI: Ling 3.1 Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -5007,15 +4809,6 @@
               "key": "kilocode/inference-net/schematron-v2-turbo",
               "provider": "kilocode",
               "label": "Inference.net: Schematron V2 Turbo",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/kwaipilot/kat-coder-pro-v2.5",
-              "provider": "kilocode",
-              "label": "Kwaipilot: KAT-Coder-Pro V2.5",
               "accessModes": [
                 "gateway"
               ],
@@ -5222,7 +5015,7 @@
             {
               "key": "kilocode/minimax/minimax-m2.1",
               "provider": "kilocode",
-              "label": "MiniMax: MiniMax M2.1 (retires Oct 8)",
+              "label": "MiniMax: MiniMax M2.1",
               "accessModes": [
                 "gateway"
               ],
@@ -5331,6 +5124,15 @@
               "key": "kilocode/mistralai/mistral-large-2512",
               "provider": "kilocode",
               "label": "Mistral: Mistral Large 3 2512",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/mistralai/mistral-large-4-0",
+              "provider": "kilocode",
+              "label": "Mistral: Mistral Large 4 (50% off)",
               "accessModes": [
                 "gateway"
               ],
@@ -5664,6 +5466,15 @@
               "key": "kilocode/nvidia/nemotron-3.5-lightning:free",
               "provider": "kilocode",
               "label": "NVIDIA: Nemotron 3.5 Lightning (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/nvidia/switchyard",
+              "provider": "kilocode",
+              "label": "NVIDIA: Switchyard",
               "accessModes": [
                 "gateway"
               ],
@@ -6140,7 +5951,7 @@
             {
               "key": "kilocode/openai/gpt-6.1-sol",
               "provider": "kilocode",
-              "label": "OpenAI: GPT-6.1 Sol (new)",
+              "label": "OpenAI: GPT-6.1 Sol",
               "accessModes": [
                 "gateway"
               ],
@@ -6372,15 +6183,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/poolside/laguna-s-2.1",
-              "provider": "kilocode",
-              "label": "Poolside: Laguna S 2.1",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/poolside/laguna-s-2.1:free",
               "provider": "kilocode",
               "label": "Poolside: Laguna S 2.1 (free)",
@@ -6390,9 +6192,9 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/poolside/laguna-xs-2.1",
+              "key": "kilocode/poolside/laguna-s-2.1",
               "provider": "kilocode",
-              "label": "Poolside: Laguna XS 2.1",
+              "label": "Poolside: Laguna S 2.1 (retires Oct 31)",
               "accessModes": [
                 "gateway"
               ],
@@ -6408,18 +6210,18 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/prism-ml/ternary-bonsai-2-27b",
+              "key": "kilocode/poolside/laguna-xs-2.1",
               "provider": "kilocode",
-              "label": "PrismML: Ternary Bonsai 2 27B",
+              "label": "Poolside: Laguna XS 2.1 (retires Oct 31)",
               "accessModes": [
                 "gateway"
               ],
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/qwen/qwen-plus-2025-07-28",
+              "key": "kilocode/prism-ml/ternary-bonsai-2-27b",
               "provider": "kilocode",
-              "label": "Qwen: Qwen Plus 0728 (retires Oct 9)",
+              "label": "PrismML: Ternary Bonsai 2 27B",
               "accessModes": [
                 "gateway"
               ],
@@ -6462,15 +6264,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/qwen/qwen3-235b-a22b",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3 235B A22B (retires Oct 9)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/qwen/qwen3-235b-a22b-2507",
               "provider": "kilocode",
               "label": "Qwen: Qwen3 235B A22B Instruct 2507",
@@ -6482,7 +6275,7 @@
             {
               "key": "kilocode/qwen/qwen3-235b-a22b-thinking-2507",
               "provider": "kilocode",
-              "label": "Qwen: Qwen3 235B A22B Thinking 2507 (retires Oct 9)",
+              "label": "Qwen: Qwen3 235B A22B Thinking 2507",
               "accessModes": [
                 "gateway"
               ],
@@ -6507,27 +6300,9 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/qwen/qwen3-30b-a3b-thinking-2507",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3 30B A3B Thinking 2507 (retires Oct 9)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/qwen/qwen3-32b",
               "provider": "kilocode",
               "label": "Qwen: Qwen3 32B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/qwen/qwen3-8b",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3 8B (retires Oct 9)",
               "accessModes": [
                 "gateway"
               ],
@@ -6570,33 +6345,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/qwen/qwen3-coder-plus",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3 Coder Plus (retires Oct 9)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/qwen/qwen3-max",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3 Max (retires Oct 9)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/qwen/qwen3-max-thinking",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3 Max Thinking (retires Oct 9)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/qwen/qwen3-next-80b-a3b-instruct",
               "provider": "kilocode",
               "label": "Qwen: Qwen3 Next 80B A3B Instruct",
@@ -6624,15 +6372,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/qwen/qwen3-vl-235b-a22b-thinking",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3 VL 235B A22B Thinking (retires Oct 9)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/qwen/qwen3-vl-30b-a3b-instruct",
               "provider": "kilocode",
               "label": "Qwen: Qwen3 VL 30B A3B Instruct",
@@ -6644,16 +6383,7 @@
             {
               "key": "kilocode/qwen/qwen3-vl-30b-a3b-thinking",
               "provider": "kilocode",
-              "label": "Qwen: Qwen3 VL 30B A3B Thinking (retires Oct 9)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/qwen/qwen3-vl-32b-instruct",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3 VL 32B Instruct (retires Oct 9)",
+              "label": "Qwen: Qwen3 VL 30B A3B Thinking",
               "accessModes": [
                 "gateway"
               ],
@@ -6662,16 +6392,7 @@
             {
               "key": "kilocode/qwen/qwen3-vl-8b-instruct",
               "provider": "kilocode",
-              "label": "Qwen: Qwen3 VL 8B Instruct (retires Oct 9)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/qwen/qwen3-vl-8b-thinking",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3 VL 8B Thinking (retires Oct 9)",
+              "label": "Qwen: Qwen3 VL 8B Instruct",
               "accessModes": [
                 "gateway"
               ],
@@ -6734,7 +6455,7 @@
             {
               "key": "kilocode/qwen/qwen3.5-9b",
               "provider": "kilocode",
-              "label": "Qwen: Qwen3.5-9B",
+              "label": "Qwen: Qwen3.5-9B (retires Oct 21)",
               "accessModes": [
                 "gateway"
               ],
@@ -6771,15 +6492,6 @@
               "key": "kilocode/qwen/qwen3.6-flash",
               "provider": "kilocode",
               "label": "Qwen: Qwen3.6 Flash",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/qwen/qwen3.6-max-preview",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3.6 Max Preview (retires Oct 9)",
               "accessModes": [
                 "gateway"
               ],
@@ -6834,15 +6546,6 @@
               "key": "kilocode/qwen/qwen3.8-27b",
               "provider": "kilocode",
               "label": "Qwen: Qwen3.8 27B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
-              "key": "kilocode/qwen/qwen3.8-27b:free",
-              "provider": "kilocode",
-              "label": "Qwen: Qwen3.8 27B (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -7011,15 +6714,6 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/stealth/space-bunny-alpha",
-              "provider": "kilocode",
-              "label": "Space Bunny Alpha (retires Oct 5)",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe"
-            },
-            {
               "key": "kilocode/x-ai/grok-4.20",
               "provider": "kilocode",
               "label": "SpaceXAI: Grok 4.20",
@@ -7119,6 +6813,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/stealth/glyph-cluster",
+              "provider": "kilocode",
+              "label": "Stealth: Glyph Cluster (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/stealth/qwen3.6-plus",
               "provider": "kilocode",
               "label": "Stealth: Qwen3.6 Plus (50% off)",
@@ -7146,9 +6849,18 @@
               "source": "openclaw-provider-probe"
             },
             {
-              "key": "kilocode/stepfun/step-3.7-flash:free",
+              "key": "kilocode/stepfun/step-5-preview",
               "provider": "kilocode",
-              "label": "StepFun: Step 3.7 Flash (free)",
+              "label": "StepFun: Step 5 Preview",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/stepfun/step-5-preview-free",
+              "provider": "kilocode",
+              "label": "StepFun: Step 5 Preview (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -7346,7 +7058,7 @@
             {
               "key": "kilocode/xiaomi/mimo-v2.5",
               "provider": "kilocode",
-              "label": "Xiaomi: MiMo-V2.5",
+              "label": "Xiaomi: MiMo-V2.5 (retires Oct 21)",
               "accessModes": [
                 "gateway"
               ],
@@ -7355,7 +7067,7 @@
             {
               "key": "kilocode/xiaomi/mimo-v2.5-pro",
               "provider": "kilocode",
-              "label": "Xiaomi: MiMo-V2.5-Pro",
+              "label": "Xiaomi: MiMo-V2.5-Pro (retires Oct 21)",
               "accessModes": [
                 "gateway"
               ],
@@ -7781,6 +7493,24 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/anthropic/claude-haiku-5.5",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Haiku 5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/anthropic/claude-haiku-5.5:batch",
+              "provider": "openrouter",
+              "label": "Anthropic: Claude Haiku 5.5 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/~anthropic/claude-haiku-latest",
               "provider": "openrouter",
               "label": "Anthropic: Claude Haiku Latest",
@@ -8049,15 +7779,6 @@
                 "gateway"
               ],
               "source": "public-provider-catalog"
-            },
-            {
-              "key": "openrouter/baidu/ernie-4.5-vl-424b-a47b",
-              "provider": "openrouter",
-              "label": "Baidu: ERNIE 4.5 VL 424B A47B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
               "key": "openrouter/bodybuilder",
@@ -8762,6 +8483,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/google/gemini-nano-banana-2.1",
+              "provider": "openrouter",
+              "label": "Google: Nano Banana 2.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/google/gemini-3-pro-image-preview",
               "provider": "openrouter",
               "label": "Google: Nano Banana Pro (Gemini 3 Pro Image Preview)",
@@ -8834,9 +8564,9 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+              "key": "openrouter/inclusionai/ling-3.0-flash-sante",
               "provider": "openrouter",
-              "label": "inclusionAI: Ling 3.0 Flash Sante (free)",
+              "label": "inclusionAI: Ling 3.0 Flash Sante",
               "accessModes": [
                 "gateway"
               ],
@@ -8846,6 +8576,15 @@
               "key": "openrouter/inclusionai/ling-3.0-flash-vl",
               "provider": "openrouter",
               "label": "inclusionAI: Ling 3.0 Flash VL",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/inclusionai/ling-3.1-flash",
+              "provider": "openrouter",
+              "label": "inclusionAI: Ling 3.1 Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -8864,15 +8603,6 @@
               "key": "openrouter/inference-net/schematron-v2-turbo",
               "provider": "openrouter",
               "label": "Inference.net: Schematron V2 Turbo",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/kwaipilot/kat-coder-pro-v2.5",
-              "provider": "openrouter",
-              "label": "Kwaipilot: KAT-Coder-Pro V2.5",
               "accessModes": [
                 "gateway"
               ],
@@ -9215,6 +8945,15 @@
               "key": "openrouter/mistralai/mistral-large-2512:batch",
               "provider": "openrouter",
               "label": "Mistral: Mistral Large 3 2512 (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/mistralai/mistral-large-4-0",
+              "provider": "openrouter",
+              "label": "Mistral: Mistral Large 4",
               "accessModes": [
                 "gateway"
               ],
@@ -9584,6 +9323,15 @@
               "key": "openrouter/nvidia/nemotron-3.5-lightning:free",
               "provider": "openrouter",
               "label": "NVIDIA: Nemotron 3.5 Lightning (free)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/nvidia/switchyard",
+              "provider": "openrouter",
+              "label": "NVIDIA: Switchyard",
               "accessModes": [
                 "gateway"
               ],
@@ -10355,9 +10103,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/openai/gpt-6.1-sol:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-6.1 Sol (batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/openai/gpt-6.1-sol-pro",
               "provider": "openrouter",
               "label": "OpenAI: GPT-6.1 Sol Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/openai/gpt-6.1-sol-pro:batch",
+              "provider": "openrouter",
+              "label": "OpenAI: GPT-6.1 Sol Pro (batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -10670,15 +10436,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/qwen/qwen-plus-2025-07-28",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen Plus 0728",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/qwen/qwen-plus",
               "provider": "openrouter",
               "label": "Qwen: Qwen-Plus",
@@ -10709,15 +10466,6 @@
               "key": "openrouter/qwen/qwen3-14b",
               "provider": "openrouter",
               "label": "Qwen: Qwen3 14B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/qwen/qwen3-235b-a22b",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3 235B A22B",
               "accessModes": [
                 "gateway"
               ],
@@ -10760,27 +10508,9 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/qwen/qwen3-30b-a3b-thinking-2507",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3 30B A3B Thinking 2507",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/qwen/qwen3-32b",
               "provider": "openrouter",
               "label": "Qwen: Qwen3 32B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/qwen/qwen3-8b",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3 8B",
               "accessModes": [
                 "gateway"
               ],
@@ -10823,33 +10553,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/qwen/qwen3-coder-plus",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3 Coder Plus",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/qwen/qwen3-max",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3 Max",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/qwen/qwen3-max-thinking",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3 Max Thinking",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/qwen/qwen3-next-80b-a3b-instruct",
               "provider": "openrouter",
               "label": "Qwen: Qwen3 Next 80B A3B Instruct",
@@ -10877,15 +10580,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/qwen/qwen3-vl-235b-a22b-thinking",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3 VL 235B A22B Thinking",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/qwen/qwen3-vl-30b-a3b-instruct",
               "provider": "openrouter",
               "label": "Qwen: Qwen3 VL 30B A3B Instruct",
@@ -10904,27 +10598,9 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/qwen/qwen3-vl-32b-instruct",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3 VL 32B Instruct",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/qwen/qwen3-vl-8b-instruct",
               "provider": "openrouter",
               "label": "Qwen: Qwen3 VL 8B Instruct",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/qwen/qwen3-vl-8b-thinking",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3 VL 8B Thinking",
               "accessModes": [
                 "gateway"
               ],
@@ -11030,15 +10706,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/qwen/qwen3.6-max-preview",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3.6 Max Preview",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/qwen/qwen3.6-plus",
               "provider": "openrouter",
               "label": "Qwen: Qwen3.6 Plus",
@@ -11087,15 +10754,6 @@
               "key": "openrouter/qwen/qwen3.8-27b",
               "provider": "openrouter",
               "label": "Qwen: Qwen3.8 27B",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "openrouter/qwen/qwen3.8-27b:free",
-              "provider": "openrouter",
-              "label": "Qwen: Qwen3.8 27B (free)",
               "accessModes": [
                 "gateway"
               ],
@@ -11264,15 +10922,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "openrouter/stealth/space-bunny-alpha",
-              "provider": "openrouter",
-              "label": "Space Bunny Alpha",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "openrouter/x-ai/grok-4.20",
               "provider": "openrouter",
               "label": "SpaceXAI: Grok 4.20",
@@ -11357,6 +11006,15 @@
               "key": "openrouter/stepfun/step-3.7-flash",
               "provider": "openrouter",
               "label": "StepFun: Step 3.7 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/stepfun/step-5-preview",
+              "provider": "openrouter",
+              "label": "StepFun: Step 5 Preview",
               "accessModes": [
                 "gateway"
               ],
@@ -11865,6 +11523,15 @@
               "recommendationRank": 3
             },
             {
+              "key": "vercel-ai-gateway/callstack/apex",
+              "provider": "vercel-ai-gateway",
+              "label": "Apex",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/quiverai/arrow-2",
               "provider": "vercel-ai-gateway",
               "label": "Arrow 2",
@@ -11913,6 +11580,15 @@
               "key": "vercel-ai-gateway/anthropic/claude-haiku-4.5",
               "provider": "vercel-ai-gateway",
               "label": "Claude Haiku 4.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-haiku-5.5",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Haiku 5.5",
               "accessModes": [
                 "gateway"
               ],
@@ -12048,15 +11724,6 @@
               "key": "vercel-ai-gateway/deepseek/deepseek-v3.1",
               "provider": "vercel-ai-gateway",
               "label": "DeepSeek V3.1",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/deepseek/deepseek-v3.1-terminus",
-              "provider": "vercel-ai-gateway",
-              "label": "DeepSeek V3.1 Terminus",
               "accessModes": [
                 "gateway"
               ],
@@ -12315,6 +11982,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/google/gemini-nano-banana-2.1",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini Nano Banana 2.1",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/google/gemini-omni-flash-preview",
               "provider": "vercel-ai-gateway",
               "label": "Gemini Omni Flash Preview",
@@ -12480,6 +12156,15 @@
               "key": "vercel-ai-gateway/zai/glm-5v-turbo",
               "provider": "vercel-ai-gateway",
               "label": "GLM 5V Turbo",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/stealth/glyph-cluster",
+              "provider": "vercel-ai-gateway",
+              "label": "Glyph Cluster",
               "accessModes": [
                 "gateway"
               ],
@@ -13134,15 +12819,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/moonshotai/kimi-k2-thinking",
-              "provider": "vercel-ai-gateway",
-              "label": "Kimi K2 Thinking",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/moonshotai/kimi-k2.5",
               "provider": "vercel-ai-gateway",
               "label": "Kimi K2.5",
@@ -13236,15 +12912,6 @@
               "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-sante",
               "provider": "vercel-ai-gateway",
               "label": "Ling 3.0 Flash Sante",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-sante-free",
-              "provider": "vercel-ai-gateway",
-              "label": "Ling 3.0 Flash Sante (Free)",
               "accessModes": [
                 "gateway"
               ],
@@ -13515,6 +13182,15 @@
               "key": "vercel-ai-gateway/mistral/mistral-large-3",
               "provider": "vercel-ai-gateway",
               "label": "Mistral Large 3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/mistral/mistral-large-4",
+              "provider": "vercel-ai-gateway",
+              "label": "Mistral Large 4",
               "accessModes": [
                 "gateway"
               ],
@@ -14145,15 +13821,6 @@
               "key": "vercel-ai-gateway/stepfun/step-5-preview",
               "provider": "vercel-ai-gateway",
               "label": "Step 5 Preview",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/stepfun/step-3.5-flash",
-              "provider": "vercel-ai-gateway",
-              "label": "StepFun 3.5 Flash",
               "accessModes": [
                 "gateway"
               ],
@@ -14907,6 +14574,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/anthropic/claude-haiku-5.5",
+      "provider": "kilocode",
+      "label": "Anthropic: Claude Haiku 5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/~anthropic/claude-haiku-latest",
       "provider": "kilocode",
       "label": "Anthropic: Claude Haiku Latest",
@@ -15042,15 +14718,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/apodex/apodex-1.1-mini:free",
-      "provider": "kilocode",
-      "label": "Apodex: Apodex 1.1 Mini (free)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/arcee-ai/trinity-large-thinking",
       "provider": "kilocode",
       "label": "Arcee AI: Trinity Large Thinking",
@@ -15105,18 +14772,9 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/baidu/ernie-4.5-vl-424b-a47b",
-      "provider": "kilocode",
-      "label": "Baidu: ERNIE 4.5 VL 424B A47B  (retires Oct 8)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/bytedance-seed/seed-1.6",
       "provider": "kilocode",
-      "label": "ByteDance Seed: Seed 1.6",
+      "label": "ByteDance Seed: Seed 1.6 (retires Nov 11)",
       "accessModes": [
         "gateway"
       ],
@@ -15125,7 +14783,7 @@
     {
       "key": "kilocode/bytedance-seed/seed-1.6-flash",
       "provider": "kilocode",
-      "label": "ByteDance Seed: Seed 1.6 Flash",
+      "label": "ByteDance Seed: Seed 1.6 Flash (retires Nov 11)",
       "accessModes": [
         "gateway"
       ],
@@ -15143,7 +14801,7 @@
     {
       "key": "kilocode/bytedance-seed/seed-2.0-code",
       "provider": "kilocode",
-      "label": "ByteDance Seed: Seed-2.0-Code",
+      "label": "ByteDance Seed: Seed-2.0-Code (retires Nov 11)",
       "accessModes": [
         "gateway"
       ],
@@ -15663,9 +15321,9 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/inclusionai/ling-3.0-flash-sante:free",
+      "key": "kilocode/inclusionai/ling-3.0-flash-sante",
       "provider": "kilocode",
-      "label": "inclusionAI: Ling 3.0 Flash Sante (free)",
+      "label": "inclusionAI: Ling 3.0 Flash Sante",
       "accessModes": [
         "gateway"
       ],
@@ -15675,6 +15333,15 @@
       "key": "kilocode/inclusionai/ling-3.0-flash-vl",
       "provider": "kilocode",
       "label": "inclusionAI: Ling 3.0 Flash VL",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/inclusionai/ling-3.1-flash",
+      "provider": "kilocode",
+      "label": "inclusionAI: Ling 3.1 Flash",
       "accessModes": [
         "gateway"
       ],
@@ -15693,15 +15360,6 @@
       "key": "kilocode/inference-net/schematron-v2-turbo",
       "provider": "kilocode",
       "label": "Inference.net: Schematron V2 Turbo",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/kwaipilot/kat-coder-pro-v2.5",
-      "provider": "kilocode",
-      "label": "Kwaipilot: KAT-Coder-Pro V2.5",
       "accessModes": [
         "gateway"
       ],
@@ -15908,7 +15566,7 @@
     {
       "key": "kilocode/minimax/minimax-m2.1",
       "provider": "kilocode",
-      "label": "MiniMax: MiniMax M2.1 (retires Oct 8)",
+      "label": "MiniMax: MiniMax M2.1",
       "accessModes": [
         "gateway"
       ],
@@ -16017,6 +15675,15 @@
       "key": "kilocode/mistralai/mistral-large-2512",
       "provider": "kilocode",
       "label": "Mistral: Mistral Large 3 2512",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/mistralai/mistral-large-4-0",
+      "provider": "kilocode",
+      "label": "Mistral: Mistral Large 4 (50% off)",
       "accessModes": [
         "gateway"
       ],
@@ -16350,6 +16017,15 @@
       "key": "kilocode/nvidia/nemotron-3.5-lightning:free",
       "provider": "kilocode",
       "label": "NVIDIA: Nemotron 3.5 Lightning (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/nvidia/switchyard",
+      "provider": "kilocode",
+      "label": "NVIDIA: Switchyard",
       "accessModes": [
         "gateway"
       ],
@@ -16826,7 +16502,7 @@
     {
       "key": "kilocode/openai/gpt-6.1-sol",
       "provider": "kilocode",
-      "label": "OpenAI: GPT-6.1 Sol (new)",
+      "label": "OpenAI: GPT-6.1 Sol",
       "accessModes": [
         "gateway"
       ],
@@ -17058,15 +16734,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/poolside/laguna-s-2.1",
-      "provider": "kilocode",
-      "label": "Poolside: Laguna S 2.1",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/poolside/laguna-s-2.1:free",
       "provider": "kilocode",
       "label": "Poolside: Laguna S 2.1 (free)",
@@ -17076,9 +16743,9 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/poolside/laguna-xs-2.1",
+      "key": "kilocode/poolside/laguna-s-2.1",
       "provider": "kilocode",
-      "label": "Poolside: Laguna XS 2.1",
+      "label": "Poolside: Laguna S 2.1 (retires Oct 31)",
       "accessModes": [
         "gateway"
       ],
@@ -17094,18 +16761,18 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/prism-ml/ternary-bonsai-2-27b",
+      "key": "kilocode/poolside/laguna-xs-2.1",
       "provider": "kilocode",
-      "label": "PrismML: Ternary Bonsai 2 27B",
+      "label": "Poolside: Laguna XS 2.1 (retires Oct 31)",
       "accessModes": [
         "gateway"
       ],
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/qwen/qwen-plus-2025-07-28",
+      "key": "kilocode/prism-ml/ternary-bonsai-2-27b",
       "provider": "kilocode",
-      "label": "Qwen: Qwen Plus 0728 (retires Oct 9)",
+      "label": "PrismML: Ternary Bonsai 2 27B",
       "accessModes": [
         "gateway"
       ],
@@ -17148,15 +16815,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/qwen/qwen3-235b-a22b",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3 235B A22B (retires Oct 9)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/qwen/qwen3-235b-a22b-2507",
       "provider": "kilocode",
       "label": "Qwen: Qwen3 235B A22B Instruct 2507",
@@ -17168,7 +16826,7 @@
     {
       "key": "kilocode/qwen/qwen3-235b-a22b-thinking-2507",
       "provider": "kilocode",
-      "label": "Qwen: Qwen3 235B A22B Thinking 2507 (retires Oct 9)",
+      "label": "Qwen: Qwen3 235B A22B Thinking 2507",
       "accessModes": [
         "gateway"
       ],
@@ -17193,27 +16851,9 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/qwen/qwen3-30b-a3b-thinking-2507",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3 30B A3B Thinking 2507 (retires Oct 9)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/qwen/qwen3-32b",
       "provider": "kilocode",
       "label": "Qwen: Qwen3 32B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/qwen/qwen3-8b",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3 8B (retires Oct 9)",
       "accessModes": [
         "gateway"
       ],
@@ -17256,33 +16896,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/qwen/qwen3-coder-plus",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3 Coder Plus (retires Oct 9)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/qwen/qwen3-max",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3 Max (retires Oct 9)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/qwen/qwen3-max-thinking",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3 Max Thinking (retires Oct 9)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/qwen/qwen3-next-80b-a3b-instruct",
       "provider": "kilocode",
       "label": "Qwen: Qwen3 Next 80B A3B Instruct",
@@ -17310,15 +16923,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/qwen/qwen3-vl-235b-a22b-thinking",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3 VL 235B A22B Thinking (retires Oct 9)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/qwen/qwen3-vl-30b-a3b-instruct",
       "provider": "kilocode",
       "label": "Qwen: Qwen3 VL 30B A3B Instruct",
@@ -17330,16 +16934,7 @@
     {
       "key": "kilocode/qwen/qwen3-vl-30b-a3b-thinking",
       "provider": "kilocode",
-      "label": "Qwen: Qwen3 VL 30B A3B Thinking (retires Oct 9)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/qwen/qwen3-vl-32b-instruct",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3 VL 32B Instruct (retires Oct 9)",
+      "label": "Qwen: Qwen3 VL 30B A3B Thinking",
       "accessModes": [
         "gateway"
       ],
@@ -17348,16 +16943,7 @@
     {
       "key": "kilocode/qwen/qwen3-vl-8b-instruct",
       "provider": "kilocode",
-      "label": "Qwen: Qwen3 VL 8B Instruct (retires Oct 9)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/qwen/qwen3-vl-8b-thinking",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3 VL 8B Thinking (retires Oct 9)",
+      "label": "Qwen: Qwen3 VL 8B Instruct",
       "accessModes": [
         "gateway"
       ],
@@ -17420,7 +17006,7 @@
     {
       "key": "kilocode/qwen/qwen3.5-9b",
       "provider": "kilocode",
-      "label": "Qwen: Qwen3.5-9B",
+      "label": "Qwen: Qwen3.5-9B (retires Oct 21)",
       "accessModes": [
         "gateway"
       ],
@@ -17457,15 +17043,6 @@
       "key": "kilocode/qwen/qwen3.6-flash",
       "provider": "kilocode",
       "label": "Qwen: Qwen3.6 Flash",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/qwen/qwen3.6-max-preview",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3.6 Max Preview (retires Oct 9)",
       "accessModes": [
         "gateway"
       ],
@@ -17520,15 +17097,6 @@
       "key": "kilocode/qwen/qwen3.8-27b",
       "provider": "kilocode",
       "label": "Qwen: Qwen3.8 27B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "kilocode/qwen/qwen3.8-27b:free",
-      "provider": "kilocode",
-      "label": "Qwen: Qwen3.8 27B (free)",
       "accessModes": [
         "gateway"
       ],
@@ -17697,15 +17265,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/stealth/space-bunny-alpha",
-      "provider": "kilocode",
-      "label": "Space Bunny Alpha (retires Oct 5)",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "kilocode/x-ai/grok-4.20",
       "provider": "kilocode",
       "label": "SpaceXAI: Grok 4.20",
@@ -17805,6 +17364,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/stealth/glyph-cluster",
+      "provider": "kilocode",
+      "label": "Stealth: Glyph Cluster (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/stealth/qwen3.6-plus",
       "provider": "kilocode",
       "label": "Stealth: Qwen3.6 Plus (50% off)",
@@ -17832,9 +17400,18 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "kilocode/stepfun/step-3.7-flash:free",
+      "key": "kilocode/stepfun/step-5-preview",
       "provider": "kilocode",
-      "label": "StepFun: Step 3.7 Flash (free)",
+      "label": "StepFun: Step 5 Preview",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/stepfun/step-5-preview-free",
+      "provider": "kilocode",
+      "label": "StepFun: Step 5 Preview (free)",
       "accessModes": [
         "gateway"
       ],
@@ -18032,7 +17609,7 @@
     {
       "key": "kilocode/xiaomi/mimo-v2.5",
       "provider": "kilocode",
-      "label": "Xiaomi: MiMo-V2.5",
+      "label": "Xiaomi: MiMo-V2.5 (retires Oct 21)",
       "accessModes": [
         "gateway"
       ],
@@ -18041,7 +17618,7 @@
     {
       "key": "kilocode/xiaomi/mimo-v2.5-pro",
       "provider": "kilocode",
-      "label": "Xiaomi: MiMo-V2.5-Pro",
+      "label": "Xiaomi: MiMo-V2.5-Pro (retires Oct 21)",
       "accessModes": [
         "gateway"
       ],
@@ -18464,21 +18041,12 @@
       "accessModes": [
         "provider-api"
       ],
-      "source": "openclaw-bundled-catalog+openclaw-provider-probe"
+      "source": "openclaw-bundled-catalog"
     },
     {
       "key": "novita/deepseek/deepseek-v4-flash-0731",
       "provider": "novita",
       "label": "DeepSeek V4 Flash 0731",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/deepseek/deepseek-v4-flash-vision-exp",
-      "provider": "novita",
-      "label": "DeepSeek V4 Flash Vision Exp",
       "accessModes": [
         "provider-api"
       ],
@@ -18560,15 +18128,6 @@
       "key": "novita/baidu/ernie-4.5-21B-a3b",
       "provider": "novita",
       "label": "ERNIE 4.5 21B A3B",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/baidu/ernie-4.5-vl-424b-a47b",
-      "provider": "novita",
-      "label": "ERNIE 4.5 VL 424B A47B",
       "accessModes": [
         "provider-api"
       ],
@@ -18710,24 +18269,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "novita/thudm/glm-4-32b-0414",
-      "provider": "novita",
-      "label": "GLM-4-32B-0414",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/zai-org/glm-5-turbo",
-      "provider": "novita",
-      "label": "GLM-5-Turbo",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "novita/zai-org/glm-5.2",
       "provider": "novita",
       "label": "GLM-5.2",
@@ -18735,15 +18276,6 @@
         "provider-api"
       ],
       "source": "openclaw-bundled-catalog+openclaw-provider-probe"
-    },
-    {
-      "key": "novita/zai-org/glm-5v-turbo",
-      "provider": "novita",
-      "label": "GLM-5V-Turbo",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
     },
     {
       "key": "novita/nousresearch/hermes-2-pro-llama-3-8b",
@@ -18899,27 +18431,9 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "novita/sao10k/l3-8b-lunaris",
-      "provider": "novita",
-      "label": "Llama 3 8B Lunaris",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "novita/Sao10K/L3-8B-Stheno-v3.2",
       "provider": "novita",
       "label": "Llama 3 8B Stheno V3.2",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/sao10k/l31-70b-euryale-v2.2",
-      "provider": "novita",
-      "label": "Llama 3.1 70B Euryale V2.2",
       "accessModes": [
         "provider-api"
       ],
@@ -19034,36 +18548,9 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "novita/minimax/minimax-m2",
-      "provider": "novita",
-      "label": "MiniMax M2",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/minimax/minimax-m2.1",
-      "provider": "novita",
-      "label": "MiniMax M2.1",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "novita/minimax/minimax-m2.5",
       "provider": "novita",
       "label": "MiniMax M2.5",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/minimax/minimax-m2.5-highspeed",
-      "provider": "novita",
-      "label": "MiniMax M2.5 Highspeed",
       "accessModes": [
         "provider-api"
       ],
@@ -19097,15 +18584,6 @@
       "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
-      "key": "novita/mistralai/mistral-nemo",
-      "provider": "novita",
-      "label": "Mistral Nemo",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "novita/gryphe/mythomax-l2-13b",
       "provider": "novita",
       "label": "MythoMax L2 13B",
@@ -19133,15 +18611,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "novita/openai/gpt-oss-20b",
-      "provider": "novita",
-      "label": "OpenAI GPT OSS 20B",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "novita/paddlepaddle/paddleocr-vl",
       "provider": "novita",
       "label": "PaddleOCR VL",
@@ -19160,117 +18629,9 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "novita/qwen/qwen-2.5-72b-instruct",
-      "provider": "novita",
-      "label": "Qwen2.5 72B Instruct",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-235b-a22b-fp8",
-      "provider": "novita",
-      "label": "Qwen3 235B A22B",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-235b-a22b-instruct-2507",
-      "provider": "novita",
-      "label": "Qwen3 235B A22B Instruct 2507",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-235b-a22b-thinking-2507",
-      "provider": "novita",
-      "label": "Qwen3 235B A22B Thinking 2507",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-coder-30b-a3b-instruct",
-      "provider": "novita",
-      "label": "Qwen3 Coder 30B A3B Instruct",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-coder-480b-a35b-instruct",
-      "provider": "novita",
-      "label": "Qwen3 Coder 480B A35B Instruct",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-coder-next",
-      "provider": "novita",
-      "label": "Qwen3 Coder Next",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-max",
-      "provider": "novita",
-      "label": "Qwen3 Max",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-next-80b-a3b-instruct",
-      "provider": "novita",
-      "label": "Qwen3 Next 80B A3B Instruct",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-omni-30b-a3b-instruct",
-      "provider": "novita",
-      "label": "Qwen3 Omni 30B A3B Instruct",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "novita/qwen/qwen3-omni-30b-a3b-thinking",
       "provider": "novita",
       "label": "Qwen3 Omni 30B A3B Thinking",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-vl-235b-a22b-instruct",
-      "provider": "novita",
-      "label": "Qwen3 VL 235B A22B Instruct",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3-vl-235b-a22b-thinking",
-      "provider": "novita",
-      "label": "Qwen3 VL 235B A22B Thinking",
       "accessModes": [
         "provider-api"
       ],
@@ -19322,15 +18683,6 @@
       "source": "openclaw-provider-probe"
     },
     {
-      "key": "novita/qwen/qwen3.5-plus",
-      "provider": "novita",
-      "label": "Qwen3.5-Plus",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
       "key": "novita/qwen/qwen3.6-27b",
       "provider": "novita",
       "label": "Qwen3.6 27B",
@@ -19343,15 +18695,6 @@
       "key": "novita/qwen/qwen3.6-35b-a3b",
       "provider": "novita",
       "label": "Qwen3.6 35B A3B",
-      "accessModes": [
-        "provider-api"
-      ],
-      "source": "openclaw-provider-probe"
-    },
-    {
-      "key": "novita/qwen/qwen3.6-plus",
-      "provider": "novita",
-      "label": "Qwen3.6-Plus",
       "accessModes": [
         "provider-api"
       ],
@@ -19455,6 +18798,15 @@
         "provider-api"
       ],
       "source": "openclaw-bundled-catalog"
+    },
+    {
+      "key": "nvidia/deepseek-ai/deepseek-v4.1-flash",
+      "provider": "nvidia",
+      "label": "DeepSeek V4.1 Flash",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
     },
     {
       "key": "nvidia/z-ai/glm-5.1",
@@ -19754,6 +19106,15 @@
       "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
+      "key": "ollama-cloud/mistral-large-4",
+      "provider": "ollama-cloud",
+      "label": "mistral-large-4",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "ollama-cloud/nemotron-3-nano:30b",
       "provider": "ollama-cloud",
       "label": "nemotron-3-nano:30b",
@@ -19995,6 +19356,24 @@
       "key": "openrouter/anthropic/claude-haiku-4.5:batch",
       "provider": "openrouter",
       "label": "Anthropic: Claude Haiku 4.5 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-haiku-5.5",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Haiku 5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/anthropic/claude-haiku-5.5:batch",
+      "provider": "openrouter",
+      "label": "Anthropic: Claude Haiku 5.5 (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -20269,15 +19648,6 @@
         "gateway"
       ],
       "source": "public-provider-catalog"
-    },
-    {
-      "key": "openrouter/baidu/ernie-4.5-vl-424b-a47b",
-      "provider": "openrouter",
-      "label": "Baidu: ERNIE 4.5 VL 424B A47B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
       "key": "openrouter/bodybuilder",
@@ -21027,6 +20397,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/google/gemini-nano-banana-2.1",
+      "provider": "openrouter",
+      "label": "Google: Nano Banana 2.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/google/gemini-3-pro-image-preview",
       "provider": "openrouter",
       "label": "Google: Nano Banana Pro (Gemini 3 Pro Image Preview)",
@@ -21099,9 +20478,9 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/inclusionai/ling-3.0-flash-sante:free",
+      "key": "openrouter/inclusionai/ling-3.0-flash-sante",
       "provider": "openrouter",
-      "label": "inclusionAI: Ling 3.0 Flash Sante (free)",
+      "label": "inclusionAI: Ling 3.0 Flash Sante",
       "accessModes": [
         "gateway"
       ],
@@ -21111,6 +20490,15 @@
       "key": "openrouter/inclusionai/ling-3.0-flash-vl",
       "provider": "openrouter",
       "label": "inclusionAI: Ling 3.0 Flash VL",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/inclusionai/ling-3.1-flash",
+      "provider": "openrouter",
+      "label": "inclusionAI: Ling 3.1 Flash",
       "accessModes": [
         "gateway"
       ],
@@ -21129,15 +20517,6 @@
       "key": "openrouter/inference-net/schematron-v2-turbo",
       "provider": "openrouter",
       "label": "Inference.net: Schematron V2 Turbo",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/kwaipilot/kat-coder-pro-v2.5",
-      "provider": "openrouter",
-      "label": "Kwaipilot: KAT-Coder-Pro V2.5",
       "accessModes": [
         "gateway"
       ],
@@ -21480,6 +20859,15 @@
       "key": "openrouter/mistralai/mistral-large-2512:batch",
       "provider": "openrouter",
       "label": "Mistral: Mistral Large 3 2512 (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/mistralai/mistral-large-4-0",
+      "provider": "openrouter",
+      "label": "Mistral: Mistral Large 4",
       "accessModes": [
         "gateway"
       ],
@@ -21849,6 +21237,15 @@
       "key": "openrouter/nvidia/nemotron-3.5-lightning:free",
       "provider": "openrouter",
       "label": "NVIDIA: Nemotron 3.5 Lightning (free)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/nvidia/switchyard",
+      "provider": "openrouter",
+      "label": "NVIDIA: Switchyard",
       "accessModes": [
         "gateway"
       ],
@@ -22634,9 +22031,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/openai/gpt-6.1-sol:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-6.1 Sol (batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/openai/gpt-6.1-sol-pro",
       "provider": "openrouter",
       "label": "OpenAI: GPT-6.1 Sol Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/openai/gpt-6.1-sol-pro:batch",
+      "provider": "openrouter",
+      "label": "OpenAI: GPT-6.1 Sol Pro (batch)",
       "accessModes": [
         "gateway"
       ],
@@ -22949,15 +22364,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/qwen/qwen-plus-2025-07-28",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen Plus 0728",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/qwen/qwen-plus",
       "provider": "openrouter",
       "label": "Qwen: Qwen-Plus",
@@ -22988,15 +22394,6 @@
       "key": "openrouter/qwen/qwen3-14b",
       "provider": "openrouter",
       "label": "Qwen: Qwen3 14B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/qwen/qwen3-235b-a22b",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3 235B A22B",
       "accessModes": [
         "gateway"
       ],
@@ -23039,27 +22436,9 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/qwen/qwen3-30b-a3b-thinking-2507",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3 30B A3B Thinking 2507",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/qwen/qwen3-32b",
       "provider": "openrouter",
       "label": "Qwen: Qwen3 32B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/qwen/qwen3-8b",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3 8B",
       "accessModes": [
         "gateway"
       ],
@@ -23102,33 +22481,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/qwen/qwen3-coder-plus",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3 Coder Plus",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/qwen/qwen3-max",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3 Max",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/qwen/qwen3-max-thinking",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3 Max Thinking",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/qwen/qwen3-next-80b-a3b-instruct",
       "provider": "openrouter",
       "label": "Qwen: Qwen3 Next 80B A3B Instruct",
@@ -23156,15 +22508,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/qwen/qwen3-vl-235b-a22b-thinking",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3 VL 235B A22B Thinking",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/qwen/qwen3-vl-30b-a3b-instruct",
       "provider": "openrouter",
       "label": "Qwen: Qwen3 VL 30B A3B Instruct",
@@ -23183,27 +22526,9 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/qwen/qwen3-vl-32b-instruct",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3 VL 32B Instruct",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/qwen/qwen3-vl-8b-instruct",
       "provider": "openrouter",
       "label": "Qwen: Qwen3 VL 8B Instruct",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/qwen/qwen3-vl-8b-thinking",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3 VL 8B Thinking",
       "accessModes": [
         "gateway"
       ],
@@ -23309,15 +22634,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/qwen/qwen3.6-max-preview",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3.6 Max Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/qwen/qwen3.6-plus",
       "provider": "openrouter",
       "label": "Qwen: Qwen3.6 Plus",
@@ -23366,15 +22682,6 @@
       "key": "openrouter/qwen/qwen3.8-27b",
       "provider": "openrouter",
       "label": "Qwen: Qwen3.8 27B",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "openrouter/qwen/qwen3.8-27b:free",
-      "provider": "openrouter",
-      "label": "Qwen: Qwen3.8 27B (free)",
       "accessModes": [
         "gateway"
       ],
@@ -23543,15 +22850,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "openrouter/stealth/space-bunny-alpha",
-      "provider": "openrouter",
-      "label": "Space Bunny Alpha",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "openrouter/x-ai/grok-4.20",
       "provider": "openrouter",
       "label": "SpaceXAI: Grok 4.20",
@@ -23636,6 +22934,15 @@
       "key": "openrouter/stepfun/step-3.7-flash",
       "provider": "openrouter",
       "label": "StepFun: Step 3.7 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/stepfun/step-5-preview",
+      "provider": "openrouter",
+      "label": "StepFun: Step 5 Preview",
       "accessModes": [
         "gateway"
       ],
@@ -24185,6 +23492,15 @@
       "key": "venice/claude-fable-5-1",
       "provider": "venice",
       "label": "Claude Fable 5.1",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "venice/claude-haiku-5-5",
+      "provider": "venice",
+      "label": "Claude Haiku 5.5",
       "accessModes": [
         "provider-api"
       ],
@@ -24785,6 +24101,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "venice/openai-gpt-61-sol-ultrafast",
+      "provider": "venice",
+      "label": "GPT-6.1 Sol Ultrafast",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "venice/grok-4-20",
       "provider": "venice",
       "label": "Grok 4.20",
@@ -25262,6 +24587,15 @@
       "source": "openclaw-bundled-catalog+openclaw-provider-probe"
     },
     {
+      "key": "vercel-ai-gateway/callstack/apex",
+      "provider": "vercel-ai-gateway",
+      "label": "Apex",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/quiverai/arrow-2",
       "provider": "vercel-ai-gateway",
       "label": "Arrow 2",
@@ -25325,6 +24659,15 @@
       "key": "vercel-ai-gateway/anthropic/claude-haiku-4.5",
       "provider": "vercel-ai-gateway",
       "label": "Claude Haiku 4.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-haiku-5.5",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Haiku 5.5",
       "accessModes": [
         "gateway"
       ],
@@ -25490,15 +24833,6 @@
       "key": "vercel-ai-gateway/deepseek/deepseek-v3.1",
       "provider": "vercel-ai-gateway",
       "label": "DeepSeek V3.1",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/deepseek/deepseek-v3.1-terminus",
-      "provider": "vercel-ai-gateway",
-      "label": "DeepSeek V3.1 Terminus",
       "accessModes": [
         "gateway"
       ],
@@ -25757,6 +25091,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/google/gemini-nano-banana-2.1",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini Nano Banana 2.1",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/google/gemini-omni-flash-preview",
       "provider": "vercel-ai-gateway",
       "label": "Gemini Omni Flash Preview",
@@ -25922,6 +25265,15 @@
       "key": "vercel-ai-gateway/zai/glm-5v-turbo",
       "provider": "vercel-ai-gateway",
       "label": "GLM 5V Turbo",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/stealth/glyph-cluster",
+      "provider": "vercel-ai-gateway",
+      "label": "Glyph Cluster",
       "accessModes": [
         "gateway"
       ],
@@ -26590,15 +25942,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/moonshotai/kimi-k2-thinking",
-      "provider": "vercel-ai-gateway",
-      "label": "Kimi K2 Thinking",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/moonshotai/kimi-k2.5",
       "provider": "vercel-ai-gateway",
       "label": "Kimi K2.5",
@@ -26692,15 +26035,6 @@
       "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-sante",
       "provider": "vercel-ai-gateway",
       "label": "Ling 3.0 Flash Sante",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/inclusionai/ling-3.0-flash-sante-free",
-      "provider": "vercel-ai-gateway",
-      "label": "Ling 3.0 Flash Sante (Free)",
       "accessModes": [
         "gateway"
       ],
@@ -26971,6 +26305,15 @@
       "key": "vercel-ai-gateway/mistral/mistral-large-3",
       "provider": "vercel-ai-gateway",
       "label": "Mistral Large 3",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/mistral/mistral-large-4",
+      "provider": "vercel-ai-gateway",
+      "label": "Mistral Large 4",
       "accessModes": [
         "gateway"
       ],
@@ -27601,15 +26944,6 @@
       "key": "vercel-ai-gateway/stepfun/step-5-preview",
       "provider": "vercel-ai-gateway",
       "label": "Step 5 Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/stepfun/step-3.5-flash",
-      "provider": "vercel-ai-gateway",
-      "label": "StepFun 3.5 Flash",
       "accessModes": [
         "gateway"
       ],
