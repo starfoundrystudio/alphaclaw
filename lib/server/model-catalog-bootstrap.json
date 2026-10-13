@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "version": 2,
   "source": "alphaclaw model-catalog-support.json",
-  "generatedAt": "2026-10-11T22:32:39.530Z",
+  "generatedAt": "2026-10-13T16:42:45.732Z",
   "openclawVersion": "2026.9.5 (ec9c1a1)",
   "supportSpec": {
     "path": "lib/server/model-catalog-support.json",
@@ -1717,6 +1717,15 @@
               "key": "novita/stepfun/step-3.7-flash",
               "provider": "novita",
               "label": "Step 3.7 Flash",
+              "accessModes": [
+                "provider-api"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "novita/stepfun/step-5-preview",
+              "provider": "novita",
+              "label": "Step 5 Preview",
               "accessModes": [
                 "provider-api"
               ],
@@ -4626,6 +4635,15 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/google/gemini-4-argon",
+              "provider": "kilocode",
+              "label": "Google: Gemini 4 Argon",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/~google/gemini-flash-latest",
               "provider": "kilocode",
               "label": "Google: Gemini Flash Latest",
@@ -4971,6 +4989,15 @@
               "key": "kilocode/meta/muse-spark-1.3-contributor",
               "provider": "kilocode",
               "label": "Meta: Muse Spark 1.3 Contributor",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/meta/muse-wonder",
+              "provider": "kilocode",
+              "label": "Meta: Muse Wonder",
               "accessModes": [
                 "gateway"
               ],
@@ -6714,6 +6741,24 @@
               "source": "openclaw-provider-probe"
             },
             {
+              "key": "kilocode/scaledown/extract",
+              "provider": "kilocode",
+              "label": "ScaleDown: Extract",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
+              "key": "kilocode/scaledown/summarize",
+              "provider": "kilocode",
+              "label": "ScaleDown: Summarize",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe"
+            },
+            {
               "key": "kilocode/x-ai/grok-4.20",
               "provider": "kilocode",
               "label": "SpaceXAI: Grok 4.20",
@@ -8339,6 +8384,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/google/gemini-4-argon",
+              "provider": "openrouter",
+              "label": "Google: Gemini 4 Argon",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/~google/gemini-flash-latest",
               "provider": "openrouter",
               "label": "Google: Gemini Flash Latest",
@@ -8765,6 +8819,15 @@
               "key": "openrouter/meta/muse-spark-1.3-contributor",
               "provider": "openrouter",
               "label": "Meta: Muse Spark 1.3 Contributor",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/meta/muse-wonder",
+              "provider": "openrouter",
+              "label": "Meta: Muse Wonder",
               "accessModes": [
                 "gateway"
               ],
@@ -10922,6 +10985,24 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "openrouter/scaledown/extract",
+              "provider": "openrouter",
+              "label": "ScaleDown: Extract",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "openrouter/scaledown/summarize",
+              "provider": "openrouter",
+              "label": "ScaleDown: Summarize",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "openrouter/x-ai/grok-4.20",
               "provider": "openrouter",
               "label": "SpaceXAI: Grok 4.20",
@@ -11559,18 +11640,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/anthropic/claude-3-haiku",
+              "key": "vercel-ai-gateway/anthropic/claude-fable-5",
               "provider": "vercel-ai-gateway",
-              "label": "Claude 3 Haiku",
+              "label": "Claude Fable 5",
               "accessModes": [
                 "gateway"
               ],
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/anthropic/claude-fable-5",
+              "key": "vercel-ai-gateway/anthropic/claude-fable-5-batch",
               "provider": "vercel-ai-gateway",
-              "label": "Claude Fable 5",
+              "label": "Claude Fable 5 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-fable-5.1-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Fable 5.1 (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11586,6 +11676,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/anthropic/claude-haiku-4.5-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Haiku 4.5 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/anthropic/claude-haiku-5.5",
               "provider": "vercel-ai-gateway",
               "label": "Claude Haiku 5.5",
@@ -11595,9 +11694,9 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/anthropic/claude-opus-4",
+              "key": "vercel-ai-gateway/anthropic/claude-haiku-5.5-batch",
               "provider": "vercel-ai-gateway",
-              "label": "Claude Opus 4",
+              "label": "Claude Haiku 5.5 (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11613,9 +11712,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.5-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 4.5 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/anthropic/claude-opus-4.6",
               "provider": "vercel-ai-gateway",
               "label": "Claude Opus 4.6",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.6-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 4.6 (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11631,6 +11748,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.7-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 4.7 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/anthropic/claude-opus-4.8",
               "provider": "vercel-ai-gateway",
               "label": "Claude Opus 4.8",
@@ -11640,9 +11766,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 4.8 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-fast",
               "provider": "vercel-ai-gateway",
               "label": "Claude Opus 4.8 (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-5-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 5 (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11661,6 +11805,15 @@
               "key": "vercel-ai-gateway/anthropic/claude-opus-5.5",
               "provider": "vercel-ai-gateway",
               "label": "Claude Opus 5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-opus-5.5-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Opus 5.5 (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11694,6 +11847,24 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/anthropic/claude-sonnet-4.5-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Sonnet 4.5 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-sonnet-4.6-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Sonnet 4.6 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/anthropic/claude-sonnet-5",
               "provider": "vercel-ai-gateway",
               "label": "Claude Sonnet 5",
@@ -11703,9 +11874,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/anthropic/claude-sonnet-5-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Sonnet 5 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/anthropic/claude-sonnet-5.5",
               "provider": "vercel-ai-gateway",
               "label": "Claude Sonnet 5.5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/anthropic/claude-sonnet-5.5-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Claude Sonnet 5.5 (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11802,6 +11991,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/deepseek/deepseek-v4.1-flash-fast",
+              "provider": "vercel-ai-gateway",
+              "label": "DeepSeek V4.1 Flash Fast",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/deepseek/deepseek-r1",
               "provider": "vercel-ai-gateway",
               "label": "DeepSeek-R1",
@@ -11856,6 +12054,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/google/gemini-2.5-flash-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 2.5 Flash (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/google/gemini-2.5-flash-lite",
               "provider": "vercel-ai-gateway",
               "label": "Gemini 2.5 Flash Lite",
@@ -11865,9 +12072,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/google/gemini-2.5-flash-lite-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 2.5 Flash Lite (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/google/gemini-2.5-pro",
               "provider": "vercel-ai-gateway",
               "label": "Gemini 2.5 Pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/google/gemini-2.5-pro-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 2.5 Pro (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11890,6 +12115,15 @@
                 "gateway"
               ],
               "source": "public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/google/gemini-3-flash-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 3 Flash (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
               "key": "vercel-ai-gateway/google/gemini-3.1-flash-image",
@@ -11919,6 +12153,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/google/gemini-3.1-flash-lite-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 3.1 Flash Lite (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/google/gemini-3.1-flash-lite-image",
               "provider": "vercel-ai-gateway",
               "label": "Gemini 3.1 Flash Lite Image (Nano Banana 2 Lite)",
@@ -11937,9 +12180,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/google/gemini-3.1-pro-preview-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 3.1 Pro Preview (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/google/gemini-3.5-flash",
               "provider": "vercel-ai-gateway",
               "label": "Gemini 3.5 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/google/gemini-3.5-flash-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 3.5 Flash (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11955,9 +12216,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/google/gemini-3.5-flash-lite-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 3.5 Flash Lite (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/google/gemini-3.6-flash",
               "provider": "vercel-ai-gateway",
               "label": "Gemini 3.6 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/google/gemini-3.6-flash-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 3.6 Flash (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -11973,9 +12252,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/google/gemini-3.7-flash-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 3.7 Flash (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/google/gemini-3.8-flash",
               "provider": "vercel-ai-gateway",
               "label": "Gemini 3.8 Flash",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/google/gemini-4-argon",
+              "provider": "vercel-ai-gateway",
+              "label": "Gemini 4 Argon",
               "accessModes": [
                 "gateway"
               ],
@@ -12234,6 +12531,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5.2-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.2 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5.2-fast",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.2 (Fast)",
@@ -12279,6 +12585,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5.4-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.4 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5.4-fast",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.4 (Fast)",
@@ -12291,6 +12606,15 @@
               "key": "vercel-ai-gateway/openai/gpt-5.4-mini",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.4 Mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5.4-mini-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.4 Mini (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -12315,6 +12639,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5.4-nano-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.4 Nano (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5.4-pro",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.4 Pro",
@@ -12333,9 +12666,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5.6-luna-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.6 Luna (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5.6-luna-fast",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.6 Luna (Fast)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5.6-sol-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.6 Sol (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -12354,6 +12705,15 @@
               "key": "vercel-ai-gateway/openai/gpt-5.6-terra",
               "provider": "vercel-ai-gateway",
               "label": "GPT 5.6 Terra",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5.6-terra-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT 5.6 Terra (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -12432,6 +12792,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-4.1-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-4.1 (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-4.1-fast",
               "provider": "vercel-ai-gateway",
               "label": "GPT-4.1 (Fast)",
@@ -12444,6 +12813,15 @@
               "key": "vercel-ai-gateway/openai/gpt-4.1-mini",
               "provider": "vercel-ai-gateway",
               "label": "GPT-4.1 mini",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-4.1-mini-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-4.1 mini (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -12468,6 +12846,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-4.1-nano-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-4.1 nano (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-4.1-nano-fast",
               "provider": "vercel-ai-gateway",
               "label": "GPT-4.1 nano (Fast)",
@@ -12480,6 +12867,15 @@
               "key": "vercel-ai-gateway/openai/gpt-4o",
               "provider": "vercel-ai-gateway",
               "label": "GPT-4o",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-4o-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-4o (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -12504,6 +12900,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-4o-mini-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-4o mini (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-4o-mini-fast",
               "provider": "vercel-ai-gateway",
               "label": "GPT-4o mini (Fast)",
@@ -12516,6 +12921,15 @@
               "key": "vercel-ai-gateway/openai/gpt-5",
               "provider": "vercel-ai-gateway",
               "label": "GPT-5",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-5 (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -12540,6 +12954,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5-mini-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-5 mini (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5-mini-fast",
               "provider": "vercel-ai-gateway",
               "label": "GPT-5 mini (Fast)",
@@ -12558,9 +12981,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-5-nano-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-5 nano (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-5-pro",
               "provider": "vercel-ai-gateway",
               "label": "GPT-5 pro",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-5-pro-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-5 pro (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -12594,6 +13035,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-6-astra-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-6 Astra (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-6-astra-fast",
               "provider": "vercel-ai-gateway",
               "label": "GPT-6 Astra (Fast)",
@@ -12606,6 +13056,15 @@
               "key": "vercel-ai-gateway/openai/gpt-6-luna",
               "provider": "vercel-ai-gateway",
               "label": "GPT-6 Luna",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-6-luna-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-6 Luna (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -12630,6 +13089,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/openai/gpt-6-sol-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-6 Sol (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/openai/gpt-6-sol-fast",
               "provider": "vercel-ai-gateway",
               "label": "GPT-6 Sol (Fast)",
@@ -12642,6 +13110,15 @@
               "key": "vercel-ai-gateway/openai/gpt-6.1-sol",
               "provider": "vercel-ai-gateway",
               "label": "GPT-6.1 Sol",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/openai/gpt-6.1-sol-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "GPT-6.1 Sol (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -12711,9 +13188,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/spacexai/grok-4.20-multi-agent-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Grok 4.20 Multi-Agent (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/spacexai/grok-4.20-non-reasoning",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.20 Non-Reasoning",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/spacexai/grok-4.20-non-reasoning-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Grok 4.20 Non-Reasoning (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -12729,9 +13224,27 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/spacexai/grok-4.20-reasoning-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Grok 4.20 Reasoning (Batch)",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/spacexai/grok-4.3",
               "provider": "vercel-ai-gateway",
               "label": "Grok 4.3",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
+              "key": "vercel-ai-gateway/spacexai/grok-4.3-batch",
+              "provider": "vercel-ai-gateway",
+              "label": "Grok 4.3 (Batch)",
               "accessModes": [
                 "gateway"
               ],
@@ -13296,6 +13809,15 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
+              "key": "vercel-ai-gateway/meta/muse-wonder-1.0",
+              "provider": "vercel-ai-gateway",
+              "label": "Muse Wonder",
+              "accessModes": [
+                "gateway"
+              ],
+              "source": "openclaw-provider-probe+public-provider-catalog"
+            },
+            {
               "key": "vercel-ai-gateway/google/gemini-2.5-flash-image",
               "provider": "vercel-ai-gateway",
               "label": "Nano Banana (Gemini 2.5 Flash Image)",
@@ -13521,15 +14043,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/alibaba/qwen-3.6-max-preview",
-              "provider": "vercel-ai-gateway",
-              "label": "Qwen 3.6 Max Preview",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/alibaba/qwen3.6-plus",
               "provider": "vercel-ai-gateway",
               "label": "Qwen 3.6 Plus",
@@ -13629,33 +14142,6 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/alibaba/qwen3-coder-plus",
-              "provider": "vercel-ai-gateway",
-              "label": "Qwen3 Coder Plus",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/alibaba/qwen3-max",
-              "provider": "vercel-ai-gateway",
-              "label": "Qwen3 Max",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/alibaba/qwen3-max-preview",
-              "provider": "vercel-ai-gateway",
-              "label": "Qwen3 Max Preview",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/alibaba/qwen3-next-80b-a3b-instruct",
               "provider": "vercel-ai-gateway",
               "label": "Qwen3 Next 80B A3B Instruct",
@@ -13674,36 +14160,9 @@
               "source": "openclaw-provider-probe+public-provider-catalog"
             },
             {
-              "key": "vercel-ai-gateway/alibaba/qwen3-vl-235b-a22b-instruct",
-              "provider": "vercel-ai-gateway",
-              "label": "Qwen3 VL 235B A22B Instruct",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
               "key": "vercel-ai-gateway/alibaba/qwen3-vl-instruct",
               "provider": "vercel-ai-gateway",
               "label": "Qwen3 VL 235B A22B Instruct",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/alibaba/qwen3-235b-a22b-thinking",
-              "provider": "vercel-ai-gateway",
-              "label": "Qwen3 VL 235B A22B Thinking",
-              "accessModes": [
-                "gateway"
-              ],
-              "source": "openclaw-provider-probe+public-provider-catalog"
-            },
-            {
-              "key": "vercel-ai-gateway/alibaba/qwen3-vl-thinking",
-              "provider": "vercel-ai-gateway",
-              "label": "Qwen3 VL 235B A22B Thinking",
               "accessModes": [
                 "gateway"
               ],
@@ -15177,6 +15636,15 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/google/gemini-4-argon",
+      "provider": "kilocode",
+      "label": "Google: Gemini 4 Argon",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/~google/gemini-flash-latest",
       "provider": "kilocode",
       "label": "Google: Gemini Flash Latest",
@@ -15522,6 +15990,15 @@
       "key": "kilocode/meta/muse-spark-1.3-contributor",
       "provider": "kilocode",
       "label": "Meta: Muse Spark 1.3 Contributor",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/meta/muse-wonder",
+      "provider": "kilocode",
+      "label": "Meta: Muse Wonder",
       "accessModes": [
         "gateway"
       ],
@@ -17265,6 +17742,24 @@
       "source": "openclaw-provider-probe"
     },
     {
+      "key": "kilocode/scaledown/extract",
+      "provider": "kilocode",
+      "label": "ScaleDown: Extract",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "kilocode/scaledown/summarize",
+      "provider": "kilocode",
+      "label": "ScaleDown: Summarize",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
       "key": "kilocode/x-ai/grok-4.20",
       "provider": "kilocode",
       "label": "SpaceXAI: Grok 4.20",
@@ -18749,6 +19244,15 @@
       "key": "novita/stepfun/step-3.7-flash",
       "provider": "novita",
       "label": "Step 3.7 Flash",
+      "accessModes": [
+        "provider-api"
+      ],
+      "source": "openclaw-provider-probe"
+    },
+    {
+      "key": "novita/stepfun/step-5-preview",
+      "provider": "novita",
+      "label": "Step 5 Preview",
       "accessModes": [
         "provider-api"
       ],
@@ -20253,6 +20757,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/google/gemini-4-argon",
+      "provider": "openrouter",
+      "label": "Google: Gemini 4 Argon",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/~google/gemini-flash-latest",
       "provider": "openrouter",
       "label": "Google: Gemini Flash Latest",
@@ -20679,6 +21192,15 @@
       "key": "openrouter/meta/muse-spark-1.3-contributor",
       "provider": "openrouter",
       "label": "Meta: Muse Spark 1.3 Contributor",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/meta/muse-wonder",
+      "provider": "openrouter",
+      "label": "Meta: Muse Wonder",
       "accessModes": [
         "gateway"
       ],
@@ -22850,6 +23372,24 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "openrouter/scaledown/extract",
+      "provider": "openrouter",
+      "label": "ScaleDown: Extract",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "openrouter/scaledown/summarize",
+      "provider": "openrouter",
+      "label": "ScaleDown: Summarize",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "openrouter/x-ai/grok-4.20",
       "provider": "openrouter",
       "label": "SpaceXAI: Grok 4.20",
@@ -24623,18 +25163,18 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/anthropic/claude-3-haiku",
+      "key": "vercel-ai-gateway/anthropic/claude-fable-5",
       "provider": "vercel-ai-gateway",
-      "label": "Claude 3 Haiku",
+      "label": "Claude Fable 5",
       "accessModes": [
         "gateway"
       ],
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/anthropic/claude-fable-5",
+      "key": "vercel-ai-gateway/anthropic/claude-fable-5-batch",
       "provider": "vercel-ai-gateway",
-      "label": "Claude Fable 5",
+      "label": "Claude Fable 5 (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -24656,9 +25196,27 @@
       "recommendationRank": 1
     },
     {
+      "key": "vercel-ai-gateway/anthropic/claude-fable-5.1-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Fable 5.1 (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/anthropic/claude-haiku-4.5",
       "provider": "vercel-ai-gateway",
       "label": "Claude Haiku 4.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-haiku-4.5-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Haiku 4.5 (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -24674,9 +25232,9 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/anthropic/claude-opus-4",
+      "key": "vercel-ai-gateway/anthropic/claude-haiku-5.5-batch",
       "provider": "vercel-ai-gateway",
-      "label": "Claude Opus 4",
+      "label": "Claude Haiku 5.5 (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -24692,9 +25250,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-4.5-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 4.5 (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/anthropic/claude-opus-4.6",
       "provider": "vercel-ai-gateway",
       "label": "Claude Opus 4.6",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-4.6-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 4.6 (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -24710,9 +25286,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-4.7-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 4.7 (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/anthropic/claude-opus-4.8",
       "provider": "vercel-ai-gateway",
       "label": "Claude Opus 4.8",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-4.8-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 4.8 (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -24743,6 +25337,15 @@
       "recommendationRank": 0
     },
     {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-5-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 5 (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/anthropic/claude-opus-5-fast",
       "provider": "vercel-ai-gateway",
       "label": "Claude Opus 5 (Fast)",
@@ -24755,6 +25358,15 @@
       "key": "vercel-ai-gateway/anthropic/claude-opus-5.5",
       "provider": "vercel-ai-gateway",
       "label": "Claude Opus 5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-opus-5.5-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Opus 5.5 (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -24788,6 +25400,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/anthropic/claude-sonnet-4.5-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Sonnet 4.5 (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/anthropic/claude-sonnet-4.6",
       "provider": "vercel-ai-gateway",
       "label": "Claude Sonnet 4.6",
@@ -24803,6 +25424,15 @@
       "recommendationRank": 2
     },
     {
+      "key": "vercel-ai-gateway/anthropic/claude-sonnet-4.6-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Sonnet 4.6 (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/anthropic/claude-sonnet-5",
       "provider": "vercel-ai-gateway",
       "label": "Claude Sonnet 5",
@@ -24812,9 +25442,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/anthropic/claude-sonnet-5-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Sonnet 5 (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/anthropic/claude-sonnet-5.5",
       "provider": "vercel-ai-gateway",
       "label": "Claude Sonnet 5.5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/anthropic/claude-sonnet-5.5-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Claude Sonnet 5.5 (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -24911,6 +25559,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/deepseek/deepseek-v4.1-flash-fast",
+      "provider": "vercel-ai-gateway",
+      "label": "DeepSeek V4.1 Flash Fast",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/deepseek/deepseek-r1",
       "provider": "vercel-ai-gateway",
       "label": "DeepSeek-R1",
@@ -24965,6 +25622,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/google/gemini-2.5-flash-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 2.5 Flash (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/google/gemini-2.5-flash-lite",
       "provider": "vercel-ai-gateway",
       "label": "Gemini 2.5 Flash Lite",
@@ -24974,9 +25640,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/google/gemini-2.5-flash-lite-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 2.5 Flash Lite (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/google/gemini-2.5-pro",
       "provider": "vercel-ai-gateway",
       "label": "Gemini 2.5 Pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/google/gemini-2.5-pro-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 2.5 Pro (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -24999,6 +25683,15 @@
         "gateway"
       ],
       "source": "public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/google/gemini-3-flash-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 3 Flash (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
       "key": "vercel-ai-gateway/google/gemini-3.1-flash-image",
@@ -25028,6 +25721,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/google/gemini-3.1-flash-lite-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 3.1 Flash Lite (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/google/gemini-3.1-flash-lite-image",
       "provider": "vercel-ai-gateway",
       "label": "Gemini 3.1 Flash Lite Image (Nano Banana 2 Lite)",
@@ -25046,9 +25748,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/google/gemini-3.1-pro-preview-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 3.1 Pro Preview (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/google/gemini-3.5-flash",
       "provider": "vercel-ai-gateway",
       "label": "Gemini 3.5 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/google/gemini-3.5-flash-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 3.5 Flash (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25064,9 +25784,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/google/gemini-3.5-flash-lite-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 3.5 Flash Lite (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/google/gemini-3.6-flash",
       "provider": "vercel-ai-gateway",
       "label": "Gemini 3.6 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/google/gemini-3.6-flash-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 3.6 Flash (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25082,9 +25820,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/google/gemini-3.7-flash-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 3.7 Flash (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/google/gemini-3.8-flash",
       "provider": "vercel-ai-gateway",
       "label": "Gemini 3.8 Flash",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/google/gemini-4-argon",
+      "provider": "vercel-ai-gateway",
+      "label": "Gemini 4 Argon",
       "accessModes": [
         "gateway"
       ],
@@ -25343,6 +26099,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5.2-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.2 (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5.2-fast",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.2 (Fast)",
@@ -25388,6 +26153,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5.4-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.4 (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5.4-fast",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.4 (Fast)",
@@ -25400,6 +26174,15 @@
       "key": "vercel-ai-gateway/openai/gpt-5.4-mini",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.4 Mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-5.4-mini-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.4 Mini (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25424,6 +26207,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5.4-nano-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.4 Nano (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5.4-pro",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.4 Pro",
@@ -25436,6 +26228,15 @@
       "key": "vercel-ai-gateway/openai/gpt-5.6-luna",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.6 Luna",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-5.6-luna-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.6 Luna (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25465,6 +26266,15 @@
       "recommendationRank": 3
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5.6-sol-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.6 Sol (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5.6-sol-fast",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.6 Sol (Fast)",
@@ -25477,6 +26287,15 @@
       "key": "vercel-ai-gateway/openai/gpt-5.6-terra",
       "provider": "vercel-ai-gateway",
       "label": "GPT 5.6 Terra",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-5.6-terra-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT 5.6 Terra (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25555,6 +26374,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-4.1-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-4.1 (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-4.1-fast",
       "provider": "vercel-ai-gateway",
       "label": "GPT-4.1 (Fast)",
@@ -25567,6 +26395,15 @@
       "key": "vercel-ai-gateway/openai/gpt-4.1-mini",
       "provider": "vercel-ai-gateway",
       "label": "GPT-4.1 mini",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-4.1-mini-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-4.1 mini (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25591,6 +26428,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-4.1-nano-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-4.1 nano (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-4.1-nano-fast",
       "provider": "vercel-ai-gateway",
       "label": "GPT-4.1 nano (Fast)",
@@ -25603,6 +26449,15 @@
       "key": "vercel-ai-gateway/openai/gpt-4o",
       "provider": "vercel-ai-gateway",
       "label": "GPT-4o",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-4o-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-4o (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25627,6 +26482,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-4o-mini-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-4o mini (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-4o-mini-fast",
       "provider": "vercel-ai-gateway",
       "label": "GPT-4o mini (Fast)",
@@ -25639,6 +26503,15 @@
       "key": "vercel-ai-gateway/openai/gpt-5",
       "provider": "vercel-ai-gateway",
       "label": "GPT-5",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-5-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-5 (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25663,6 +26536,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5-mini-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-5 mini (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5-mini-fast",
       "provider": "vercel-ai-gateway",
       "label": "GPT-5 mini (Fast)",
@@ -25681,9 +26563,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-5-nano-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-5 nano (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-5-pro",
       "provider": "vercel-ai-gateway",
       "label": "GPT-5 pro",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-5-pro-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-5 pro (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25717,6 +26617,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-6-astra-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-6 Astra (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-6-astra-fast",
       "provider": "vercel-ai-gateway",
       "label": "GPT-6 Astra (Fast)",
@@ -25729,6 +26638,15 @@
       "key": "vercel-ai-gateway/openai/gpt-6-luna",
       "provider": "vercel-ai-gateway",
       "label": "GPT-6 Luna",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-6-luna-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-6 Luna (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25753,6 +26671,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/openai/gpt-6-sol-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-6 Sol (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/openai/gpt-6-sol-fast",
       "provider": "vercel-ai-gateway",
       "label": "GPT-6 Sol (Fast)",
@@ -25765,6 +26692,15 @@
       "key": "vercel-ai-gateway/openai/gpt-6.1-sol",
       "provider": "vercel-ai-gateway",
       "label": "GPT-6.1 Sol",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/openai/gpt-6.1-sol-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "GPT-6.1 Sol (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25834,9 +26770,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/spacexai/grok-4.20-multi-agent-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Grok 4.20 Multi-Agent (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/spacexai/grok-4.20-non-reasoning",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.20 Non-Reasoning",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/spacexai/grok-4.20-non-reasoning-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Grok 4.20 Non-Reasoning (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -25852,9 +26806,27 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/spacexai/grok-4.20-reasoning-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Grok 4.20 Reasoning (Batch)",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/spacexai/grok-4.3",
       "provider": "vercel-ai-gateway",
       "label": "Grok 4.3",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
+      "key": "vercel-ai-gateway/spacexai/grok-4.3-batch",
+      "provider": "vercel-ai-gateway",
+      "label": "Grok 4.3 (Batch)",
       "accessModes": [
         "gateway"
       ],
@@ -26419,6 +27391,15 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
+      "key": "vercel-ai-gateway/meta/muse-wonder-1.0",
+      "provider": "vercel-ai-gateway",
+      "label": "Muse Wonder",
+      "accessModes": [
+        "gateway"
+      ],
+      "source": "openclaw-provider-probe+public-provider-catalog"
+    },
+    {
       "key": "vercel-ai-gateway/google/gemini-2.5-flash-image",
       "provider": "vercel-ai-gateway",
       "label": "Nano Banana (Gemini 2.5 Flash Image)",
@@ -26644,15 +27625,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/alibaba/qwen-3.6-max-preview",
-      "provider": "vercel-ai-gateway",
-      "label": "Qwen 3.6 Max Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/alibaba/qwen3.6-plus",
       "provider": "vercel-ai-gateway",
       "label": "Qwen 3.6 Plus",
@@ -26752,33 +27724,6 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/alibaba/qwen3-coder-plus",
-      "provider": "vercel-ai-gateway",
-      "label": "Qwen3 Coder Plus",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/alibaba/qwen3-max",
-      "provider": "vercel-ai-gateway",
-      "label": "Qwen3 Max",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/alibaba/qwen3-max-preview",
-      "provider": "vercel-ai-gateway",
-      "label": "Qwen3 Max Preview",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/alibaba/qwen3-next-80b-a3b-instruct",
       "provider": "vercel-ai-gateway",
       "label": "Qwen3 Next 80B A3B Instruct",
@@ -26797,36 +27742,9 @@
       "source": "openclaw-provider-probe+public-provider-catalog"
     },
     {
-      "key": "vercel-ai-gateway/alibaba/qwen3-vl-235b-a22b-instruct",
-      "provider": "vercel-ai-gateway",
-      "label": "Qwen3 VL 235B A22B Instruct",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
       "key": "vercel-ai-gateway/alibaba/qwen3-vl-instruct",
       "provider": "vercel-ai-gateway",
       "label": "Qwen3 VL 235B A22B Instruct",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/alibaba/qwen3-235b-a22b-thinking",
-      "provider": "vercel-ai-gateway",
-      "label": "Qwen3 VL 235B A22B Thinking",
-      "accessModes": [
-        "gateway"
-      ],
-      "source": "openclaw-provider-probe+public-provider-catalog"
-    },
-    {
-      "key": "vercel-ai-gateway/alibaba/qwen3-vl-thinking",
-      "provider": "vercel-ai-gateway",
-      "label": "Qwen3 VL 235B A22B Thinking",
       "accessModes": [
         "gateway"
       ],
