@@ -1500,6 +1500,12 @@ describe("server/agents/service", () => {
       env: process.env,
       onlyPluginKeys: ["slack"],
     });
+    // OpenClaw 2026.9 treats SLACK_BOT_TOKEN in .env as a configured Slack
+    // channel, so the install command's own preflight would install the
+    // plugin itself and the install request would collide with it.
+    expect(reconcileOpenclawPlugins.mock.invocationCallOrder[0]).toBeLessThan(
+      writeEnvFile.mock.invocationCallOrder[0],
+    );
     expect(reconcileOpenclawPlugins.mock.invocationCallOrder[0]).toBeLessThan(
       fsMock.writeFileSync.mock.invocationCallOrder[0],
     );
@@ -1643,12 +1649,10 @@ describe("server/agents/service", () => {
       }),
     ).rejects.toThrow("install failed");
 
-    expect(writeEnvFile).toHaveBeenNthCalledWith(1, [
-      { key: "OPENAI_API_KEY", value: "sk-test" },
-      { key: "TELEGRAM_BOT_TOKEN", value: "123:abc" },
-    ]);
-    expect(writeEnvFile).toHaveBeenNthCalledWith(2, initialEnvVars);
-    expect(reloadEnv).toHaveBeenCalledTimes(2);
+    // The token never reached .env: the install runs before the env write.
+    expect(writeEnvFile).toHaveBeenCalledTimes(1);
+    expect(writeEnvFile).toHaveBeenCalledWith(initialEnvVars);
+    expect(reloadEnv).toHaveBeenCalledTimes(1);
     expect(fsMock.readConfig()).toEqual({
       agents: {
         entries: { main: { default: true } },
@@ -1850,6 +1854,7 @@ describe("server/agents/service", () => {
       },
     });
     const writeEnvFile = vi.fn();
+    const reconcileOpenclawPlugins = vi.fn(async () => ({ plugins: [] }));
     const reloadEnv = vi.fn();
     const restartGateway = vi.fn(async () => {});
     const service = createAgentsService({
@@ -1859,6 +1864,7 @@ describe("server/agents/service", () => {
       writeEnvFile,
       reloadEnv,
       restartGateway,
+      reconcileOpenclawPlugins,
       clawCmd: vi.fn(async () => ({ ok: true })),
     });
 
@@ -1869,6 +1875,9 @@ describe("server/agents/service", () => {
       token: "+15551234567",
       agentId: "main",
     });
+    expect(reconcileOpenclawPlugins.mock.invocationCallOrder[0]).toBeLessThan(
+      writeEnvFile.mock.invocationCallOrder[0],
+    );
 
     expect(result).toMatchObject({
       channel: "whatsapp",

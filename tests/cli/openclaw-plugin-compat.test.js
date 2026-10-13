@@ -2,6 +2,11 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
+// Before lib/server/constants is first required: never read ~/.alphaclaw.
+process.env.ALPHACLAW_ROOT_DIR = fs.mkdtempSync(
+  path.join(os.tmpdir(), "alphaclaw-plugin-compat-root-"),
+);
+
 const {
   buildInstallSpec,
   compareVersions,
@@ -1001,6 +1006,144 @@ describe("openclaw plugin compatibility manifest", () => {
       expect.objectContaining({ id: "discord", action: "installed", reasons: ["requested"] }),
     ]);
     expect(commands.some((cmd) => cmd.includes("'npm:@openclaw/discord@2026.5.6'"))).toBe(true);
+  });
+
+  describe("package already on disk", () => {
+    // Production canary 2026-10-12: `plugins list` did not report Slack, the
+    // plain install then failed with "plugin already exists" after 66.5 s.
+    const writeInstalledPackage = (openclawDir, version) => {
+      const packageDir = path.join(
+        openclawDir,
+        "npm",
+        "projects",
+        "openclaw-discord-0123456789",
+        "node_modules",
+        "@openclaw",
+        "discord",
+      );
+      fs.mkdirSync(packageDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(packageDir, "package.json"),
+        JSON.stringify({ name: "@openclaw/discord", version }),
+      );
+    };
+
+    const run = ({ installedVersion, listResults }) => {
+      const rootDir = path.join(tmpDir, "root");
+      const openclawDir = path.join(rootDir, ".openclaw");
+      writeOpenclawConfig(openclawDir, {});
+      writeInstalledPackage(openclawDir, installedVersion);
+      const manifestPath = writeManifest(tmpDir, baseManifest());
+      const commands = [];
+      const logs = [];
+      let listCalls = 0;
+      let plugins = null;
+      const execSyncImpl = (command) => {
+        const text = String(command);
+        commands.push(text);
+        if (text.includes("'--version'")) return "2026.5.6\n";
+        if (text.includes("'plugins' 'list' '--json'")) {
+          listCalls += 1;
+          return JSON.stringify({
+            plugins: plugins || listResults[Math.min(listCalls, listResults.length) - 1],
+          });
+        }
+        if (text.includes("'plugins' 'install'")) {
+          if (!text.includes("'--force'")) {
+            const error = new Error("plugin already exists");
+            error.stderr = `plugin already exists: ${openclawDir}/npm/projects/openclaw-discord-0123456789/node_modules/@openclaw/discord (delete it first)`;
+            throw error;
+          }
+          plugins = [{ id: "discord", name: "@openclaw/discord", version: "2026.5.6" }];
+        }
+        if (text.includes("'plugins' 'update'")) {
+          plugins = [{ id: "discord", name: "@openclaw/discord", version: "2026.5.6" }];
+        }
+        return "";
+      };
+      const result = reconcileOpenclawPlugins({
+        rootDir,
+        openclawDir,
+        manifestPath,
+        openclawCliPath: "/tmp/openclaw.mjs",
+        execSyncImpl,
+        logger: { log: (line) => logs.push(line) },
+        now: () => "2026-05-14T00:00:00.000Z",
+        onlyPluginKeys: ["discord"],
+      });
+      const installs = commands.filter((command) =>
+        command.includes("'plugins' 'install'"),
+      );
+      const updates = commands.filter((command) =>
+        command.includes("'plugins' 'update'"),
+      );
+      return { installs, logs, result, updates };
+    };
+
+    it("skips the install when a second listing finds the target version", () => {
+      const { installs, result } = run({
+        installedVersion: "2026.5.6",
+        listResults: [
+          [],
+          [{ id: "discord", name: "@openclaw/discord", version: "2026.5.6" }],
+        ],
+      });
+
+      expect(installs).toHaveLength(0);
+      expect(result.plugins).toEqual([
+        expect.objectContaining({ id: "discord", action: "skipped" }),
+      ]);
+    });
+
+    it("replaces an unlisted target-version package without a doomed plain install", () => {
+      const { installs, logs, result } = run({
+        installedVersion: "2026.5.6",
+        listResults: [[]],
+      });
+
+      expect(installs).toHaveLength(1);
+      expect(installs[0]).toContain("'npm:@openclaw/discord@2026.5.6'");
+      expect(installs[0]).toContain("'--force'");
+      expect(logs).toContain(
+        "[alphaclaw] @openclaw/discord@2026.5.6 is on disk but not in OpenClaw's plugin inventory; replacing it",
+      );
+      // OpenClaw's forced install writes the record the inventory now shows.
+      expect(result.plugins).toEqual([
+        expect.objectContaining({ id: "discord", action: "installed", version: "2026.5.6" }),
+      ]);
+    });
+
+    it("replaces an unlisted package at another version", () => {
+      const { installs } = run({ installedVersion: "2026.4.1", listResults: [[]] });
+
+      expect(installs).toHaveLength(1);
+      expect(installs[0]).toContain("'--force'");
+    });
+
+    it("updates a listed package at another version with the normal update", () => {
+      const { installs, result, updates } = run({
+        installedVersion: "2026.4.1",
+        listResults: [[{ id: "discord", name: "@openclaw/discord", version: "2026.4.1" }]],
+      });
+
+      expect(installs).toHaveLength(0);
+      expect(updates).toHaveLength(1);
+      expect(updates[0]).not.toContain("'--force'");
+      expect(result.plugins).toEqual([
+        expect.objectContaining({ id: "discord", action: "updated" }),
+      ]);
+    });
+  });
+
+  it("installs without --force when nothing is on disk", () => {
+    const { commands } = reconcileFixture({
+      tmpDir,
+      config: { channels: { discord: {} } },
+    });
+
+    const installs = commands.filter((command) => command.includes("'plugins' 'install'"));
+    expect(installs).toHaveLength(1);
+    expect(installs[0]).not.toContain("'--force'");
   });
 
   it("fails closed when OpenClaw plugin inventory JSON is malformed", () => {
